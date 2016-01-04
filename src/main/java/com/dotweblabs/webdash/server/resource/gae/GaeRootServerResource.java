@@ -43,6 +43,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         if(path.startsWith("/")){
             path = path.substring(1);
         }
+        if(path.equals("/") || path.isEmpty()) {
+            path = "index.html"; // TODO: Must be set through the dashboard e.g. index.htm or main.html etc.
+        }
         LOG.info("Path: " + path);
         BlobFile blobFile = store().get(BlobFile.class, path);
         if(blobFile != null){
