@@ -486,8 +486,8 @@
                             <runTarget>app.html</runTarget>
                             <appEngineVersion>${gae.version}</appEngineVersion>
                             <!-- tell the gwt plugin that the webapp source resides in src/main/webapp -->
-                            <!--<webappDirectory>${project.build.directory}/${project.build.finalName}/webdash</webappDirectory>-->
-                            <webappDirectory>${webappDirectory}</webappDirectory>
+                            <webappDirectory>${project.build.directory}/${project.build.finalName}/webdash</webappDirectory>
+                            <!--<webappDirectory>${webappDirectory}</webappDirectory>-->
                             <!-- tell the gwt plugin that dev mode should be run using the webapp that resides in target/${webappDirectory} -->
                             <hostedWebapp>${webappDirectory}</hostedWebapp>
                             <!-- Normally the gwt maven plugin executes dev mode using a builtin jetty server.
