@@ -19,6 +19,7 @@ package com.divroll.webdash.server.resource.gae;
 import com.divroll.webdash.server.BlobFile;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.google.appengine.api.datastore.Blob;
+import org.restlet.data.MediaType;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.resource.Get;
@@ -45,11 +46,29 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         LOG.info("Path: " + path);
         BlobFile blobFile = store().get(BlobFile.class, path);
         if(blobFile != null){
-            return new ByteArrayRepresentation(blobFile.getBlob().getBytes());
+            return new ByteArrayRepresentation(blobFile.getBlob().getBytes(), processMediaType(path));
         }
 //        ByteArrayRepresentation bar
 //                = new ByteArrayRepresentation(your_images_bytes, MediaType.IMAGE_JPEG) ;
 //        getResponse().setEntity(bar);
         return null;
+    }
+
+    private MediaType processMediaType(String path){
+        MediaType type = MediaType.ALL;
+        if(path.endsWith("html")){
+            type = MediaType.TEXT_HTML;
+        } else if (path.endsWith("css")) {
+            type = MediaType.TEXT_CSS;
+        } else if (path.endsWith("js")) {
+            type = MediaType.TEXT_JAVASCRIPT;
+        } else if (path.endsWith("txt")) {
+            type = MediaType.TEXT_PLAIN;
+        } else if (path.endsWith("jpg")){
+            type = MediaType.IMAGE_JPEG;
+        } else if (path.endsWith("png")){
+            type = MediaType.IMAGE_PNG;
+        }
+        return type;
     }
 }
