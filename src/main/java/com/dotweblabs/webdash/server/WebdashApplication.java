@@ -53,7 +53,7 @@ public class WebdashApplication extends Application {
     router.attach(ROOT_URI + "values", GaeValuesServerResource.class);
     router.attach(ROOT_URI + "values/{value_id}", GaeValueServerResource.class);
     router.attach("/webdash/", directory);
-    router.attach("/", RootServerResource.class);
+    router.attachDefault(RootServerResource.class);
     return router;
   }
 }
