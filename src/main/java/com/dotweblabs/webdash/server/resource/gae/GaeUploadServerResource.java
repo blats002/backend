@@ -95,24 +95,6 @@ public class GaeUploadServerResource extends SelfInjectingServerResource
                     Blob blob = new Blob(streamBuilder.toByteArray());
                     BlobFile blobFile = new BlobFile(fileName, blob);
                     store().put(blobFile);
-
-//                    BufferedInputStream buffStream = new BufferedInputStream(zipStream);
-//                    byte[] byteBuff = new byte[(int) fileSize];
-//                    int bytes_read = 0;
-//                    int offset = 0;
-//                    while((bytes_read = buffStream.read(byteBuff, 0, (int) fileSize)) != -1) {
-//                        offset += bytes_read;
-//                    }
-//
-//
-//                    BlobFile blobFile = new BlobFile(fileName);
-//
-//                    int bytesRead = 0;
-//                    while ((bytesRead = zipStream.read(byteBuff)) != -1) {
-//
-//                        out.write(byteBuff, 0, bytesRead);
-//                    }
-//                    buffStream.close();
                 }
                 zipStream.close();
             } catch (IOException e){
