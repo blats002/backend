@@ -44,6 +44,7 @@ public class WebdashApplication extends Application {
     Router router = new Router(getContext());
     Directory directory = new Directory(getContext(), "war:///doc");
     directory.setIndexName("app.html");
+    router.attach(ROOT_URI + "uploads", GaeUploadServerResource.class);
     router.attach(ROOT_URI + "blogs", GaeBlogsServerResource.class);
     router.attach(ROOT_URI + "blogs/{blog_id}", GaeBlogServerResource.class);
     router.attach(ROOT_URI + "files", GaeFilesServerResource.class);
