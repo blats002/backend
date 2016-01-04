@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package com.divroll.webdash.server.resource;
+package com.divroll.webdash.server.resource.gae;
 
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import org.restlet.ext.servlet.ServletUtils;
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Resource which has only one representation.
  */
-public class RootServerResource extends SelfInjectingServerResource {
+public class GaeStatusServerResource extends SelfInjectingServerResource {
     @Get("json")
     public String represent() {
         String client = getRequest().getClientInfo().getAddress();

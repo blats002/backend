@@ -16,13 +16,11 @@
  */
 package com.divroll.webdash.server;
 
-import com.divroll.webdash.server.resource.BlogResource;
 import com.divroll.webdash.server.resource.gae.*;
-import com.divroll.webdash.server.service.gae.GaeFileService;
 import com.google.inject.Guice;
 import com.divroll.webdash.server.guice.GuiceConfigModule;
 import com.divroll.webdash.server.guice.SelfInjectingServerResourceModule;
-import com.divroll.webdash.server.resource.RootServerResource;
+import com.divroll.webdash.server.resource.gae.GaeRootServerResource;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.resource.Directory;
@@ -54,7 +52,7 @@ public class WebdashApplication extends Application {
     router.attach(ROOT_URI + "values", GaeValuesServerResource.class);
     router.attach(ROOT_URI + "values/{value_id}", GaeValueServerResource.class);
     router.attach("/webdash/", directory);
-    router.attachDefault(RootServerResource.class);
+    router.attachDefault(GaeRootServerResource.class);
     return router;
   }
 }
