@@ -25,6 +25,7 @@ import com.divroll.webdash.server.guice.SelfInjectingServerResourceModule;
 import com.divroll.webdash.server.resource.RootServerResource;
 import org.restlet.Application;
 import org.restlet.Restlet;
+import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 
 import java.util.logging.Logger;
@@ -41,7 +42,8 @@ public class WebdashApplication extends Application {
     Guice.createInjector(new GuiceConfigModule(this.getContext()),
             new SelfInjectingServerResourceModule());
     Router router = new Router(getContext());
-    router.attach(ROOT_URI, RootServerResource.class);
+    Directory directory = new Directory(getContext(), "war:///doc");
+    directory.setIndexName("app.html");
     router.attach(ROOT_URI + "blogs", GaeBlogsServerResource.class);
     router.attach(ROOT_URI + "blogs/{blog_id}", GaeBlogServerResource.class);
     router.attach(ROOT_URI + "files", GaeFilesServerResource.class);
@@ -50,6 +52,8 @@ public class WebdashApplication extends Application {
     router.attach(ROOT_URI + "users/{user_id}", GaeUserServerResource.class);
     router.attach(ROOT_URI + "values", GaeValuesServerResource.class);
     router.attach(ROOT_URI + "values/{value_id}", GaeValueServerResource.class);
+    router.attach("/webdash/", directory);
+    router.attach("/", RootServerResource.class);
     return router;
   }
 }
