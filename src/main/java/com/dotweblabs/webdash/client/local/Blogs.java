@@ -9,7 +9,7 @@ import javax.enterprise.context.Dependent;
 /**
  * Created by Hanan on 1/5/2016.
  */
-@Templated
+@Templated("#content")
 @Page
 @Dependent
 public class Blogs  extends Composite{
