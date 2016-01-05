@@ -14,6 +14,7 @@
 */
 package com.divroll.webdash.server.service.gae;
 
+import com.divroll.webdash.client.shared.Users;
 import com.google.inject.Inject;
 import com.divroll.webdash.client.shared.User;
 import com.divroll.webdash.server.repository.UserRepository;
@@ -67,6 +68,11 @@ public class GaeUserService implements UserService {
             repository.save(user);
         }
         return user;
+    }
+
+    @Override
+    public Users list() {
+        return null;
     }
 
     private void validate(User user) throws ValidationException {

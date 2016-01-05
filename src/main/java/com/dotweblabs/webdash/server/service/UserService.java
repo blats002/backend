@@ -15,6 +15,7 @@
 package com.divroll.webdash.server.service;
 
 import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.client.shared.Users;
 import com.divroll.webdash.server.service.exception.ValidationException;
 
 public interface UserService {
@@ -22,4 +23,5 @@ public interface UserService {
     public User read(String username) throws ValidationException;
     public User update(User user) throws ValidationException;
     public User updateUserEmail(String username, String newEmail) throws ValidationException;
+    public Users list();
 }
