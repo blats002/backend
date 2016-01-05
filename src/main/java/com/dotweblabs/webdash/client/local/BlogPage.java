@@ -12,6 +12,6 @@ import javax.enterprise.context.Dependent;
 @Templated("#content")
 @Page
 @Dependent
-public class Blogs  extends Composite{
+public class BlogPage extends Composite{
 
 }
