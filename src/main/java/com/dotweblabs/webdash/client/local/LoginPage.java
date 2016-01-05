@@ -17,6 +17,7 @@
 package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Footer;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import org.jboss.errai.ui.nav.client.local.DefaultPage;
 import org.jboss.errai.ui.nav.client.local.Page;
@@ -30,7 +31,19 @@ import javax.inject.Inject;
 @Templated("#content")
 @Page(role = DefaultPage.class)
 public class LoginPage extends Composite {
+
     @DataField
     @Inject
     Footer footer;
+
+    @DataField
+    @Inject
+    Button login;
+
 }
+
+
+
+
+
+
