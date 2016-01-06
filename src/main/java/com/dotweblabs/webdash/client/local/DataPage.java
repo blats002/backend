@@ -11,15 +11,20 @@ import org.jboss.errai.ui.shared.api.annotations.Templated;
 import javax.enterprise.context.Dependent;
 
 /**
- * Created by Hanan on 1/5/2016.
+ * Created by Hanan on 1/6/2016.
  */
 @Templated("#content")
 @Page
 @Dependent
-public class AssetsPage extends Composite{
+public class DataPage extends Composite {
+
+
 
     @Inject
     @DataField
-    Button logout;
+    Button saveData;
 
+    @Inject
+    @DataField
+    Button Ok;
 }
