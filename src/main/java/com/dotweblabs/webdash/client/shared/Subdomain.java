@@ -42,4 +42,8 @@ public class Subdomain implements Serializable {
     public void setSubdomain(String subdomain) {
         this.subdomain = subdomain;
     }
+
+    public static Subdomain sample(){
+        return new Subdomain(0L, "demo");
+    }
 }
