@@ -1,5 +1,6 @@
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.local.widgets.NavBar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -33,7 +34,6 @@ public class NewBlogPage extends Composite {
     @Inject
     @DataField
     Button preview;
-
 
     @Inject
     @DataField
