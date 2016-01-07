@@ -313,9 +313,15 @@
             <version>1.19.0</version>
         </dependency>
         <dependency>
+            <groupId>com.carlosbecker</groupId>
+            <artifactId>guice-junit-test-runner</artifactId>
+            <version>1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>3.8.2</version>
+            <version>4.12</version>
         </dependency>
     </dependencies>
     <profiles>
@@ -557,6 +563,10 @@
                         <configuration>
                             <enableJarClasses>false</enableJarClasses>
                             <port>8080</port>
+                            <jvmFlags>
+                                <jvmFlag>-Xdebug</jvmFlag>
+                                <jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>
+                            </jvmFlags>
                         </configuration>
                     </plugin>
                     <plugin>

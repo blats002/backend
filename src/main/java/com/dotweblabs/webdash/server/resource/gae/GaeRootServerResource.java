@@ -18,13 +18,22 @@ package com.divroll.webdash.server.resource.gae;
 
 import com.divroll.webdash.server.BlobFile;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
+import com.divroll.webdash.server.util.GAEUtil;
+import com.divroll.webdash.server.util.RegexHelper;
 import com.google.appengine.api.datastore.Blob;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.restlet.data.MediaType;
+import org.restlet.data.Preference;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.ByteArrayRepresentation;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static com.hunchee.twist.ObjectStoreService.store;
@@ -37,23 +46,43 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private static final Logger LOG
             = Logger.getLogger(GaeFileServerResource.class.getName());
 
+    @Inject
+    @Named("app.domain")
+    private String appDomain;
+
+    @Inject
+    @Named("app.domain.local")
+    private String appDomainLocal;
+
     @Get
-    public ByteArrayRepresentation represent() {
+    public Representation represent() {
+        MediaType type = getRequest().getEntity().getMediaType();
         String path = getRequest().getResourceRef().getPath();
+        String completePath = getRequest().getResourceRef().getHostIdentifier() +
+                getRequest().getResourceRef().getPath();
+        URL url = null;
+        try {
+            url = new URL(completePath);
+            String host = url.getHost();
+            String subdomain = parseSubdomain(host);
+            LOG.info("Complete Path: " + completePath);
+            LOG.info("Host: " + host);
+            LOG.info("Subdomain: " + subdomain);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         if(path.startsWith("/")){
             path = path.substring(1);
         }
         if(path.equals("/") || path.isEmpty()) {
             path = "index.html"; // TODO: Must be set through the dashboard e.g. index.htm or main.html etc.
         }
+        LOG.info("Content-Type: " + type);
         LOG.info("Path: " + path);
         BlobFile blobFile = store().get(BlobFile.class, path);
         if(blobFile != null){
             return new ByteArrayRepresentation(blobFile.getBlob().getBytes(), processMediaType(path));
         }
-//        ByteArrayRepresentation bar
-//                = new ByteArrayRepresentation(your_images_bytes, MediaType.IMAGE_JPEG) ;
-//        getResponse().setEntity(bar);
         return null;
     }
 
@@ -74,4 +103,17 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         }
         return type;
     }
+
+    private String parseSubdomain(String host){
+        String domain;
+        if(GAEUtil.isGaeDev()){
+            domain = appDomainLocal;
+        } else {
+            domain = appDomain;
+        }
+        LOG.info("Parsing Host: " + host);
+        LOG.info("Parsing Domain: " + domain);
+        return RegexHelper.parseSubdomain(host, domain);
+    }
+
 }
