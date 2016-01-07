@@ -24,14 +24,16 @@
             <div class="uk-width-1-1 uk-margin-top">
                 <ul class="uk-nav uk-nav-offcanvas">
                     <li><a id="asset" href="assets.html" >assets</a></li>
-                    <li><a id="blogs" href="" class="uk-active">blogs</a></li>
-                    <li><a id="data" href="">data</a></li>
+                    <li><a id="blogs" href="">blogs</a></li>
+                    <li><a id="data" href=""  class="uk-active">collection</a></li>
+                    <li><a id="domain" href="">domain</a></li>
+                    <li><a id="users" href="">users</a></li>
                 </ul>
             </div>
 
         </div>
         <div class="uk-width-8-10 ">
-            <div class="uk-width-1-1 uk-panel navigation" role="navigation">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
                     <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
@@ -46,7 +48,7 @@
                             <div><h3 class="uk-text-bold uk-margin-bottom-remove ">Data</h3></div>
                         </div>
                         <div class="uk-width-2-3">
-                            <div class="uk-float-right "><a data-uk-modal="{target:'#data-modal'}">Add New Data</a></div>
+                            <div class="uk-float-right "><a data-uk-modal="{target:'#dataModal'}">Add New Data</a></div>
                             <div class="uk-form-icon uk-float-right uk-padding-remove">
                                 <i class="uk-icon-search"></i>
                                 <div class="uk-autocomplete uk-form uk-width-1-1" data-uk-autocomplete="{source:'data.json'}" role="search">
@@ -88,8 +90,8 @@
                                 <td class="uk-width-1-6">g45b8g16r</td>
                                 <td class="uk-width-3-6">{firstname test SAMple content}</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
-                                    <a><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#editData'}"><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
                             <tr>
@@ -97,8 +99,8 @@
                                 <td class="uk-width-1-6">g45b8g16r</td>
                                 <td class="uk-width-3-6">{firstname test SAMple content}</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
-                                    <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a href="" data-uk-modal="{target:'#editData'}"><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
                             <tr>
@@ -106,8 +108,8 @@
                                 <td class="uk-width-1-6">g45b8g16r</td>
                                 <td class="uk-width-3-6">{firstname test SAMple content}</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
-                                    <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a href="" data-uk-modal="{target:'#editData'}"><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
                             <tr>
@@ -115,8 +117,8 @@
                                 <td class="uk-width-1-6">g45b8g16r</td>
                                 <td class="uk-width-3-6">{firstname test SAMple content}</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
-                                    <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a href="" data-uk-modal="{target:'#editData'}"><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
                             </tbody>
@@ -156,7 +158,7 @@
 
     <!--MODAL-->
 
-    <div class="uk-modal" id="data-modal" style="z-index: 99999;" role="modal">
+    <div class="uk-modal" id="dataModal" style="z-index: 99999;" role="modal">
         <div class="uk-modal-dialog  ">
             <a href="" class="uk-modal-close uk-close"></a>
             <h4 class="uk-text-bold">Add Data</h4>
@@ -170,8 +172,22 @@
             <div id="saveData" class="uk-width-1-1 uk-panel"> <button class="uk-align-right uk-margin-top">save</button></div>
         </div>
     </div>
+    <div class="uk-modal" id="editData" style="z-index: 99999;" role="modal">
+        <div class="uk-modal-dialog  ">
+            <a href="" class="uk-modal-close uk-close"></a>
+            <h4 class="uk-text-bold">Add Data</h4>
 
-    <div class="uk-modal" id="data-delete" style="z-index: 99999;" role="modal">
+            <h5 class="uk-margin-bottom-remove">Type</h5>
+            <input type="text" placeholder="" class="uk-width-1-1"/>
+            <h5 class="uk-margin-remove">Properties</h5>
+            <textarea type="text" placeholder="" class="uk-width-1-1"></textarea>
+            <h5 class="uk-margin-remove text-blue">Recommend 156 characters</h5>
+
+            <div id="save" class="uk-width-1-1 uk-panel"> <button class="uk-align-right uk-margin-top">save</button></div>
+        </div>
+    </div>
+
+    <div class="uk-modal" id="dataDelete" style="z-index: 99999;" role="modal">
         <div class="uk-modal-dialog" style="width: 450px;">
             <a href="" class="uk-modal-close uk-close"></a>
             <div class="">
@@ -179,8 +195,8 @@
                 <h4 class="uk-text-bold uk-text-center uk-margin-top">Are you sure that you want delete this item?</h4>
                 <div class="uk-width-1-1 uk-panel uk-margin-large-top">
 
-                    <button id="cancel" class="uk-float-right uk-modal-close uk-margin-left">Cancel</button>
-                    <button id="yes" class="uk-float-right ">Yes</button>
+                    <button class="uk-float-right uk-modal-close uk-margin-left">Cancel</button>
+                    <button class="uk-float-right ">Yes</button>
                 </div>
             </div>
         </div>

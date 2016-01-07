@@ -36,13 +36,15 @@
                 <ul class="uk-nav uk-nav-offcanvas">
                     <li><a id="asset" href="assets.html" >assets</a></li>
                     <li><a id="blogs" href="" class="uk-active">blogs</a></li>
-                    <li><a id="data" href="">data</a></li>
+                    <li><a id="data" href="">collection</a></li>
+                    <li><a id="domain" href="">domain</a></li>
+                    <li><a id="users" href="">users</a></li>
                 </ul>
             </div>
 
         </div>
         <div class="uk-width-8-10 ">
-            <div class="uk-width-1-1 uk-panel navigation" role="navigation">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
                     <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
@@ -91,12 +93,12 @@
                             <div id="progressbar" class="uk-progress uk-hidden">
                                 <div class="uk-progress-bar" style="width: 0%;">0%</div>
                             </div>
-                            <div class="uk-hidden"><img style="width: 100%;" class="uk-thumbnail-mini" src="placeholder1.jpg" alt=""/></div>
+
                             <div class=" uk-width-1-1 ">
                                 <h4 class="uk-margin-remove uk-text-bold">Published Date</h4>
                                 <input class="uk-width-1-1  " type="text" placeholder="Select Date" data-uk-datepicker="{format:'DD.MM.YYYY'}"/>
                                 <h4 class="uk-margin-remove uk-text-bold">Tags</h4>
-                                <input id="tag" class="uk-width-1-1  " type="text" placeholder=""/>
+                                <input id="tag" class="  " type="text" placeholder=""/>
                                 <h4 class="uk-margin-remove uk-text-bold">Author</h4>
                                 <div class="uk-autocomplete uk-form uk-width-1-1" data-uk-autocomplete="{source:'author.json'}" role="autocomplete">
                                     <input type="text" class="uk-width-1-1">
@@ -113,7 +115,7 @@
                                             </ul>
                                      </script>
                                 </div>
-                                <button id="MetaData" class="uk-align-center uk-margin-top" data-uk-modal="{target:'#meta'}">meta data</button>
+                                <button id="metadata" class="uk-align-center uk-margin-top" data-uk-modal="{target:'#meta'}">meta data</button>
                             </div>
                         </div>
                     </div>
@@ -149,7 +151,7 @@
             <textarea type="text" placeholder="" class="uk-width-1-1"></textarea>
             <h6 class="uk-margin-remove text-blue uk-text-muted">Recommend 156 characters</h6>
 
-            <div class="uk-width-1-1 uk-panel"><button id="save" class="uk-align-right uk-margin-top">save</button></div>
+            <div class="uk-width-1-1 uk-panel"><button class="uk-align-right uk-margin-top">save</button></div>
 
         </div>
     </div>
@@ -176,9 +178,9 @@
 
     $(function() {
 
-        $('#tags_1').tagsInput({width:'auto'});
+
         $('#tag').tagsInput({
-            width: 'auto',
+
             onChange: function(elem, elem_tags)
             {
                 var languages = ['php','ruby','javascript'];
@@ -188,12 +190,6 @@
                         $(this).css('background-color', 'yellow');
                 });
             }
-        });
-        $('#tags_3').tagsInput({
-            width: 'auto',
-
-            //autocomplete_url:'test/fake_plaintext_endpoint.html' //jquery.autocomplete (not jquery ui)
-            autocomplete_url:'test/fake_json_endpoint.html' // jquery ui autocomplete requires a json endpoint
         });
 
 
@@ -243,6 +239,12 @@
                 drop   = UIkit.uploadDrop($("#upload-drop"), settings);
     });
 
+</script>
+<script>
+    $(document).ready(function(){
+       // $("#tag_tag").width('100%');
+        $("#tag_tag").addClass("uk-width-1-1");
+    });
 </script>
 </body>
 </html>

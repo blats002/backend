@@ -1,7 +1,7 @@
 package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Footer;
-import com.divroll.webdash.client.local.widgets.NavBar;
+import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -19,6 +19,9 @@ import javax.enterprise.context.Dependent;
 @Page
 public class AssetsPage extends Composite{
 
+    @Inject
+    @DataField
+    Navbar navbar;
 
     @Inject
     @DataField
@@ -26,12 +29,8 @@ public class AssetsPage extends Composite{
 
     @Inject
     @DataField
-    NavBar navBar;
-
-    @Inject
-    @DataField
     Button logout;
 
-    }
+}
 
 

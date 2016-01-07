@@ -17,17 +17,17 @@ import javax.enterprise.context.Dependent;
  */
 @Dependent
 @Templated
-public class NavBar extends Composite {
+public class Navbar extends Composite {
 
     @Inject
     @DataField
     Anchor settings;
 
     @Inject
-    TransitionTo<SettingPage> Setting;
+    TransitionTo<SettingPage> settingsPage;
 
-    @EventHandler ("settings")
+    @EventHandler("settings")
     public void settings(ClickEvent event){
-        Setting.go();
+        settingsPage.go();
     }
 }

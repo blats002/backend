@@ -17,7 +17,7 @@
 <body>
 <div id="content" class="uk-width-1-1 uk-panel   " >
     <div class="uk-grid uk-grid-collapse uk-height-viewport">
-        <div id ="menu" class="uk-width-2-10 sidebar ">
+        <div id="menu" class="uk-width-2-10 sidebar ">
             <div class="account-name">
                 <h3 class="uk-text-center uk-margin-bottom-remove">James Bond</h3>
             </div>
@@ -25,13 +25,15 @@
                 <ul class="uk-nav uk-nav-offcanvas">
                     <li><a id="asset" href="assets.html" >assets</a></li>
                     <li><a id="blogs" href="" class="uk-active">blogs</a></li>
-                    <li><a id="data" href="">data</a></li>
+                    <li><a id="data" href="">collection</a></li>
+                    <li><a id="domain" href="">domain</a></li>
+                    <li><a id="users" href="">users</a></li>
                 </ul>
             </div>
 
         </div>
         <div class="uk-width-8-10 ">
-            <div class="uk-width-1-1 uk-panel navigation" role="navigation">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
                     <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
@@ -93,7 +95,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">Juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -104,7 +106,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -115,7 +117,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -126,7 +128,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -158,7 +160,7 @@
             </div>
             <div class="uk-width-8-10">
                 <div class="uk-width-7-10 uk-container-center">
-                    <button id="saveBlog" class=" uk-align-right uk-margin-bottom-remove uk-hidden">save</button>
+                    <button class=" uk-align-right uk-margin-bottom-remove uk-hidden">save</button>
                 </div>
 
             </div>
@@ -166,7 +168,7 @@
 
     </div>
 
-    <div class="uk-modal" id="data-delete" style="z-index: 99999;" role="modal">
+    <div class="uk-modal" id="dataDelete" style="z-index: 99999;" role="modal">
         <div class="uk-modal-dialog" style="width: 450px;">
             <a href="" class="uk-modal-close uk-close"></a>
             <div class="">
@@ -174,8 +176,8 @@
                 <h4 class="uk-text-bold uk-text-center uk-margin-top">Are you sure that you want delete this item?</h4>
                 <div class="uk-width-1-1 uk-panel uk-margin-large-top">
 
-                    <button id="cancel" class="uk-float-right uk-modal-close uk-margin-left">Cancel</button>
-                    <button id="yes" class="uk-float-right ">Yes</button>
+                    <button class="uk-float-right uk-modal-close uk-margin-left">Cancel</button>
+                    <button class="uk-float-right ">Yes</button>
                 </div>
             </div>
         </div>
