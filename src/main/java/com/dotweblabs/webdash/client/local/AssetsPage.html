@@ -15,13 +15,15 @@
     <link rel="stylesheet" href="uikit-2.24.2/css/components/progress.almost-flat.min.css">
     <link rel="stylesheet" href="uikit-2.24.2/css/components/form-file.almost-flat.css">
     <link rel="stylesheet" href="uikit-2.24.2/css/components/form-file.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/autocomplete.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/autocomplete.almost-flat.min.css">
     <link rel="stylesheet" href="fonts/proxima-nova.css">
     <link rel="stylesheet" href="css/template.css">
 </head>
 <body>
 <div id="content" class="uk-width-1-1 uk-panel   " >
     <div class="uk-grid uk-grid-collapse uk-height-viewport">
-        <div class="uk-width-2-10 sidebar ">
+        <div id ="menu" class="uk-width-2-10 sidebar ">
             <div class="account-name">
                 <h3 class="uk-text-center uk-margin-bottom-remove">James Bond</h3>
             </div>
@@ -34,7 +36,7 @@
             </div>
 
         </div>
-        <div class="uk-width-8-10 ">
+        <div id="navbar" class="uk-width-8-10 ">
             <div class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
@@ -50,10 +52,25 @@
                             <div><h3 class="uk-text-bold uk-margin-bottom-remove ">Assets</h3></div>
                         </div>
                         <div class="uk-width-2-3">
-                            <div id="Upload" class="uk-float-right "><a data-uk-modal="{target:'#upload-asset'}">Upload Assets</a></div>
+                            <div class="uk-float-right "><a data-uk-modal="{target:'#upload-asset'}">Upload Assets</a></div>
                             <div class="uk-form-icon uk-float-right uk-padding-remove">
                                 <i class="uk-icon-search"></i>
-                                <input id="searchAsset" type="text" class=" uk-margin-bottom-remove search uk-float-right uk-margin-right" placeholder="Search assets"/>
+                                <div class="uk-autocomplete uk-form uk-width-1-1" data-uk-autocomplete="{source:'asset.json'}" role="search">
+                                    <input id="searchAsset" type="text" class="  search uk-float-right uk-margin-right" placeholder="Search assets"/>
+                                    <script type="text/autocomplete">
+                                            <ul class="uk-nav uk-nav-autocomplete uk-autocomplete-results uk-width-1-1 uk-margin-remove">
+                                                {{~items}}
+                                                <li data-value="{{ $item.value }}">
+                                                    <a>
+                                                    <!--    {{ $item.title }}-->
+                                                        <div>{{{ $item.text }}}</div>
+                                                    </a>
+                                                </li>
+                                                {{/items}}
+                                            </ul>
+                                     </script>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -159,20 +176,31 @@
     </div>
 
     <div class="uk-modal" id="data-delete" style="z-index: 99999;" role="modal">
-        <div class="uk-modal-dialog">
+        <div class="uk-modal-dialog" style="width: 450px;">
             <a href="" class="uk-modal-close uk-close"></a>
-            <div class="uk-grid uk-container-center">
-                <i class="uk-icon-question uk-icon-medium uk-margin-left uk-border-circle" style="border-radius:100%;padding:10px;background-color: #009dd8;"></i>
-                <h4 class="uk-text-bold uk-text-center uk-margin-top">Are you sure that you want delete this item(s)?</h4>
-                <div class="uk-width-1-1 uk-panel"> <button class="uk-align-right uk-margin-top">Ok</button></div>
+            <div class="">
+                <!--<i class="uk-icon-question uk-icon-medium uk-margin-left uk-border-circle" style="border-radius:100%;padding:10px;background-color: #009dd8;"></i>-->
+                <h4 class="uk-text-bold uk-text-center uk-margin-top">Are you sure that you want delete this item?</h4>
+                <div class="uk-width-1-1 uk-panel uk-margin-large-top">
+
+                    <button class="uk-float-right uk-modal-close uk-margin-left">Cancel</button>
+                    <button class="uk-float-right ">Yes</button>
+                </div>
             </div>
         </div>
     </div>
     <!--end MODAL-->
 </div>
+
+<!--Footer-->
+<div id="footer" class="uk-width-1-1 uk-panel uk-position-bottom">
+    <h4 class="uk-text-center">© 2016 &nbsp;Divroll</h4>
+</div>
+
 <script>window.jQuery || document.write('<script  src="uikit-2.24.2/js/jquery-1.10.2.min.js"><\/script>')</script>
 <script type="text/javascript" src="uikit-2.24.2/js/uikit.min.js"></script>
 <script type="text/javascript" src="uikit-2.24.2/js/components/upload.min.js"></script>
+<script type="text/javascript" src="uikit-2.24.2/js/components/autocomplete.min.js"></script>
 <script>
 
     $(function(){
