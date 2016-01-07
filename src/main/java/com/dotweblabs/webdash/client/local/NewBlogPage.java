@@ -20,7 +20,7 @@ public class NewBlogPage extends Composite {
 
     @Inject
     @DataField
-    Button MetaData;
+    Button metadata;
 
     @Inject
     @DataField

@@ -18,13 +18,8 @@ import javax.enterprise.context.Dependent;
 @Dependent
 public class DataPage extends Composite {
 
-
-
     @Inject
     @DataField
     Button saveData;
 
-    @Inject
-    @DataField
-    Button Ok;
 }

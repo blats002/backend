@@ -20,16 +20,4 @@ import javax.enterprise.context.Dependent;
 @Dependent
 public class BlogPage extends Composite{
 
-
-
-
-    @Inject
-    @DataField
-    Button saveBlog;
-
-    @Inject
-    @DataField
-    Button Ok;
-
-
 }
