@@ -28,6 +28,7 @@ public class NavBar extends Composite {
 
     @EventHandler ("settings")
     public void settings(ClickEvent event){
+        event.preventDefault();
         Setting.go();
     }
 }

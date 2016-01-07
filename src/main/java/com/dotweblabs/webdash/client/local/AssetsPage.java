@@ -1,6 +1,7 @@
 package com.divroll.webdash.client.local;
 
 
+import com.divroll.webdash.client.local.widgets.NavBar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
@@ -21,6 +22,11 @@ public class AssetsPage extends Composite{
     @Inject
     @DataField
     Sidebar menu;
+
+    @Inject
+    @DataField
+    NavBar navBar;
+
     }
 
 

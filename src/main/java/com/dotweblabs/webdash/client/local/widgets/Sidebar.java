@@ -42,7 +42,7 @@ public class Sidebar extends Composite {
     @Inject TransitionTo<AssetsPage> assets;
     @Inject TransitionTo<DataPage> Data;
     @Inject TransitionTo<BlogPage> blog;
-    @Inject TransitionTo<LoginPage> Login;
+    @Inject TransitionTo<LoginPage> Logout;
 
 
     @EventHandler ("asset")
@@ -64,7 +64,7 @@ public class Sidebar extends Composite {
     @EventHandler ("logout")
     public void logout (ClickEvent event){
         event.preventDefault();
-        Login.go();
+        Logout.go();
     }
 }
 
