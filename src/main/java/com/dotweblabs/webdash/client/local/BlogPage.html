@@ -9,13 +9,15 @@
     <link rel="stylesheet" href="uikit-2.24.2/css/uikit.min.css">
     <link rel="stylesheet" href="uikit-2.24.2/css/uikit.almost-flat.css">
     <link rel="stylesheet" href="uikit-2.24.2/css/uikit.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/autocomplete.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/autocomplete.almost-flat.min.css">
     <link rel="stylesheet" href="fonts/proxima-nova.css">
     <link rel="stylesheet" href="css/template.css">
 </head>
 <body>
 <div id="content" class="uk-width-1-1 uk-panel   " >
     <div class="uk-grid uk-grid-collapse uk-height-viewport">
-        <div class="uk-width-2-10 sidebar ">
+        <div id="menu" class="uk-width-2-10 sidebar ">
             <div class="account-name">
                 <h3 class="uk-text-center uk-margin-bottom-remove">James Bond</h3>
             </div>
@@ -23,13 +25,15 @@
                 <ul class="uk-nav uk-nav-offcanvas">
                     <li><a id="asset" href="assets.html" >assets</a></li>
                     <li><a id="blogs" href="" class="uk-active">blogs</a></li>
-                    <li><a id="data" href="">data</a></li>
+                    <li><a id="data" href="">collection</a></li>
+                    <li><a id="domain" href="">domain</a></li>
+                    <li><a id="users" href="">users</a></li>
                 </ul>
             </div>
 
         </div>
         <div class="uk-width-8-10 ">
-            <div class="uk-width-1-1 uk-panel navigation" role="navigation">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
                     <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
@@ -47,7 +51,22 @@
                             <div class="uk-float-right "><a href="new-blog.html ">Add New Blog</a></div>
                             <div class="uk-form-icon uk-float-right uk-padding-remove">
                                 <i class="uk-icon-search"></i>
-                                <input id="searchAsset" type="text" class=" uk-margin-bottom-remove search uk-float-right uk-margin-right" placeholder="Search blogs"/>
+                                <div class="uk-autocomplete uk-form uk-width-1-1" data-uk-autocomplete="{source:'blog.json'}" role="search">
+                                    <input id="searchAsset" type="text" class="  search uk-float-right uk-margin-right" placeholder="Search blogs"/>
+                                    <script type="text/autocomplete">
+                                            <ul class="uk-nav uk-nav-autocomplete uk-autocomplete-results uk-width-1-1 uk-margin-remove">
+                                                {{~items}}
+                                                <li data-value="{{ $item.value }}">
+                                                    <a>
+                                                    <!--    {{ $item.title }}-->
+                                                        <div>{{{ $item.text }}}</div>
+                                                    </a>
+                                                </li>
+                                                {{/items}}
+                                            </ul>
+                                     </script>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -76,7 +95,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">Juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -87,7 +106,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -98,7 +117,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -109,7 +128,7 @@
                                 <td class="uk-width-1-6">Simple blog</td>
                                 <td class="uk-width-1-6">juandelacruz</td>
                                 <td class="uk-width-1-6">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -149,13 +168,17 @@
 
     </div>
 
-    <div class="uk-modal" id="data-delete" style="z-index: 99999;" role="modal">
-        <div class="uk-modal-dialog">
+    <div class="uk-modal" id="dataDelete" style="z-index: 99999;" role="modal">
+        <div class="uk-modal-dialog" style="width: 450px;">
             <a href="" class="uk-modal-close uk-close"></a>
-            <div class="uk-grid uk-container-center">
-                <i class="uk-icon-question uk-icon-medium uk-margin-left uk-border-circle" style="border-radius:100%;padding:10px;background-color: #009dd8;"></i>
-                <h4 class="uk-text-bold uk-text-center uk-margin-top">Are you sure that you want delete this item(s)?</h4>
-                <div class="uk-width-1-1 uk-panel"> <button class="uk-align-right uk-margin-top">Ok</button></div>
+            <div class="">
+                <!--<i class="uk-icon-question uk-icon-medium uk-margin-left uk-border-circle" style="border-radius:100%;padding:10px;background-color: #009dd8;"></i>-->
+                <h4 class="uk-text-bold uk-text-center uk-margin-top">Are you sure that you want delete this item?</h4>
+                <div class="uk-width-1-1 uk-panel uk-margin-large-top">
+
+                    <button class="uk-float-right uk-modal-close uk-margin-left">Cancel</button>
+                    <button class="uk-float-right ">Yes</button>
+                </div>
             </div>
         </div>
     </div>
@@ -164,5 +187,6 @@
 </div>
 <script>window.jQuery || document.write('<script  src="uikit-2.24.2/js/jquery-1.10.2.min.js"><\/script>')</script>
 <script type="text/javascript" src="uikit-2.24.2/js/uikit.min.js"></script>
+<script type="text/javascript" src="uikit-2.24.2/js/components/autocomplete.min.js"></script>
 </body>
 </html>

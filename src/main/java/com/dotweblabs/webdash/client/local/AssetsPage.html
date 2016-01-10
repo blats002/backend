@@ -23,7 +23,7 @@
 <body>
 <div id="content" class="uk-width-1-1 uk-panel   " >
     <div class="uk-grid uk-grid-collapse uk-height-viewport">
-        <div class="uk-width-2-10 sidebar ">
+        <div id="menu" class="uk-width-2-10 sidebar ">
             <div class="account-name">
                 <h3 class="uk-text-center uk-margin-bottom-remove">James Bond</h3>
             </div>
@@ -39,7 +39,7 @@
 
         </div>
         <div class="uk-width-8-10 ">
-            <div class="uk-width-1-1 uk-panel navigation" role="navigation">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
                     <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
@@ -54,7 +54,7 @@
                             <div><h3 class="uk-text-bold uk-margin-bottom-remove ">Assets</h3></div>
                         </div>
                         <div class="uk-width-2-3">
-                            <div class="uk-float-right "><a data-uk-modal="{target:'#upload-asset'}">Upload Assets</a></div>
+                            <div class="uk-float-right "><a data-uk-modal="{target:'#uploadAsset'}">Upload Assets</a></div>
                             <div class="uk-form-icon uk-float-right uk-padding-remove">
                                 <i class="uk-icon-search"></i>
                                 <div class="uk-autocomplete uk-form uk-width-1-1" data-uk-autocomplete="{source:'asset.json'}" role="search">
@@ -96,7 +96,7 @@
                                 <td class="uk-width-1-5">12/12/12 12:12AM</td>
                                 <td class="uk-width-1-5">Folder</td>
                                 <td class="uk-width-1-5">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -105,7 +105,7 @@
                                 <td class="uk-width-1-5">12/12/12 12:12AM</td>
                                 <td class="uk-width-1-5">Folder</td>
                                 <td class="uk-width-1-5">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -114,7 +114,7 @@
                                 <td class="uk-width-1-5">12/12/12 12:12AM</td>
                                 <td class="uk-width-1-5">Folder</td>
                                 <td class="uk-width-1-5">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -123,7 +123,7 @@
                                 <td class="uk-width-1-5">12/12/12 12:12AM</td>
                                 <td class="uk-width-1-5">Folder</td>
                                 <td class="uk-width-1-5">
-                                    <a data-uk-modal="{target:'#data-delete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
+                                    <a data-uk-modal="{target:'#dataDelete'}"href=""><i class="uk-icon-close uk-align-right uk-margin-bottom-remove"></i></a>
                                     <a href=""><i class="uk-icon-pencil uk-align-right uk-margin-bottom-remove"></i></a>
                                 </td>
                             </tr>
@@ -162,7 +162,7 @@
     </div>
 
     <!--MODAL-->
-    <div class="uk-modal" id="upload-asset" style="z-index: 99999;" role="modal">
+    <div class="uk-modal" id="uploadAsset" style="z-index: 99999;" role="modal">
         <div class="uk-modal-dialog  ">
             <a href="" class="uk-modal-close uk-close"></a>
             <h4 class="uk-text-bold">Upload Asset File</h4>
@@ -177,7 +177,7 @@
         </div>
     </div>
 
-    <div class="uk-modal" id="data-delete" style="z-index: 99999;" role="modal">
+    <div class="uk-modal" id="dataDelete" style="z-index: 99999;" role="modal">
         <div class="uk-modal-dialog" style="width: 450px;">
             <a href="" class="uk-modal-close uk-close"></a>
             <div class="">
