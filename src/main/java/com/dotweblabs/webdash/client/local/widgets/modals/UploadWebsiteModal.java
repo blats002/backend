@@ -1,5 +1,7 @@
 package com.divroll.webdash.client.local.widgets.modals;
 
+import com.divroll.webdash.client.local.events.AssetsEvents;
+import com.divroll.webdash.client.local.events.Form;
 import com.divroll.webdash.client.resources.js.Resources;
 import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -15,10 +17,11 @@ import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
-@Dependent
+@ApplicationScoped
 @Templated
 public class UploadWebsiteModal extends Composite {
 
@@ -29,6 +32,9 @@ public class UploadWebsiteModal extends Composite {
     @Inject
     @DataField
     Button upload;
+
+    @Inject
+    AssetsEvents events;
 
     @PostConstruct
     public void buildUI(){
@@ -47,6 +53,7 @@ public class UploadWebsiteModal extends Composite {
         panel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
             @Override
             public void onSubmitComplete(FormPanel.SubmitCompleteEvent submitCompleteEvent) {
+                submitComplete(submitCompleteEvent.getResults());
                 toggle();
             }
         });
@@ -56,6 +63,10 @@ public class UploadWebsiteModal extends Composite {
     public void upload(ClickEvent event){
         event.preventDefault();
         panel.submit();
+    }
+
+    public void submitComplete(String result){
+        events.fireSubmittedEvent(new Form(result));
     }
 
     public static native void toggle()/*-{

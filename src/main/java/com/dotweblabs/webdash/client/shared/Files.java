@@ -7,16 +7,16 @@ import java.util.List;
  * Created by Kerby on 1/5/2016.
  */
 public class Files implements Serializable {
-    private List<Blog> list;
+    private List<File> list;
     private String cursor;
 
     public Files(){};
 
-    public List<Blog> getList() {
+    public List<File> getList() {
         return list;
     }
 
-    public void setList(List<Blog> list) {
+    public void setList(List<File> list) {
         this.list = list;
     }
 
