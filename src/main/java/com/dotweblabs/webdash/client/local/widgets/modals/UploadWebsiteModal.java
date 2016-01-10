@@ -30,12 +30,6 @@ public class UploadWebsiteModal extends Composite {
     @DataField
     Button upload;
 
-//    @PageShown
-//    public void ready(){
-//        ScriptInjector.fromString(Resources.INSTANCE.assetsJS().getText())
-//                .setWindow(ScriptInjector.TOP_WINDOW).inject();
-//    }
-
     @PostConstruct
     public void buildUI(){
         panel.setAction("/rest/uploads?upload_type=assets_zip");
@@ -44,11 +38,6 @@ public class UploadWebsiteModal extends Composite {
         final FileUpload upload = new FileUpload();
         upload.setName("uploadFormElement");
         panel.add(upload);
-//        panel.add(new Button("Submit", new ClickHandler() {
-//            public void onClick(ClickEvent event) {
-//                panel.submit();
-//            }
-//        }));
         panel.addSubmitHandler(new FormPanel.SubmitHandler() {
             @Override
             public void onSubmit(FormPanel.SubmitEvent submitEvent) {
@@ -58,7 +47,7 @@ public class UploadWebsiteModal extends Composite {
         panel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
             @Override
             public void onSubmitComplete(FormPanel.SubmitCompleteEvent submitCompleteEvent) {
-
+                toggle();
             }
         });
     }
@@ -68,5 +57,14 @@ public class UploadWebsiteModal extends Composite {
         event.preventDefault();
         panel.submit();
     }
+
+    public static native void toggle()/*-{
+        var modal = $wnd.UIkit.modal("#uploadAsset");
+        if ( modal.isActive() ) {
+            modal.hide();
+        } else {
+            modal.show();
+        }
+    }-*/;
 
 }
