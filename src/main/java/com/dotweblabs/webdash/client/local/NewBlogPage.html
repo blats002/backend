@@ -20,13 +20,15 @@
     <link rel="stylesheet" href="uikit-2.24.2/css/components/datepicker.almost-flat.css">
     <link rel="stylesheet" href="uikit-2.24.2/css/components/form-select.almost-flat.css">
     <link rel="stylesheet" href="uikit-2.24.2/css/components/form-select.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/autocomplete.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/autocomplete.almost-flat.min.css">
     <link rel="stylesheet" href="fonts/proxima-nova.css">
     <link rel="stylesheet" href="css/template.css">
 </head>
 <body>
 <div id="content" class="uk-width-1-1 uk-panel   " >
     <div class="uk-grid uk-grid-collapse uk-height-viewport">
-        <div class="uk-width-2-10 sidebar ">
+        <div id="menu" class="uk-width-2-10 sidebar ">
             <div class="account-name">
                 <h3 class="uk-text-center uk-margin-bottom-remove">James Bond</h3>
             </div>
@@ -34,13 +36,15 @@
                 <ul class="uk-nav uk-nav-offcanvas">
                     <li><a id="asset" href="assets.html" >assets</a></li>
                     <li><a id="blogs" href="" class="uk-active">blogs</a></li>
-                    <li><a id="data" href="">data</a></li>
+                    <li><a id="data" href="">collection</a></li>
+                    <li><a id="domain" href="">domain</a></li>
+                    <li><a id="users" href="">users</a></li>
                 </ul>
             </div>
 
         </div>
         <div class="uk-width-8-10 ">
-            <div class="uk-width-1-1 uk-panel navigation" role="navigation">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
                 <nav class="uk-navbar ">
                     <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
                     <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
@@ -89,15 +93,29 @@
                             <div id="progressbar" class="uk-progress uk-hidden">
                                 <div class="uk-progress-bar" style="width: 0%;">0%</div>
                             </div>
-                            <div class="uk-hidden"><img style="width: 100%;" class="uk-thumbnail-mini" src="placeholder1.jpg" alt=""/></div>
+
                             <div class=" uk-width-1-1 ">
                                 <h4 class="uk-margin-remove uk-text-bold">Published Date</h4>
                                 <input class="uk-width-1-1  " type="text" placeholder="Select Date" data-uk-datepicker="{format:'DD.MM.YYYY'}"/>
                                 <h4 class="uk-margin-remove uk-text-bold">Tags</h4>
-                                <input class="uk-width-1-1  " type="text" placeholder=""/>
+                                <input id="tag" class="  " type="text" placeholder=""/>
                                 <h4 class="uk-margin-remove uk-text-bold">Author</h4>
-                                <input class="uk-width-1-1  " type="text" placeholder=""/>
-                                <button id ="MetaData" class="uk-align-center uk-margin-top" data-uk-modal="{target:'#meta'}">meta data</button>
+                                <div class="uk-autocomplete uk-form uk-width-1-1" data-uk-autocomplete="{source:'author.json'}" role="autocomplete">
+                                    <input type="text" class="uk-width-1-1">
+                                    <script type="text/autocomplete">
+                                            <ul class="uk-nav uk-nav-autocomplete uk-autocomplete-results uk-width-1-1">
+                                                {{~items}}
+                                                <li data-value="{{ $item.value }}">
+                                                    <a>
+                                                    <!--    {{ $item.title }}-->
+                                                        <div>{{{ $item.text }}}</div>
+                                                    </a>
+                                                </li>
+                                                {{/items}}
+                                            </ul>
+                                     </script>
+                                </div>
+                                <button id="metadata" class="uk-align-center uk-margin-top" data-uk-modal="{target:'#meta'}">meta data</button>
                             </div>
                         </div>
                     </div>
@@ -143,7 +161,46 @@
 <script type="text/javascript" src="uikit-2.24.2/js/components/upload.min.js"></script>
 <script type="text/javascript" src="uikit-2.24.2/js/components/datepicker.min.js"></script>
 <script type="text/javascript" src="uikit-2.24.2/js/components/form-select.min.js"></script>
+<script type="text/javascript" src="uikit-2.24.2/js/components/autocomplete.min.js"></script>
+<script type="text/javascript" src="js/tags.js"></script>
+<script type="text/javascript">
 
+    function onAddTag(tag) {
+        alert("Added a tag: " + tag);
+    }
+    function onRemoveTag(tag) {
+        alert("Removed a tag: " + tag);
+    }
+
+    function onChangeTag(input,tag) {
+        alert("Changed a tag: " + tag);
+    }
+
+    $(function() {
+
+
+        $('#tag').tagsInput({
+
+            onChange: function(elem, elem_tags)
+            {
+                var languages = ['php','ruby','javascript'];
+                $('.tag', elem_tags).each(function()
+                {
+                    if($(this).text().search(new RegExp('\\b(' + languages.join('|') + ')\\b')) >= 0)
+                        $(this).css('background-color', 'yellow');
+                });
+            }
+        });
+
+
+// Uncomment this line to see the callback functions in action
+//			$('input.tags').tagsInput({onAddTag:onAddTag,onRemoveTag:onRemoveTag,onChange: onChangeTag});
+
+// Uncomment this line to see an input with no interface for adding new tags.
+//			$('input.tags').tagsInput({interactive:false});
+    });
+
+</script>
 <script>
 
     $(function(){
@@ -182,6 +239,12 @@
                 drop   = UIkit.uploadDrop($("#upload-drop"), settings);
     });
 
+</script>
+<script>
+    $(document).ready(function(){
+       // $("#tag_tag").width('100%');
+        $("#tag_tag").addClass("uk-width-1-1");
+    });
 </script>
 </body>
 </html>

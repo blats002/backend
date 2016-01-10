@@ -1,6 +1,8 @@
 package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Footer;
+import com.divroll.webdash.client.local.widgets.Navbar;
+import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
@@ -18,13 +20,12 @@ import javax.enterprise.context.Dependent;
 @Dependent
 public class DataPage extends Composite {
 
-
+    @Inject
+    @DataField
+    Navbar navbar;
 
     @Inject
     @DataField
-    Button saveData;
+    Sidebar menu;
 
-    @Inject
-    @DataField
-    Button Ok;
 }
