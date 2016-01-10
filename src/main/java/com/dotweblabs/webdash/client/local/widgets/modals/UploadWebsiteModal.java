@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.Button;
 import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
+import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 
 import javax.annotation.PostConstruct;
@@ -25,6 +26,10 @@ public class UploadWebsiteModal extends Composite {
     @DataField
     FormPanel panel;
 
+    @Inject
+    @DataField
+    Button upload;
+
 //    @PageShown
 //    public void ready(){
 //        ScriptInjector.fromString(Resources.INSTANCE.assetsJS().getText())
@@ -34,6 +39,8 @@ public class UploadWebsiteModal extends Composite {
     @PostConstruct
     public void buildUI(){
         panel.setAction("/rest/uploads?upload_type=assets_zip");
+        panel.setMethod(FormPanel.METHOD_POST);
+        panel.setEncoding(FormPanel.ENCODING_MULTIPART);
         final FileUpload upload = new FileUpload();
         upload.setName("uploadFormElement");
         panel.add(upload);
@@ -54,6 +61,12 @@ public class UploadWebsiteModal extends Composite {
 
             }
         });
+    }
+
+    @EventHandler("upload")
+    public void upload(ClickEvent event){
+        event.preventDefault();
+        panel.submit();
     }
 
 }
