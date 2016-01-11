@@ -66,11 +66,13 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
                     && !password.isEmpty()){
                 User user = userService.read(username);
                 if(user != null){
-                    String passwordHash = user.getPassword();
+                    String passwordHash =  user.getPassword();
                     LOG.info("Password: " + password);
                     if(BCrypt.checkpw(password, passwordHash)){
+                        setStatus(Status.SUCCESS_OK);
                         return webTokenService.createToken(user.getId());
                     } else {
+                        LOG.info("Unable to login: " + username);
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "Username password is invalid");
                     }
                 } else {
@@ -88,7 +90,7 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
     }
 
     private void userBootstrap(){
-        User defaultUser = new User(defaultUsername, BCrypt.hashpw(password, BCrypt.gensalt()));
+        User defaultUser = new User(defaultUsername, BCrypt.hashpw(defaultPassword, BCrypt.gensalt()));
         try {
             userService.saveNew(defaultUser);
         } catch (ValidationException e) {
