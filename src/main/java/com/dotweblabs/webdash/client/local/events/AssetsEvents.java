@@ -1,6 +1,7 @@
 package com.divroll.webdash.client.local.events;
 
 import com.divroll.webdash.client.local.common.Submitted;
+import com.divroll.webdash.client.local.events.activity.AssetsActivity;
 import com.divroll.webdash.client.shared.Files;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -10,11 +11,12 @@ import javax.inject.Inject;
 
 @ApplicationScoped
 public class AssetsEvents {
+
     @Inject
     @Submitted
-    Event<Form> submitted;
+    Event<AssetsActivity> submitted;
 
-    public void fireSubmittedEvent(Form payload){
+    public void fireSubmittedEvent(AssetsActivity payload){
         submitted.fire(payload);
     }
 }

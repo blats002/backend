@@ -1,7 +1,7 @@
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.local.events.activity.AssetsActivity;
 import com.divroll.webdash.client.local.common.Submitted;
-import com.divroll.webdash.client.local.events.Form;
 import com.divroll.webdash.client.local.widgets.Footer;
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
@@ -50,7 +50,7 @@ public class AssetsPage extends Composite {
 
     }
 
-    public void renderTable(@Observes @Submitted Form payload){
+    public void renderTable(@Observes @Submitted AssetsActivity payload){
         Window.alert("Rendering Table: " + payload);
     }
 

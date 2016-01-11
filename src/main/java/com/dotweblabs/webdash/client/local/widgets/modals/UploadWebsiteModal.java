@@ -1,7 +1,7 @@
 package com.divroll.webdash.client.local.widgets.modals;
 
 import com.divroll.webdash.client.local.events.AssetsEvents;
-import com.divroll.webdash.client.local.events.Form;
+import com.divroll.webdash.client.local.events.activity.AssetsActivity;
 import com.divroll.webdash.client.resources.js.Resources;
 import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -53,7 +53,7 @@ public class UploadWebsiteModal extends Composite {
         panel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
             @Override
             public void onSubmitComplete(FormPanel.SubmitCompleteEvent submitCompleteEvent) {
-                submitComplete(submitCompleteEvent.getResults());
+                submitComplete();
                 toggle();
             }
         });
@@ -65,8 +65,8 @@ public class UploadWebsiteModal extends Composite {
         panel.submit();
     }
 
-    public void submitComplete(String result){
-        events.fireSubmittedEvent(new Form(result));
+    public void submitComplete(){
+        events.fireSubmittedEvent(new AssetsActivity());
     }
 
     public static native void toggle()/*-{
