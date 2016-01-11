@@ -1,13 +1,15 @@
 package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Navbar;
-import com.divroll.webdash.client.local.widgets.NavBar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
+import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 
 import javax.enterprise.context.Dependent;
@@ -46,12 +48,12 @@ public class NewBlogPage extends Composite {
 
 
     @Inject
-    TransitionTo<BlogPage> Blog;
+    TransitionTo<BlogPage> blogPage;
 
-    @EventHandler ("cancel")
+    @EventHandler("cancel")
     public void cancel(ClickEvent event){
         event.preventDefault();
-        Blog.go();
+        blogPage.go();
     }
 
 }
