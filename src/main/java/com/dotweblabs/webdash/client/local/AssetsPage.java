@@ -47,7 +47,7 @@ public class AssetsPage extends Composite {
 
     @PageShown
     public void ready(){
-
+        UIkit.notify("Welcome!");
     }
 
     public void renderTable(@Observes @Submitted Form payload){
