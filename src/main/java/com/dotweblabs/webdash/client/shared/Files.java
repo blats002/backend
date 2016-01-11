@@ -6,9 +6,9 @@ import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import java.io.Serializable;
 import java.util.List;
 
-@XStreamAlias("file_list")
+//@XStreamAlias("file_list")
 public class Files implements Serializable {
-    @XStreamImplicit(itemFieldName = "files")
+//    @XStreamImplicit(itemFieldName = "files")
     private List<File> list;
     private String cursor;
 
