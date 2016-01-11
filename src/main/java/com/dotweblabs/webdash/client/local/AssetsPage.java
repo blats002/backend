@@ -2,12 +2,14 @@ package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.events.activity.AssetsActivity;
 import com.divroll.webdash.client.local.common.Submitted;
-import com.divroll.webdash.client.local.widgets.Footer;
-import com.divroll.webdash.client.local.widgets.Navbar;
-import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.divroll.webdash.client.local.widgets.*;
 import com.divroll.webdash.client.local.widgets.modals.UploadWebsiteModal;
+import com.divroll.webdash.client.shared.File;
+import com.divroll.webdash.client.shared.Files;
 import com.divroll.webdash.client.resources.js.Resources;
 import com.google.gwt.core.client.ScriptInjector;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -20,6 +22,9 @@ import org.jboss.errai.ui.shared.api.annotations.Templated;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Instance;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Hanan on 1/5/2016.
@@ -45,13 +50,23 @@ public class AssetsPage extends Composite {
     @DataField
     UploadWebsiteModal uploadAsset;
 
+    @Inject
+    @DataField
+    AssetsTable table;
+
     @PageShown
     public void ready(){
-
+        renderTable(null);
     }
 
     public void renderTable(@Observes @Submitted AssetsActivity payload){
-        Window.alert("Rendering Table: " + payload);
+//        Window.alert("Rendering Table: " + payload);
+        Files files = new Files();
+        List<File> list = new ArrayList<File>();
+        list.add(new File("test1/test.txt"));
+        list.add(new File("test1/test2.txt"));
+        files.setList(list);
+        table.setModel(files);
     }
 
 }

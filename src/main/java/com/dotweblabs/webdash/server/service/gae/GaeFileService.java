@@ -42,6 +42,6 @@ public class GaeFileService implements FileService {
 
     @Override
     public Files list(String cursor) throws ValidationException {
-        return null;
+        return fileRepository.list(cursor);
     }
 }

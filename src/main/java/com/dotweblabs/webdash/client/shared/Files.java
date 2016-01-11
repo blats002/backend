@@ -1,12 +1,14 @@
 package com.divroll.webdash.client.shared;
 
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+
 import java.io.Serializable;
 import java.util.List;
 
-/**
- * Created by Kerby on 1/5/2016.
- */
+@XStreamAlias("file_list")
 public class Files implements Serializable {
+    @XStreamImplicit(itemFieldName = "files")
     private List<File> list;
     private String cursor;
 
