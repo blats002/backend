@@ -1,6 +1,7 @@
 package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Navbar;
+import com.divroll.webdash.client.local.widgets.NavBar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -43,5 +44,14 @@ public class NewBlogPage extends Composite {
     @DataField
     Sidebar menu;
 
+
+    @Inject
+    TransitionTo<BlogPage> Blog;
+
+    @EventHandler ("cancel")
+    public void cancel(ClickEvent event){
+        event.preventDefault();
+        Blog.go();
+    }
 
 }
