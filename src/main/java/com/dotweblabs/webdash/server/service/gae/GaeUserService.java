@@ -40,6 +40,15 @@ public class GaeUserService implements UserService {
     }
 
     @Override
+    public User saveNew(User user) throws ValidationException {
+        User saved = read(user.getUsername());
+        if(saved == null){
+            return save(user);
+        }
+        return null;
+    }
+
+    @Override
     public User read(String username) throws ValidationException {
       User user = repository.findOne(username);
       return user;

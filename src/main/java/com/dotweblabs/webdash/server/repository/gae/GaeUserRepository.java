@@ -66,7 +66,12 @@ public class GaeUserRepository implements UserRepository {
     }
 
     @Override
-    public User findOne(String userId) {
+    public User findOne(Long userId) {
         return store().get(User.class, userId);
+    }
+
+    @Override
+    public User findOne(String username) {
+        return (User) store().find(User.class).equal("username", username).first();
     }
 }

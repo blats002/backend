@@ -16,16 +16,22 @@
  */
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.client.resources.proxy.TokensResource;
 import com.divroll.webdash.client.local.widgets.Footer;
+import com.divroll.webdash.client.resources.proxy.UserResource;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.TextBox;
 import org.jboss.errai.ui.nav.client.local.DefaultPage;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
+import org.restlet.client.resource.Result;
 
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
@@ -41,14 +47,53 @@ public class LoginPage extends Composite {
 
     @DataField
     @Inject
+    TextBox username;
+
+    @DataField
+    @Inject
+    TextBox password;
+
+    @DataField
+    @Inject
     Button login;
 
     @Inject
-    TransitionTo<AssetsPage> assets;
+    TransitionTo<AssetsPage> assetsPage;
+
+    @Inject
+    TokensResource tokensResource;
+
+    @Inject
+    UserResource userResource;
+
+    @Inject
+    LoggedInUser loggedInUser;
 
     @EventHandler ("login")
     public void login (ClickEvent event){
-        assets.go();
+        final String username = this.username.getText();
+        String password = this.password.getText();
+        // TODO: Validation
+        tokensResource.signin(username, password, new Result<String>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                Window.alert("Login failure: " + throwable.getMessage());
+            }
+            @Override
+            public void onSuccess(String token) {
+                userResource.getUser(username, token, new Result<User>() {
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        Window.alert("Login failure: " + throwable.getMessage());
+                    }
+                    @Override
+                    public void onSuccess(User user) {
+                        loggedInUser.setUser(user);
+                        assetsPage.go();
+                    }
+                });
+            }
+        });
     }
 
 
