@@ -704,10 +704,10 @@
         <!--<id>maven.eclipse.org</id>-->
         <!--<url>http://maven.eclipse.org/nexus/content/groups/public/</url>-->
         <!--</repository>-->
-        <!--<repository>-->
-        <!--<id>xtend</id>-->
-        <!--<url>http://build.eclipse.org/common/xtend/maven/</url>-->
-        <!--</repository>-->
+        <repository>
+            <id>xtend</id>
+            <url>http://build.eclipse.org/common/xtend/maven/</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <!--<pluginRepository>-->

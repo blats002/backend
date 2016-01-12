@@ -64,7 +64,7 @@ public class AssetsPage extends Composite {
 
     @PageShown
     public void ready(){
-        renderTable(null);
+        UIkit.notify("Welcome!");
     }
 
     public void renderTable(@Observes @Submitted AssetsActivity payload){
