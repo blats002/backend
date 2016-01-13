@@ -3,6 +3,7 @@ package com.divroll.webdash.client.local;
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.divroll.webdash.client.local.widgets.modals.AddUserModal;
+import com.divroll.webdash.client.local.widgets.modals.EditUserModal;
 import com.divroll.webdash.client.shared.User;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
@@ -28,4 +29,9 @@ public class UsersPage extends Composite {
     @Inject
     @DataField
     AddUserModal addUser;
+//
+//    @Inject
+//    @DataField
+//    EditUserModal editUser;
+//
 }

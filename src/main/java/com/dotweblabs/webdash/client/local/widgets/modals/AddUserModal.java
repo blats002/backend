@@ -12,15 +12,17 @@ import org.boon.di.In;
 import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.shared.api.annotations.*;
 
+import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 /**
  * Created by Hanan on 1/12/2016.
  */
+@Dependent
+@Templated
+public class AddUserModal extends Composite implements HasModel<User>{
 
-public class AddUserModal extends Composite implements HasModel<User> {
-
-     @Inject
+    @Inject
     @DataField
     FormPanel panel;
 
@@ -54,8 +56,7 @@ public class AddUserModal extends Composite implements HasModel<User> {
 
 
    @EventHandler("save")
-    public void save(ClickEvent event){
-        event.preventDefault();
+   public void save(ClickEvent event){
        Window.alert("Storing: " + model.toString());
    }
 
@@ -70,14 +71,14 @@ public class AddUserModal extends Composite implements HasModel<User> {
         }
     }-*/;
 
-   @Override
+    @Override
     public User getModel() {
-        return model;
+        return null;
     }
 
     @ModelSetter
     @Override
     public void setModel(User user) {
         model = user;
-    }
+            }
 }
