@@ -18,12 +18,14 @@ package com.divroll.webdash.client.shared;
 
 import com.hunchee.twist.annotations.Entity;
 import com.hunchee.twist.annotations.Id;
+import org.jboss.errai.databinding.client.api.Bindable;
 
 import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-public final class User implements Serializable {
+@Bindable
+public class User implements Serializable {
     @Id
     private Long id;
     private String email;

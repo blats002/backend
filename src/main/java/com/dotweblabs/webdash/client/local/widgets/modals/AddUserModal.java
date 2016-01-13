@@ -2,10 +2,13 @@ package com.divroll.webdash.client.local.widgets.modals;
 
 import com.divroll.webdash.client.local.events.AssetsEvents;
 import com.divroll.webdash.client.local.events.activity.AssetsActivity;
+import com.divroll.webdash.client.shared.User;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.ui.*;
+import org.boon.di.In;
+import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 
@@ -14,7 +17,8 @@ import javax.inject.Inject;
 /**
  * Created by Hanan on 1/12/2016.
  */
-public class AddUserModal extends Composite {
+
+public class AddUserModal extends Composite implements HasModel<User> {
 
     @Inject
     @DataField
@@ -25,8 +29,22 @@ public class AddUserModal extends Composite {
     Button save;
 
     @Inject
-    AssetsEvents events;
+    AssetsEvents events; 
 
+    @Inject
+    @DataField
+    Anchor fullname;
+    
+    @Inject
+    @DataField
+    TextBox username;
+    
+    @Inject
+    @DataField
+    TextBox password;
+    
+    @DataField
+    Element role= DOM.createElement("select");
 
     @EventHandler("upload")
     public void upload(ClickEvent event){
@@ -47,4 +65,13 @@ public class AddUserModal extends Composite {
         }
     }-*/;
 
+    @Override
+    public User getModel() {
+        return null;
+    }
+
+    @Override
+    public void setModel(User user) {
+
+    }
 }
