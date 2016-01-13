@@ -29,9 +29,9 @@ public class UsersPage extends Composite {
     @Inject
     @DataField
     AddUserModal addUser;
-//
-//    @Inject
-//    @DataField
-//    EditUserModal editUser;
-//
+
+    @Inject
+    @DataField
+    EditUserModal editUser;
+
 }
