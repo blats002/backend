@@ -34,7 +34,7 @@ public class AddUserModal extends Composite implements HasModel<User>{
     @Bound
     @Inject
     @DataField
-    Anchor fullName;
+    TextBox fullName;
 
     @Bound
     @Inject
@@ -52,7 +52,7 @@ public class AddUserModal extends Composite implements HasModel<User>{
 
     @Inject
     @Model
-   User model;
+    User model;
 
 
    @EventHandler("save")
