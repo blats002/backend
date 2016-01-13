@@ -2,6 +2,8 @@ package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.divroll.webdash.client.local.widgets.modals.AddUserModal;
+import com.divroll.webdash.client.shared.User;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
 import org.jboss.errai.ui.nav.client.local.Page;
@@ -23,4 +25,7 @@ public class UsersPage extends Composite {
     @DataField
     Sidebar menu;
 
+    @Inject
+    @DataField
+    AddUserModal addUser;
 }

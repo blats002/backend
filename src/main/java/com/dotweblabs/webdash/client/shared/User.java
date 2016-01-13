@@ -97,4 +97,13 @@ public class User implements Serializable {
     public void setModified(Date modified) {
         this.modified = modified;
     }
+
+    @Override
+    public String toString() {
+        String s = "";
+        s += "Username=" + username + "\n"
+                + "Password=" + password + "\n"
+                + "Fullname=" + fullName + "\n";
+        return s;
+    }
 }
