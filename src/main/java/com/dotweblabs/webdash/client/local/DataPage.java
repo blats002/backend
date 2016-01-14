@@ -4,6 +4,7 @@ import com.divroll.webdash.client.local.widgets.Footer;
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
 import com.divroll.webdash.client.local.widgets.modals.AddNewDataModal;
+import com.divroll.webdash.client.local.widgets.modals.EditDataModal;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
@@ -33,5 +34,9 @@ public class DataPage extends Composite {
     @Inject
     @DataField
     AddNewDataModal dataModal;
+
+    @Inject
+    @DataField
+    EditDataModal editData;
 
 }
