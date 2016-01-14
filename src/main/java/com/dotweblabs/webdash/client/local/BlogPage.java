@@ -36,15 +36,25 @@ public class BlogPage extends Composite{
 
     @Inject
     @DataField
-    Anchor Add;
+    Anchor newBlog;
 
     @Inject
-    TransitionTo <NewBlogPage> newBlogPage;
+    @DataField
+    Anchor editBlog; // TODO: Add the Table instead
 
-    @EventHandler ("Add")
-    public void Add(ClickEvent event){
+    @Inject TransitionTo<EditBlogPage> editBlogPage;
+    @Inject TransitionTo <NewBlogPage> newBlogPage;
+
+    @EventHandler("newBlog")
+    public void Add(ClickEvent event) {
         event.preventDefault();
         newBlogPage.go();
     }
-
+    @EventHandler("editBlog")
+    public void next(ClickEvent event){
+        event.preventDefault();
+        editBlogPage.go();
+    }
 }
+
+
