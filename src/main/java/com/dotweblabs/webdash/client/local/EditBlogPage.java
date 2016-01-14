@@ -2,6 +2,7 @@ package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.divroll.webdash.client.local.widgets.modals.MetaDataModal;
 import com.divroll.webdash.client.shared.Blog;
 import com.divroll.webdash.client.shared.Value;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -26,7 +27,7 @@ import javax.enterprise.context.Dependent;
 @Dependent
 @Page
 public class EditBlogPage extends Composite /*implements HasModel<Blog>*/ {
-/*
+
     @Inject
     @DataField
     Navbar navbar;
@@ -42,6 +43,12 @@ public class EditBlogPage extends Composite /*implements HasModel<Blog>*/ {
     @Inject
     @DataField
     Button cancel;
+
+    @Inject
+    @DataField
+    MetaDataModal meta;
+
+    /*
 
     @Bound
     @DataField
