@@ -2,6 +2,7 @@ package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.divroll.webdash.client.local.widgets.modals.MetaDataModal;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -46,6 +47,9 @@ public class NewBlogPage extends Composite {
     @DataField
     Sidebar menu;
 
+    @Inject
+    @DataField
+    MetaDataModal meta;
 
     @Inject
     TransitionTo<BlogPage> blogPage;
