@@ -2,9 +2,11 @@ package com.divroll.webdash.client.shared;
 
 import com.hunchee.twist.annotations.Entity;
 import com.hunchee.twist.annotations.Id;
+import org.jboss.errai.databinding.client.api.Bindable;
 
 import java.io.Serializable;
 
+@Bindable
 @Entity
 public class Subdomain implements Serializable {
     @Id
