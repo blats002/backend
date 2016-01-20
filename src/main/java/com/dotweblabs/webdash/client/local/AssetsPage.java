@@ -62,9 +62,12 @@ public class AssetsPage extends Composite {
     @Inject
     FilesResource filesResource;
 
+    @Inject
+    LoggedInUser loggedInUser;
+
     @PageShown
     public void ready(){
-        UIkit.notify("Welcome!");
+        UIkit.notify("Welcome " + loggedInUser.getUser().getUsername());
     }
 
     public void renderTable(@Observes @Submitted AssetsActivity payload){

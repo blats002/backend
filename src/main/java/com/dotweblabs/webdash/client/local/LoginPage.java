@@ -88,8 +88,12 @@ public class LoginPage extends Composite {
                     }
                     @Override
                     public void onSuccess(User user) {
-                        loggedInUser.setUser(user);
-                        assetsPage.go();
+                        if(user != null){
+                            loggedInUser.setUser(user);
+                            assetsPage.go();
+                        } else {
+                            Window.alert("Failed to get user");
+                        }
                     }
                 });
             }
