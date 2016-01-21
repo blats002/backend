@@ -16,6 +16,7 @@
  */
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.local.events.LoginEvents;
 import com.divroll.webdash.client.shared.Token;
 import com.divroll.webdash.client.shared.User;
 import com.divroll.webdash.client.resources.proxy.TokensResource;
@@ -70,6 +71,9 @@ public class LoginPage extends Composite {
     @Inject
     LoggedInUser loggedInUser;
 
+    @Inject
+    LoginEvents loginEvents;
+
     @EventHandler ("login")
     public void login (ClickEvent event){
         final String username = this.username.getText();
@@ -91,6 +95,7 @@ public class LoginPage extends Composite {
                     public void onSuccess(User user) {
                         if(user != null){
                             loggedInUser.setUser(user);
+                            loginEvents.fireLoginEvent(user);
                             assetsPage.go();
                         } else {
                             Window.alert("Failed to get user");

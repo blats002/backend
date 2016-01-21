@@ -1,5 +1,6 @@
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.local.common.LoggedIn;
 import com.divroll.webdash.client.local.events.activity.AssetsActivity;
 import com.divroll.webdash.client.local.common.Submitted;
 import com.divroll.webdash.client.local.widgets.*;
@@ -68,6 +69,7 @@ public class AssetsPage extends Composite {
     @PageShown
     public void ready(){
         UIkit.notify("Welcome " + loggedInUser.getUser().getUsername());
+        menu.setModel(loggedInUser.getUser());
     }
 
     public void renderTable(@Observes @Submitted AssetsActivity payload){

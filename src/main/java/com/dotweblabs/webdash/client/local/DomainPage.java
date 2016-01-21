@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.Window;
 import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.shared.api.annotations.*;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.restlet.client.resource.Result;
@@ -50,6 +51,11 @@ public class DomainPage extends Composite implements HasModel<Subdomain> {
 
     @Inject
     SubdomainsResource subdomainsResource;
+
+    @PageShown
+    public void ready(){
+        menu.setModel(loggedInUser.getUser());
+    }
 
     @PostConstruct
     public void buildUI(){

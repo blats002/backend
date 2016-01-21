@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
@@ -53,6 +54,14 @@ public class NewBlogPage extends Composite {
 
     @Inject
     TransitionTo<BlogPage> blogPage;
+
+    @Inject
+    LoggedInUser loggedInUser;
+
+    @PageShown
+    public void ready(){
+        menu.setModel(loggedInUser.getUser());
+    }
 
     @EventHandler("cancel")
     public void cancel(ClickEvent event){

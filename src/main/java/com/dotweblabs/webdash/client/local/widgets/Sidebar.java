@@ -1,17 +1,24 @@
 package com.divroll.webdash.client.local.widgets;
 
 import com.divroll.webdash.client.local.*;
+import com.divroll.webdash.client.local.common.LoggedIn;
+import com.divroll.webdash.client.shared.User;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
+import elemental.client.Browser;
 import org.boon.di.In;
+import org.jboss.errai.databinding.client.api.DataBinder;
+import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
-import org.jboss.errai.ui.shared.api.annotations.DataField;
-import org.jboss.errai.ui.shared.api.annotations.EventHandler;
-import org.jboss.errai.ui.shared.api.annotations.Templated;
+import org.jboss.errai.ui.shared.api.annotations.*;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Observes;
 
 
 /**
@@ -19,7 +26,7 @@ import javax.enterprise.context.Dependent;
  */
 @Templated
 @Dependent
-public class Sidebar extends Composite {
+public class Sidebar extends Composite implements HasModel<User> {
 
     @Inject
     @DataField
@@ -40,6 +47,14 @@ public class Sidebar extends Composite {
     @Inject
     @DataField
     Anchor users;
+
+    @Bound
+    @DataField
+    Element username = DOM.createElement("h3");
+
+    @Inject
+    @AutoBound
+    private DataBinder<User> binder;
 
     @Inject TransitionTo<AssetsPage> assetsPage;
     @Inject TransitionTo<DataPage> dataPage;
@@ -79,6 +94,20 @@ public class Sidebar extends Composite {
         usersPage.go();
     }
 
+//    private void hanleLoggedIn(@Observes @LoggedIn User user){
+//        Browser.getWindow().getConsole().log("User logged in: " + user.getUsername());
+//        setModel(user);
+//    }
+
+    @Override
+    public User getModel() {
+        return binder.getModel();
+    }
+
+    @Override
+    public void setModel(User user) {
+        binder.setModel(user);
+    }
 }
 
 

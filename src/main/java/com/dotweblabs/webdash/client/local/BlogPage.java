@@ -11,6 +11,7 @@ import com.google.inject.Inject;
 import org.boon.Ok;
 import org.eclipse.xtend.lib.annotations.Data;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
@@ -45,8 +46,16 @@ public class BlogPage extends Composite{
     @Inject TransitionTo<EditBlogPage> editBlogPage;
     @Inject TransitionTo <NewBlogPage> newBlogPage;
 
+    @Inject
+    LoggedInUser loggedInUser;
+
+    @PageShown
+    public void ready(){
+        menu.setModel(loggedInUser.getUser());
+    }
+
     @EventHandler("newBlog")
-    public void Add(ClickEvent event) {
+    public void add(ClickEvent event) {
         event.preventDefault();
         newBlogPage.go();
     }

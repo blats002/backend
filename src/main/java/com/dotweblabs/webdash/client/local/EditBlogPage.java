@@ -14,6 +14,7 @@ import com.google.inject.Inject;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.*;
 
@@ -47,6 +48,14 @@ public class EditBlogPage extends Composite /*implements HasModel<Blog>*/ {
     @Inject
     @DataField
     MetaDataModal meta;
+
+    @Inject
+    LoggedInUser loggedInUser;
+
+    @PageShown
+    public void ready(){
+        menu.setModel(loggedInUser.getUser());
+    }
 
     /*
 

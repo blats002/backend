@@ -8,6 +8,7 @@ import com.divroll.webdash.client.shared.User;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.inject.Inject;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 
@@ -33,5 +34,13 @@ public class UsersPage extends Composite {
     @Inject
     @DataField
     EditUserModal editUser;
+
+    @Inject
+    LoggedInUser loggedInUser;
+
+    @PageShown
+    public void ready(){
+        menu.setModel(loggedInUser.getUser());
+    }
 
 }
