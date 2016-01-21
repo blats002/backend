@@ -10,17 +10,23 @@ import com.divroll.webdash.client.resources.proxy.FilesResource;
 import com.divroll.webdash.client.shared.File;
 import com.divroll.webdash.client.shared.Files;
 import com.divroll.webdash.client.resources.js.Resources;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.ScriptInjector;
+import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.common.collect.Multimap;
 import elemental.client.Browser;
+import org.boon.di.In;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageShown;
+import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
+import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 import org.restlet.client.resource.Result;
 
@@ -66,10 +72,22 @@ public class AssetsPage extends Composite {
     @Inject
     LoggedInUser loggedInUser;
 
+    @Inject
+    TransitionTo<LoginPage> loginPage;
+
     @PageShown
     public void ready(){
         UIkit.notify("Welcome " + loggedInUser.getUser().getUsername());
         menu.setModel(loggedInUser.getUser());
+    }
+
+    @EventHandler("logout")
+    public void logout(ClickEvent event){
+        event.preventDefault();
+        loggedInUser.setUser(null);
+        Multimap<String, String> state = ArrayListMultimap.create();
+        state.put("logout", "true");
+        loginPage.go(state);
     }
 
     public void renderTable(@Observes @Submitted AssetsActivity payload){
