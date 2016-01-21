@@ -18,6 +18,7 @@
         <guava.version>18.0</guava.version>
         <xtend.version>2.9.1</xtend.version>
         <version.restlet>2.3.5</version.restlet>
+        <!--<version.restlet>3.0-SNAPSHOT</version.restlet>-->
         <version.junit>4.11</version.junit>
     </properties>
     <dependencyManagement>
@@ -176,7 +177,7 @@
         <dependency>
             <groupId>org.restlet.gae</groupId>
             <artifactId>org.restlet.ext.gae</artifactId>
-            <version>2.3-M2</version>
+            <version>${version.restlet}</version>
         </dependency>
         <dependency>
             <groupId>org.restlet.gae</groupId>
@@ -207,6 +208,11 @@
         <dependency>
             <groupId>org.restlet.gae</groupId>
             <artifactId>org.restlet.ext.json</artifactId>
+            <version>${version.restlet}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet.gae</groupId>
+            <artifactId>org.restlet.ext.gwt</artifactId>
             <version>${version.restlet}</version>
         </dependency>
         <!-- Twist Object Mapping -->
@@ -311,12 +317,6 @@
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client-appengine</artifactId>
             <version>1.19.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.carlosbecker</groupId>
-            <artifactId>guice-junit-test-runner</artifactId>
-            <version>1.1</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -700,10 +700,10 @@
             <!--<layout>p2</layout>-->
             <!--<url>http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/</url>-->
         <!--</repository>-->
-        <repository>
-            <id>maven.eclipse.org</id>
-            <url>http://maven.eclipse.org/nexus/content/groups/public/</url>
-        </repository>
+        <!--<repository>-->
+            <!--<id>maven.eclipse.org</id>-->
+            <!--<url>http://maven.eclipse.org/nexus/content/groups/public/</url>-->
+        <!--</repository>-->
         <!--<repository>-->
         <!--<id>xtend</id>-->
         <!--<url>http://build.eclipse.org/common/xtend/maven/</url>-->

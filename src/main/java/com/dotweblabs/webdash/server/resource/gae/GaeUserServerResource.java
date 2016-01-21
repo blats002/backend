@@ -23,20 +23,21 @@ public class GaeUserServerResource extends SelfInjectingServerResource
     @Inject
     UserService userService;
 
-    String username;
+    String userId;
 
     @Override
     protected void doInit() {
         super.doInit();
-        username = getAttribute("username");
+        userId = getAttribute("user_id");
     }
 
     @Override
     public User getUser() {
+        LOG.info("Fetching user id: " + userId);
         try{
             String token = getQueryValue("token");
             if(token != null && !token.equals("")){
-                User ref = userService.read(username);
+                User ref = userService.read(Long.valueOf(userId));
                 Long userId = webTokenService.readUserIdFromToken(token);
                 if(ref.getId().equals(userId)) {
                     return ref;

@@ -1,10 +1,18 @@
 package com.divroll.webdash.client.shared;
 
-/**
- * Created by Kerby on 1/11/2016.
- */
-public class Token {
+import java.io.Serializable;
+
+public class Token implements Serializable {
+
     private String token;
+    private Long userId;
+
+    public Token(){}
+
+    public Token(Long userId, String token){
+        this.userId = userId;
+        this.token = token;
+    }
 
     public String getToken() {
         return token;
@@ -12,5 +20,13 @@ public class Token {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

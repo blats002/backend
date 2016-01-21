@@ -16,6 +16,7 @@
  */
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.shared.Token;
 import com.divroll.webdash.client.shared.User;
 import com.divroll.webdash.client.resources.proxy.TokensResource;
 import com.divroll.webdash.client.local.widgets.Footer;
@@ -74,17 +75,17 @@ public class LoginPage extends Composite {
         final String username = this.username.getText();
         String password = this.password.getText();
         // TODO: Validation
-        tokensResource.signin(username, password, new Result<String>() {
+        tokensResource.signin(username, password, new Result<Token>() {
             @Override
             public void onFailure(Throwable throwable) {
-                Window.alert("Login failure: " + throwable.getMessage());
+                Window.alert("Token failure: " + throwable.getMessage());
             }
             @Override
-            public void onSuccess(String token) {
-                userResource.getUser(username, token, new Result<User>() {
+            public void onSuccess(Token token) {
+                userResource.getUser(String.valueOf(token.getUserId()), token.getToken(), new Result<User>() {
                     @Override
                     public void onFailure(Throwable throwable) {
-                        Window.alert("Login failure: " + throwable.getMessage());
+                        Window.alert("User failure: " + throwable.getMessage());
                     }
                     @Override
                     public void onSuccess(User user) {

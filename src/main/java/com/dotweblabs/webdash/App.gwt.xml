@@ -16,6 +16,7 @@
   <inherits name="com.google.gwt.query.Query"/>
   <inherits name="org.restlet.Restlet" />
   <inherits name='org.restlet.JSON' />
+  <!--<inherits name="io.reinert.requestor.RequestorByGDeferred"/>-->
   <add-linker name="xsiframe"/>
   <set-configuration-property name="devModeRedirectEnabled" value="true"/>
   <set-property name="compiler.useSourceMaps" value="true"/>

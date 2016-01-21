@@ -21,6 +21,7 @@ public interface UserService {
     public User save(User user) throws ValidationException;
     public User saveNew(User user) throws ValidationException;
     public User read(String username) throws ValidationException;
+    public User read(Long userId) throws ValidationException;
     public User update(User user) throws ValidationException;
     public User updateUserEmail(String username, String newEmail) throws ValidationException;
 }

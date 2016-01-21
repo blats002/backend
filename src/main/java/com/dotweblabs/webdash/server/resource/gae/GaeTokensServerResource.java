@@ -1,5 +1,6 @@
 package com.divroll.webdash.server.resource.gae;
 
+import com.divroll.webdash.client.shared.Token;
 import com.divroll.webdash.client.shared.User;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.resource.TokensResource;
@@ -57,8 +58,9 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
     }
 
     @Override
-    public String signin() {
+    public Token signin() {
         //LOG.info("Authorization: " + authValue);
+        Token result = null;
         try{
             if(username != null
                     && password != null
@@ -69,8 +71,9 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
                     String passwordHash =  user.getPassword();
                     LOG.info("Password: " + password);
                     if(BCrypt.checkpw(password, passwordHash)){
+                        LOG.info("User check password OK");
+                        result = new Token(user.getId(), webTokenService.createToken(user.getId()));
                         setStatus(Status.SUCCESS_OK);
-                        return webTokenService.createToken(user.getId());
                     } else {
                         LOG.info("Unable to login: " + username);
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "Username password is invalid");
@@ -85,8 +88,7 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
         } catch (Exception e){
             e.printStackTrace();
         }
-
-        return null;
+        return result;
     }
 
     private void userBootstrap(){
