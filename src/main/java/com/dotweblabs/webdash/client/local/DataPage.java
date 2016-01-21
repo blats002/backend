@@ -7,7 +7,6 @@ import com.divroll.webdash.client.local.widgets.modals.AddNewDataModal;
 import com.divroll.webdash.client.local.widgets.modals.EditDataModal;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.inject.Inject;
 import org.eclipse.xtend.lib.annotations.Data;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageShown;
@@ -15,6 +14,7 @@ import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 
 import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 /**
  * Created by Hanan on 1/6/2016.
@@ -39,6 +39,10 @@ public class DataPage extends Composite {
     @Inject
     @DataField
     EditDataModal editData;
+
+    @Inject
+    @DataField
+    Button logout;
 
     @Inject
     LoggedInUser loggedInUser;

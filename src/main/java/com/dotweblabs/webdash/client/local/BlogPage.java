@@ -7,8 +7,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.inject.Inject;
-import org.boon.Ok;
+import javax.inject.Inject;
 import org.eclipse.xtend.lib.annotations.Data;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageShown;
@@ -45,6 +44,10 @@ public class BlogPage extends Composite{
 
     @Inject TransitionTo<EditBlogPage> editBlogPage;
     @Inject TransitionTo <NewBlogPage> newBlogPage;
+
+    @Inject
+    @DataField
+    Button logout;
 
     @Inject
     LoggedInUser loggedInUser;

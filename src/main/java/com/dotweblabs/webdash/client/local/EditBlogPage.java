@@ -10,7 +10,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.inject.Inject;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.nav.client.local.Page;
@@ -19,6 +18,7 @@ import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.*;
 
 import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 
 /**
@@ -48,6 +48,10 @@ public class EditBlogPage extends Composite /*implements HasModel<Blog>*/ {
     @Inject
     @DataField
     MetaDataModal meta;
+
+    @Inject
+    @DataField
+    Button logout;
 
     @Inject
     LoggedInUser loggedInUser;

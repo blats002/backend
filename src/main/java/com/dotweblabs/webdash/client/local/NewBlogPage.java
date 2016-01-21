@@ -6,7 +6,6 @@ import com.divroll.webdash.client.local.widgets.modals.MetaDataModal;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.inject.Inject;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
@@ -15,6 +14,7 @@ import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
 
 import javax.enterprise.context.Dependent;
+import javax.inject.Inject;
 
 /**
  * Created by Hanan on 1/6/2016.
@@ -54,6 +54,10 @@ public class NewBlogPage extends Composite {
 
     @Inject
     TransitionTo<BlogPage> blogPage;
+
+    @Inject
+    @DataField
+    Button logout;
 
     @Inject
     LoggedInUser loggedInUser;

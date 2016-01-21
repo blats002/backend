@@ -47,6 +47,10 @@ public class DomainPage extends Composite implements HasModel<Subdomain> {
     Button save;
 
     @Inject
+    @DataField
+    Button logout;
+
+    @Inject
     LoggedInUser loggedInUser;
 
     @Inject
