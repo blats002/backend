@@ -1,6 +1,7 @@
 package com.divroll.webdash.client.local;
 
 import com.divroll.webdash.client.local.common.LoggedIn;
+import com.divroll.webdash.client.local.events.LoginEvents;
 import com.divroll.webdash.client.local.events.activity.AssetsActivity;
 import com.divroll.webdash.client.local.common.Submitted;
 import com.divroll.webdash.client.local.widgets.*;
@@ -73,6 +74,9 @@ public class AssetsPage extends Composite {
     LoggedInUser loggedInUser;
 
     @Inject
+    LoginEvents loginEvents;
+
+    @Inject
     TransitionTo<LoginPage> loginPage;
 
     @PageShown
@@ -85,6 +89,7 @@ public class AssetsPage extends Composite {
     public void logout(ClickEvent event){
         event.preventDefault();
         loggedInUser.setUser(null);
+        loginEvents.fireLogoutEvent(null);
         Multimap<String, String> state = ArrayListMultimap.create();
         state.put("logout", "true");
         loginPage.go(state);

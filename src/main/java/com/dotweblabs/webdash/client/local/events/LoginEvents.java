@@ -18,10 +18,14 @@ public class LoginEvents {
 
     @Inject
     @LoggedOut
-    Event<User> loggedOut;
+    Event<Void> loggedOut;
 
     public void fireLoginEvent(User user){
         loggedIn.fire(user);
+    }
+
+    public void fireLogoutEvent(Void v){
+        loggedOut.fire(v);
     }
 
 }

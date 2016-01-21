@@ -1,9 +1,12 @@
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.local.events.LoginEvents;
 import com.divroll.webdash.client.resources.proxy.SubdomainsResource;
 import com.divroll.webdash.client.shared.Subdomain;
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
@@ -12,6 +15,7 @@ import com.google.gwt.user.client.Window;
 import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageShown;
+import org.jboss.errai.ui.nav.client.local.TransitionTo;
 import org.jboss.errai.ui.shared.api.annotations.*;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.restlet.client.resource.Result;
@@ -51,6 +55,12 @@ public class DomainPage extends Composite implements HasModel<Subdomain> {
     Button logout;
 
     @Inject
+    LoginEvents loginEvents;
+
+    @Inject
+    TransitionTo<LoginPage> loginPage;
+
+    @Inject
     LoggedInUser loggedInUser;
 
     @Inject
@@ -81,6 +91,16 @@ public class DomainPage extends Composite implements HasModel<Subdomain> {
                 Window.alert("SUCCESS!");
             }
         });
+    }
+
+    @EventHandler("logout")
+    public void logout(ClickEvent event){
+        event.preventDefault();
+        loggedInUser.setUser(null);
+        loginEvents.fireLogoutEvent(null);
+        Multimap<String, String> state = ArrayListMultimap.create();
+        state.put("logout", "true");
+        loginPage.go(state);
     }
 
     @Override

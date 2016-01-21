@@ -1,8 +1,11 @@
 package com.divroll.webdash.client.local;
 
+import com.divroll.webdash.client.local.events.LoginEvents;
 import com.divroll.webdash.client.local.widgets.Footer;
 import com.divroll.webdash.client.local.widgets.Navbar;
 import com.divroll.webdash.client.local.widgets.Sidebar;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -50,11 +53,27 @@ public class BlogPage extends Composite{
     Button logout;
 
     @Inject
+    LoginEvents loginEvents;
+
+    @Inject
     LoggedInUser loggedInUser;
+
+    @Inject
+    TransitionTo<LoginPage> loginPage;
 
     @PageShown
     public void ready(){
         menu.setModel(loggedInUser.getUser());
+    }
+
+    @EventHandler("logout")
+    public void logout(ClickEvent event){
+        event.preventDefault();
+        loggedInUser.setUser(null);
+        loginEvents.fireLogoutEvent(null);
+        Multimap<String, String> state = ArrayListMultimap.create();
+        state.put("logout", "true");
+        loginPage.go(state);
     }
 
     @EventHandler("newBlog")
