@@ -27,6 +27,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.TextBox;
+import elemental.client.Browser;
 import org.jboss.errai.ui.nav.client.local.DefaultPage;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
@@ -85,7 +86,7 @@ public class LoginPage extends Composite {
                 Window.alert("Token failure: " + throwable.getMessage());
             }
             @Override
-            public void onSuccess(Token token) {
+            public void onSuccess(final Token token) {
                 userResource.getUser(String.valueOf(token.getUserId()), token.getToken(), new Result<User>() {
                     @Override
                     public void onFailure(Throwable throwable) {
@@ -94,7 +95,9 @@ public class LoginPage extends Composite {
                     @Override
                     public void onSuccess(User user) {
                         if(user != null){
+                            Browser.getWindow().getConsole().log("User id: " + user.getId());
                             loggedInUser.setUser(user);
+                            loggedInUser.setToken(token.getToken());
                             loginEvents.fireLoginEvent(user);
                             assetsPage.go();
                         } else {

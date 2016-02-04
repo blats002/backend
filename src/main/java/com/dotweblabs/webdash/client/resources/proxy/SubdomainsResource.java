@@ -10,9 +10,10 @@ import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class SubdomainsResource {
-    public void save(Subdomain subdomain, final Result<Subdomain> result){
+    public void save(Subdomain subdomain, String token, final Result<Subdomain> result){
         final SubdomainsProxy resourceProxy = GWT.create(SubdomainsProxy.class);
         resourceProxy.getClientResource().setReference("/rest/subdomains");
+        resourceProxy.getClientResource().addQueryParameter("token", token);
         resourceProxy.save(subdomain, new Result<Subdomain>() {
             @Override
             public void onFailure(Throwable throwable) {

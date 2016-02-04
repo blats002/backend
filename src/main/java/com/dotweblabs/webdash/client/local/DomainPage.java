@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.Window;
+import elemental.client.Browser;
 import org.jboss.errai.ui.client.widget.HasModel;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageShown;
@@ -41,7 +42,7 @@ public class DomainPage extends Composite implements HasModel<Subdomain> {
     @DataField
     Sidebar menu;
 
-    @AutoBound
+    @Bound
     @Inject
     @DataField
     TextBox subdomain;
@@ -78,17 +79,20 @@ public class DomainPage extends Composite implements HasModel<Subdomain> {
     @EventHandler("save")
     public void save(ClickEvent event){
         event.preventDefault();
-        Window.alert("Subdomain: " + subdomain.getText());
-        binder.getModel().setUserId(loggedInUser.getUser().getId());
-        subdomainsResource.save(binder.getModel(), new Result<Subdomain>() {
+        Browser.getWindow().getConsole().log("Subdomain: " + binder.getModel().getSubdomain());
+        Long userId = loggedInUser.getUser().getId();
+        String token = loggedInUser.getToken();
+        Subdomain subdomain = binder.getModel();
+        subdomain.setUserId(userId);
+        subdomainsResource.save(subdomain, token, new Result<Subdomain>() {
             @Override
             public void onFailure(Throwable throwable) {
-                Window.alert("ERROR saving domain");
+                UIkit.notify("ERROR saving domain: " + throwable.getCause().getMessage());
             }
 
             @Override
             public void onSuccess(Subdomain subdomain) {
-                Window.alert("SUCCESS!");
+                UIkit.notify("SUCCESS!");
             }
         });
     }
