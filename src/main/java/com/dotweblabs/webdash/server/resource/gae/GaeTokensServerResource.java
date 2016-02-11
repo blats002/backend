@@ -59,7 +59,7 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
 
     @Override
     public Token signin() {
-        //LOG.info("Authorization: " + authValue);
+        LOG.info("Authorization: " + authValue);
         Token result = null;
         try{
             if(username != null
@@ -79,7 +79,7 @@ public class GaeTokensServerResource extends SelfInjectingServerResource
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "Username password is invalid");
                     }
                 } else {
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND, "User with username " + username + " not found");
+                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "User with username " + username + " not found");
                     return null;
                 }
             } else {

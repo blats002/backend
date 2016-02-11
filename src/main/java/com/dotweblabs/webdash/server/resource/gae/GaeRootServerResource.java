@@ -20,6 +20,11 @@ import com.divroll.webdash.server.BlobFile;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.util.GAEUtil;
 import com.divroll.webdash.server.util.RegexHelper;
+import com.dropbox.core.DbxClient;
+import com.dropbox.core.DbxEntry;
+import com.dropbox.core.DbxException;
+import com.dropbox.core.DbxRequestConfig;
+import com.dropbox.core.http.AppengineHttpRequestor;
 import com.google.appengine.api.datastore.Blob;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -27,13 +32,17 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.ByteArrayRepresentation;
+import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import static com.hunchee.twist.ObjectStoreService.store;
@@ -46,6 +55,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private static final Logger LOG
             = Logger.getLogger(GaeFileServerResource.class.getName());
 
+    private static final String ROOT_URI = "/";
+    private static final String APP_ROOT_URI = "/weebio/";
+
     @Inject
     @Named("app.domain")
     private String appDomain;
@@ -54,36 +66,66 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Named("app.domain.local")
     private String appDomainLocal;
 
+    @Inject
+    @Named("dropbox.token")
+    private String dropboxToken;
+
     @Get
     public Representation represent() {
+        Representation entity = null;
         MediaType type = getRequest().getEntity().getMediaType();
         String path = getRequest().getResourceRef().getPath();
-        String completePath = getRequest().getResourceRef().getHostIdentifier() +
+        String _completePath = getRequest().getResourceRef().getHostIdentifier() +
                 getRequest().getResourceRef().getPath();
         URL url = null;
         try {
-            url = new URL(completePath);
+            url = new URL(_completePath);
             String host = url.getHost();
             String subdomain = parseSubdomain(host);
+
+            String pathParts = url.getPath();
+            if(pathParts.isEmpty() || pathParts.equals(ROOT_URI)){
+                pathParts = "/index.html";
+            }
+            final String completePath = APP_ROOT_URI + subdomain + pathParts;
+
             LOG.info("Complete Path: " + completePath);
             LOG.info("Host: " + host);
             LOG.info("Subdomain: " + subdomain);
+
+            entity = new OutputRepresentation(type) {
+                @Override
+                public void write(OutputStream outputStream) throws IOException {
+                    DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
+                    DbxClient client = new DbxClient(config, dropboxToken);
+                    DbxEntry.File md;
+                    try {
+                        md = client.getFile(completePath, null,  outputStream);
+                        System.out.println("File: " + completePath + " Bytes read: " + md.numBytes);
+                    } catch (DbxException e) {
+                        e.printStackTrace();
+                    }
+                    outputStream.close();
+                }
+            };
+            entity.setMediaType(processMediaType(completePath));
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        if(path.startsWith("/")){
-            path = path.substring(1);
-        }
-        if(path.equals("/") || path.isEmpty()) {
-            path = "index.html"; // TODO: Must be set through the dashboard e.g. index.htm or main.html etc.
-        }
-        LOG.info("Content-Type: " + type);
-        LOG.info("Path: " + path);
-        BlobFile blobFile = store().get(BlobFile.class, path);
-        if(blobFile != null){
-            return new ByteArrayRepresentation(blobFile.getBlob().getBytes(), processMediaType(path));
-        }
-        return null;
+//        if(path.startsWith("/")){
+//            path = path.substring(1);
+//        }
+//        if(path.equals("/") || path.isEmpty()) {
+//            path = "index.html"; // TODO: Must be set through the dashboard e.g. index.htm or main.html etc.
+//        }
+//        LOG.info("Content-Type: " + type);
+//        LOG.info("Path: " + path);
+//        BlobFile blobFile = store().get(BlobFile.class, path);
+//        if(blobFile != null){
+//            return new ByteArrayRepresentation(blobFile.getBlob().getBytes(), processMediaType(path));
+//        }
+        return entity;
     }
 
     private MediaType processMediaType(String path){
