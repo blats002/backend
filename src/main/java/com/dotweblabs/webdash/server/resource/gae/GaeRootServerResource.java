@@ -20,11 +20,12 @@ import com.divroll.webdash.server.BlobFile;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.util.GAEUtil;
 import com.divroll.webdash.server.util.RegexHelper;
-import com.dropbox.core.DbxClient;
-import com.dropbox.core.DbxEntry;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.http.AppengineHttpRequestor;
+import com.dropbox.core.v1.DbxClientV1;
+import com.dropbox.core.v1.DbxEntry;
+import com.dropbox.core.v2.DbxClientV2;
 import com.google.appengine.api.datastore.Blob;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -87,7 +88,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             if(pathParts.isEmpty() || pathParts.equals(ROOT_URI)){
                 pathParts = "/index.html";
             }
-            final String completePath = APP_ROOT_URI + subdomain + pathParts;
+            final String completePath = APP_ROOT_URI + host + pathParts;
 
             LOG.info("Complete Path: " + completePath);
             LOG.info("Host: " + host);
@@ -97,7 +98,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 @Override
                 public void write(OutputStream outputStream) throws IOException {
                     DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
-                    DbxClient client = new DbxClient(config, dropboxToken);
+                    DbxClientV1 client = new DbxClientV1(config, dropboxToken);
                     DbxEntry.File md;
                     try {
                         md = client.getFile(completePath, null,  outputStream);
