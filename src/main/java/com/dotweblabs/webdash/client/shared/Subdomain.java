@@ -13,6 +13,7 @@ public class Subdomain implements Serializable {
     private Long id;
     private Long userId;
     private String subdomain;
+    private String domain;
 
     public Subdomain(){}
 
@@ -47,5 +48,13 @@ public class Subdomain implements Serializable {
 
     public static Subdomain sample(){
         return new Subdomain(0L, "demo");
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

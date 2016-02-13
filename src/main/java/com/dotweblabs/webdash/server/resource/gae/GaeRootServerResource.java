@@ -17,6 +17,7 @@
 package com.divroll.webdash.server.resource.gae;
 
 import com.divroll.webdash.server.BlobFile;
+import com.divroll.webdash.server.Subdomain;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.util.GAEUtil;
 import com.divroll.webdash.server.util.RegexHelper;
@@ -27,8 +28,14 @@ import com.dropbox.core.v1.DbxClientV1;
 import com.dropbox.core.v1.DbxEntry;
 import com.dropbox.core.v2.DbxClientV2;
 import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.kinvey.java.Query;
+import com.kinvey.nativejava.AppData;
+import com.kinvey.nativejava.Client;
 import org.restlet.data.MediaType;
 import org.restlet.data.Preference;
 import org.restlet.ext.servlet.ServletUtils;
@@ -42,8 +49,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.hunchee.twist.ObjectStoreService.store;
@@ -55,6 +64,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     private static final Logger LOG
             = Logger.getLogger(GaeFileServerResource.class.getName());
+
+    MemcacheService memCache = MemcacheServiceFactory.getMemcacheService();
 
     private static final String ROOT_URI = "/";
     private static final String APP_ROOT_URI = "/weebio/";
@@ -71,6 +82,20 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Named("dropbox.token")
     private String dropboxToken;
 
+    @Inject
+    @Named("kinvey.appkey")
+    private String appkey;
+
+    @Inject
+    @Named("kinvey.mastersecret")
+    private String masterSecret;
+
+    @Override
+    protected void doInit() {
+        super.doInit();
+        memCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+    }
+
     @Get
     public Representation represent() {
         Representation entity = null;
@@ -82,13 +107,20 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         try {
             url = new URL(_completePath);
             String host = url.getHost();
-            String subdomain = parseSubdomain(host);
 
             String pathParts = url.getPath();
             if(pathParts.isEmpty() || pathParts.equals(ROOT_URI)){
                 pathParts = "/index.html";
             }
-            final String completePath = APP_ROOT_URI + host + pathParts;
+
+            String subdomain = null;
+            if(!host.endsWith(getDomain())){
+                subdomain = getStoredSubdomain(host);
+            } else {
+                subdomain = parseSubdomain(host);
+            }
+
+            final String completePath = APP_ROOT_URI + subdomain + pathParts;
 
             LOG.info("Complete Path: " + completePath);
             LOG.info("Host: " + host);
@@ -102,7 +134,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     DbxEntry.File md;
                     try {
                         md = client.getFile(completePath, null,  outputStream);
-                        System.out.println("File: " + completePath + " Bytes read: " + md.numBytes);
+                        LOG.info("File: " + completePath + " Bytes read: " + md.numBytes);
                     } catch (DbxException e) {
                         e.printStackTrace();
                     }
@@ -114,18 +146,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-//        if(path.startsWith("/")){
-//            path = path.substring(1);
-//        }
-//        if(path.equals("/") || path.isEmpty()) {
-//            path = "index.html"; // TODO: Must be set through the dashboard e.g. index.htm or main.html etc.
-//        }
-//        LOG.info("Content-Type: " + type);
-//        LOG.info("Path: " + path);
-//        BlobFile blobFile = store().get(BlobFile.class, path);
-//        if(blobFile != null){
-//            return new ByteArrayRepresentation(blobFile.getBlob().getBytes(), processMediaType(path));
-//        }
         return entity;
     }
 
@@ -147,6 +167,51 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         return type;
     }
 
+    private String getDomain(){
+        String domain;
+        if(GAEUtil.isGaeDev()){
+            domain = appDomainLocal;
+        } else {
+            domain = appDomain;
+        }
+        return domain;
+    }
+
+    private String getStoredSubdomain(String host){
+        String result = null;
+        try{
+            String value = (String) memCache.get(host);
+            if(value == null){
+                Client kinvey = new Client.Builder(appkey, masterSecret).build();
+                kinvey.enableDebugLogging();
+                Boolean ping = kinvey.ping();
+                LOG.info("Client ping -> " + ping);
+                kinvey.user().loginBlocking(appkey, masterSecret).execute();
+                LOG.info("Client login -> " + kinvey.user().isUserLoggedIn());
+                String token = kinvey.user().getAuthToken();
+                String userId = kinvey.user().getId();
+
+                Query q = kinvey.query();
+                q.equals("domain", host);
+
+                AppData<Subdomain> subdomains = kinvey.appData("subdomains", Subdomain.class);
+                Subdomain[] list = subdomains.getBlocking(q).execute();
+                Subdomain subdomain = Arrays.asList(list).iterator().next();
+                if(subdomain != null){
+                    result = subdomain.getSubdomain();
+                    memCache.put(host, subdomain.getSubdomain());
+                    LOG.info("Subdomain for " + host + ": " + result);
+                }
+            } else {
+                result = value;
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+
     private String parseSubdomain(String host){
         String domain;
         if(GAEUtil.isGaeDev()){
@@ -158,5 +223,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         LOG.info("Parsing Domain: " + domain);
         return RegexHelper.parseSubdomain(host, domain);
     }
+
 
 }
