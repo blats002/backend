@@ -120,6 +120,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 subdomain = parseSubdomain(host);
             }
 
+            pathParts = pathParts.replace("%20", " ");
             final String completePath = APP_ROOT_URI + subdomain + pathParts;
 
             LOG.info("Complete Path: " + completePath);
@@ -163,6 +164,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             type = MediaType.IMAGE_JPEG;
         } else if (path.endsWith("png")){
             type = MediaType.IMAGE_PNG;
+        } else if (path.endsWith("ico")){
+            type = MediaType.IMAGE_ICON;
         }
         return type;
     }
