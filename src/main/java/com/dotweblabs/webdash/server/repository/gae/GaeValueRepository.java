@@ -1,6 +1,6 @@
 package com.divroll.webdash.server.repository.gae;
 
-import com.divroll.webdash.client.shared.Value;
+import com.divroll.webdash.shared.Value;
 import com.divroll.webdash.server.repository.ValueRepository;
 import com.google.appengine.api.datastore.Key;
 

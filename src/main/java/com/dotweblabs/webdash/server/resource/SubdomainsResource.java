@@ -1,7 +1,7 @@
 package com.divroll.webdash.server.resource;
 
-import com.divroll.webdash.client.shared.Subdomain;
-import com.divroll.webdash.client.shared.Subdomains;
+import com.divroll.webdash.shared.Subdomain;
+import com.divroll.webdash.shared.Subdomains;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 

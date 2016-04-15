@@ -1,6 +1,6 @@
 package com.divroll.webdash.server.resource;
 
-import com.divroll.webdash.client.shared.Blog;
+import com.divroll.webdash.shared.Blog;
 import org.restlet.resource.Get;
 
 /**

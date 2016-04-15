@@ -1,7 +1,7 @@
 package com.divroll.webdash.server.repository.gae;
 
-import com.divroll.webdash.client.shared.File;
-import com.divroll.webdash.client.shared.Files;
+import com.divroll.webdash.shared.File;
+import com.divroll.webdash.shared.Files;
 import com.divroll.webdash.server.BlobFile;
 import com.divroll.webdash.server.repository.FileRepository;
 import com.google.appengine.api.datastore.Key;

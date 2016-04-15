@@ -1,12 +1,11 @@
 package com.divroll.webdash.server.resource.gae;
 
 import com.google.inject.Inject;
-import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.shared.User;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.resource.UserResource;
 import com.divroll.webdash.server.service.UserService;
 import com.divroll.webdash.server.service.WebTokenService;
-import com.divroll.webdash.server.service.exception.ValidationException;
 import org.restlet.data.Status;
 
 import java.util.logging.Logger;

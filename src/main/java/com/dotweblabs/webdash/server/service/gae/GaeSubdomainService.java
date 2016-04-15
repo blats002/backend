@@ -1,7 +1,7 @@
 package com.divroll.webdash.server.service.gae;
 
-import com.divroll.webdash.client.shared.Subdomain;
-import com.divroll.webdash.client.shared.Subdomains;
+import com.divroll.webdash.shared.Subdomain;
+import com.divroll.webdash.shared.Subdomains;
 import com.divroll.webdash.server.repository.SubdomainRepository;
 import com.divroll.webdash.server.service.SubdomainService;
 import com.google.inject.Inject;

@@ -1,8 +1,7 @@
 package com.divroll.webdash.server.resource.gae;
 
-import com.divroll.webdash.client.shared.Subdomain;
-import com.divroll.webdash.client.shared.Subdomains;
-import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.shared.Subdomain;
+import com.divroll.webdash.shared.Subdomains;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.resource.SubdomainsResource;
 import com.divroll.webdash.server.service.SubdomainService;

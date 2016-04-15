@@ -14,7 +14,7 @@
 */
 package com.divroll.webdash.server.service;
 
-import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.shared.User;
 import com.divroll.webdash.server.service.exception.ValidationException;
 
 public interface UserService {
