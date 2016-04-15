@@ -19,13 +19,15 @@ package com.divroll.webdash.client.shared;
 import com.hunchee.twist.annotations.Embedded;
 import com.hunchee.twist.annotations.Entity;
 import com.hunchee.twist.annotations.Id;
+import org.jboss.errai.databinding.client.api.Bindable;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+@Bindable
 @Entity
-public final class Blog implements Serializable {
+public class Blog implements Serializable {
     @Id
     private Long id;
     private String title;

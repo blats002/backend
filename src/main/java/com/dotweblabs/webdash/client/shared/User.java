@@ -18,12 +18,14 @@ package com.divroll.webdash.client.shared;
 
 import com.hunchee.twist.annotations.Entity;
 import com.hunchee.twist.annotations.Id;
+import org.jboss.errai.databinding.client.api.Bindable;
 
 import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-public final class User implements Serializable {
+@Bindable
+public class User implements Serializable {
     @Id
     private Long id;
     private String email;
@@ -34,6 +36,11 @@ public final class User implements Serializable {
     private Date modified;
 
     public User(){}
+
+    public User(String username, String password){
+        this.username = username;
+        this.password = password;
+    }
 
     public Long getId() {
         return id;
@@ -89,5 +96,14 @@ public final class User implements Serializable {
 
     public void setModified(Date modified) {
         this.modified = modified;
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        s += "Username=" + username + "\n"
+                + "Password=" + password + "\n"
+                + "Fullname=" + fullName + "\n";
+        return s;
     }
 }

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title property="og:title" content="WebDashBoard">Web Dashboard</title>
+    <link rel="stylesheet" href="uikit-2.24.2/css/uikit.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/uikit.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/uikit.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/placeholder.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/placeholder.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/progress.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/progress.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/form-file.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/form-file.almost-flat.min.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/upload.almost-flat.css">
+    <link rel="stylesheet" href="uikit-2.24.2/css/components/upload.almost-flat.min.css">
+    <link rel="stylesheet" href="fonts/proxima-nova.css">
+    <link rel="stylesheet" href="css/template.css">
+</head>
+<body>
+<div id="content" class="uk-width-1-1 uk-panel   " >
+    <div class="uk-grid uk-grid-collapse uk-height-viewport">
+        <div id="menu" class="uk-width-2-10 sidebar ">
+            <div class="account-name">
+                <h3 class="uk-text-center uk-margin-bottom-remove">James Bond</h3>
+            </div>
+            <div class="uk-width-1-1 uk-margin-top">
+                <ul class="uk-nav uk-nav-offcanvas">
+                    <li><a href="assets.html">assets</a></li>
+                    <li><a href="">blogs</a></li>
+                    <li><a href="">collection</a></li>
+                    <li><a id="domain" href="" class="uk-active">domain</a></li>
+                    <li><a id="users" href="">users</a></li>
+                </ul>
+            </div>
+            <div class="uk-width-1-1 uk-hidden  "style="padding-top: 347px" >
+                <button class="uk-align-center">logout</button>
+            </div>
+        </div>
+        <div class="uk-width-8-10 ">
+            <div id="navbar" class="uk-width-1-1 uk-panel navigation" role="navigation">
+                <nav class="uk-navbar ">
+                    <a href="" class=""><h2 class="uk-navbar-brand uk-margin-bottom-remove uk-padding-remove">Webdash</h2> </a>
+                    <ul class="uk-navbar-nav uk-align-right uk-margin-remove">
+                        <li><a id="settings" class="uk-vertical-align "><i class="uk-icon-gear"></i></a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="uk-width-1-1 uk-panel" role="content-right" style="height: inherit">
+                <div class="header ">
+                    <div class="uk-grid uk-grid-collapse">
+                        <div class="uk-width-1-3">
+                            <h3 class="uk-text-bold uk-margin-bottom-remove ">Domain</h3>
+                        </div>
+                        <div class="uk-width-2-3">
+                            <input type="text" class=" uk-margin-bottom-remove search uk-hidden"/>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="content uk-width-7-10 uk-container-center " style="height: inherit">
+                    <div class="uk-width-1-1 uk-form-row">
+                        <h4 class="uk-margin-bottom-remove uk-text-bold">Choose sub Domain</h4>
+                        <div class="uk-width-1-1 uk-panel">
+                            <input id="subdomain" type="text" class="uk-width-6-10 sub-domain"/>
+                            <span class="subdomain-span">.***REMOVED***</span>
+                        </div>
+
+
+
+                    </div>
+                    <div class="uk-width-6-10 uk-form-row uk-margin-large-top">
+                        <h4 class="uk-margin-bottom-remove uk-text-bold">Upload Favicon</h4>
+                        <div id="upload-drop" class="uk-placeholder uk-text-center uk-margin-top-remove">
+                            <i class="uk-icon-file-picture-o uk-icon-medium uk-text-muted uk-margin-small-right"></i> <i>drag and drop favicon here</i> <a class="uk-form-file upload"><i class="uk-icon-upload"></i>&nbsp;Upload<input id="upload-select" type="file" ></a>.
+                        </div>
+
+                        <div id="progressbar" class="uk-progress uk-hidden">
+                            <div class="uk-progress-bar" style="width: 0%;">0%</div>
+                        </div>
+                        <h5 class="yourFile uk-margin-remove">Your file must use the <span class="text-blue">.ico</span> extension</h5>
+                    </div>
+                    <div class="uk-width-1-1 uk-hidden " style="padding-top: 120px">
+                        <button class="uk-align-right uk-margin-bottom-remove ">save</button>
+                    </div>
+
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="uk-position-bottom uk-width-1-1 uk-margin-bottom">
+        <div class="uk-grid uk-grid-collapse ">
+            <div class="uk-width-2-10">
+                <button id="logout" class="uk-align-center">logout</button>
+            </div>
+            <div class="uk-width-8-10">
+                <div class="uk-width-7-10 uk-container-center">
+                    <button id="save" class=" uk-align-right uk-margin-bottom-remove ">save</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<script>window.jQuery || document.write('<script  src="uikit-2.24.2/js/jquery-1.10.2.min.js"><\/script>')</script>
+<script type="text/javascript" src="uikit-2.24.2/js/uikit.min.js"></script>
+<script type="text/javascript" src="uikit-2.24.2/js/components/upload.min.js"></script>
+<script type="text/javascript" src="uikit-2.24.2/js/components/form-select.min.js"></script>
+<script>
+
+    $(function(){
+
+        var progressbar = $("#progressbar"),
+                bar         = progressbar.find('.uk-progress-bar'),
+                settings    = {
+
+                    action: '/', // upload url
+
+                    allow : '*.(ico)', // allow only images
+
+                    loadstart: function() {
+                        bar.css("width", "0%").text("0%");
+                        progressbar.removeClass("uk-hidden");
+                    },
+
+                    progress: function(percent) {
+                        percent = Math.ceil(percent);
+                        bar.css("width", percent+"%").text(percent+"%");
+                    },
+
+                    allcomplete: function(response) {
+
+                        bar.css("width", "100%").text("100%");
+
+                        setTimeout(function(){
+                            progressbar.addClass("uk-hidden");
+                        }, 250);
+
+                        alert("Upload Completed")
+                    }
+                };
+
+        var select = UIkit.uploadSelect($("#upload-select"), settings),
+                drop   = UIkit.uploadDrop($("#upload-drop"), settings);
+    });
+
+</script>
+</body>
+</html>

@@ -19,10 +19,12 @@ package com.divroll.webdash.client.shared;
 import com.hunchee.twist.annotations.Embedded;
 import com.hunchee.twist.annotations.Entity;
 import com.hunchee.twist.annotations.Id;
+import org.jboss.errai.databinding.client.api.Bindable;
 
 import java.io.Serializable;
 import java.util.Date;
 
+@Bindable
 @Entity
 public class File implements Serializable {
     @Id
@@ -31,6 +33,12 @@ public class File implements Serializable {
     private String fileUrl;
     private Date created;
     private Date modified;
+
+    public File(){}
+
+    public File(String fileName){
+        this.fileName = fileName;
+    }
 
     public Long getId() {
         return id;

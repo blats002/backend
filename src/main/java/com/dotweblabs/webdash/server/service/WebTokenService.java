@@ -17,7 +17,7 @@ package com.divroll.webdash.server.service;
 import java.util.Map;
 
 public interface WebTokenService {
-    public String createToken(String userId);
+    public String createToken(Long userId);
     public Map<String,Object> readToken();
-    public String readUserIdFromToken(String token);
+    public Long readUserIdFromToken(String token);
 }

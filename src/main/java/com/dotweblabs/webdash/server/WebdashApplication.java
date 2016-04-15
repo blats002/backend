@@ -47,6 +47,9 @@ public class WebdashApplication extends Application {
     router.attach(ROOT_URI + "blogs/{blog_id}", GaeBlogServerResource.class);
     router.attach(ROOT_URI + "files", GaeFilesServerResource.class);
     router.attach(ROOT_URI + "files/{file_id}", GaeFileServerResource.class);
+    router.attach(ROOT_URI + "subdomains", GaeSubdomainsServerResource.class);
+    router.attach(ROOT_URI + "subdomains/{subdomain_id}", GaeSubdomainServerResource.class);
+    router.attach(ROOT_URI + "tokens", GaeTokensServerResource.class);
     router.attach(ROOT_URI + "users", GaeUsersServerResource.class);
     router.attach(ROOT_URI + "users/{user_id}", GaeUserServerResource.class);
     router.attach(ROOT_URI + "values", GaeValuesServerResource.class);

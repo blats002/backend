@@ -14,19 +14,13 @@
 */
 package com.divroll.webdash.server.guice;
 
-import com.divroll.webdash.server.repository.BlogRepository;
-import com.divroll.webdash.server.repository.FileRepository;
-import com.divroll.webdash.server.repository.ValueRepository;
-import com.divroll.webdash.server.repository.gae.GaeBlogRepository;
-import com.divroll.webdash.server.repository.gae.GaeFileRepository;
-import com.divroll.webdash.server.repository.gae.GaeValueRepository;
+import com.divroll.webdash.server.repository.*;
+import com.divroll.webdash.server.repository.gae.*;
 import com.divroll.webdash.server.service.*;
 import com.divroll.webdash.server.service.gae.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
-import com.divroll.webdash.server.repository.UserRepository;
-import com.divroll.webdash.server.repository.gae.GaeUserRepository;
 import org.restlet.Context;
 
 import java.io.IOException;
@@ -63,10 +57,12 @@ public class GuiceConfigModule extends AbstractModule {
         bind(FileRepository.class).to(GaeFileRepository.class).in(Scopes.SINGLETON);
         bind(UserRepository.class).to(GaeUserRepository.class).in(Scopes.SINGLETON);
         bind(ValueRepository.class).to(GaeValueRepository.class).in(Scopes.SINGLETON);
+        bind(SubdomainRepository.class).to(GaeSubdomainRepository.class).in(Scopes.SINGLETON);
         bind(BlogService.class).to(GaeBlogService.class).in(Scopes.SINGLETON);
         bind(FileService.class).to(GaeFileService.class).in(Scopes.SINGLETON);
         bind(UserService.class).to(GaeUserService.class).in(Scopes.SINGLETON);
         bind(ValueService.class).to(GaeValueService.class).in(Scopes.SINGLETON);
+        bind(SubdomainService.class).to(GaeSubdomainService.class).in(Scopes.SINGLETON);
         bind(WebTokenService.class).to(GaeWebTokenService.class).in(Scopes.SINGLETON);
         Names.bindProperties(binder(), readProperties());
     }

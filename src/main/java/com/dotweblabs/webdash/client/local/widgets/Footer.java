@@ -24,4 +24,5 @@ import javax.enterprise.context.Dependent;
 @Dependent
 @Templated
 public class Footer extends Composite {
+
 }

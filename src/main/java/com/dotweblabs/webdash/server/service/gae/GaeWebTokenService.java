@@ -46,7 +46,7 @@ public class GaeWebTokenService implements WebTokenService {
     }
 
     @Override
-    public String createToken(String userId){
+    public String createToken(Long userId){
         HashMap<String, Object> claims = new HashMap<String, Object>();
         claims.put("id", String.valueOf(userId));
         String token = signer.sign(claims);
@@ -60,19 +60,19 @@ public class GaeWebTokenService implements WebTokenService {
     }
 
     @Override
-    public String readUserIdFromToken(String token) {
-        String id = null;
+    public Long readUserIdFromToken(String token) {
+        Long id = null;
         try {
             Map<String, Object> parsed = verifier.verify(token);
             Object objectId = parsed.get("id");
-            //if(objectId instanceof Integer){
-            //    id = Long.valueOf((Integer)objectId);
-            //} else if (objectId instanceof Long) {
-            //    id = (Long) objectId;
-            //} else if(objectId instanceof String){
-            //    id = Long.valueOf((String) objectId);
-            //}
-            id = (String) objectId;
+            if(objectId instanceof Integer){
+                id = Long.valueOf((Integer)objectId);
+            } else if (objectId instanceof Long) {
+                id = (Long) objectId;
+            } else if(objectId instanceof String){
+                id = Long.valueOf((String) objectId);
+            }
+//            id = (Long) objectId;
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {

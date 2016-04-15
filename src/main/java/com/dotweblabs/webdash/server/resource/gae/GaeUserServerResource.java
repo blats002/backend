@@ -23,19 +23,32 @@ public class GaeUserServerResource extends SelfInjectingServerResource
     @Inject
     UserService userService;
 
+    String userId;
+
+    @Override
+    protected void doInit() {
+        super.doInit();
+        userId = getAttribute("user_id");
+    }
+
     @Override
     public User getUser() {
-        String token = getQueryValue("token");
-        if(token != null && !token.equals("")){
-            String userId = webTokenService.readUserIdFromToken(token);
-            try {
-                User user = userService.read(userId);
-                return user;
-            } catch (ValidationException e) {
-                e.printStackTrace();
+        LOG.info("Fetching user id: " + userId);
+        try{
+            String token = getQueryValue("token");
+            if(token != null && !token.equals("")){
+                User ref = userService.read(Long.valueOf(userId));
+                Long userId = webTokenService.readUserIdFromToken(token);
+                if(ref.getId().equals(userId)) {
+                    return ref;
+                } else {
+                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                }
+            } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             }
-        } else {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        } catch (Exception e){
+            e.printStackTrace();
         }
         return null;
     }

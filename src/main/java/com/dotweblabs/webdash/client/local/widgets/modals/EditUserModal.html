@@ -1,0 +1,38 @@
+
+<!--MODAL-->
+<div class="uk-modal" id="editUser" style="z-index: 99999;" role="modal">
+    <div class="uk-modal-dialog" style="width: 450px;">
+        <a href="" class="uk-modal-close uk-close"></a>
+        <h4 class="uk-text-bold">Edit User</h4>
+        <div class="uk-width-9-10 uk-container-center">
+            <!--<i class="uk-icon-question uk-icon-medium uk-margin-left uk-border-circle" style="border-radius:100%;padding:10px;background-color: #009dd8;"></i>-->
+            <h4 class="uk-margin-remove ">Full Name</h4>
+            <input id="fullName" class="uk-width-1-1  " type="text" placeholder=""/>
+            <h4 class="uk-margin-remove ">Username</h4>
+            <input id="username" class="uk-width-1-1  " type="text" placeholder=""/>
+            <h4 class="uk-margin-remove ">Password</h4>
+            <input id="password" class="uk-width-1-1  " type="password" placeholder=""/>
+            <select id="role" class="uk-width-1-2 uk-margin-top">
+                <option value="Role" class="uk-text-center">Role</option>
+                <option value="Admin" class="uk-text-center">Admin</option>
+                <option value="SubAccount" class="uk-text-center">Sub Account</option>
+            </select>
+            <div class="uk-width-1-1 uk-panel uk-margin-large-top">
+                <div id="panel"></div>
+
+                <!--<div id="upload-drop" class="uk-placeholder uk-text-center">-->
+                <!--<i class="uk-icon-cloud-upload uk-icon-medium uk-text-muted uk-margin-small-right"></i> Attach zip file by dropping them here or <a class="uk-form-file">selecting one<input id="upload-select" type="file"></a>.-->
+                <!--</div>-->
+
+                <!--<div id="progressbar" class="uk-progress uk-hidden">-->
+                <!--<div class="uk-progress-bar" style="width: 0%;">0%</div>-->
+                <!--</div>-->
+
+
+                <button id="save" class="uk-float-right ">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--endModal-->
