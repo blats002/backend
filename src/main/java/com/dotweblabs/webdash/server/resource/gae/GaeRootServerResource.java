@@ -19,6 +19,7 @@ package com.divroll.webdash.server.resource.gae;
 import com.divroll.webdash.server.BlobFile;
 import com.divroll.webdash.server.Subdomain;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
+import com.divroll.webdash.server.util.CachingOutputStream;
 import com.divroll.webdash.server.util.GAEUtil;
 import com.divroll.webdash.server.util.RegexHelper;
 import com.dropbox.core.DbxException;
@@ -69,6 +70,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     private static final String ROOT_URI = "/";
     private static final String APP_ROOT_URI = "/weebio/";
+	private static final String KEY_SPACE = ":";
 
     @Inject
     @Named("app.domain")
@@ -113,7 +115,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 pathParts = "/index.html";
             }
 
-            String subdomain = null;
+            final String subdomain;
             if(!host.endsWith(getDomain())){
                 subdomain = getStoredSubdomain(host);
             } else {
@@ -134,8 +136,25 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     DbxClientV1 client = new DbxClientV1(config, dropboxToken);
                     DbxEntry.File md;
                     try {
-                        md = client.getFile(completePath, null,  outputStream);
-                        LOG.info("File: " + completePath + " Bytes read: " + md.numBytes);
+						long numBytes;
+						String key = new StringBuilder()
+								.append(subdomain)
+								.append(KEY_SPACE)
+								.append(completePath).toString();
+						Object cached = memCache.get(key);
+						if(cached != null){
+							outputStream.write((byte[]) cached);
+							numBytes = ((byte[]) cached).length;
+						} else {
+							CachingOutputStream cache = null;
+							md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
+							numBytes = md.numBytes;
+							if(cache != null && ((numBytes / 1024)/1024) <= 1){
+								LOG.info("Caching file: " + completePath);
+								memCache.put(key, cache.getCache());
+							}
+						}
+						LOG.info("File: " + completePath + " Bytes read: " + numBytes);
                     } catch (DbxException e) {
                         e.printStackTrace();
                     }
@@ -226,6 +245,5 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         LOG.info("Parsing Domain: " + domain);
         return RegexHelper.parseSubdomain(host, domain);
     }
-
 
 }
