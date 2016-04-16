@@ -11,7 +11,7 @@
         <servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
         <init-param>
             <param-name>org.restlet.application</param-name>
-            <param-value>com.divroll.webdash.server.WebdashApplication</param-value>
+            <param-value>com.divroll.core.rest.DivrollApplication</param-value>
         </init-param>
     </servlet>
 
