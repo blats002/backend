@@ -246,6 +246,12 @@
             <artifactId>dagger</artifactId>
             <version>1.2.2</version>
         </dependency>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.logback-extensions</groupId>
+            <artifactId>logback-ext-loggly</artifactId>
+            <version>0.1.2</version>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>com.google.http-client</groupId>

@@ -36,6 +36,7 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import org.slf4j.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,15 +45,14 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Resource which has only one representation.
  */
 public class GaeRootServerResource extends SelfInjectingServerResource {
 
-    private static final Logger LOG
-            = Logger.getLogger(GaeRootServerResource.class.getName());
+    final static Logger LOG
+            = LoggerFactory.getLogger(GaeRootServerResource.class);
 
     MemcacheService memCache = MemcacheServiceFactory.getMemcacheService();
 

@@ -23,11 +23,11 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
 
-import java.util.logging.Logger;
+import org.slf4j.*;
 
 public class DivrollApplication extends Application {
-  private static final Logger LOG
-          = Logger.getLogger(DivrollApplication.class.getName());
+  final static Logger LOG
+          = LoggerFactory.getLogger(DivrollApplication.class);
   private static final String ROOT_URI = "/rest/";
   /**
    * Creates a root Restlet that will receive all incoming calls.
