@@ -1,24 +1,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.divroll.webdash</groupId>
+    <groupId>com.divroll</groupId>
     <artifactId>core</artifactId>
     <packaging>war</packaging>
     <version>1.0</version>
-    <name>webdashcore</name>
+    <name>core</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <version.gwt>2.7.0</version.gwt>
-        <version.errai>3.2.1.Final</version.errai>
         <gae.version>1.9.18</gae.version>
         <gae.home>${settings.localRepository}/com/google/appengine/appengine-java-sdk/${gae.version}/appengine-java-sdk/appengine-java-sdk-${gae.version}</gae.home>
         <gae.application.version>test</gae.application.version>
         <guava.version>18.0</guava.version>
         <xtend.version>2.9.1</xtend.version>
         <version.restlet>2.3.5</version.restlet>
-        <!--<version.restlet>3.0-SNAPSHOT</version.restlet>-->
         <version.junit>4.11</version.junit>
     </properties>
     <dependencyManagement>
@@ -26,11 +23,6 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava-gwt</artifactId>
                 <version>${guava.version}</version>
             </dependency>
         </dependencies>
@@ -61,72 +53,6 @@
             <artifactId>appengine-testing</artifactId>
             <version>${gae.version}</version>
             <scope>test</scope>
-        </dependency>
-        <!-- GWT libraries -->
-        <dependency>
-            <!-- this library provides classes required by GWT-RPC servlets on the server -->
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-servlet</artifactId>
-            <version>${version.gwt}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-user</artifactId>
-            <version>${version.gwt}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-codeserver</artifactId>
-            <version>${version.gwt}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-elemental</artifactId>
-            <version>${version.gwt}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.gwtquery</groupId>
-            <artifactId>gwtquery</artifactId>
-            <version>1.4.3</version>
-        </dependency>
-        <!--dependency>
-            <groupId>de.itemis.xtend</groupId>
-            <artifactId>auto-gwt</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency-->
-        <dependency>
-            <groupId>org.eclipse.xtend</groupId>
-            <artifactId>org.eclipse.xtend.lib.gwt</artifactId>
-            <version>${xtend.version}</version>
-        </dependency>
-        <!-- Errai Dependencies -->
-        <dependency>
-            <groupId>org.jboss.errai</groupId>
-            <artifactId>errai-jpa-client</artifactId>
-            <version>${version.errai}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.errai</groupId>
-            <artifactId>errai-ui</artifactId>
-            <version>${version.errai}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.errai</groupId>
-            <artifactId>errai-data-binding</artifactId>
-            <version>${version.errai}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.errai</groupId>
-            <artifactId>errai-cdi-client</artifactId>
-            <version>${version.errai}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.errai</groupId>
-            <artifactId>errai-navigation</artifactId>
-            <version>${version.errai}</version>
         </dependency>
         <!-- REST -->
         <dependency>
@@ -245,11 +171,6 @@
             <artifactId>org.restlet.ext.json</artifactId>
             <version>${version.restlet}</version>
         </dependency>
-        <dependency>
-            <groupId>org.restlet.gae</groupId>
-            <artifactId>org.restlet.ext.gwt</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
         <!-- Twist Object Mapping -->
         <dependency>
             <groupId>com.hunchee</groupId>
@@ -321,28 +242,6 @@
             <version>0.8</version>
         </dependency>
         <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt-dev</artifactId>
-            <version>${version.gwt}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.restlet.gwt</groupId>
-            <artifactId>org.restlet</artifactId>
-            <version>${version.restlet}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.gwt</groupId>
-                    <artifactId>gwt-dev</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.restlet.gwt</groupId>
-            <artifactId>org.restlet.ext.json</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
-        <dependency>
             <groupId>com.squareup.dagger</groupId>
             <artifactId>dagger</artifactId>
             <version>1.2.2</version>
@@ -361,310 +260,7 @@
     </dependencies>
     <profiles>
         <profile>
-            <id>gae-nosuperdevmode</id>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/java</directory>
-                        <filtering>true</filtering>
-                        <includes>
-                            <include>**/*.gwt.xml</include>
-                        </includes>
-                    </resource>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                        <includes>
-                            <include>**/*.java</include>
-                            <include>**/*.properties</include>
-                            <include>**/*.xml</include>
-                            <include>**/*.html</include>
-                        </includes>
-                    </resource>
-                </resources>
-                <plugins>
-                    <plugin>
-                        <groupId>com.google.appengine</groupId>
-                        <artifactId>appengine-maven-plugin</artifactId>
-                        <version>${gae.version}</version>
-                        <configuration>
-                            <enableJarClasses>false</enableJarClasses>
-                            <port>8080</port>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>gwt-maven-plugin</artifactId>
-                        <version>${version.gwt}</version>
-                        <executions>
-                            <execution>
-                                <!-- gwt:compile happens just before package phase -->
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>compile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <modules>
-                                <!-- gwt module inherits Core gwt module therefore both will be gwt:compiled -->
-                                <module>com.divroll.webdash.App</module>
-                            </modules>
-                            <logLevel>DEBUG</logLevel>
-                            <style>PRETTY</style>
-                            <runTarget>app.html</runTarget>
-                            <appEngineVersion>${gae.version}</appEngineVersion>
-                            <!-- tell the gwt plugin that the webapp source resides in src/main/webapp -->
-                            <webappDirectory>${webappDirectory}</webappDirectory>
-                            <!-- tell the gwt plugin that dev mode should be run using the webapp that resides in target/${webappDirectory} -->
-                            <hostedWebapp>${webappDirectory}</hostedWebapp>
-                            <!-- Normally the gwt maven plugin executes dev mode using a builtin jetty server.
-                                 This config property instructs the gwt maven plugin to execute dev mode using the
-                                 jetty server supplied by the appengine sdk. -->
-                            <server>com.google.appengine.tools.development.gwt.AppEngineLauncher</server>
-                            <strict>false</strict>
-                            <disableCastChecking>true</disableCastChecking>
-                            <draftCompile>true</draftCompile>
-                            <localWorkers>16</localWorkers>
-                            <optimizationLevel>0</optimizationLevel> <!-- 0 to 9 -->
-                            <!--<extraJvmArgs>-Xmx4096M -Xms4096m -XX:PermSize=256m -XX:MaxPermSize=2048m</extraJvmArgs>-->
-                            <superDevMode>false</superDevMode>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <version>2.4.1</version>
-                        <configuration>
-                            <filesets>
-                                <fileset>
-                                    <directory>${basedir}</directory>
-                                    <includes>
-                                        <include>www-test/**</include>
-                                        <include>.gwt/**</include>
-                                        <include>.errai/**</include>
-                                        <include>src/main/webapp/app/**</include>
-                                        <include>src/main/webapp/WEB-INF/deploy/**</include>
-                                        <include>src/main/webapp/WEB-INF/lib/**</include>
-                                        <include>src/main/webapp/WEB-INF/classes/**</include>
-                                        <include>**/gwt-unitCache/**</include>
-                                        <include>**/*.JUnit/**</include>
-                                    </includes>
-                                </fileset>
-                            </filesets>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>gae</id>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/java</directory>
-                        <filtering>true</filtering>
-                        <includes>
-                            <include>**/*.gwt.xml</include>
-                        </includes>
-                    </resource>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                        <includes>
-                            <include>**/*.java</include>
-                            <include>**/*.properties</include>
-                            <include>**/*.xml</include>
-                            <include>**/*.html</include>
-                        </includes>
-                    </resource>
-                </resources>
-                <plugins>
-                    <!--<plugin>-->
-                        <!--<groupId>org.eclipse.xtend</groupId>-->
-                        <!--<artifactId>xtend-maven-plugin</artifactId>-->
-                        <!--<version>${xtend.version}</version>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<goals>-->
-                                    <!--<goal>compile</goal>-->
-                                    <!--<goal>testCompile</goal>-->
-                                <!--</goals>-->
-                                <!--<configuration>-->
-                                    <!--<outputDirectory>xtend-gen</outputDirectory>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                    <plugin>
-                        <groupId>com.google.appengine</groupId>
-                        <artifactId>appengine-maven-plugin</artifactId>
-                        <version>${gae.version}</version>
-                        <configuration>
-                            <enableJarClasses>false</enableJarClasses>
-                            <port>8080</port>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>gwt-maven-plugin</artifactId>
-                        <version>${version.gwt}</version>
-                        <executions>
-                            <execution>
-                                <!-- gwt:compile happens just before package phase -->
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>compile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <modules>
-                                <!-- gwt module inherits Core gwt module therefore both will be gwt:compiled -->
-                                <module>com.divroll.webdash.App</module>
-                            </modules>
-                            <logLevel>DEBUG</logLevel>
-                            <style>PRETTY</style>
-                            <runTarget>app.html</runTarget>
-                            <appEngineVersion>${gae.version}</appEngineVersion>
-                            <!-- tell the gwt plugin that the webapp source resides in src/main/webapp -->
-                            <webappDirectory>${project.build.directory}/${project.build.finalName}/webdash</webappDirectory>
-                            <!--<webappDirectory>${webappDirectory}</webappDirectory>-->
-                            <!-- tell the gwt plugin that dev mode should be run using the webapp that resides in target/${webappDirectory} -->
-                            <hostedWebapp>${webappDirectory}</hostedWebapp>
-                            <!-- Normally the gwt maven plugin executes dev mode using a builtin jetty server.
-                                 This config property instructs the gwt maven plugin to execute dev mode using the
-                                 jetty server supplied by the appengine sdk. -->
-                            <server>com.google.appengine.tools.development.gwt.AppEngineLauncher</server>
-                            <strict>true</strict>
-                            <disableCastChecking>true</disableCastChecking>
-                            <draftCompile>true</draftCompile>
-                            <localWorkers>16</localWorkers>
-                            <optimizationLevel>0</optimizationLevel> <!-- 0 to 9 -->
-                            <!--<extraJvmArgs>-Xmx4096M -Xms4096m -XX:PermSize=256m -XX:MaxPermSize=2048m</extraJvmArgs>-->
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <version>2.4.1</version>
-                        <configuration>
-                            <filesets>
-                                <fileset>
-                                    <directory>${basedir}</directory>
-                                    <includes>
-                                        <include>www-test/**</include>
-                                        <include>.gwt/**</include>
-                                        <include>.errai/**</include>
-                                        <include>src/main/webapp/app/**</include>
-                                        <include>src/main/webapp/WEB-INF/deploy/**</include>
-                                        <include>src/main/webapp/WEB-INF/lib/**</include>
-                                        <include>src/main/webapp/WEB-INF/classes/**</include>
-                                        <include>**/gwt-unitCache/**</include>
-                                        <include>**/*.JUnit/**</include>
-                                    </includes>
-                                </fileset>
-                            </filesets>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>gae-release</id>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/java</directory>
-                        <filtering>true</filtering>
-                        <includes>
-                            <include>**/*.gwt.xml</include>
-                        </includes>
-                    </resource>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                        <includes>
-                            <include>**/*.java</include>
-                            <include>**/*.properties</include>
-                            <include>**/*.xml</include>
-                            <include>**/*.html</include>
-                        </includes>
-                    </resource>
-                </resources>
-                <plugins>
-                    <plugin>
-                        <groupId>com.google.appengine</groupId>
-                        <artifactId>appengine-maven-plugin</artifactId>
-                        <version>${gae.version}</version>
-                        <configuration>
-                            <enableJarClasses>false</enableJarClasses>
-                            <port>8080</port>
-                            <jvmFlags>
-                                <jvmFlag>-Xdebug</jvmFlag>
-                                <jvmFlag>-agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n</jvmFlag>
-                            </jvmFlags>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>gwt-maven-plugin</artifactId>
-                        <version>${version.gwt}</version>
-                        <executions>
-                            <execution>
-                                <!-- gwt:compile happens just before package phase -->
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>compile</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <modules>
-                                <!-- gwt module inherits Core gwt module therefore both will be gwt:compiled -->
-                                <module>com.divroll.webdash.App</module>
-                            </modules>
-                            <logLevel>DEBUG</logLevel>
-                            <style>OBFUSCATED</style>
-                            <runTarget>app.html</runTarget>
-                            <appEngineVersion>${gae.version}</appEngineVersion>
-                            <webappDirectory>${webappDirectory}</webappDirectory>
-                            <hostedWebapp>${webappDirectory}</hostedWebapp>
-                            <server>com.google.appengine.tools.development.gwt.AppEngineLauncher</server>
-                            <strict>true</strict>
-                            <disableCastChecking>false</disableCastChecking>
-                            <draftCompile>false</draftCompile>
-                            <localWorkers>16</localWorkers>
-                            <optimizationLevel>9</optimizationLevel> <!-- 0 to 9 -->
-                            <enableClosureCompiler>true</enableClosureCompiler>
-                            <!--<extraJvmArgs>-Xmx4096M -Xms4096m -XX:PermSize=256m -XX:MaxPermSize=2048m</extraJvmArgs>-->
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <version>2.4.1</version>
-                        <configuration>
-                            <filesets>
-                                <fileset>
-                                    <directory>${basedir}</directory>
-                                    <includes>
-                                        <include>www-test/**</include>
-                                        <include>.gwt/**</include>
-                                        <include>.errai/**</include>
-                                        <include>src/main/webapp/app/**</include>
-                                        <include>src/main/webapp/WEB-INF/deploy/**</include>
-                                        <include>src/main/webapp/WEB-INF/lib/**</include>
-                                        <include>src/main/webapp/WEB-INF/classes/**</include>
-                                        <include>**/gwt-unitCache/**</include>
-                                        <include>**/*.JUnit/**</include>
-                                    </includes>
-                                </fileset>
-                            </filesets>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>gae-nogwt</id>
             <build>
                 <finalName>${artifactId}-${version}</finalName>
                 <plugins>
@@ -745,31 +341,5 @@
         <!--</repository>-->
     </repositories>
     <pluginRepositories>
-        <!--<pluginRepository>-->
-            <!--<id>sonatype_releases</id>-->
-            <!--<url>https://oss.sonatype.org/content/repositories/releases/</url>-->
-            <!--<releases>-->
-                <!--<enabled>false</enabled>-->
-            <!--</releases>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-        <!--</pluginRepository>-->
-        <!--<pluginRepository>-->
-            <!--<id>spring-snapshots</id>-->
-            <!--<name>Spring Snapshots</name>-->
-            <!--<url>http://repo.spring.io/snapshot</url>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-        <!--</pluginRepository>-->
-        <!--<pluginRepository>-->
-            <!--<id>spring-milestones</id>-->
-            <!--<name>Spring Milestones</name>-->
-            <!--<url>http://repo.spring.io/milestone</url>-->
-            <!--<snapshots>-->
-                <!--<enabled>false</enabled>-->
-            <!--</snapshots>-->
-        <!--</pluginRepository>-->
     </pluginRepositories>
 </project>
