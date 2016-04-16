@@ -36,14 +36,15 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Locale;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -124,7 +125,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     DbxClientV1 client = new DbxClientV1(config, dropboxToken);
                     DbxEntry.File md;
                     try {
-						long numBytes;
+						long numBytes = 0;
 						String key = new StringBuilder()
 								.append(subdomain)
 								.append(KEY_SPACE)
@@ -135,14 +136,30 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 							numBytes = ((byte[]) cached).length;
 						} else {
 							CachingOutputStream cache = null;
-							md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
-							numBytes = md.numBytes;
-							if(cache != null && ((numBytes / 1024)/1024) <= 1){
-								LOG.info("Caching file: " + completePath);
-								memCache.put(key, cache.getCache());
-							}
+                            if(completePath.endsWith(ROOT_URI)) {
+                                System.out.println("Files in the root path:");
+                                DbxEntry.WithChildren listing = client.getMetadataWithChildren(
+                                        completePath.substring(0,completePath.length()-1));
+                                Map directory = new HashMap<>();
+                                List<String> list = new ArrayList<>();
+                                for (DbxEntry child : listing.children) {
+                                    list.add(child.path);
+                                }
+                                directory.put("directory", list);
+                                String jsonString = JSON.toJSONString(directory);
+                                outputStream.write(jsonString.getBytes());
+                            } else {
+                                md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
+                                if (md != null) {
+                                    numBytes = md.numBytes;
+                                    if(cache != null && ((numBytes / 1024)/1024) <= 1){
+                                        LOG.info("Caching file: " + completePath);
+                                        memCache.put(key, cache.getCache());
+                                    }
+                                    LOG.info("File: " + completePath + " Bytes read: " + numBytes);
+                                }
+                            }
 						}
-						LOG.info("File: " + completePath + " Bytes read: " + numBytes);
                     } catch (DbxException e) {
                         e.printStackTrace();
                     }
