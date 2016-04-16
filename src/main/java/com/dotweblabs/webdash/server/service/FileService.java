@@ -1,7 +1,7 @@
 package com.divroll.webdash.server.service;
 
-import com.divroll.webdash.client.shared.File;
-import com.divroll.webdash.client.shared.Files;
+import com.divroll.webdash.shared.File;
+import com.divroll.webdash.shared.Files;
 import com.divroll.webdash.server.service.exception.ValidationException;
 
 /**

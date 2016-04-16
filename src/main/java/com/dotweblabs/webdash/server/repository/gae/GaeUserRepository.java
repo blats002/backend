@@ -1,6 +1,6 @@
 package com.divroll.webdash.server.repository.gae;
 
-import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.shared.User;
 import com.google.appengine.api.datastore.Key;
 import com.hunchee.twist.types.Function;
 import com.divroll.webdash.server.repository.UserRepository;

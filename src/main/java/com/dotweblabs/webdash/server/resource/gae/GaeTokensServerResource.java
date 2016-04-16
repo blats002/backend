@@ -1,17 +1,15 @@
 package com.divroll.webdash.server.resource.gae;
 
-import com.divroll.webdash.client.shared.Token;
-import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.shared.Token;
+import com.divroll.webdash.shared.User;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.resource.TokensResource;
-import com.divroll.webdash.server.resource.UserResource;
 import com.divroll.webdash.server.service.UserService;
 import com.divroll.webdash.server.service.WebTokenService;
 import com.divroll.webdash.server.service.exception.ValidationException;
 import com.divroll.webdash.server.util.Base64;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.restlet.data.Status;
 import org.restlet.data.Status;
 import org.restlet.util.Series;
 import org.mindrot.jbcrypt.BCrypt;

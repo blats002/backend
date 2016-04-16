@@ -16,7 +16,7 @@ package com.divroll.webdash.server.service.gae;
 
 import com.divroll.webdash.client.shared.Users;
 import com.google.inject.Inject;
-import com.divroll.webdash.client.shared.User;
+import com.divroll.webdash.shared.User;
 import com.divroll.webdash.server.repository.UserRepository;
 import com.divroll.webdash.server.service.UserService;
 import com.divroll.webdash.server.service.exception.ValidationException;

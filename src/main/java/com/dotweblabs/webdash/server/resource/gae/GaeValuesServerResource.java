@@ -1,8 +1,7 @@
 package com.divroll.webdash.server.resource.gae;
 
-import com.divroll.webdash.client.shared.Values;
+import com.divroll.webdash.shared.Values;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
-import com.divroll.webdash.server.resource.ValueResource;
 import com.divroll.webdash.server.resource.ValuesResource;
 import com.divroll.webdash.server.service.ValueService;
 import com.divroll.webdash.server.service.WebTokenService;

@@ -1,7 +1,7 @@
 package com.divroll.webdash.server.service.gae;
 
-import com.divroll.webdash.client.shared.Blog;
-import com.divroll.webdash.client.shared.Blogs;
+import com.divroll.webdash.shared.Blog;
+import com.divroll.webdash.shared.Blogs;
 import com.divroll.webdash.server.repository.gae.GaeBlogRepository;
 import com.divroll.webdash.server.service.BlogService;
 import com.divroll.webdash.server.service.exception.ValidationException;

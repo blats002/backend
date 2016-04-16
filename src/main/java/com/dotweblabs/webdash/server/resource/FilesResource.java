@@ -1,6 +1,6 @@
 package com.divroll.webdash.server.resource;
 
-import com.divroll.webdash.client.shared.Files;
+import com.divroll.webdash.shared.Files;
 import org.restlet.resource.Get;
 
 /**

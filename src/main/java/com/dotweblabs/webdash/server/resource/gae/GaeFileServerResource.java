@@ -1,6 +1,6 @@
 package com.divroll.webdash.server.resource.gae;
 
-import com.divroll.webdash.client.shared.File;
+import com.divroll.webdash.shared.File;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
 import com.divroll.webdash.server.resource.FileResource;
 import com.divroll.webdash.server.service.FileService;

@@ -1,8 +1,7 @@
 package com.divroll.webdash.server.resource.gae;
 
-import com.divroll.webdash.client.shared.Blogs;
+import com.divroll.webdash.shared.Blogs;
 import com.divroll.webdash.server.guice.SelfInjectingServerResource;
-import com.divroll.webdash.server.resource.BlogResource;
 import com.divroll.webdash.server.resource.BlogsResource;
 import com.divroll.webdash.server.service.BlogService;
 import com.divroll.webdash.server.service.WebTokenService;

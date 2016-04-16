@@ -1,7 +1,7 @@
 package com.divroll.webdash.server.service.gae;
 
-import com.divroll.webdash.client.shared.Value;
-import com.divroll.webdash.client.shared.Values;
+import com.divroll.webdash.shared.Value;
+import com.divroll.webdash.shared.Values;
 import com.divroll.webdash.server.repository.gae.GaeValueRepository;
 import com.divroll.webdash.server.service.ValueService;
 import com.divroll.webdash.server.service.exception.ValidationException;
