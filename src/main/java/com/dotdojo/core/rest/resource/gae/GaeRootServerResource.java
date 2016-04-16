@@ -15,6 +15,7 @@
 package com.divroll.core.rest.resource.gae;
 
 import com.divroll.core.rest.Subdomain;
+import com.divroll.core.rest.util.ByteHelper;
 import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.GAEUtil;
 import com.divroll.core.rest.util.RegexHelper;
@@ -134,7 +135,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 						if(cached != null){
 							outputStream.write((byte[]) cached);
 							numBytes = ((byte[]) cached).length;
-						} else {
+                            LOG.info(key + " was cached");
+                        } else {
 							CachingOutputStream cache = null;
                             if(completePath.endsWith(ROOT_URI)) {
                                 System.out.println("Files in the root path:");
@@ -152,11 +154,13 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                                 md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
                                 if (md != null) {
                                     numBytes = md.numBytes;
-                                    if(cache != null && ((numBytes / 1024)/1024) <= 1){
+                                    if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
                                         LOG.info("Caching file: " + completePath);
                                         memCache.put(key, cache.getCache());
                                     }
                                     LOG.info("File: " + completePath + " Bytes read: " + numBytes);
+                                } else {
+                                    LOG.debug("File metadata not found: " + completePath);
                                 }
                             }
 						}
