@@ -38,6 +38,7 @@ public class DivrollApplication extends Application {
             new SelfInjectingServerResourceModule());
     Router router = new Router(getContext());
     router.attach(ROOT_URI + "uploads", GaeUploadServerResource.class);
+    router.attach(ROOT_URI + "system", GaeSystemInfoResource.class);
     router.attachDefault(GaeRootServerResource.class);
     return router;
   }
