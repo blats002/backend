@@ -52,6 +52,7 @@ public class GuiceConfigModule extends AbstractModule {
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
         bind(String.class).annotatedWith(Names.named("app")).toInstance("Divroll");
         bind(WebTokenService.class).to(GaeWebTokenService.class).in(Scopes.SINGLETON);
+        bind(KinveyService.class).to(GaeKinveyService.class).in(Scopes.SINGLETON);
         Names.bindProperties(binder(), readProperties());
     }
 

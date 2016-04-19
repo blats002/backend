@@ -15,6 +15,7 @@
 package com.divroll.core.rest.resource.gae;
 
 import com.divroll.core.rest.Subdomain;
+import com.divroll.core.rest.service.KinveyService;
 import com.divroll.core.rest.util.ByteHelper;
 import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.GAEUtil;
@@ -28,11 +29,10 @@ import com.dropbox.core.v1.DbxEntry;
 import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.common.io.CountingOutputStream;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.kinvey.java.Query;
-import com.kinvey.java.core.DownloaderProgressListener;
-import com.kinvey.java.core.MediaHttpDownloader;
 import com.kinvey.nativejava.AppData;
 import com.kinvey.nativejava.Client;
 import org.restlet.data.MediaType;
@@ -40,13 +40,10 @@ import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.slf4j.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -86,6 +83,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Named("kinvey.mastersecret")
     private String masterSecret;
 
+	@Inject
+	private KinveyService kinveyService;
+
     @Override
     protected void doInit() {
         super.doInit();
@@ -121,11 +121,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             final String completePath = APP_ROOT_URI + subdomain + p;
 
 			final String pathParts = p;
+			final String revision = "";
 
 			LOG.info("Complete Path: " + completePath);
             LOG.info("Host: " + host);
             LOG.info("Subdomain: " + subdomain);
-
 
 
             entity = new OutputRepresentation(type) {
@@ -160,18 +160,15 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                                 String jsonString = JSON.toJSONString(directory);
                                 outputStream.write(jsonString.getBytes());
                             } else {
-								getKinveyFile(subdomain, pathParts, cache = new CachingOutputStream(outputStream));
-//                                md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
-//                                if (md != null) {
-//                                    numBytes = md.numBytes;
-//                                    if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
-//                                        LOG.info("Caching file: " + completePath);
-//                                        memCache.put(key, cache.getCache());
-//                                    }
-//                                    LOG.info("File: " + completePath + " Bytes read: " + numBytes);
-//                                } else {
-//                                    LOG.debug("File metadata not found: " + completePath);
-//                                }
+								OutputStream buff;
+								kinveyService.getFile(subdomain, pathParts, revision,
+										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
+								numBytes = ((CountingOutputStream) buff).getCount();
+								LOG.info("File size: " + numBytes);
+								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
+									LOG.info("Caching file: " + completePath);
+									memCache.put(key, cache.getCache());
+								}
                             }
 						}
                     } catch (DbxException e) {
@@ -263,44 +260,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         LOG.info("Parsing Host: " + host);
         LOG.info("Parsing Domain: " + domain);
         return RegexHelper.parseSubdomain(host, domain);
-    }
-
-    private void getKinveyFile(final String subdomain, final String path, OutputStream out){
-        try {
-			Client kinvey = new Client.Builder(appkey, masterSecret).build();
-			kinvey.user().loginBlocking(appkey, masterSecret).execute();
-			Query q = kinvey.query();
-			q.equals("subdomain", subdomain);
-			q.equals("path", path);
-
-//			final OutputStream out = new ByteArrayOutputStream();
-            kinvey.file().downloadBlocking(q, out, new DownloaderProgressListener() {
-				@Override
-				public void progressChanged(MediaHttpDownloader mediaHttpDownloader)
-						throws IOException {
-                    LOG.info("Process changed: " + subdomain + path);
-					String jsonString = JSON.toJSONString(mediaHttpDownloader);
-					LOG.info("Process changed: " + jsonString);
-
-				}
-				@Override public void onSuccess(Void aVoid) {
-                    LOG.info("Success download: " + subdomain + path);
-//                    String s = null;
-//                    try {
-//                        new OutputStreamWriter(out).write(s);
-//                        LOG.info("File contents: " + s);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-                }
-				@Override public void onFailure(Throwable throwable) {
-                    LOG.info("Failed download: " + subdomain + path);
-				}
-			});
-        } catch (IOException e) {
-            LOG.debug("Error: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 
 }
