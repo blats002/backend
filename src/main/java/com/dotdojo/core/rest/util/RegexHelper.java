@@ -14,6 +14,7 @@
 */
 package com.divroll.core.rest.util;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RegexHelper {
@@ -44,4 +45,14 @@ public class RegexHelper {
         }
         return null;
     }
+
+    public static String parseFileName(String path){
+        Pattern pattern = Pattern.compile(".*/(.*)");
+        Matcher matcher = pattern.matcher(path);
+        if(matcher.matches()){
+            return matcher.group(1);
+        }
+        return null;
+    }
+
 }

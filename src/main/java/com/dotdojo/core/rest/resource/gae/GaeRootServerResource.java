@@ -15,6 +15,7 @@
 package com.divroll.core.rest.resource.gae;
 
 import com.divroll.core.rest.Subdomain;
+import com.divroll.core.rest.service.KinveyService;
 import com.divroll.core.rest.util.ByteHelper;
 import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.GAEUtil;
@@ -28,6 +29,7 @@ import com.dropbox.core.v1.DbxEntry;
 import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.common.io.CountingOutputStream;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.kinvey.java.Query;
@@ -38,7 +40,6 @@ import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import org.slf4j.*;
 
 import java.io.IOException;
@@ -82,6 +83,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Named("kinvey.mastersecret")
     private String masterSecret;
 
+	@Inject
+	private KinveyService kinveyService;
+
     @Override
     protected void doInit() {
         super.doInit();
@@ -100,10 +104,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             url = new URL(_completePath);
             String host = url.getHost();
 
-            String pathParts = url.getPath();
-            if(pathParts.isEmpty() || pathParts.equals(ROOT_URI)){
-                pathParts = "/index.html";
+            String p = url.getPath();
+            if(p.isEmpty() || p.equals(ROOT_URI)){
+                p = "/index.html";
             }
+
 
             final String subdomain;
             if(!host.endsWith(getDomain())){
@@ -112,12 +117,16 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 subdomain = parseSubdomain(host);
             }
 
-            pathParts = pathParts.replace("%20", " ");
-            final String completePath = APP_ROOT_URI + subdomain + pathParts;
+            p = p.replace("%20", " ");
+            final String completePath = APP_ROOT_URI + subdomain + p;
 
-            LOG.info("Complete Path: " + completePath);
+			final String pathParts = p;
+			final String revision = "";
+
+			LOG.info("Complete Path: " + completePath);
             LOG.info("Host: " + host);
             LOG.info("Subdomain: " + subdomain);
+
 
             entity = new OutputRepresentation(type) {
                 @Override
@@ -151,17 +160,15 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                                 String jsonString = JSON.toJSONString(directory);
                                 outputStream.write(jsonString.getBytes());
                             } else {
-                                md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
-                                if (md != null) {
-                                    numBytes = md.numBytes;
-                                    if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
-                                        LOG.info("Caching file: " + completePath);
-                                        memCache.put(key, cache.getCache());
-                                    }
-                                    LOG.info("File: " + completePath + " Bytes read: " + numBytes);
-                                } else {
-                                    LOG.debug("File metadata not found: " + completePath);
-                                }
+								OutputStream buff;
+								kinveyService.getFile(subdomain, pathParts, revision,
+										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
+								numBytes = ((CountingOutputStream) buff).getCount();
+								LOG.info("File size: " + numBytes);
+								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
+									LOG.info("Caching file: " + completePath);
+									memCache.put(key, cache.getCache());
+								}
                             }
 						}
                     } catch (DbxException e) {
