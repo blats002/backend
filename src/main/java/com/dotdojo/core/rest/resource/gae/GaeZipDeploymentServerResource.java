@@ -48,10 +48,10 @@ public class GaeZipDeploymentServerResource extends SelfInjectingServerResource
 		String subdomain = form.getFirstValue("subdomain");
 		String revision = form.getFirstValue("revision");
 
-//		if(appkey != this.appkey || masterSecret != this.masterSecret) {
-//			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-//			return;
-//		}
+		if(appkey != this.appkey || masterSecret != this.masterSecret) {
+			setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+			return;
+		}
 
 		String id = revision;
 
