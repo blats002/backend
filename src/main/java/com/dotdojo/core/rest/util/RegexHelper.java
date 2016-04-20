@@ -55,4 +55,13 @@ public class RegexHelper {
         return null;
     }
 
+    public static boolean isDirectory(String path){
+        Pattern pattern = Pattern.compile(".*\\/([\\w-]+\\.)");
+        Matcher matcher = pattern.matcher(path);
+        if(!matcher.matches()){
+            return true;
+        }
+        return false;
+    }
+
 }
