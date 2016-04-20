@@ -160,15 +160,28 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                                 String jsonString = JSON.toJSONString(directory);
                                 outputStream.write(jsonString.getBytes());
                             } else {
-								OutputStream buff;
-								kinveyService.getFile(subdomain, pathParts, revision,
-										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
-								numBytes = ((CountingOutputStream) buff).getCount();
-								LOG.info("File size: " + numBytes);
-								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
-									LOG.info("Caching file: " + completePath);
-									memCache.put(key, cache.getCache());
-								}
+//								OutputStream buff;
+//								kinveyService.getFile(subdomain, pathParts, revision,
+//										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
+//								numBytes = ((CountingOutputStream) buff).getCount();
+//								LOG.info("File size: " + numBytes);
+//								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
+//									LOG.info("Caching file: " + completePath);
+//                                    System.out.println("Caching file: " + completePath);
+//									memCache.put(key, cache.getCache());
+//								}
+                                md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
+                                numBytes = md.numBytes;
+                                if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
+                                    LOG.info("Caching file: " + completePath);
+                                    memCache.put(key, cache.getCache());
+                                }
+                                LOG.info("File: " + completePath + " Bytes read: " + numBytes);
+                                if (md != null) {
+
+                                } else {
+                                    LOG.debug("File metadata not found: " + completePath);
+                                }
                             }
 						}
                     } catch (DbxException e) {

@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(GuiceTestRunner.class)
 @GuiceModules(GuiceConfigModule.class)
@@ -31,5 +32,16 @@ public class RegexTest {
         path = "/demo1/demo2/demo";
         fileName = RegexHelper.parseFileName(path);
         assertEquals("demo", fileName);
+    }
+
+    @Test
+    public void testIsFolder(){
+        String path = "/demo1/demo2/demo";
+        boolean isDirectory = RegexHelper.isDirectory(path);
+        assertTrue(isDirectory);
+
+        path = "/demo1/demo2/demo.3";
+        isDirectory = RegexHelper.isDirectory(path);
+        assertTrue(isDirectory);
     }
 }
