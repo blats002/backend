@@ -30,6 +30,7 @@ import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.Expiration;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.appengine.api.taskqueue.*;
 import com.google.common.io.CountingOutputStream;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -184,6 +185,13 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                                 } else {
                                     LOG.debug("File metadata not found: " + completePath);
                                 }
+
+								com.google.appengine.api.taskqueue.Queue queue = QueueFactory.getDefaultQueue();
+								queue.add(TaskOptions.Builder
+										.withUrl("/rest/metrics")
+										.param("subdomain", subdomain)
+										.param("numbytes", String.valueOf(numBytes)));
+
                             }
 						}
                     } catch (DbxException e) {
