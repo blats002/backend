@@ -27,6 +27,7 @@ import com.dropbox.core.http.AppengineHttpRequestor;
 import com.dropbox.core.v1.DbxClientV1;
 import com.dropbox.core.v1.DbxEntry;
 import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.Expiration;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.common.io.CountingOutputStream;
@@ -62,6 +63,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private static final String ROOT_URI = "/";
     private static final String APP_ROOT_URI = "/weebio/";
 	private static final String KEY_SPACE = ":";
+    private static final int EXPIRATION = 3600000; // 1 hour
 
     @Inject
     @Named("app.domain")
@@ -174,9 +176,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                                 numBytes = md.numBytes;
                                 if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
                                     LOG.info("Caching file: " + completePath);
-                                    memCache.put(key, cache.getCache());
+                                    memCache.put(key, cache.getCache(), Expiration.byDeltaMillis(EXPIRATION));
                                 }
-                                LOG.info("File: " + completePath + " Bytes read: " + numBytes);
+                                LOG.info("File: " + completePath + " Bytes read: " + numBytes + " Cached for: " + EXPIRATION);
                                 if (md != null) {
 
                                 } else {
@@ -250,7 +252,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 Subdomain subdomain = Arrays.asList(list).iterator().next();
                 if(subdomain != null){
                     result = subdomain.getSubdomain();
-                    memCache.put(host, subdomain.getSubdomain());
+                    memCache.put(host, subdomain.getSubdomain(), Expiration.byDeltaMillis(EXPIRATION));
                     LOG.info("Subdomain for " + host + ": " + result);
                 }
             } else {
