@@ -16,7 +16,6 @@ package com.divroll.core.rest.resource.gae;
 
 import com.divroll.core.rest.Subdomain;
 import com.divroll.core.rest.service.KinveyService;
-import com.divroll.core.rest.util.ByteHelper;
 import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.GAEUtil;
 import com.divroll.core.rest.util.RegexHelper;
@@ -30,16 +29,16 @@ import com.google.appengine.api.memcache.ErrorHandlers;
 import com.google.appengine.api.memcache.Expiration;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.appengine.api.taskqueue.*;
-import com.google.common.io.CountingOutputStream;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.kinvey.java.Query;
 import com.kinvey.nativejava.AppData;
 import com.kinvey.nativejava.Client;
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.*;
@@ -103,6 +102,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         String _completePath = getRequest().getResourceRef().getHostIdentifier() +
                 getRequest().getResourceRef().getPath();
         URL url = null;
+
+        LOG.info("Request Path: " + path);
+
         try {
             url = new URL(_completePath);
             String host = url.getHost();
@@ -111,99 +113,47 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             if(p.isEmpty() || p.equals(ROOT_URI)){
                 p = "/index.html";
             }
-
-
             final String subdomain;
             if(!host.endsWith(getDomain())){
                 subdomain = getStoredSubdomain(host);
             } else {
+                // TODO Check if subdomain exists in the records
                 subdomain = parseSubdomain(host);
+                if(!isExist(subdomain)){
+                    String error = "404 NOT FOUND";
+                    entity = new StringRepresentation(error);
+                    entity.setMediaType(MediaType.TEXT_PLAIN);
+                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                    return entity;
+                }
             }
 
-            p = p.replace("%20", " ");
-            final String completePath = APP_ROOT_URI + subdomain + p;
+            if(subdomain == null){
+                String error = "404 NOT FOUND";
+                entity = new StringRepresentation(error);
+                entity.setMediaType(MediaType.TEXT_PLAIN);
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return entity;
+            } else {
+                p = p.replace("%20", " ");
+                final String completePath = APP_ROOT_URI + subdomain + p;
 
-			final String pathParts = p;
-			final String revision = "";
+                LOG.info("Complete Path: " + completePath);
+                LOG.info("Host: " + host);
+                LOG.info("Subdomain: " + subdomain);
 
-			LOG.info("Complete Path: " + completePath);
-            LOG.info("Host: " + host);
-            LOG.info("Subdomain: " + subdomain);
-
-
-            entity = new OutputRepresentation(type) {
-                @Override
-                public void write(OutputStream outputStream) throws IOException {
-                    DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
-                    DbxClientV1 client = new DbxClientV1(config, dropboxToken);
-                    DbxEntry.File md;
-                    try {
-						long numBytes = 0;
-						String key = new StringBuilder()
-								.append(subdomain)
-								.append(KEY_SPACE)
-								.append(completePath).toString();
-						Object cached = memCache.get(key);
-						if(cached != null){
-							outputStream.write((byte[]) cached);
-							numBytes = ((byte[]) cached).length;
-                            LOG.info(key + " was cached");
-                        } else {
-							CachingOutputStream cache = null;
-                            if(completePath.endsWith(ROOT_URI)) {
-                                System.out.println("Files in the root path:");
-                                DbxEntry.WithChildren listing = client.getMetadataWithChildren(
-                                        completePath.substring(0,completePath.length()-1));
-                                Map directory = new HashMap<>();
-                                List<String> list = new ArrayList<>();
-                                for (DbxEntry child : listing.children) {
-                                    list.add(child.path);
-                                }
-                                directory.put("directory", list);
-                                String jsonString = JSON.toJSONString(directory);
-                                outputStream.write(jsonString.getBytes());
-                            } else {
-//								OutputStream buff;
-//								kinveyService.getFile(subdomain, pathParts, revision,
-//										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
-//								numBytes = ((CountingOutputStream) buff).getCount();
-//								LOG.info("File size: " + numBytes);
-//								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
-//									LOG.info("Caching file: " + completePath);
-//                                    System.out.println("Caching file: " + completePath);
-//									memCache.put(key, cache.getCache());
-//								}
-                                md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
-                                numBytes = md.numBytes;
-                                if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
-                                    LOG.info("Caching file: " + completePath);
-                                    memCache.put(key, cache.getCache(), Expiration.byDeltaMillis(EXPIRATION));
-                                }
-                                LOG.info("File: " + completePath + " Bytes read: " + numBytes + " Cached for: " + EXPIRATION);
-                                if (md != null) {
-
-                                } else {
-                                    LOG.debug("File metadata not found: " + completePath);
-                                }
-
-								com.google.appengine.api.taskqueue.Queue queue = QueueFactory.getDefaultQueue();
-								queue.add(TaskOptions.Builder
-										.withUrl("/rest/metrics")
-										.param("subdomain", subdomain)
-										.param("numbytes", String.valueOf(numBytes)));
-
-                            }
-						}
-                    } catch (DbxException e) {
-                        e.printStackTrace();
+                entity = new OutputRepresentation(type) {
+                    @Override
+                    public void write(OutputStream outputStream) throws IOException {
+                        getFile(subdomain, completePath, outputStream);
                     }
-                    outputStream.close();
-                }
-            };
-            entity.setMediaType(processMediaType(completePath));
+                };
+                entity.setMediaType(processMediaType(completePath));
+            }
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
         }
         return entity;
     }
@@ -244,17 +194,10 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             String value = (String) memCache.get(host);
             if(value == null){
                 Client kinvey = new Client.Builder(appkey, masterSecret).build();
-                kinvey.enableDebugLogging();
-                Boolean ping = kinvey.ping();
-                LOG.info("Client ping -> " + ping);
+                kinvey.disableDebugLogging();
                 kinvey.user().loginBlocking(appkey, masterSecret).execute();
-                LOG.info("Client login -> " + kinvey.user().isUserLoggedIn());
-                String token = kinvey.user().getAuthToken();
-                String userId = kinvey.user().getId();
-
                 Query q = kinvey.query();
                 q.equals("domain", host);
-
                 AppData<Subdomain> subdomains = kinvey.appData("subdomains", Subdomain.class);
                 Subdomain[] list = subdomains.getBlocking(q).execute();
                 Subdomain subdomain = Arrays.asList(list).iterator().next();
@@ -266,7 +209,10 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             } else {
                 result = value;
             }
+        } catch (NoSuchElementException e){
+            LOG.info("Subdomain not found for host: " + host);
         } catch (Exception e){
+            LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
         }
         return result;
@@ -283,6 +229,100 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         LOG.info("Parsing Host: " + host);
         LOG.info("Parsing Domain: " + domain);
         return RegexHelper.parseSubdomain(host, domain);
+    }
+
+    public void getFile(String subdomain, String completePath, OutputStream outputStream) throws IOException {
+        DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
+        DbxClientV1 client = new DbxClientV1(config, dropboxToken);
+        DbxEntry.File md;
+        try {
+            long numBytes = 0;
+            String key = new StringBuilder()
+                    .append(subdomain)
+                    .append(KEY_SPACE)
+                    .append(completePath).toString();
+            //Object cached = memCache.get(key);
+            Object cached = null;
+            if(cached != null){
+                outputStream.write((byte[]) cached);
+                numBytes = ((byte[]) cached).length;
+                LOG.info(key + " was cached");
+            } else {
+                CachingOutputStream cache = null;
+                if(completePath.endsWith(ROOT_URI)) {
+                    LOG.debug("Files in the root path:");
+                    DbxEntry.WithChildren listing = client.getMetadataWithChildren(
+                            completePath.substring(0,completePath.length()-1));
+                    Map directory = new HashMap<>();
+                    List<String> list = new ArrayList<>();
+                    for (DbxEntry child : listing.children) {
+                        list.add(child.path);
+                    }
+                    directory.put("directory", list);
+                    String jsonString = JSON.toJSONString(directory);
+                    outputStream.write(jsonString.getBytes());
+                } else {
+//								OutputStream buff;
+//								kinveyService.getFile(subdomain, pathParts, revision,
+//										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
+//								numBytes = ((CountingOutputStream) buff).getCount();
+//								LOG.info("File size: " + numBytes);
+//								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
+//									LOG.info("Caching file: " + completePath);
+//                                    System.out.println("Caching file: " + completePath);
+//									memCache.put(key, cache.getCache());
+//								}
+//                    md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
+                    md = client.getFile(completePath, null,  outputStream);
+                    if (md == null) {
+                        LOG.debug("File metadata not found: " + completePath);
+                    } else {
+                        numBytes = md.numBytes;
+//                    if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
+//                        LOG.info("Caching file: " + completePath);
+//                        memCache.put(key, cache.getCache(), Expiration.byDeltaMillis(EXPIRATION));
+//                    }
+                        LOG.info("File: " + completePath + " Bytes read: " + numBytes + " Cached for: " + EXPIRATION);
+
+                    }
+
+//                    com.google.appengine.api.taskqueue.Queue queue = QueueFactory.getDefaultQueue();
+//                    queue.add(TaskOptions.Builder
+//                            .withUrl("/rest/metrics")
+//                            .param("subdomain", subdomain)
+//                            .param("numbytes", String.valueOf(numBytes)));
+
+                }
+            }
+        } catch (DbxException e) {
+            e.printStackTrace();
+            String error = "Error serving that request. Please try again.";
+            outputStream.write(error.getBytes());
+        } catch (Exception e){
+            e.printStackTrace();
+            String error = "Error serving that request. Please try again.";
+            outputStream.write(error.getBytes());
+        }
+        outputStream.close();
+    }
+
+    private boolean isExist(String subdomain){
+        try {
+            Client kinvey = new Client.Builder(appkey, masterSecret).build();
+            kinvey.disableDebugLogging();
+            kinvey.user().loginBlocking(appkey, masterSecret).execute();
+            Query q = kinvey.query();
+            q.equals("subdomain", subdomain);
+            AppData<Subdomain> subdomains = kinvey.appData("subdomains", Subdomain.class);
+            Subdomain[] list = subdomains.getBlocking(q).execute();
+            Subdomain s = Arrays.asList(list).iterator().next();
+            if(s != null){
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }
