@@ -14,6 +14,7 @@
 */
 package com.divroll.core.rest.resource.gae;
 
+import com.divroll.core.rest.DropBoxFileRepresentation;
 import com.divroll.core.rest.Subdomain;
 import com.divroll.core.rest.service.KinveyService;
 import com.divroll.core.rest.util.CachingOutputStream;
@@ -142,12 +143,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 LOG.info("Host: " + host);
                 LOG.info("Subdomain: " + subdomain);
 
-                entity = new OutputRepresentation(type) {
-                    @Override
-                    public void write(OutputStream outputStream) throws IOException {
-                        getFile(subdomain, completePath, outputStream);
-                    }
-                };
+                entity = new DropBoxFileRepresentation(completePath, dropboxToken, type);
                 entity.setMediaType(processMediaType(completePath));
             }
 
