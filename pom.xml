@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <gae.version>1.9.18</gae.version>
+        <gae.version>1.8.4</gae.version>
         <gae.home>${settings.localRepository}/com/google/appengine/appengine-java-sdk/${gae.version}/appengine-java-sdk/appengine-java-sdk-${gae.version}</gae.home>
         <gae.application.version>test</gae.application.version>
         <guava.version>18.0</guava.version>
@@ -268,6 +268,16 @@
             <groupId>com.squareup.dagger</groupId>
             <artifactId>dagger</artifactId>
             <version>1.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.mashape.unirest</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>1.4.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>1.22.0</version>
         </dependency>
         <!-- Logging -->
         <dependency>
