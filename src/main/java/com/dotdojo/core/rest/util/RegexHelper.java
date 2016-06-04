@@ -46,6 +46,15 @@ public class RegexHelper {
         return null;
     }
 
+    public static String parseSubdomainFrompath(String path){
+        Pattern pattern = Pattern.compile("/([a-zA-Z0-9]*)");
+        Matcher matcher = pattern.matcher(path);
+        if(matcher.find()){
+            return matcher.group(1);  // Here, use Group 1 value
+        }
+        return null;
+    }
+
     public static String parseFileName(String path){
         Pattern pattern = Pattern.compile(".*/(.*)");
         Matcher matcher = pattern.matcher(path);
