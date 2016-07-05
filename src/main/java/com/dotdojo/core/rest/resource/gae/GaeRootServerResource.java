@@ -34,11 +34,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.appengine.api.memcache.ErrorHandlers;
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.appengine.repackaged.org.apache.commons.collections.Buffer;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.kinvey.java.Query;
@@ -69,7 +64,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
 
-    MemcacheService memCache = MemcacheServiceFactory.getMemcacheService();
 
 //    private static final String ROOT_URI = "/";
     private static final String ROOT_URI = "";
@@ -117,7 +111,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Override
     protected void doInit() {
         super.doInit();
-        memCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
     }
 
     @Get
@@ -214,7 +207,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private String getStoredSubdomain(String host){
         String result = null;
         try{
-            String value = (String) memCache.get(host);
+            String value = null; //(String) memCache.get(host);
             if(value == null){
                 Client kinvey = new Client.Builder(appkey, masterSecret).build();
                 kinvey.disableDebugLogging();
@@ -226,7 +219,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 Subdomain subdomain = Arrays.asList(list).iterator().next();
                 if(subdomain != null){
                     result = subdomain.getSubdomain();
-                    memCache.put(host, subdomain.getSubdomain(), Expiration.byDeltaMillis(EXPIRATION));
+                    //memCache.put(host, subdomain.getSubdomain(), Expiration.byDeltaMillis(EXPIRATION));
                     LOG.info("Subdomain for " + host + ": " + result);
                 }
             } else {
