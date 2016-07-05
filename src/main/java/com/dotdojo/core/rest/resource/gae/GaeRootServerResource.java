@@ -16,7 +16,6 @@ package com.divroll.core.rest.resource.gae;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.divroll.core.rest.DropBoxFileRepresentation;
 import com.divroll.core.rest.ParseFileRepresentation;
 import com.divroll.core.rest.Subdomain;
 import com.divroll.core.rest.service.KinveyService;
@@ -205,7 +204,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     }
 
     private String getStoredSubdomain(String host){
-        String result = null;
+        LOG.info("Get stored subdomain: " + host);
+        String result = host;
+        /*
         try{
             String value = null; //(String) memCache.get(host);
             if(value == null){
@@ -231,6 +232,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
         }
+        */
         return result;
     }
 

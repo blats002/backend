@@ -3,20 +3,16 @@ package com.divroll.core.rest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.resource.gae.GaeRootServerResource;
-import com.divroll.core.rest.util.CachingOutputStream;
-import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.http.AppengineHttpRequestor;
-import com.dropbox.core.v1.DbxClientV1;
-import com.dropbox.core.v1.DbxEntry;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
+//import com.mashape.unirest.http.HttpResponse;
+//import com.mashape.unirest.http.Unirest;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
@@ -62,8 +58,6 @@ public class ParseFileRepresentation extends OutputRepresentation {
     @Override
     public void write(OutputStream outputStream) throws IOException {
         DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
-        DbxClientV1 client = new DbxClientV1(config, dropboxToken);
-        DbxEntry.File md;
         String completePath = this.path;
         try {
             long numBytes = 0;
@@ -73,16 +67,6 @@ public class ParseFileRepresentation extends OutputRepresentation {
                 numBytes = ((byte[]) cached).length;
             } else {
                 if(completePath.endsWith(ROOT_URI)) {
-//                    LOG.debug("Files in the root path:");
-//                    DbxEntry.WithChildren listing = client.getMetadataWithChildren(
-//                            completePath.substring(0,completePath.length()-1));
-//                    Map directory = new HashMap<>();
-//                    List<String> list = new ArrayList<>();
-//                    for (DbxEntry child : listing.children) {
-//                        list.add(child.path);
-//                    }
-//                    directory.put("directory", list);
-//                    String jsonString = JSON.toJSONString(directory);
                     String jsonString = "NOT FOUND";
                     outputStream.write(jsonString.getBytes());
                 } else {
@@ -96,21 +80,20 @@ public class ParseFileRepresentation extends OutputRepresentation {
                                     request.setParser(new JsonObjectParser(JSON_FACTORY));
                                 }
                             });
-
                     Map<String, String> json = new HashMap<String, String>();
                     json.put("path", path);
                     json.put("appId", appId);
 
                     GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseBase + "/functions/file");
                     HttpRequest request = requestFactory.buildPostRequest(url, new JsonHttpContent(new JacksonFactory(), json));
-                    request.getHeaders().set("X-Parse-Application-Id", "myappid");
-                    request.getHeaders().set("X-Parse-REST-API-Key", "myrestapikey");
+                    request.getHeaders().set("X-Parse-Application-Id", "hSeqDDBeLesJxWjaxAuHq34q3L7ws6xm3qoSS8yG");
+                    request.getHeaders().set("X-Parse-REST-API-Key", "d4dVXvvL85TcG27dgXfHsCKzXcb4g7IZH7tQV9V7");
                     request.getHeaders().set("X-Parse-Revocable-Session", "1");
                     request.setRequestMethod("POST");
 
                     com.google.api.client.http.HttpResponse response = request.execute();
                     String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-                    //LOG.info("Function Response: " + body);
+                    LOG.info("Function Response: " + body);
 
                     JSONObject jsonObject = JSON.parseObject(body);
                     String fileUrl = jsonObject.getJSONObject("result").getString("url");
