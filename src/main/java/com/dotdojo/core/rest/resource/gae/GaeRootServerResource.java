@@ -14,27 +14,19 @@
 */
 package com.divroll.core.rest.resource.gae;
 
-import com.divroll.core.rest.DropBoxFileRepresentation;
-import com.divroll.core.rest.Subdomain;
-import com.divroll.core.rest.service.KinveyService;
-import com.divroll.core.rest.util.CachingOutputStream;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.divroll.core.rest.ParseFileRepresentation;
 import com.divroll.core.rest.util.GAEUtil;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
-import com.dropbox.core.DbxException;
-import com.dropbox.core.DbxRequestConfig;
-import com.dropbox.core.http.AppengineHttpRequestor;
-import com.dropbox.core.v1.DbxClientV1;
-import com.dropbox.core.v1.DbxEntry;
-import com.google.appengine.api.memcache.ErrorHandlers;
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.api.client.http.*;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.JsonObjectParser;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.kinvey.java.Query;
-import com.kinvey.nativejava.AppData;
-import com.kinvey.nativejava.Client;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.OutputRepresentation;
@@ -44,6 +36,7 @@ import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.*;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -59,12 +52,26 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
 
-    MemcacheService memCache = MemcacheServiceFactory.getMemcacheService();
 
-    private static final String ROOT_URI = "/";
-    private static final String APP_ROOT_URI = "/weebio/";
+//    private static final String ROOT_URI = "/";
+    private static final String ROOT_URI = "";
+//    private static final String APP_ROOT_URI = "/weebio/";
+    private static final String APP_ROOT_URI = "";
 	private static final String KEY_SPACE = ":";
     private static final int EXPIRATION = 3600000; // 1 hour
+
+    static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
+    static final JsonFactory JSON_FACTORY = new JacksonFactory();
+
+    public static class ParseUrl extends GenericUrl {
+        public ParseUrl(String encodedUrl) {
+            super(encodedUrl);
+        }
+    }
+
+    @Inject
+    @Named("parse.url")
+    private String parseUrl;
 
     @Inject
     @Named("app.domain")
@@ -86,13 +93,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Named("kinvey.mastersecret")
     private String masterSecret;
 
-	@Inject
-	private KinveyService kinveyService;
-
     @Override
     protected void doInit() {
         super.doInit();
-        memCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
     }
 
     @Get
@@ -111,8 +114,10 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             String host = url.getHost();
 
             String p = url.getPath();
-            if(p.isEmpty() || p.equals(ROOT_URI)){
-                p = "/index.html";
+            if(p.isEmpty() || p.equals("/")){
+                p = "index.html";
+            }else if(p.startsWith("/")){
+                p = p.substring(1);
             }
             final String subdomain;
             if(!host.endsWith(getDomain())){
@@ -128,7 +133,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     return entity;
                 }
             }
-
+            //LOG.info("Application ID: " + subdomain);
             if(subdomain == null){
                 String error = "404 NOT FOUND";
                 entity = new StringRepresentation(error);
@@ -137,13 +142,13 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 return entity;
             } else {
                 p = p.replace("%20", " ");
-                final String completePath = APP_ROOT_URI + subdomain + p;
+                final String completePath = APP_ROOT_URI + p;
 
                 LOG.info("Complete Path: " + completePath);
                 LOG.info("Host: " + host);
-                LOG.info("Subdomain: " + subdomain);
+                LOG.info("Application ID/Subdomain: " + subdomain);
 
-                entity = new DropBoxFileRepresentation(completePath, dropboxToken, type);
+                entity = new ParseFileRepresentation(subdomain, completePath, dropboxToken, parseUrl, type);
                 entity.setMediaType(processMediaType(completePath));
             }
 
@@ -185,9 +190,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     }
 
     private String getStoredSubdomain(String host){
-        String result = null;
+        LOG.info("Get stored subdomain: " + host);
+        String result = host;
+        /*
         try{
-            String value = (String) memCache.get(host);
+            String value = null; //(String) memCache.get(host);
             if(value == null){
                 Client kinvey = new Client.Builder(appkey, masterSecret).build();
                 kinvey.disableDebugLogging();
@@ -199,7 +206,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 Subdomain subdomain = Arrays.asList(list).iterator().next();
                 if(subdomain != null){
                     result = subdomain.getSubdomain();
-                    memCache.put(host, subdomain.getSubdomain(), Expiration.byDeltaMillis(EXPIRATION));
+                    //memCache.put(host, subdomain.getSubdomain(), Expiration.byDeltaMillis(EXPIRATION));
                     LOG.info("Subdomain for " + host + ": " + result);
                 }
             } else {
@@ -211,6 +218,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
         }
+        */
         return result;
     }
 
@@ -227,92 +235,35 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         return RegexHelper.parseSubdomain(host, domain);
     }
 
-    public void getFile(String subdomain, String completePath, OutputStream outputStream) throws IOException {
-        DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
-        DbxClientV1 client = new DbxClientV1(config, dropboxToken);
-        DbxEntry.File md;
-        try {
-            long numBytes = 0;
-            String key = new StringBuilder()
-                    .append(subdomain)
-                    .append(KEY_SPACE)
-                    .append(completePath).toString();
-            //Object cached = memCache.get(key);
-            Object cached = null;
-            if(cached != null){
-                outputStream.write((byte[]) cached);
-                numBytes = ((byte[]) cached).length;
-                LOG.info(key + " was cached");
-            } else {
-                CachingOutputStream cache = null;
-                if(completePath.endsWith(ROOT_URI)) {
-                    LOG.debug("Files in the root path:");
-                    DbxEntry.WithChildren listing = client.getMetadataWithChildren(
-                            completePath.substring(0,completePath.length()-1));
-                    Map directory = new HashMap<>();
-                    List<String> list = new ArrayList<>();
-                    for (DbxEntry child : listing.children) {
-                        list.add(child.path);
-                    }
-                    directory.put("directory", list);
-                    String jsonString = JSON.toJSONString(directory);
-                    outputStream.write(jsonString.getBytes());
-                } else {
-//								OutputStream buff;
-//								kinveyService.getFile(subdomain, pathParts, revision,
-//										cache = new CachingOutputStream(buff = new CountingOutputStream(outputStream)));
-//								numBytes = ((CountingOutputStream) buff).getCount();
-//								LOG.info("File size: " + numBytes);
-//								if(ByteHelper.bytesToMeg(numBytes) <= 1) {
-//									LOG.info("Caching file: " + completePath);
-//                                    System.out.println("Caching file: " + completePath);
-//									memCache.put(key, cache.getCache());
-//								}
-//                    md = client.getFile(completePath, null,  cache = new CachingOutputStream(outputStream));
-                    md = client.getFile(completePath, null,  outputStream);
-                    if (md == null) {
-                        LOG.debug("File metadata not found: " + completePath);
-                    } else {
-                        numBytes = md.numBytes;
-//                    if(cache != null && (ByteHelper.bytesToMeg(numBytes) <= 1)){
-//                        LOG.info("Caching file: " + completePath);
-//                        memCache.put(key, cache.getCache(), Expiration.byDeltaMillis(EXPIRATION));
-//                    }
-                        LOG.info("File: " + completePath + " Bytes read: " + numBytes + " Cached for: " + EXPIRATION);
-
-                    }
-
-//                    com.google.appengine.api.taskqueue.Queue queue = QueueFactory.getDefaultQueue();
-//                    queue.add(TaskOptions.Builder
-//                            .withUrl("/rest/metrics")
-//                            .param("subdomain", subdomain)
-//                            .param("numbytes", String.valueOf(numBytes)));
-
-                }
-            }
-        } catch (DbxException e) {
-            e.printStackTrace();
-            String error = "Error serving that request. Please try again.";
-            outputStream.write(error.getBytes());
-        } catch (Exception e){
-            e.printStackTrace();
-            String error = "Error serving that request. Please try again.";
-            outputStream.write(error.getBytes());
-        }
-        outputStream.close();
-    }
-
     private boolean isExist(String subdomain){
         try {
-            Client kinvey = new Client.Builder(appkey, masterSecret).build();
-            kinvey.disableDebugLogging();
-            kinvey.user().loginBlocking(appkey, masterSecret).execute();
-            Query q = kinvey.query();
-            q.equals("subdomain", subdomain);
-            AppData<Subdomain> subdomains = kinvey.appData("subdomains", Subdomain.class);
-            Subdomain[] list = subdomains.getBlocking(q).execute();
-            Subdomain s = Arrays.asList(list).iterator().next();
-            if(s != null){
+            JSONObject where = new JSONObject();
+            where.put("appId", subdomain);
+            HttpRequestFactory requestFactory =
+                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                        @Override
+                        public void initialize(HttpRequest request) {
+                            request.setParser(new JsonObjectParser(JSON_FACTORY));
+                        }
+                    });
+            ParseUrl url = new ParseUrl(parseUrl + "/classes/Application");
+            url.put("where", where.toJSONString());
+            HttpRequest request = requestFactory.buildGetRequest(url);
+            request.getHeaders().set("X-Parse-Application-Id", "myappid");
+            request.getHeaders().set("X-Parse-REST-API-Key", "myrestapikey");
+            request.getHeaders().set("X-Parse-Revocable-Session", "1");
+            request.setRequestMethod("GET");
+
+            HttpResponse response = request.execute();
+            String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
+
+            //LOG.info("Get appId Response: " + body);
+
+            JSONArray resultsArray = JSON.parseObject(body)
+                    .getJSONArray("results");
+
+            if(!resultsArray.isEmpty()){
+                System.out.println("Result: " + body);
                 return true;
             }
         } catch (Exception e) {

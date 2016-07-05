@@ -16,7 +16,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <gae.version>1.9.18</gae.version>
+        <gae.version>1.9.38</gae.version>
         <gae.home>${settings.localRepository}/com/google/appengine/appengine-java-sdk/${gae.version}/appengine-java-sdk/appengine-java-sdk-${gae.version}</gae.home>
         <gae.application.version>test</gae.application.version>
         <guava.version>18.0</guava.version>
@@ -113,7 +113,7 @@
             <artifactId>google-http-client-jackson2</artifactId>
             <version>1.21.0</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.kinvey</groupId>
             <artifactId>java-api-core</artifactId>
             <version>2.10.5</version>
@@ -132,7 +132,7 @@
             <groupId>com.hunchee</groupId>
             <artifactId>postmark-client</artifactId>
             <version>0.3.3-SNAPSHOT</version>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
@@ -189,7 +189,7 @@
             <version>${version.restlet}</version>
         </dependency>
         <!-- Twist Object Mapping -->
-        <dependency>
+        <!--dependency>
             <groupId>com.hunchee</groupId>
             <artifactId>twist</artifactId>
             <version>0-SNAPSHOT</version>
@@ -199,7 +199,7 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency-->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
@@ -264,10 +264,20 @@
             <artifactId>datafactory</artifactId>
             <version>0.8</version>
         </dependency>
-        <dependency>
+        <!--dependency>
             <groupId>com.squareup.dagger</groupId>
             <artifactId>dagger</artifactId>
             <version>1.2.2</version>
+        </dependency-->
+        <dependency>
+            <groupId>com.mashape.unirest</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>1.4.9</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>1.22.0</version>
         </dependency>
         <!-- Logging -->
         <dependency>
@@ -347,6 +357,28 @@
         </dependency>
     </dependencies>
     <profiles>
+        <profile>
+            <id>jetty</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>maven-jetty-plugin</artifactId>
+                        <version>6.1.10</version>
+                        <configuration>
+                            <scanIntervalSeconds>10</scanIntervalSeconds>
+                            <connectors>
+                                <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                                    <port>9090</port>
+                                    <maxIdleTime>60000</maxIdleTime>
+                                </connector>
+                            </connectors>
+                            <contextPath>/</contextPath>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>gae</id>
             <build>
@@ -466,8 +498,41 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <!-- When built in OpenShift the 'openshift' profile will be used when
+                invoking mvn. -->
+            <!-- Use this profile for any OpenShift specific customization your app
+                will need. -->
+            <!-- By default that is to put the resulting archive into the 'webapps'
+                folder. -->
+            <!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
+            <id>openshift</id>
+            <build>
+                <finalName>watchpamoresite</finalName>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.1.1</version>
+                        <configuration>
+                            <outputDirectory>webapps</outputDirectory>
+                            <warName>ROOT</warName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
     <repositories>
+        <repository>
+            <id>eap</id>
+            <url>http://maven.repository.redhat.com/techpreview/all</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
         <repository>
             <id>maven-restlet</id>
             <name>Public online Restlet repository</name>
@@ -516,5 +581,15 @@
         <!--</repository>-->
     </repositories>
     <pluginRepositories>
+        <pluginRepository>
+            <id>eap</id>
+            <url>http://maven.repository.redhat.com/techpreview/all</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
 </project>

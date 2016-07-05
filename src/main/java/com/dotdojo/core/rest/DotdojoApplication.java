@@ -37,12 +37,6 @@ public class DivrollApplication extends Application {
     Guice.createInjector(new GuiceConfigModule(this.getContext()),
             new SelfInjectingServerResourceModule());
     Router router = new Router(getContext());
-    router.attach(ROOT_URI + "metrics", GaeMetricsServerResource.class);
-    router.attach(ROOT_URI + "caches", GaeMemcacheServerResource.class);
-	router.attach(ROOT_URI + "deployments/zips", GaeZipDeploymentServerResource.class);
-    router.attach(ROOT_URI + "deployments", GaeDeployServerResource.class);
-    router.attach(ROOT_URI + "uploads", GaeUploadServerResource.class);
-    router.attach(ROOT_URI + "system", GaeSystemInfoResource.class);
     router.attachDefault(GaeRootServerResource.class);
     return router;
   }

@@ -20,6 +20,12 @@ public class RegexTest {
         assertEquals("demo", subdomain);
     }
     @Test
+    public void testSubdomainFromPath(){
+        String path = "/www/index.html";
+        String subdomain = RegexHelper.parseSubdomainFrompath(path);
+        assertEquals("www", subdomain);
+    }
+    @Test
     public void testFilename(){
         String path = "/demo/test.txt";
         String fileName = RegexHelper.parseFileName(path);
