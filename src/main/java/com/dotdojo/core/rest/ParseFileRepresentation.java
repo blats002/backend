@@ -3,8 +3,6 @@ package com.divroll.core.rest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.resource.gae.GaeRootServerResource;
-import com.dropbox.core.DbxRequestConfig;
-import com.dropbox.core.http.AppengineHttpRequestor;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
@@ -57,7 +55,6 @@ public class ParseFileRepresentation extends OutputRepresentation {
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
-        DbxRequestConfig config = new DbxRequestConfig("weebio/1.0", Locale.getDefault().toString(), AppengineHttpRequestor.Instance);
         String completePath = this.path;
         try {
             long numBytes = 0;

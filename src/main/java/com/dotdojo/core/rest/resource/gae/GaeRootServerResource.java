@@ -17,17 +17,9 @@ package com.divroll.core.rest.resource.gae;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.ParseFileRepresentation;
-import com.divroll.core.rest.Subdomain;
-import com.divroll.core.rest.service.KinveyService;
-import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.GAEUtil;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
-import com.dropbox.core.DbxException;
-import com.dropbox.core.DbxRequestConfig;
-import com.dropbox.core.http.AppengineHttpRequestor;
-import com.dropbox.core.v1.DbxClientV1;
-import com.dropbox.core.v1.DbxEntry;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -35,9 +27,6 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.kinvey.java.Query;
-import com.kinvey.nativejava.AppData;
-import com.kinvey.nativejava.Client;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.OutputRepresentation;
@@ -103,9 +92,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     @Inject
     @Named("kinvey.mastersecret")
     private String masterSecret;
-
-	@Inject
-	private KinveyService kinveyService;
 
     @Override
     protected void doInit() {
