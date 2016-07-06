@@ -17,3 +17,11 @@ or
 # then
 
 netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.2 connectport=8080 connectaddress=127.0.0.1
+
+
+# To Run
+
+$ mvn package
+$ java -jar target/dependency/webapp-runner.jar target/*.war
+
+See: https://devcenter.heroku.com/articles/java-webapp-runner
