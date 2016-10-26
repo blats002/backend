@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * @author <a href="mailto:kerby@pastekit.com">Kerby Martino</a>
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 1.0
  * @since 1.0
  */

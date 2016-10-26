@@ -22,10 +22,9 @@ import java.util.*;
 
 public class ParseFileRepresentation extends OutputRepresentation {
 
-    public static final String PARSE_URL = "***REMOVED***";
-    private static final String KEY_SPACE = ":";
     private static final String ROOT_URI = "/";
-
+    private static final String PARSE_APP_ID = "domroll_appId";
+    private static final String PARSE_REST_API_KEY = "domroll_restApiKey";
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
@@ -68,8 +67,8 @@ public class ParseFileRepresentation extends OutputRepresentation {
                     outputStream.write(jsonString.getBytes());
                 } else {
                     // Check if app exists
-                    LOG.info("File request path: " + path);
-                    LOG.debug("File metadata not found: " + completePath);
+                    System.out.println("File request path: " + path);
+                    System.out.println("File metadata found: " + completePath);
                     HttpRequestFactory requestFactory =
                             HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
                                 @Override
@@ -81,20 +80,27 @@ public class ParseFileRepresentation extends OutputRepresentation {
                     json.put("path", path);
                     json.put("appId", appId);
 
+
                     GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseBase + "/functions/file");
                     HttpRequest request = requestFactory.buildPostRequest(url, new JsonHttpContent(new JacksonFactory(), json));
-                    request.getHeaders().set("X-Parse-Application-Id", "hSeqDDBeLesJxWjaxAuHq34q3L7ws6xm3qoSS8yG");
-                    request.getHeaders().set("X-Parse-REST-API-Key", "d4dVXvvL85TcG27dgXfHsCKzXcb4g7IZH7tQV9V7");
+                    request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
+                    request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
                     request.getHeaders().set("X-Parse-Revocable-Session", "1");
                     request.setRequestMethod("POST");
 
+                    System.out.println("Parse Base URL: " + parseBase);
+
                     com.google.api.client.http.HttpResponse response = request.execute();
                     String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-                    LOG.info("Function Response: " + body);
+                    System.out.println("Function Response: " + body);
 
                     JSONObject jsonObject = JSON.parseObject(body);
                     String fileUrl = jsonObject.getJSONObject("result").getString("url");
-                    LOG.info("File URL: " + fileUrl);
+                    System.out.println("File URL: " + fileUrl);
+
+                    if(fileUrl.startsWith("http://localhost:8080/parse")){
+                        fileUrl = fileUrl.replace("http://localhost:8080/parse", parseBase);
+                    }
 
                     // Get the file and stream it
                     HttpRequest fileRequest = requestFactory.buildGetRequest(new GenericUrl(fileUrl));
