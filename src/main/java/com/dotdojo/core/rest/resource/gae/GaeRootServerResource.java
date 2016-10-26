@@ -51,11 +51,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
-
-
-//    private static final String ROOT_URI = "/";
+    private static final String PARSE_APP_ID = "domroll_appId";
+    private static final String PARSE_REST_API_KEY = "domroll_restApiKey";
     private static final String ROOT_URI = "";
-//    private static final String APP_ROOT_URI = "/weebio/";
     private static final String APP_ROOT_URI = "";
 	private static final String KEY_SPACE = ":";
     private static final int EXPIRATION = 3600000; // 1 hour
@@ -120,20 +118,23 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 p = p.substring(1);
             }
             final String subdomain;
+            /*
             if(!host.endsWith(getDomain())){
                 subdomain = getStoredSubdomain(host);
             } else {
                 // TODO Check if subdomain exists in the records
                 subdomain = parseSubdomain(host);
-                if(!isExist(subdomain)){
-                    String error = "404 NOT FOUND";
-                    entity = new StringRepresentation(error);
-                    entity.setMediaType(MediaType.TEXT_PLAIN);
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    return entity;
-                }
+//                if(!isExist(subdomain)){
+//                    String error = "404 NOT FOUND";
+//                    entity = new StringRepresentation(error);
+//                    entity.setMediaType(MediaType.TEXT_PLAIN);
+//                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+//                    return entity;
+//                }
             }
-            //LOG.info("Application ID: " + subdomain);
+            */
+            subdomain = parseSubdomain(host);
+            System.out.println("Application ID: " + subdomain);
             if(subdomain == null){
                 String error = "404 NOT FOUND";
                 entity = new StringRepresentation(error);
@@ -144,9 +145,9 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 p = p.replace("%20", " ");
                 final String completePath = APP_ROOT_URI + p;
 
-                LOG.info("Complete Path: " + completePath);
-                LOG.info("Host: " + host);
-                LOG.info("Application ID/Subdomain: " + subdomain);
+                System.out.println("Complete Path: " + completePath);
+                System.out.println("Host: " + host);
+                System.out.println("Application ID/Subdomain: " + subdomain);
 
                 entity = new ParseFileRepresentation(subdomain, completePath, dropboxToken, parseUrl, type);
                 entity.setMediaType(processMediaType(completePath));
@@ -180,13 +181,14 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     }
 
     private String getDomain(){
-        String domain;
-        if(GAEUtil.isGaeDev()){
-            domain = appDomainLocal;
-        } else {
-            domain = appDomain;
-        }
-        return domain;
+//        String domain;
+//        if(GAEUtil.isGaeDev()){
+//            domain = appDomainLocal;
+//        } else {
+//            domain = appDomain;
+//        }
+//        return domain;
+        return "localhost.com";
     }
 
     private String getStoredSubdomain(String host){
@@ -225,14 +227,17 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     private String parseSubdomain(String host){
         String domain;
-        if(GAEUtil.isGaeDev()){
-            domain = appDomainLocal;
-        } else {
-            domain = appDomain;
+        if(host.endsWith("localhost.com")) {
+            return RegexHelper.parseSubdomain(host, "localhost.com");
+        } else if(host.endsWith("localhost")){
+            return RegexHelper.parseSubdomain(host, "localhost");
+        } else if(host.endsWith("***REMOVED***")){
+            return RegexHelper.parseSubdomain(host, "***REMOVED***");
         }
-        LOG.info("Parsing Host: " + host);
-        LOG.info("Parsing Domain: " + domain);
-        return RegexHelper.parseSubdomain(host, domain);
+        //LOG.info("Parsing Host: " + host);
+        //LOG.info("Parsing Domain: " + domain);
+        //return RegexHelper.parseSubdomain(host, domain);
+        return null;
     }
 
     private boolean isExist(String subdomain){
@@ -249,8 +254,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             ParseUrl url = new ParseUrl(parseUrl + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", "myappid");
-            request.getHeaders().set("X-Parse-REST-API-Key", "myrestapikey");
+            request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
+            request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
 

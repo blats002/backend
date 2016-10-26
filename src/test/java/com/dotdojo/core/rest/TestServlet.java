@@ -49,7 +49,7 @@ import java.io.IOException;
  * @version $Revision: $
  */
 /**
- * @author <a href="mailto:kerby@pastekit.com">Kerby Martino</a>
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 1.0
  * @since 1.0
  */
