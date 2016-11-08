@@ -377,6 +377,19 @@
                             <contextPath>/</contextPath>
                         </configuration>
                     </plugin>
+                    <plugin>
+                        <groupId>com.jelastic</groupId>
+                        <artifactId>jelastic-maven-plugin</artifactId>
+                        <version>1.7</version>
+                        <configuration>
+                            <api_hoster>app.j.layershift.co.uk</api_hoster>
+                            <email>[insert your Jelastic login]</email>
+                            <password>[insert your Jelastic password]</password>
+                            <environment>divroll</environment>
+                            <!--<context>[specify the context if you need it]</context>-->
+                            <!--<comment>[insert comment if you need it]</comment>-->
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -585,6 +598,16 @@
         <pluginRepository>
             <id>eap</id>
             <url>http://maven.repository.redhat.com/techpreview/all</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>sonatype-oss-public</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
