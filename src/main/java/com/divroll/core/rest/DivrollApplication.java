@@ -16,7 +16,6 @@ package com.divroll.core.rest;
 
 import com.divroll.core.rest.guice.GuiceConfigModule;
 import com.divroll.core.rest.guice.SelfInjectingServerResourceModule;
-import com.divroll.core.rest.resource.gae.*;
 import com.google.inject.Guice;
 import com.divroll.core.rest.resource.gae.GaeRootServerResource;
 import org.restlet.Application;

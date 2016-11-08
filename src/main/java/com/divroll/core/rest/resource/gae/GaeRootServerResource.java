@@ -16,10 +16,9 @@ package com.divroll.core.rest.resource.gae;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.divroll.core.rest.ParseFileRepresentation;
-import com.divroll.core.rest.util.GAEUtil;
-import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
+import com.divroll.core.rest.util.RegexHelper;
+import com.divroll.core.rest.ParseFileRepresentation;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -29,20 +28,15 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.logging.Level;
 
 /**
  * Resource which has only one representation.
@@ -51,8 +45,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
-    private static final String PARSE_APP_ID = "domroll_appId";
-    private static final String PARSE_REST_API_KEY = "domroll_restApiKey";
+    private static final String PARSE_APP_ID = "divroll";
+    private static final String PARSE_REST_API_KEY = "enterKey";
     private static final String ROOT_URI = "";
     private static final String APP_ROOT_URI = "";
 	private static final String KEY_SPACE = ":";
@@ -231,8 +225,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             return RegexHelper.parseSubdomain(host, "localhost.com");
         } else if(host.endsWith("localhost")){
             return RegexHelper.parseSubdomain(host, "localhost");
-        } else if(host.endsWith("***REMOVED***")){
-            return RegexHelper.parseSubdomain(host, "***REMOVED***");
+        } else if(host.endsWith("divroll.com")){
+            return RegexHelper.parseSubdomain(host, "divroll.com");
         }
         //LOG.info("Parsing Host: " + host);
         //LOG.info("Parsing Domain: " + domain);

@@ -23,8 +23,8 @@ import java.util.*;
 public class ParseFileRepresentation extends OutputRepresentation {
 
     private static final String ROOT_URI = "/";
-    private static final String PARSE_APP_ID = "domroll_appId";
-    private static final String PARSE_REST_API_KEY = "domroll_restApiKey";
+    private static final String PARSE_APP_ID = "divroll";
+    private static final String PARSE_REST_API_KEY = "enterKey";
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 

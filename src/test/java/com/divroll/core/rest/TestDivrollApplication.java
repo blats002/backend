@@ -3,14 +3,12 @@ package com.divroll.core.rest;
 import com.carlosbecker.guice.GuiceModules;
 import com.carlosbecker.guice.GuiceTestRunner;
 import com.divroll.core.rest.guice.GuiceConfigModule;
-import junit.framework.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.restlet.Client;
 import org.restlet.Request;
 import org.restlet.Response;
-import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Protocol;
 

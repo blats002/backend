@@ -17,9 +17,9 @@ package com.divroll.core.rest.service.gae;
 import com.auth0.jwt.JWTSigner;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.JWTVerifyException;
+import com.divroll.core.rest.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.divroll.core.rest.service.WebTokenService;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;

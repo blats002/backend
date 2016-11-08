@@ -14,8 +14,8 @@
 */
 package com.divroll.core.rest.guice;
 
-import com.divroll.core.rest.service.*;
-import com.divroll.core.rest.service.gae.*;
+import com.divroll.core.rest.service.WebTokenService;
+import com.divroll.core.rest.service.gae.GaeWebTokenService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
@@ -50,7 +50,7 @@ public class GuiceConfigModule extends AbstractModule {
         // Suppress Guice warning when on GAE
         // see https://code.google.com/p/google-guice/issues/detail?id=488
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
-        bind(String.class).annotatedWith(Names.named("app")).toInstance("Divroll");
+        bind(String.class).annotatedWith(Names.named("app")).toInstance("divroll");
         bind(WebTokenService.class).to(GaeWebTokenService.class).in(Scopes.SINGLETON);
         Names.bindProperties(binder(), readProperties());
     }
