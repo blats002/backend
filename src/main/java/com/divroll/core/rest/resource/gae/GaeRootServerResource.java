@@ -113,21 +113,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 p = p.substring(1);
             }
             final String subdomain;
-            /*
-            if(!host.endsWith(getDomain())){
-                subdomain = getStoredSubdomain(host);
-            } else {
-                // TODO Check if subdomain exists in the records
-                subdomain = parseSubdomain(host);
-//                if(!isExist(subdomain)){
-//                    String error = "404 NOT FOUND";
-//                    entity = new StringRepresentation(error);
-//                    entity.setMediaType(MediaType.TEXT_PLAIN);
-//                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-//                    return entity;
-//                }
-            }
-            */
             subdomain = parseSubdomain(host);
             System.out.println("Application ID: " + subdomain);
             if(subdomain == null){
@@ -173,17 +158,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             type = MediaType.IMAGE_ICON;
         }
         return type;
-    }
-
-    private String getDomain(){
-//        String domain;
-//        if(GAEUtil.isGaeDev()){
-//            domain = appDomainLocal;
-//        } else {
-//            domain = appDomain;
-//        }
-//        return domain;
-        return "localhost.com";
     }
 
     // TODO: Convert to cloud code
@@ -260,19 +234,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
 
     private String parseSubdomain(String host){
-        String domain;
-        if(host.endsWith("localhost.com")) {
-            return RegexHelper.parseSubdomain(host, "localhost.com");
-        } else if(host.endsWith("localhost")){
-            return RegexHelper.parseSubdomain(host, "localhost");
-        } else if(host.endsWith("divroll.com")){
+        if(host.endsWith("divroll.com")){
             return RegexHelper.parseSubdomain(host, "divroll.com");
         } else {
             return getStoredSubdomain(host);
         }
-        //LOG.info("Parsing Host: " + host);
-        //LOG.info("Parsing Domain: " + domain);
-        //return RegexHelper.parseSubdomain(host, domain);
     }
 
     private boolean isExist(String subdomain){
