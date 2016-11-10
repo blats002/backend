@@ -46,12 +46,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
-    private static final String PARSE_APP_ID = "divroll";
-    private static final String PARSE_REST_API_KEY = "enterKey";
-    private static final String ROOT_URI = "";
+
     private static final String APP_ROOT_URI = "";
-	private static final String KEY_SPACE = ":";
-    private static final int EXPIRATION = 3600000; // 1 hour
 
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
@@ -67,24 +63,20 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private String parseUrl;
 
     @Inject
+    @Named("parse.appid")
+    private String parseAppId;
+
+    @Inject
+    @Named("parse.restapikey")
+    private String parseRestApiKey;
+
+    @Inject
     @Named("app.domain")
     private String appDomain;
 
     @Inject
     @Named("app.domain.local")
     private String appDomainLocal;
-
-    @Inject
-    @Named("dropbox.token")
-    private String dropboxToken;
-
-    @Inject
-    @Named("kinvey.appkey")
-    private String appkey;
-
-    @Inject
-    @Named("kinvey.mastersecret")
-    private String masterSecret;
 
     @Override
     protected void doInit() {
@@ -129,7 +121,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 System.out.println("Host: " + host);
                 System.out.println("Application ID/Subdomain: " + subdomain);
 
-                entity = new ParseFileRepresentation(subdomain, completePath, dropboxToken, parseUrl, type);
+                entity = new ParseFileRepresentation(subdomain, completePath, parseAppId, parseRestApiKey, parseUrl, type);
                 entity.setMediaType(processMediaType(completePath));
             }
 
@@ -177,8 +169,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseUrl + "/classes/Domain");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
@@ -213,8 +205,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseUrl + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
@@ -255,8 +247,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             ParseUrl url = new ParseUrl(parseUrl + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
 
