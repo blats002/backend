@@ -21,6 +21,7 @@ import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.ParseFileRepresentation;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -45,12 +46,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
 
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
-    private static final String PARSE_APP_ID = "divroll";
-    private static final String PARSE_REST_API_KEY = "enterKey";
-    private static final String ROOT_URI = "";
+
     private static final String APP_ROOT_URI = "";
-	private static final String KEY_SPACE = ":";
-    private static final int EXPIRATION = 3600000; // 1 hour
 
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
@@ -66,24 +63,20 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private String parseUrl;
 
     @Inject
+    @Named("parse.appid")
+    private String parseAppId;
+
+    @Inject
+    @Named("parse.restapikey")
+    private String parseRestApiKey;
+
+    @Inject
     @Named("app.domain")
     private String appDomain;
 
     @Inject
     @Named("app.domain.local")
     private String appDomainLocal;
-
-    @Inject
-    @Named("dropbox.token")
-    private String dropboxToken;
-
-    @Inject
-    @Named("kinvey.appkey")
-    private String appkey;
-
-    @Inject
-    @Named("kinvey.mastersecret")
-    private String masterSecret;
 
     @Override
     protected void doInit() {
@@ -112,21 +105,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 p = p.substring(1);
             }
             final String subdomain;
-            /*
-            if(!host.endsWith(getDomain())){
-                subdomain = getStoredSubdomain(host);
-            } else {
-                // TODO Check if subdomain exists in the records
-                subdomain = parseSubdomain(host);
-//                if(!isExist(subdomain)){
-//                    String error = "404 NOT FOUND";
-//                    entity = new StringRepresentation(error);
-//                    entity.setMediaType(MediaType.TEXT_PLAIN);
-//                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-//                    return entity;
-//                }
-            }
-            */
             subdomain = parseSubdomain(host);
             System.out.println("Application ID: " + subdomain);
             if(subdomain == null){
@@ -143,7 +121,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 System.out.println("Host: " + host);
                 System.out.println("Application ID/Subdomain: " + subdomain);
 
-                entity = new ParseFileRepresentation(subdomain, completePath, dropboxToken, parseUrl, type);
+                entity = new ParseFileRepresentation(subdomain, completePath, parseAppId, parseRestApiKey, parseUrl, type);
                 entity.setMediaType(processMediaType(completePath));
             }
 
@@ -174,64 +152,85 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         return type;
     }
 
-    private String getDomain(){
-//        String domain;
-//        if(GAEUtil.isGaeDev()){
-//            domain = appDomainLocal;
-//        } else {
-//            domain = appDomain;
-//        }
-//        return domain;
-        return "localhost.com";
-    }
-
+    // TODO: Convert to cloud code
     private String getStoredSubdomain(String host){
         LOG.info("Get stored subdomain: " + host);
-        String result = host;
-        /*
-        try{
-            String value = null; //(String) memCache.get(host);
-            if(value == null){
-                Client kinvey = new Client.Builder(appkey, masterSecret).build();
-                kinvey.disableDebugLogging();
-                kinvey.user().loginBlocking(appkey, masterSecret).execute();
-                Query q = kinvey.query();
-                q.equals("domain", host);
-                AppData<Subdomain> subdomains = kinvey.appData("subdomains", Subdomain.class);
-                Subdomain[] list = subdomains.getBlocking(q).execute();
-                Subdomain subdomain = Arrays.asList(list).iterator().next();
-                if(subdomain != null){
-                    result = subdomain.getSubdomain();
-                    //memCache.put(host, subdomain.getSubdomain(), Expiration.byDeltaMillis(EXPIRATION));
-                    LOG.info("Subdomain for " + host + ": " + result);
-                }
-            } else {
-                result = value;
-            }
-        } catch (NoSuchElementException e){
-            LOG.info("Subdomain not found for host: " + host);
-        } catch (Exception e){
+        String result = null;
+        try {
+            HttpRequestFactory requestFactory =
+                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                        @Override
+                        public void initialize(HttpRequest request) {
+                            request.setParser(new JsonObjectParser(JSON_FACTORY));
+                        }
+                    });
+            JSONObject where = new JSONObject();
+            where.put("name", host);
+            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseUrl + "/classes/Domain");
+            url.put("where", where.toJSONString());
+            HttpRequest request = requestFactory.buildGetRequest(url);
+            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
+            request.getHeaders().set("X-Parse-Revocable-Session", "1");
+            request.setRequestMethod("GET");
+            com.google.api.client.http.HttpResponse response = request.execute();
+            String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
+            System.out.println("Response: " + body);
+
+            JSONObject jsonBody = JSON.parseObject(body);
+            JSONArray array = jsonBody.getJSONArray("results");
+            JSONObject resultItem = (JSONObject) array.iterator().next();
+            JSONObject appPointer = resultItem.getJSONObject("appId");
+            result = getApplicationName(appPointer);
+        } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
         }
-        */
         return result;
+    }
+
+    private String getApplicationName(JSONObject pointer) {
+        String appName = null;
+        try {
+            String objectId = pointer.getString("objectId");
+            HttpRequestFactory requestFactory =
+                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                        @Override
+                        public void initialize(HttpRequest request) {
+                            request.setParser(new JsonObjectParser(JSON_FACTORY));
+                        }
+                    });
+            JSONObject where = new JSONObject();
+            where.put("objectId", objectId);
+            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseUrl + "/classes/Application");
+            url.put("where", where.toJSONString());
+            HttpRequest request = requestFactory.buildGetRequest(url);
+            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
+            request.getHeaders().set("X-Parse-Revocable-Session", "1");
+            request.setRequestMethod("GET");
+            com.google.api.client.http.HttpResponse response = request.execute();
+            String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
+            System.out.println("Get Application Name Response: " + body);
+
+            JSONObject jsonBody = JSON.parseObject(body);
+            JSONArray array = jsonBody.getJSONArray("results");
+            JSONObject resultItem = (JSONObject) array.iterator().next();
+            appName = resultItem.getString("appId");
+        } catch (Exception e) {
+            LOG.debug("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return appName;
     }
 
 
     private String parseSubdomain(String host){
-        String domain;
-        if(host.endsWith("localhost.com")) {
-            return RegexHelper.parseSubdomain(host, "localhost.com");
-        } else if(host.endsWith("localhost")){
-            return RegexHelper.parseSubdomain(host, "localhost");
-        } else if(host.endsWith("divroll.com")){
+        if(host.endsWith("divroll.com")){
             return RegexHelper.parseSubdomain(host, "divroll.com");
+        } else {
+            return getStoredSubdomain(host);
         }
-        //LOG.info("Parsing Host: " + host);
-        //LOG.info("Parsing Domain: " + domain);
-        //return RegexHelper.parseSubdomain(host, domain);
-        return null;
     }
 
     private boolean isExist(String subdomain){
@@ -248,8 +247,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             ParseUrl url = new ParseUrl(parseUrl + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
 

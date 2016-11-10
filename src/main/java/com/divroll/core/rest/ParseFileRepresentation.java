@@ -23,8 +23,6 @@ import java.util.*;
 public class ParseFileRepresentation extends OutputRepresentation {
 
     private static final String ROOT_URI = "/";
-    private static final String PARSE_APP_ID = "divroll";
-    private static final String PARSE_REST_API_KEY = "enterKey";
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
@@ -34,7 +32,9 @@ public class ParseFileRepresentation extends OutputRepresentation {
 
     private String path = null;
 
-    private String dropboxToken;
+    private String parseRestApiKey;
+
+    private String parseAppId;
 
     private String parseBase;
 
@@ -44,16 +44,19 @@ public class ParseFileRepresentation extends OutputRepresentation {
         super(mediaType);
     }
 
-    public ParseFileRepresentation(String appId, String path, String token, String parseBase, MediaType mediaType) {
+    public ParseFileRepresentation(String appId, String path, String parseAppId, String parseRestApiKey, String parseBase, MediaType mediaType) {
         super(mediaType);
         setPath(path);
-        setDropboxToken(token);
+        setParseRestApiKey(parseRestApiKey);
+        setParseAppId(parseAppId);
         setParseBase(parseBase);
         setAppId(appId);
     }
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
+        System.out.println("APP_ID: " + appId);
+        System.out.println("REST_API_KEY: " + parseRestApiKey);
         String completePath = this.path;
         try {
             long numBytes = 0;
@@ -83,8 +86,8 @@ public class ParseFileRepresentation extends OutputRepresentation {
 
                     GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseBase + "/functions/file");
                     HttpRequest request = requestFactory.buildPostRequest(url, new JsonHttpContent(new JacksonFactory(), json));
-                    request.getHeaders().set("X-Parse-Application-Id", PARSE_APP_ID);
-                    request.getHeaders().set("X-Parse-REST-API-Key", PARSE_REST_API_KEY);
+                    request.getHeaders().set("X-Parse-Application-Id", parseAppId);
+                    request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
                     request.getHeaders().set("X-Parse-Revocable-Session", "1");
                     request.setRequestMethod("POST");
 
@@ -128,8 +131,8 @@ public class ParseFileRepresentation extends OutputRepresentation {
 
     }
 
-    public void setDropboxToken(String dropboxToken) {
-        this.dropboxToken = dropboxToken;
+    public void setParseRestApiKey(String restApiKey) {
+        this.parseRestApiKey = restApiKey;
     }
 
     public void setParseBase(String parseBase) {
@@ -142,5 +145,13 @@ public class ParseFileRepresentation extends OutputRepresentation {
 
     public void setAppId(String appId) {
         this.appId = appId;
+    }
+
+    public String getParseAppId() {
+        return parseAppId;
+    }
+
+    public void setParseAppId(String parseAppId) {
+        this.parseAppId = parseAppId;
     }
 }
