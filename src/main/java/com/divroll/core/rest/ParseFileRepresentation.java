@@ -1,6 +1,7 @@
 package com.divroll.core.rest;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.resource.gae.GaeRootServerResource;
 import com.google.api.client.http.*;
@@ -11,6 +12,7 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 //import com.mashape.unirest.http.HttpResponse;
 //import com.mashape.unirest.http.Unirest;
+import com.google.common.io.CountingOutputStream;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
@@ -108,7 +110,9 @@ public class ParseFileRepresentation extends OutputRepresentation {
                     // Get the file and stream it
                     HttpRequest fileRequest = requestFactory.buildGetRequest(new GenericUrl(fileUrl));
                     com.google.api.client.http.HttpResponse fileRequestResponse = fileRequest.execute();
-                    fileRequestResponse.download(outputStream);
+                    CountingOutputStream countingOutputStream = new CountingOutputStream(outputStream);
+                    fileRequestResponse.download(countingOutputStream);
+                    modifyAppUsage(appId, countingOutputStream.getCount());
                 }
             }
         }  catch (Exception e){
@@ -154,4 +158,34 @@ public class ParseFileRepresentation extends OutputRepresentation {
     public void setParseAppId(String parseAppId) {
         this.parseAppId = parseAppId;
     }
+
+    private void modifyAppUsage(String appId, Long newBytes) {
+        try {
+            HttpRequestFactory requestFactory =
+                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                        @Override
+                        public void initialize(HttpRequest request) {
+                            request.setParser(new JsonObjectParser(JSON_FACTORY));
+                        }
+                    });
+            Map<String, Object> json = new HashMap<String, Object>();
+            json.put("appId", appId);
+            json.put("bytes", newBytes);
+            GaeRootServerResource.ParseUrl meterUrl = new GaeRootServerResource.ParseUrl(parseBase + "/functions/meter");
+            HttpRequest meterRequest = requestFactory.buildPostRequest(meterUrl, new JsonHttpContent(new JacksonFactory(), json));
+            meterRequest.getHeaders().set("X-Parse-Application-Id", parseAppId);
+            meterRequest.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
+            meterRequest.getHeaders().set("X-Parse-Revocable-Session", "1");
+            meterRequest.setRequestMethod("POST");
+
+            com.google.api.client.http.HttpResponse meterResponse = meterRequest.execute();
+            String meterBody = new Scanner(meterResponse.getContent()).useDelimiter("\\A").next();
+            LOG.debug("Meter Function Response: " + meterBody);
+
+        } catch (Exception e) {
+            LOG.debug("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 }
