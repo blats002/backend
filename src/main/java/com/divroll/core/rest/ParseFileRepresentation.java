@@ -110,9 +110,18 @@ public class ParseFileRepresentation extends OutputRepresentation {
                     // Get the file and stream it
                     HttpRequest fileRequest = requestFactory.buildGetRequest(new GenericUrl(fileUrl));
                     com.google.api.client.http.HttpResponse fileRequestResponse = fileRequest.execute();
-                    CountingOutputStream countingOutputStream = new CountingOutputStream(outputStream);
+                    final CountingOutputStream countingOutputStream = new CountingOutputStream(outputStream);
                     fileRequestResponse.download(countingOutputStream);
-                    modifyAppUsage(appId, countingOutputStream.getCount());
+
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            modifyAppUsage(appId, countingOutputStream.getCount());
+                        }
+                    };
+                    Thread t = new Thread(runnable);
+                    t.run();
+
                 }
             }
         }  catch (Exception e){
