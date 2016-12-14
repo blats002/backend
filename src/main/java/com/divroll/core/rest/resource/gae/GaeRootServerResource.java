@@ -19,6 +19,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.ParseFileRepresentation;
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
@@ -35,8 +37,11 @@ import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.slf4j.*;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -47,6 +52,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
 
+    private static final String ESCAPED_FRAGMENT_FORMAT1 = "_escaped_fragment_=";
+    private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
     private static final String APP_ROOT_URI = "";
 
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -95,39 +102,87 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         LOG.info("Request Path: " + path);
 
         try {
-            url = new URL(_completePath);
-            String host = url.getHost();
+            String escapeQuery = getQueryValue("_escaped_fragment_");
+            if(escapeQuery != null && !escapeQuery.isEmpty()) {
+                String decodedFragment = URLDecoder.decode(escapeQuery, "UTF-8");
+                String s = _completePath + "#!" + decodedFragment;
+                System.out.println("s: " + s);
+                final WebClient webClient = new WebClient(BrowserVersion.CHROME);
+                WebClientOptions options = webClient.getOptions();
+                options.setCssEnabled(true);
+                webClient.setCssErrorHandler(new SilentCssErrorHandler());
+                webClient.setAjaxController(new NicelyResynchronizingAjaxController());
+                options.setThrowExceptionOnScriptError(true);
+                options.setThrowExceptionOnFailingStatusCode(false);
+                options.setRedirectEnabled(false);
+                options.setAppletEnabled(false);
+                options.setJavaScriptEnabled(true);
+                options.setTimeout(50000);
+                webClient.addRequestHeader("Access-Control-Allow-Origin", "*");
 
-            String p = url.getPath();
-            if(p.isEmpty() || p.equals("/")){
-                p = "index.html";
-            }else if(p.startsWith("/")){
-                p = p.substring(1);
-            }
-            final String subdomain;
-            subdomain = parseSubdomain(host);
-            System.out.println("Application ID: " + subdomain);
-            if(subdomain == null){
-                String error = "404 NOT FOUND";
-                entity = new StringRepresentation(error);
-                entity.setMediaType(MediaType.TEXT_PLAIN);
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return entity;
+                HtmlPage page = webClient.getPage(s);
+
+                // important!  Give the headless browser enough time to execute JavaScript
+                // The exact time to wait may depend on your application.
+                webClient.setJavaScriptTimeout(10000);
+                webClient.waitForBackgroundJavaScript(1000);
+                //just wait
+                for (int i = 0; i < 20; i++) {
+                    synchronized (page) {
+                        page.wait(500);
+                    }
+                }
+                String xml = page.asXml();
+                entity = new StringRepresentation(xml);
+                entity.setMediaType(processMediaType(s));
+                if (webClient != null) {
+                    webClient.closeAllWindows();
+                }
+                //System.out.println(xml);
+                //return entity;
             } else {
-                p = p.replace("%20", " ");
-                final String completePath = APP_ROOT_URI + p;
+                url = new URL(_completePath);
+                String host = url.getHost();
 
-                System.out.println("Complete Path: " + completePath);
-                System.out.println("Host: " + host);
-                System.out.println("Application ID/Subdomain: " + subdomain);
+                String p = url.getPath();
+                if(p.isEmpty() || p.equals("/")){
+                    p = "index.html";
+                }else if(p.startsWith("/")){
+                    p = p.substring(1);
+                }
+                final String subdomain;
+                subdomain = parseSubdomain(host);
+                System.out.println("Application ID: " + subdomain);
+                if(subdomain == null){
+                    String error = "404 NOT FOUND";
+                    entity = new StringRepresentation(error);
+                    entity.setMediaType(MediaType.TEXT_PLAIN);
+                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                    return entity;
+                } else {
+                    p = p.replace("%20", " ");
+                    final String completePath = APP_ROOT_URI + p;
 
-                entity = new ParseFileRepresentation(subdomain, completePath, parseAppId, parseRestApiKey, parseUrl, type);
-                entity.setMediaType(processMediaType(completePath));
+                    System.out.println("Complete Path: " + completePath);
+                    System.out.println("Host: " + host);
+                    System.out.println("Application ID/Subdomain: " + subdomain);
+
+                    entity = new ParseFileRepresentation(subdomain, completePath, parseAppId, parseRestApiKey, parseUrl, type);
+                    entity.setMediaType(processMediaType(completePath));
+                }
             }
-
         } catch (MalformedURLException e) {
             e.printStackTrace();
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
         }
         return entity;
     }
@@ -269,5 +324,4 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         }
         return false;
     }
-
 }
