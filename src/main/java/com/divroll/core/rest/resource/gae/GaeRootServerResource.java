@@ -112,7 +112,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 options.setCssEnabled(true);
                 webClient.setCssErrorHandler(new SilentCssErrorHandler());
                 webClient.setAjaxController(new NicelyResynchronizingAjaxController());
-                options.setThrowExceptionOnScriptError(true);
+                options.setThrowExceptionOnScriptError(false);
                 options.setThrowExceptionOnFailingStatusCode(false);
                 options.setRedirectEnabled(false);
                 options.setAppletEnabled(false);
@@ -135,9 +135,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 String xml = page.asXml();
                 entity = new StringRepresentation(xml);
                 entity.setMediaType(processMediaType(s));
-                if (webClient != null) {
-                    webClient.closeAllWindows();
-                }
                 //System.out.println(xml);
                 //return entity;
             } else {
