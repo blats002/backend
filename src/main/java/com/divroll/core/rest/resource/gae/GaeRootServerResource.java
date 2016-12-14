@@ -134,8 +134,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 }
                 String xml = page.asXml();
                 entity = new StringRepresentation(xml);
-                entity.setMediaType(processMediaType(s));
-                //System.out.println(xml);
+                //entity.setMediaType(processMediaType(s));
+                entity.setMediaType(MediaType.TEXT_HTML);
+                System.out.println("=========================== START RENDERED PAGE ===========================");
+                System.out.println(xml);
+                System.out.println("=========================== END RENDERED PAGE ===========================");
                 //return entity;
             } else {
                 url = new URL(_completePath);
