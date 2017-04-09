@@ -20,6 +20,7 @@ import com.google.inject.Guice;
 import com.divroll.core.rest.resource.gae.GaeRootServerResource;
 import org.restlet.Application;
 import org.restlet.Restlet;
+import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 
 import org.slf4j.*;

@@ -272,6 +272,20 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             JSONArray array = jsonBody.getJSONArray("results");
             JSONObject resultItem = (JSONObject) array.iterator().next();
             appName = resultItem.getString("appId");
+            /*
+            Boolean isActive = resultItem.getBoolean("isActive");
+            try {
+                if(isActive) {
+                    appName = resultItem.getString("appId");
+                } else {
+                    appName = "404";
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+                appName = "404";
+            }
+            */
+
         } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
@@ -283,6 +297,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
     private String parseSubdomain(String host){
         if(host.endsWith("divroll.com")){
             return RegexHelper.parseSubdomain(host, "divroll.com");
+        } else if(host.endsWith("localhost.com")){
+            return RegexHelper.parseSubdomain(host, "localhost.com");
         } else {
             return getStoredSubdomain(host);
         }

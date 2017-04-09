@@ -371,7 +371,7 @@
                         <artifactId>jelastic-maven-plugin</artifactId>
                         <version>1.7</version>
                         <configuration>
-                            <api_hoster>app.j.layershift.co.uk</api_hoster>
+                            <api_hoster></api_hoster>
                             <email></email>
                             <password></password>
                             <environment></environment>
