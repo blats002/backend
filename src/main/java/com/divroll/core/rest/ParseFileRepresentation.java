@@ -10,8 +10,6 @@ import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-//import com.mashape.unirest.http.HttpResponse;
-//import com.mashape.unirest.http.Unirest;
 import com.google.common.io.CountingOutputStream;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;

@@ -16,6 +16,7 @@ package com.divroll.core.rest.resource.gae;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.core.rest.Config;
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.ParseFileRepresentation;
@@ -29,12 +30,16 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
+import org.restlet.resource.ServerResource;
 import org.slf4j.*;
 
 import java.io.IOException;
@@ -47,7 +52,7 @@ import java.util.*;
 /**
  * Resource which has only one representation.
  */
-public class GaeRootServerResource extends SelfInjectingServerResource {
+public class GaeRootServerResource extends ServerResource {
 
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
@@ -64,26 +69,6 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
             super(encodedUrl);
         }
     }
-
-    @Inject
-    @Named("parse.url")
-    private String parseUrl;
-
-    @Inject
-    @Named("parse.appid")
-    private String parseAppId;
-
-    @Inject
-    @Named("parse.restapikey")
-    private String parseRestApiKey;
-
-    @Inject
-    @Named("app.domain")
-    private String appDomain;
-
-    @Inject
-    @Named("app.domain.local")
-    private String appDomainLocal;
 
     @Override
     protected void doInit() {
@@ -107,6 +92,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 String decodedFragment = URLDecoder.decode(escapeQuery, "UTF-8");
                 String s = _completePath + "#!" + decodedFragment;
                 System.out.println("s: " + s);
+
                 final WebClient webClient = new WebClient(BrowserVersion.CHROME);
                 WebClientOptions options = webClient.getOptions();
                 options.setCssEnabled(true);
@@ -117,6 +103,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 options.setRedirectEnabled(false);
                 options.setAppletEnabled(false);
                 options.setJavaScriptEnabled(true);
+//                options.setUseInsecureSSL(true);
                 options.setTimeout(50000);
                 webClient.addRequestHeader("Access-Control-Allow-Origin", "*");
 
@@ -133,6 +120,8 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     }
                 }
                 String xml = page.asXml();
+
+
                 entity = new StringRepresentation(xml);
                 //entity.setMediaType(processMediaType(s));
                 entity.setMediaType(MediaType.TEXT_HTML);
@@ -150,8 +139,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                 }else if(p.startsWith("/")){
                     p = p.substring(1);
                 }
-                final String subdomain;
+                String subdomain;
                 subdomain = parseSubdomain(host);
+                if(subdomain == null || subdomain.isEmpty()) {
+                    subdomain = "www";
+                }
                 System.out.println("Application ID: " + subdomain);
                 if(subdomain == null){
                     String error = "404 NOT FOUND";
@@ -167,7 +159,13 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     System.out.println("Host: " + host);
                     System.out.println("Application ID/Subdomain: " + subdomain);
 
-                    entity = new ParseFileRepresentation(subdomain, completePath, parseAppId, parseRestApiKey, parseUrl, type);
+                    entity = new ParseFileRepresentation(subdomain,
+                            completePath,
+                            Config.PARSE_APP_ID,
+                            Config.PARSE_REST_API_KEY,
+                            Config.PARSE_URL,
+                            type);
+
                     entity.setMediaType(processMediaType(completePath));
                 }
             }
@@ -183,6 +181,7 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
         } catch (InterruptedException e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+
         }
         return entity;
     }
@@ -221,11 +220,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     });
             JSONObject where = new JSONObject();
             where.put("name", host);
-            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseUrl + "/classes/Domain");
+            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(Config.PARSE_URL + "/classes/Domain");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
-            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
+            request.getHeaders().set("X-Parse-Application-Id", Config.PARSE_APP_ID);
+            request.getHeaders().set("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
@@ -257,11 +256,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                     });
             JSONObject where = new JSONObject();
             where.put("objectId", objectId);
-            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseUrl + "/classes/Application");
+            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(Config.PARSE_URL + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
-            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
+            request.getHeaders().set("X-Parse-Application-Id", Config.PARSE_APP_ID);
+            request.getHeaders().set("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
@@ -315,11 +314,11 @@ public class GaeRootServerResource extends SelfInjectingServerResource {
                             request.setParser(new JsonObjectParser(JSON_FACTORY));
                         }
                     });
-            ParseUrl url = new ParseUrl(parseUrl + "/classes/Application");
+            ParseUrl url = new ParseUrl(Config.PARSE_URL + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", parseAppId);
-            request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
+            request.getHeaders().set("X-Parse-Application-Id", Config.PARSE_APP_ID);
+            request.getHeaders().set("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY);
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
 
