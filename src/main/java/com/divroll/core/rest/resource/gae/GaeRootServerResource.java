@@ -26,13 +26,14 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import org.restlet.data.MediaType;
-import org.restlet.data.Status;
+import org.restlet.data.*;
+import org.restlet.engine.application.EncodeRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.restlet.resource.ServerResource;
+import org.restlet.util.Series;
 import org.slf4j.*;
 
 import java.io.IOException;
@@ -57,6 +58,8 @@ public class GaeRootServerResource extends ServerResource {
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
+    private String acceptEncodings;
+
     public static class ParseUrl extends GenericUrl {
         public ParseUrl(String encodedUrl) {
             super(encodedUrl);
@@ -66,11 +69,15 @@ public class GaeRootServerResource extends ServerResource {
     @Override
     protected void doInit() {
         super.doInit();
+        Series<Header> series = (Series<Header>)getRequestAttributes().get("org.restlet.http.headers");
+        acceptEncodings =  series.getFirst("Accept-Encoding").getValue();
+
     }
 
     @Get
     public Representation represent() {
-        Representation entity = null;
+        boolean canAcceptGzip = (acceptEncodings.contains("gzip") || acceptEncodings.contains("GZIP"));
+        EncodeRepresentation encoded = null;
         MediaType type = getRequest().getEntity().getMediaType();
         String path = getRequest().getResourceRef().getPath();
         String _completePath = getRequest().getResourceRef().getHostIdentifier() +
@@ -115,12 +122,16 @@ public class GaeRootServerResource extends ServerResource {
                 String xml = page.asXml();
 
 
-                entity = new StringRepresentation(xml);
+                Representation entity = new StringRepresentation(xml);
                 //entity.setMediaType(processMediaType(s));
                 entity.setMediaType(MediaType.TEXT_HTML);
                 System.out.println("=========================== START RENDERED PAGE ===========================");
                 System.out.println(xml);
                 System.out.println("=========================== END RENDERED PAGE ===========================");
+                if(!canAcceptGzip) {
+                    return entity;
+                }
+                encoded = new EncodeRepresentation(Encoding.GZIP, entity);
                 //return entity;
             } else {
                 url = new URL(_completePath);
@@ -135,15 +146,16 @@ public class GaeRootServerResource extends ServerResource {
                 String subdomain;
                 subdomain = parseSubdomain(host);
                 if(subdomain == null || subdomain.isEmpty()) {
-                    subdomain = "www";
+                    subdomain = "write";
                 }
                 System.out.println("Application ID: " + subdomain);
                 if(subdomain == null){
                     String error = "404 NOT FOUND";
-                    entity = new StringRepresentation(error);
+                    Representation entity = new StringRepresentation(error);
                     entity.setMediaType(MediaType.TEXT_PLAIN);
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    return entity;
+                    EncodeRepresentation encodedrep = new EncodeRepresentation(Encoding.GZIP, entity);
+                    return encodedrep;
                 } else {
                     p = p.replace("%20", " ");
                     final String completePath = APP_ROOT_URI + p;
@@ -151,8 +163,7 @@ public class GaeRootServerResource extends ServerResource {
                     System.out.println("Complete Path: " + completePath);
                     System.out.println("Host: " + host);
                     System.out.println("Application ID/Subdomain: " + subdomain);
-
-                    entity = new ParseFileRepresentation(subdomain,
+                    Representation entity = new ParseFileRepresentation(subdomain,
                             completePath,
                             Config.PARSE_APP_ID,
                             Config.PARSE_REST_API_KEY,
@@ -160,6 +171,10 @@ public class GaeRootServerResource extends ServerResource {
                             type);
 
                     entity.setMediaType(processMediaType(completePath));
+                    if(!canAcceptGzip) {
+                        return entity;
+                    }
+                    encoded = new EncodeRepresentation(Encoding.GZIP, entity);
                 }
             }
         } catch (MalformedURLException e) {
@@ -176,7 +191,7 @@ public class GaeRootServerResource extends ServerResource {
             setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
 
         }
-        return entity;
+        return encoded;
     }
 
     private MediaType processMediaType(String path){

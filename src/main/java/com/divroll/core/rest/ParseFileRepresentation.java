@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 public class ParseFileRepresentation extends OutputRepresentation {
 
