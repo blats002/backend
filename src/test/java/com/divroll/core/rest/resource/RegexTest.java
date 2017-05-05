@@ -1,8 +1,8 @@
-package com.divroll.core.rest.resource.gae;
+package com.divroll.core.rest.resource;
 
 import com.carlosbecker.guice.GuiceModules;
 import com.carlosbecker.guice.GuiceTestRunner;
-import com.divroll.core.rest.guice.GuiceConfigModule;
+//import com.divroll.core.rest.guice.GuiceConfigModule;
 import com.divroll.core.rest.util.RegexHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(GuiceTestRunner.class)
-@GuiceModules(GuiceConfigModule.class)
+//@GuiceModules(GuiceConfigModule.class)
 public class RegexTest {
     @Test
     public void testSubdomain(){

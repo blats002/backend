@@ -1,6 +1,6 @@
 /*
 *
-* Copyright (c) 2016 Kerby Martino and Divroll. All Rights Reserved.
+* Copyright (c) 2017 Kerby Martino and Divroll. All Rights Reserved.
 * Licensed under Divroll Commercial License, Version 1.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -17,6 +17,11 @@ package com.divroll.core.rest.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 1.0
+ * @since 1.0
+ */
 public class RegexHelper {
     public static boolean isNumeric(String string){
         Pattern pattern = Pattern.compile("^[0-9]+$");

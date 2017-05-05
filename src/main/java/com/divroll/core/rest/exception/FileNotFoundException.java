@@ -12,43 +12,24 @@
 * Divroll and must not be redistributed in any form.
 *
 */
-package com.divroll.core.rest.util;
+package com.divroll.core.rest.exception;
 
-import java.io.ByteArrayOutputStream;
+import org.restlet.resource.Status;
+
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 1.0
  * @since 1.0
  */
-@Deprecated
-public class CachingOutputStream extends OutputStream
-{
-	private final OutputStream os;
-	private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-	public CachingOutputStream(OutputStream os) {
-		this.os = os;
-	}
-
-	public void write(int b) throws IOException {
-		os.write(b);
-		baos.write(b);
-	}
-
-	public byte[] getCache() {
-		return baos.toByteArray();
-	}
-
-	public void close() throws IOException {
-		os.close();
-	}
-
-	public void flush() throws IOException {
-		os.flush();
-	}
-
+@Status(value = 404, serialize = false)
+public class FileNotFoundException extends IOException {
+    public FileNotFoundException() {}
+    public FileNotFoundException(String message) {
+        super(message);
+    }
+    public FileNotFoundException(String message, Exception e) {
+        super(message, e);
+    }
 }
-

@@ -1,9 +1,20 @@
+/*
+*
+* Copyright (c) 2017 Kerby Martino and Divroll. All Rights Reserved.
+* Licensed under Divroll Commercial License, Version 1.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   https://www.divroll.com/licenses/LICENSE-1.0
+*
+* Unless required by applicable law or agreed to in writing, software distributed
+* under the License is distributed as Proprietary and Confidential to
+* Divroll and must not be redistributed in any form.
+*
+*/
 package com.divroll.core.rest;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.divroll.core.rest.resource.gae.GaeRootServerResource;
+import com.divroll.core.rest.resource.GaeRootServerResource;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
@@ -19,124 +30,68 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.zip.GZIPOutputStream;
 
+/**
+ * Representation that buffers Parse files
+ *
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 1.0
+ * @since 1.0
+ */
 public class ParseFileRepresentation extends OutputRepresentation {
 
-    private static final String ROOT_URI = "/";
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
     final static Logger LOG
             = LoggerFactory.getLogger(ParseFileRepresentation.class);
 
-
-    private String path = null;
-
-    private String parseRestApiKey;
-
-    private String parseAppId;
+    private String fileUrl;
 
     private String parseBase;
 
-    private String appId;
+    private String parseAppId;
 
-    public ParseFileRepresentation(MediaType mediaType) {
-        super(mediaType);
-    }
+    private String parseRestApiKey;
 
-    public ParseFileRepresentation(String appId, String path, String parseAppId, String parseRestApiKey, String parseBase, MediaType mediaType) {
+    public ParseFileRepresentation(String parseBase, String parseAppId, String parseRestApiKey, String fileUrl, MediaType mediaType) {
         super(mediaType);
-        setPath(path);
-        setParseRestApiKey(parseRestApiKey);
-        setParseAppId(parseAppId);
+        setFileUrl(fileUrl);
         setParseBase(parseBase);
-        setAppId(appId);
+        setParseAppId(parseAppId);
+        setParseRestApiKey(parseRestApiKey);
     }
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
-        System.out.println("APP_ID: " + appId);
-        System.out.println("REST_API_KEY: " + parseRestApiKey);
-        String completePath = this.path;
-        try {
-            long numBytes = 0;
-            Object cached = null;
-            if(cached != null){
-                outputStream.write((byte[]) cached);
-                numBytes = ((byte[]) cached).length;
-            } else {
-                if(completePath.endsWith(ROOT_URI)) {
-                    String jsonString = "NOT FOUND";
-                    outputStream.write(jsonString.getBytes());
-                } else {
-                    // Check if app exists
-                    System.out.println("File request path: " + path);
-                    System.out.println("File metadata found: " + completePath);
-                    HttpRequestFactory requestFactory =
-                            HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
-                                @Override
-                                public void initialize(HttpRequest request) {
-                                    request.setParser(new JsonObjectParser(JSON_FACTORY));
-                                }
-                            });
-                    Map<String, String> json = new HashMap<String, String>();
-                    json.put("path", path);
-                    json.put("appId", appId);
-
-
-                    GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(parseBase + "/functions/file");
-                    HttpRequest request = requestFactory.buildPostRequest(url, new JsonHttpContent(new JacksonFactory(), json));
-                    request.getHeaders().set("X-Parse-Application-Id", parseAppId);
-                    request.getHeaders().set("X-Parse-REST-API-Key", parseRestApiKey);
-                    request.getHeaders().set("X-Parse-Revocable-Session", "1");
-                    request.setRequestMethod("POST");
-
-                    System.out.println("Parse Base URL: " + parseBase);
-
-                    com.google.api.client.http.HttpResponse response = request.execute();
-                    String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-                    System.out.println("Function Response: " + body);
-
-                    JSONObject jsonObject = JSON.parseObject(body);
-                    String fileUrl = jsonObject.getJSONObject("result").getString("url");
-                    System.out.println("File URL: " + fileUrl);
-
-                    if(fileUrl.startsWith("http://localhost:8080/parse")){
-                        fileUrl = fileUrl.replace("http://localhost:8080/parse", parseBase);
+        HttpRequestFactory requestFactory =
+                HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                    @Override
+                    public void initialize(HttpRequest request) {
+                        request.setParser(new JsonObjectParser(JSON_FACTORY));
                     }
+                });
+        System.out.println("File URL: " + fileUrl);
 
-                    // Get the file and stream it
-                    HttpRequest fileRequest = requestFactory.buildGetRequest(new GenericUrl(fileUrl));
-                    com.google.api.client.http.HttpResponse fileRequestResponse = fileRequest.execute();
-                    final CountingOutputStream countingOutputStream = new CountingOutputStream(outputStream);
-                    fileRequestResponse.download(countingOutputStream);
-
-                    Runnable runnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            modifyAppUsage(appId, countingOutputStream.getCount());
-                        }
-                    };
-                    Thread t = new Thread(runnable);
-                    t.run();
-
-                }
-            }
-        }  catch (Exception e){
-            e.printStackTrace();
-            String error = "Error serving that request. Please try again.";
-            outputStream.write(error.getBytes());
+        if(fileUrl.startsWith("http://localhost:8080/parse")){
+            fileUrl = fileUrl.replace("http://localhost:8080/parse", parseBase);
         }
+
+        // Get the file and stream it
+        HttpRequest fileRequest = requestFactory.buildGetRequest(new GenericUrl(fileUrl));
+        com.google.api.client.http.HttpResponse fileRequestResponse = fileRequest.execute();
+        final CountingOutputStream countingOutputStream = new CountingOutputStream(outputStream);
+        fileRequestResponse.download(countingOutputStream);
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                updateAppUsage(getParseAppId(), countingOutputStream.getCount());
+            }
+        };
+        Thread t = new Thread(runnable);
+        t.run();
         outputStream.close();
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public void getFile(String subdomain, String completePath, OutputStream outputStream) throws IOException {
@@ -151,14 +106,6 @@ public class ParseFileRepresentation extends OutputRepresentation {
         this.parseBase = parseBase;
     }
 
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
-
     public String getParseAppId() {
         return parseAppId;
     }
@@ -167,7 +114,7 @@ public class ParseFileRepresentation extends OutputRepresentation {
         this.parseAppId = parseAppId;
     }
 
-    private void modifyAppUsage(String appId, Long newBytes) {
+    private void updateAppUsage(String appId, Long newBytes) {
         try {
             HttpRequestFactory requestFactory =
                     HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
@@ -196,4 +143,7 @@ public class ParseFileRepresentation extends OutputRepresentation {
         }
     }
 
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
 }

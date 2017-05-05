@@ -1,6 +1,6 @@
 /*
 *
-* Copyright (c) 2016 Kerby Martino and Divroll. All Rights Reserved.
+* Copyright (c) 2017 Kerby Martino and Divroll. All Rights Reserved.
 * Licensed under Divroll Commercial License, Version 1.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -12,11 +12,12 @@
 * Divroll and must not be redistributed in any form.
 *
 */
-package com.divroll.core.rest.resource.gae;
+package com.divroll.core.rest.resource;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.Config;
+import com.divroll.core.rest.exception.FileNotFoundException;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.ParseFileRepresentation;
 import com.gargoylesoftware.htmlunit.*;
@@ -26,10 +27,14 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.mashape.unirest.http.Unirest;
+import org.apache.commons.io.IOUtils;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
+import org.restlet.representation.FileRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.ClientResource;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.restlet.resource.ServerResource;
@@ -37,6 +42,7 @@ import org.restlet.util.Series;
 import org.slf4j.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -44,7 +50,12 @@ import java.net.URLDecoder;
 import java.util.*;
 
 /**
+ *
  * Resource which has only one representation.
+ *
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 1.0
+ * @since 1.0
  */
 public class GaeRootServerResource extends ServerResource {
 
@@ -70,8 +81,7 @@ public class GaeRootServerResource extends ServerResource {
     protected void doInit() {
         super.doInit();
         Series<Header> series = (Series<Header>)getRequestAttributes().get("org.restlet.http.headers");
-        acceptEncodings =  series.getFirst("Accept-Encoding").getValue();
-
+        acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
     }
 
     @Get
@@ -145,17 +155,9 @@ public class GaeRootServerResource extends ServerResource {
                 }
                 String subdomain;
                 subdomain = parseSubdomain(host);
-                if(subdomain == null || subdomain.isEmpty()) {
-                    subdomain = "write";
-                }
                 System.out.println("Application ID: " + subdomain);
-                if(subdomain == null){
-                    String error = "404 NOT FOUND";
-                    Representation entity = new StringRepresentation(error);
-                    entity.setMediaType(MediaType.TEXT_PLAIN);
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    EncodeRepresentation encodedrep = new EncodeRepresentation(Encoding.GZIP, entity);
-                    return encodedrep;
+                if(subdomain == null || subdomain.isEmpty()){
+                    subdomain = "404";
                 } else {
                     p = p.replace("%20", " ");
                     final String completePath = APP_ROOT_URI + p;
@@ -163,18 +165,48 @@ public class GaeRootServerResource extends ServerResource {
                     System.out.println("Complete Path: " + completePath);
                     System.out.println("Host: " + host);
                     System.out.println("Application ID/Subdomain: " + subdomain);
-                    Representation entity = new ParseFileRepresentation(subdomain,
-                            completePath,
-                            Config.PARSE_APP_ID,
-                            Config.PARSE_REST_API_KEY,
-                            Config.PARSE_URL,
-                            type);
 
-                    entity.setMediaType(processMediaType(completePath));
-                    if(!canAcceptGzip) {
-                        return entity;
-                    }
-                    encoded = new EncodeRepresentation(Encoding.GZIP, entity);
+
+
+                    JSONObject postOobject = new JSONObject();
+                    postOobject.put("path", p);
+                    postOobject.put("appId", subdomain);
+
+
+                    com.mashape.unirest.http.HttpResponse<String> postResponse = null;
+                    postResponse = Unirest.post(Config.PARSE_URL + "/functions/file")
+                                .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
+                                .header("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY)
+                                .header("X-Parse-Revocable-Session", "1")
+                                .body(postOobject.toJSONString())
+                                .asString();
+                        System.out.println("========================================================================================");
+                        System.out.println("Function Response: " + postResponse.getBody());
+                        System.out.println("========================================================================================");
+
+                        JSONObject jsonObject = JSON.parseObject(postResponse.getBody());
+
+                        if(jsonObject.get("error") != null
+                                && jsonObject.get("code") != null) {
+                             throw new FileNotFoundException(jsonObject.getString("error"));
+                        } else {
+                            String fileUrl = jsonObject.getJSONObject("result").getString("url");
+                            System.out.println("File URL: " + fileUrl);
+                            if(fileUrl == null || fileUrl.isEmpty()) {
+                                throw new FileNotFoundException();
+                            }
+                            Representation entity = new ParseFileRepresentation(Config.PARSE_URL,
+                                    Config.PARSE_APP_ID,
+                                    Config.PARSE_REST_API_KEY,
+                                    fileUrl,
+                                    processMediaType(fileUrl));
+                            entity.setMediaType(processMediaType(completePath));
+                            if(!canAcceptGzip) {
+                                return entity;
+                            }
+                            encoded = new EncodeRepresentation(Encoding.GZIP, entity);
+                        }
+
                 }
             }
         } catch (MalformedURLException e) {
@@ -186,10 +218,18 @@ public class GaeRootServerResource extends ServerResource {
         } catch (IOException e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
+            if(e instanceof FileNotFoundException) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
-
+        }  catch (Exception e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+            if(e instanceof FileNotFoundException) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            }
         }
         return encoded;
     }
@@ -238,7 +278,6 @@ public class GaeRootServerResource extends ServerResource {
             com.google.api.client.http.HttpResponse response = request.execute();
             String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
             System.out.println("Response: " + body);
-
             JSONObject jsonBody = JSON.parseObject(body);
             JSONArray array = jsonBody.getJSONArray("results");
             JSONObject resultItem = (JSONObject) array.iterator().next();
