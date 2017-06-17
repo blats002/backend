@@ -20,21 +20,17 @@ import com.divroll.core.rest.Config;
 import com.divroll.core.rest.exception.FileNotFoundException;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.ParseFileRepresentation;
-import com.gargoylesoftware.htmlunit.*;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.google.api.client.http.*;
+import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.mashape.unirest.http.Unirest;
-import org.apache.commons.io.IOUtils;
+import com.mashape.unirest.http.*;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
-import org.restlet.representation.FileRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.ClientResource;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.restlet.resource.ServerResource;
@@ -42,7 +38,6 @@ import org.restlet.util.Series;
 import org.slf4j.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,6 +57,9 @@ public class GaeRootServerResource extends ServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
 
+//    private static final String PRERENDER_URL = "***REMOVED***";
+    private static final String PRERENDER_URL = "***REMOVED***";
+    private static final String HASH = "#";
     private static final String ESCAPED_FRAGMENT_FORMAT1 = "_escaped_fragment_=";
     private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
     private static final String APP_ROOT_URI = "";
@@ -93,56 +91,42 @@ public class GaeRootServerResource extends ServerResource {
         String _completePath = getRequest().getResourceRef().getHostIdentifier() +
                 getRequest().getResourceRef().getPath();
         URL url = null;
-
         LOG.info("Request Path: " + path);
 
         try {
             String escapeQuery = getQueryValue("_escaped_fragment_");
+            Form queries = getQuery();
             if(escapeQuery != null && !escapeQuery.isEmpty()) {
                 String decodedFragment = URLDecoder.decode(escapeQuery, "UTF-8");
-                String s = _completePath + "#!" + decodedFragment;
-                System.out.println("s: " + s);
-
-                final WebClient webClient = new WebClient(BrowserVersion.CHROME);
-                WebClientOptions options = webClient.getOptions();
-                options.setCssEnabled(true);
-                webClient.setCssErrorHandler(new SilentCssErrorHandler());
-                webClient.setAjaxController(new NicelyResynchronizingAjaxController());
-                options.setThrowExceptionOnScriptError(false);
-                options.setThrowExceptionOnFailingStatusCode(false);
-                options.setRedirectEnabled(false);
-                options.setAppletEnabled(false);
-                options.setJavaScriptEnabled(true);
-//                options.setUseInsecureSSL(true);
-                options.setTimeout(50000);
-                webClient.addRequestHeader("Access-Control-Allow-Origin", "*");
-
-                HtmlPage page = webClient.getPage(s);
-
-                // important!  Give the headless browser enough time to execute JavaScript
-                // The exact time to wait may depend on your application.
-                webClient.setJavaScriptTimeout(10000);
-                webClient.waitForBackgroundJavaScript(1000);
-                //just wait
-                for (int i = 0; i < 20; i++) {
-                    synchronized (page) {
-                        page.wait(500);
-                    }
-                }
-                String xml = page.asXml();
-
-
-                Representation entity = new StringRepresentation(xml);
+                com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(PRERENDER_URL)
+                        .queryString("url", _completePath)
+                        .queryString("_escaped_fragment_", decodedFragment)
+                        .asString();
+                String body = response.getBody();
+                Representation entity = new StringRepresentation(body);
                 //entity.setMediaType(processMediaType(s));
                 entity.setMediaType(MediaType.TEXT_HTML);
-                System.out.println("=========================== START RENDERED PAGE ===========================");
-                System.out.println(xml);
-                System.out.println("=========================== END RENDERED PAGE ===========================");
                 if(!canAcceptGzip) {
                     return entity;
                 }
                 encoded = new EncodeRepresentation(Encoding.GZIP, entity);
-                //return entity;
+            }else if(queries != null && !queries.isEmpty() && queries.getValues("f") != null) { // TODO: just a quick
+                String escapedFragment = queries.getValues("f");
+                    if(_completePath.endsWith("/")) {
+                        _completePath = _completePath.substring(0, _completePath.length() - 1);
+                    }
+                    String getPath = PRERENDER_URL + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
+                    System.out.println("GET Path=" + getPath);
+                    com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPath)
+                            .asString();
+                    String body = response.getBody();
+                    Representation entity = new StringRepresentation(body);
+                    //entity.setMediaType(processMediaType(s));
+                    entity.setMediaType(MediaType.TEXT_HTML);
+                    if(!canAcceptGzip) {
+                        return entity;
+                    }
+                    encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else {
                 url = new URL(_completePath);
                 String host = url.getHost();
@@ -166,12 +150,9 @@ public class GaeRootServerResource extends ServerResource {
                     System.out.println("Host: " + host);
                     System.out.println("Application ID/Subdomain: " + subdomain);
 
-
-
                     JSONObject postOobject = new JSONObject();
                     postOobject.put("path", p);
                     postOobject.put("appId", subdomain);
-
 
                     com.mashape.unirest.http.HttpResponse<String> postResponse = null;
                     postResponse = Unirest.post(Config.PARSE_URL + "/functions/file")
@@ -206,7 +187,6 @@ public class GaeRootServerResource extends ServerResource {
                             }
                             encoded = new EncodeRepresentation(Encoding.GZIP, entity);
                         }
-
                 }
             }
         } catch (MalformedURLException e) {
@@ -221,10 +201,7 @@ public class GaeRootServerResource extends ServerResource {
             if(e instanceof FileNotFoundException) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
-        }  catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
             if(e instanceof FileNotFoundException) {
@@ -331,14 +308,12 @@ public class GaeRootServerResource extends ServerResource {
                 appName = "404";
             }
             */
-
         } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
         }
         return appName;
     }
-
 
     private String parseSubdomain(String host){
         if(host.endsWith("divroll.com")){

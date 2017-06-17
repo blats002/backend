@@ -13,6 +13,7 @@
 *
 */
 package com.divroll.core.rest;
+
 import com.divroll.core.rest.resource.GaeRootServerResource;
 import org.restlet.Application;
 import org.restlet.Restlet;
