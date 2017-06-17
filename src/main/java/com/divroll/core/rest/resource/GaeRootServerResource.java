@@ -64,6 +64,8 @@ public class GaeRootServerResource extends ServerResource {
     private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
     private static final String APP_ROOT_URI = "";
 
+    public static final int YEAR_IN_MINUTES = 365 * 24 * 60 * 60;
+
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
@@ -208,6 +210,30 @@ public class GaeRootServerResource extends ServerResource {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             }
         }
+        /*
+        GWT Headers
+         */
+        Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
+        if (responseHeaders == null) {
+            responseHeaders = new Series(Header.class);
+        }
+        if(_completePath.contains(".nocache.")) {
+            Date now = new Date();
+            responseHeaders.set("Date", String.valueOf(now.getTime()));
+            responseHeaders.set("Last-Modified", String.valueOf(now.getTime()));
+            responseHeaders.set("Expires", "0");
+            responseHeaders.set("Pragma", "no-cache");
+            responseHeaders.set("Cache-control", "no-cache, must-revalidate, pre-check=0, post-check=0");
+        } else if(_completePath.contains(".cache.")) {
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTime( new Date() );
+            calendar.add( Calendar.YEAR, 1 );
+            responseHeaders.set("Expires", String.valueOf(calendar.getTime().getTime()));
+            //Note: immutable tells firefox to never revalidate as data will never change
+            responseHeaders.set( "Cache-control", "max-age=" + YEAR_IN_MINUTES + ", public, immutable" );
+            responseHeaders.set( "Pragma", "" );
+        }
+        getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
         return encoded;
     }
 
