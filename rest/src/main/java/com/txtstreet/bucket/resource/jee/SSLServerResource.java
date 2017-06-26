@@ -26,16 +26,10 @@ public class SSLServerResource extends BaseServerResource
     private static final String PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
 
-    protected String domain;
-
-    @Override
-    protected void doInit() throws ResourceException {
-        super.doInit();
-        domain = getAttribute("domain");
-    }
-
     @Override
     public Representation post(Representation entity) {
+        LOG.info("Domain: " + domain);
+        LOG.info("Subdomain: " + subdomain);
         JSONObject responseObject = new JSONObject();
         if(!hasUserRole()) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -72,6 +66,7 @@ public class SSLServerResource extends BaseServerResource
             //LOG.info(body);
             responseObject.put("code", Status.SUCCESS_OK.getCode());
             responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
+            setStatus(Status.SUCCESS_OK);
         } catch (Exception e) {
             responseObject = new JSONObject();
             responseObject.put("code",Status.SERVER_ERROR_INTERNAL.getCode());

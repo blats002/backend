@@ -124,23 +124,23 @@ public class WebsiteUploadServerResource extends BaseServerResource
                             String name = item.getName();
                             byte[] byteContent = ByteStreams.toByteArray(item.openStream());
                             // TODO byteContent is basically the file uploaded
-                            getLogger().info("contentName: " + name);
-                            getLogger().info("contentType: " + item.getContentType());
+                            LOG.info("contentName: " + name);
+                            LOG.info("contentType: " + item.getContentType());
                             String result = processFile(sessionToken, byteContent, getQueryValue("upload_type"), appObjectId);
                             Representation response = new StringRepresentation(result);
                             response.setMediaType(MediaType.APPLICATION_JSON);
                             return response;
                         }
                     } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        return badRequest();
                     }
                 } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    return badRequest();
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return internalError();
         }
         return null;
     }
@@ -187,14 +187,16 @@ public class WebsiteUploadServerResource extends BaseServerResource
                         }
                         zipStream.close();
                     } catch (IOException e){
+                        LOG.info("Error: " + e.getMessage());
                         e.printStackTrace();
                     } catch (UnirestException e) {
+                        LOG.info("Error: " + e.getMessage());
                         e.printStackTrace();
                     }
                 }
             };
             Thread thread = new Thread(runnable);
-            thread.run();
+            thread.start();
             setStatus(Status.SUCCESS_OK);
             result.put("success", "true");
         } else {

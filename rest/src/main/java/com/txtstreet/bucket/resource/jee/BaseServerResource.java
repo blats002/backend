@@ -7,7 +7,11 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com..bucket.Configuration;
 import com..bucket.service.JelasticService;
+import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
+import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 
@@ -39,6 +43,7 @@ public class BaseServerResource extends ServerResource {
     protected String userId = null;
     protected String sessionToken = null;
     protected String subdomain;
+    protected String domain;
 
     protected JelasticService jelasticService;
 
@@ -46,6 +51,7 @@ public class BaseServerResource extends ServerResource {
     protected void doInit() throws ResourceException {
         super.doInit();
         subdomain = getAttribute("subdomain");
+        domain = getAttribute("domain");
         getHeaders();
         jelasticService = new JelasticService();
     }
@@ -422,6 +428,26 @@ public class BaseServerResource extends ServerResource {
             e.printStackTrace();
         }
         return jsonObject;
+    }
+
+    protected Representation badRequest() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
+        jsonObject.put("error", Status.CLIENT_ERROR_BAD_REQUEST.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return response;
+    }
+
+    protected Representation internalError() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", Status.SERVER_ERROR_INTERNAL.getCode());
+        jsonObject.put("error", Status.SERVER_ERROR_INTERNAL.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SERVER_ERROR_INTERNAL);
+        return response;
     }
 
 }
