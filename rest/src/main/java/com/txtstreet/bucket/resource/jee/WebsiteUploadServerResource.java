@@ -67,8 +67,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
             HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
                     "/classes/Application")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             String body = getRequest.getBody();
@@ -230,8 +231,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
         HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
                 "/classes/File")
                 .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                .header(X_PARSE_SESSION_TOKEN, sessionToken)
                 .queryString("where", whereObject.toJSONString())
                 .asString();
 
@@ -252,12 +254,13 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 HttpResponse<String> response = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
                         "/files/" + fileName)
                         .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                        .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                        .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                        .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                        .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                        .header(X_PARSE_SESSION_TOKEN, sessionToken)
                         .header("Content-Type", mimeType)
                         .body(fileBytes)
                         .asString();
-                if(response.getStatus() == 201){
+                //if(response.getStatus() == 201){
                     // Update existing File
                     String location = response.getHeaders().get("Location").get(0);
                     String filename = location.substring(location.lastIndexOf("/")+1, location.length());
@@ -289,13 +292,14 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     HttpResponse<String> updateResponse = Unirest.put(Configuration.TXTSTREET_PARSE_URL +
                             "/classes/File/" + existingObjectId)
                             .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                            .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                            .header(X_PARSE_SESSION_TOKEN, sessionToken)
+//                            .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                            .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                            .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
                             .header("Content-Type", "application/json")
                             .body(updateObject.toJSONString())
                             .asString();
                     LOG.info("Update Status:" + updateResponse.getStatusText());
-                }
+                //}
             }
         }
 
@@ -307,8 +311,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 HttpResponse<String> response = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
                         "/files/" + fileName)
                         .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                        .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                        .header(X_PARSE_SESSION_TOKEN, sessionToken)
+//                        .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                        .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                        .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
                         .header("Content-Type", mimeType)
                         .body(fileBytes)
                         .asString();
@@ -343,8 +348,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
                             "/classes/File")
                             .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                            .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                            .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                            .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                            .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                            .header(X_PARSE_SESSION_TOKEN, sessionToken)
                             .header("Content-Type", "application/json")
                             .body(file.toJSONString())
                             .asString();
@@ -389,8 +395,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
             HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
                     "/functions/clean")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
                     .header("X-Parse-Revocable-Session", "1")
                     .header("Content-Type", "application/json")
                     .body(param.toString())
@@ -415,8 +422,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
             HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
                     "/classes/Meter")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             String body = getRequest.getBody();
@@ -454,8 +462,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
             HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
                     "/classes/Meter")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             String body = getRequest.getBody();
@@ -519,8 +528,9 @@ Parse.Cloud.useMasterKey();
         HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
                 "/classes/File")
                 .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-                .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-                .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+//                .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
+//                .header(X_PARSE_SESSION_TOKEN, sessionToken)
                 .queryString("where", whereObject.toJSONString())
                 .asString();
         String body = getRequest.getBody();
