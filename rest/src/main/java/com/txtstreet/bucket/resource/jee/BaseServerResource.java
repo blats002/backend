@@ -5,8 +5,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com..bucket.Configuration;
+import com..bucket.service.ACMEService;
+import com..bucket.service.BaseService;
 import com..bucket.service.JelasticService;
+import org.apache.tika.Tika;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
@@ -16,21 +20,17 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class BaseServerResource extends ServerResource {
+public class BaseServerResource extends ServerResource
+    implements BaseService {
 
     private static final Logger LOG
             = Logger.getLogger(BaseServerResource.class.getName());
-
-    // Parse
-    protected static final String X_PARSE_APPLICATION_ID = "X-Parse-Application-Id";
-    protected static final String X_PARSE_REST_API_KEY = "X-Parse-REST-API-Key";
-    protected static final String X_PARSE_SESSION_TOKEN = "X-Parse-Session-Token";
-    protected static final String X_MASTER_KEY = "X-Parse-Master-Key";
 
     protected static final long MEGABYTE_BYTE_MULTIPLIER = 1000000;
     protected static final String FREE_STORAGE_QUOTA_CONFIG  = "FREE_STORAGE_QUOTA";
@@ -46,6 +46,7 @@ public class BaseServerResource extends ServerResource {
     protected String domain;
 
     protected JelasticService jelasticService;
+    protected ACMEService acmeService;
 
     @Override
     protected void doInit() throws ResourceException {
@@ -54,6 +55,7 @@ public class BaseServerResource extends ServerResource {
         domain = getAttribute("domain");
         getHeaders();
         jelasticService = new JelasticService();
+        acmeService = new ACMEService();
     }
 
     protected String getUser(String sessionToken) {
@@ -449,5 +451,6 @@ public class BaseServerResource extends ServerResource {
         setStatus(Status.SERVER_ERROR_INTERNAL);
         return response;
     }
+
 
 }
