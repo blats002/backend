@@ -15,9 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-/**
- * Created by paperspace on 6/26/2017.
- */
 public class HttpChallengeListener implements AcmeChallengeListener, BaseService{
 
     private static final Logger LOG
@@ -26,9 +23,6 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
     private final String host;
     private final String appId;
     private final String userId;
-//    private final String username;
-//    private final String username;
-//    private final String password;
     private final String webroot;
     private final String session;
 
@@ -56,41 +50,6 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
         } catch (Exception e){
             e.printStackTrace();
         }
-        /*
-        FTPClient ftp = new FTPClient();
-
-        try {
-            ftp.connect(host);
-            if(!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
-                ftp.disconnect();
-                return false;
-            }
-
-            ftp.login(username, password);
-            ftp.changeWorkingDirectory(webroot);
-            ftp.makeDirectory(".well-known");
-            ftp.changeWorkingDirectory(".well-known");
-            ftp.makeDirectory("acme-challenge");
-            ftp.changeWorkingDirectory("acme-challenge");
-            ftp.enterLocalPassiveMode();
-            ftp.setFileType(FTPClient.BINARY_FILE_TYPE, FTPClient.BINARY_FILE_TYPE);
-            ftp.setFileTransferMode(FTPClient.BINARY_FILE_TYPE);
-            success = ftp.storeFile(token, new ByteArrayInputStream(challengeBody.getBytes()));
-            if (!success)
-                System.err.println("FTP error uploading file: " + ftp.getReplyCode()  + ": " + ftp.getReplyString());
-            ftp.logout();
-        } catch(IOException e) {
-            throw new AcmeException(e);
-        } finally {
-            if(ftp.isConnected()) {
-                try {
-                    ftp.disconnect();
-                } catch(IOException ioe) {
-                }
-            }
-        }
-        */
-
         return success;
     }
 

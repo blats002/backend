@@ -7,6 +7,7 @@ import com.jelastic.api.Response;
 import com.jelastic.api.environment.Control;
 import com.jelastic.api.environment.File;
 import com.jelastic.api.environment.response.ExecResponse;
+import com.jelastic.api.environment.response.NodeSSHResponses;
 import com.jelastic.api.users.Authentication;
 import com.jelastic.api.users.response.AuthenticationResponse;
 import com.mashape.unirest.http.HttpResponse;
@@ -40,11 +41,15 @@ public class JelasticService {
     }
 
     public void writeCertificateAndPrivateKeyFile(final String domain, final String certificate, final String privateKey) {
+        LOG.info("Domain: " + domain);
+        LOG.info("Certificate: " + certificate);
+        LOG.info("Private Key: " + privateKey);
         final String session = getSession();
         writeCertificateFile(session, domain, certificate);
         writePrivateKeyFile(session, domain, privateKey);
         writeNginxConfFile(session, domain, Template.createFromTemplate(domain));
         reloadNginx(session);
+        LOG.info("Done NGINX reload");
     }
 
     public void writeCertificateFile(String session, String domain, String certificate) {
@@ -65,7 +70,8 @@ public class JelasticService {
         writeFile(session, completePath, configuration);
     }
 
-    public void writeFile(String session, String path, String body) {
+    @Deprecated
+    public void writeFileOld(String session, String path, String body) {
         LOG.info("Session: " + session);
         LOG.info("Path: " + path);
         if(session != null) {
@@ -76,7 +82,24 @@ public class JelasticService {
             // or at all application server nodes
             Boolean masterOnly = false;
             Boolean isdir = false;
-            fileService.write(session, path, body, nodeType, masterOnly, Configuration.JELASTIC_NGINX_NODE_ID);
+            NodeSSHResponses responses = fileService.write(session, path, body, nodeType, masterOnly, Configuration.JELASTIC_NGINX_NODE_ID);
+            LOG.info("Write File Done: " + responses.getRaw());
+        }
+    }
+
+    private static void writeFile(String session, String path, String body) {
+        System.out.println("Session: " + session);
+        System.out.println("Path: " + path);
+        if (session != null) {
+            File fileService = new File(Configuration.JELASTIC_ENV_NAME);
+            fileService.setServerUrl(Configuration.JELASTIC_HOSTER_URL);
+
+            String nodeType = "nginx";
+
+            NodeSSHResponses responses = fileService.write(session, path, body, nodeType, "cp", false, Configuration.JELASTIC_NGINX_NODE_ID);
+
+            System.out.println("Error: " + responses.getError());
+            System.out.println("Response: " + responses.getResult());
         }
     }
 

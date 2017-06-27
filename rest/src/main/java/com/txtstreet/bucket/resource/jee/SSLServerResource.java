@@ -3,35 +3,25 @@ package com..bucket.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com..bucket.Configuration;
 import com..bucket.resource.SSLResource;
-import com..bucket.service.ACMEService;
-import com..bucket.service.ClientTest2;
+import com..bucket.service.CertificateHelper;
 import com..bucket.service.HttpChallengeListener;
-import com..bucket.service.PuppetCallback;
 import it.zero11.acme.Acme;
 import it.zero11.acme.AcmeChallengeListener;
 import it.zero11.acme.storage.impl.DefaultCertificateStorage;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.restlet.Request;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
-import org.restlet.resource.ResourceException;
 
-import javax.servlet.http.HttpServletRequest;
+import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.Security;
-import java.util.Arrays;
-import java.util.Collection;
+import java.security.cert.X509Certificate;
 import java.util.logging.Logger;
 
 public class SSLServerResource extends BaseServerResource
@@ -47,7 +37,7 @@ public class SSLServerResource extends BaseServerResource
     private static final String PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
 
-    private static final String CA_STAGING_URL = "https://acme-staging.api.letsencrypt.org/acme";
+    //private static final String CA_STAGING_URL = "https://acme-staging.api.letsencrypt.org/acme";
     private static final String CA_PRODUCTION_URL = "https://acme-v01.api.letsencrypt.org/acme";
     private static final String AGREEMENT_URL = "https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf";
 
@@ -106,6 +96,7 @@ public class SSLServerResource extends BaseServerResource
 
     @Override
     public Representation get(Representation entity) {
+        JSONObject responseObject = new JSONObject();
         try {
             if(!hasUserRole()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -162,30 +153,48 @@ public class SSLServerResource extends BaseServerResource
                     return null;
                 }
 
+                ///////////////////////////////
                 // Let's Encrypt !
+                //////////////////////////////
 
                 Security.addProvider(new BouncyCastleProvider());
                 String mailTo = "mailto:webmaster@***REMOVED***";
-                System.out.println("WARNING: this sample application is using the Let's Encrypt staging API. Certificated created with this application won't be trusted.");
-                System.out.println("By using this application you agree to Let's Encrypt Terms and Conditions");
-                System.out.println(AGREEMENT_URL);
+                LOG.info("WARNING: this sample application is using the Let's Encrypt staging API. Certificated created with this application won't be trusted.");
+                LOG.info("By using this application you agree to Let's Encrypt Terms and Conditions");
+                LOG.info(AGREEMENT_URL);
                 String[] domains = new String[1];
                 String[] contacts = new String[1];
                 domains[0] = domain;
                 contacts[0] = mailTo;
                 AcmeChallengeListener challengeListener = new HttpChallengeListener(sessionToken, appObjectId, userId, domains[0], "");
-                Acme acme = new Acme(CA_STAGING_URL, new DefaultCertificateStorage(true), true, true);
-                acme.getCertificate(domains, AGREEMENT_URL, contacts, challengeListener);
+                Acme acme = new Acme(CA_PRODUCTION_URL, new DefaultCertificateStorage(true), true, true);
+                X509Certificate cert = acme.getCertificate(domains, AGREEMENT_URL, contacts, challengeListener);
 
-                } else {
-                    return badRequest();
-                }
+                KeyPair domainKey = acme.getCertificateStorage().getDomainKeyPair(domains);
+                PrivateKey privateKey = domainKey.getPrivate();
+
+                String fullchain = CertificateHelper.x509ToBase64PEMString(cert);
+                String privateKeyString =  CertificateHelper.writePrivateKeyToPEMString(privateKey);
+
+                LOG.info(fullchain);
+                LOG.info(privateKeyString);
+
+                jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
+
+                responseObject.put("code", Status.SUCCESS_OK.getCode());
+                responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
+                setStatus(Status.SUCCESS_OK);
+                Representation representation = new StringRepresentation(responseObject.toJSONString());
+                representation.setMediaType(MediaType.APPLICATION_JSON);
+                return representation;
+            } else {
+                return badRequest();
+            }
         } catch (Exception e) {
             e.printStackTrace();
             LOG.info("Failed to get a certificate for domains " + domain);
             return internalError();
         }
-        return null;
     }
 
     private boolean checkDomainOwner(String domain) {

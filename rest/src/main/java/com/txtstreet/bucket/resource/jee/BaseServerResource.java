@@ -5,12 +5,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import com..bucket.Configuration;
-import com..bucket.service.ACMEService;
 import com..bucket.service.BaseService;
 import com..bucket.service.JelasticService;
-import org.apache.tika.Tika;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
@@ -20,7 +17,6 @@ import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -46,7 +42,6 @@ public class BaseServerResource extends ServerResource
     protected String domain;
 
     protected JelasticService jelasticService;
-    protected ACMEService acmeService;
 
     @Override
     protected void doInit() throws ResourceException {
@@ -55,7 +50,6 @@ public class BaseServerResource extends ServerResource
         domain = getAttribute("domain");
         getHeaders();
         jelasticService = new JelasticService();
-        acmeService = new ACMEService();
     }
 
     protected String getUser(String sessionToken) {
