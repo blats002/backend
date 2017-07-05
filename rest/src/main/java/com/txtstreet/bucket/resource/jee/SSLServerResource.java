@@ -73,7 +73,9 @@ public class SSLServerResource extends BaseServerResource
             String privateKey = jsonObject.getString("privateKey");
             if(certificate.startsWith(CERTIFICATE_HEADER) && certificate.endsWith(CERTIFICATE_FOOTER)
                     && privateKey.startsWith(PRIVATE_KEY_HEADER) && privateKey.endsWith(PRIVATE_KEY_FOOTER)) {
-                jelasticService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
+                /////////////////////////
+                //jelasticService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
+                /////////////////////////
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             }
@@ -178,11 +180,18 @@ public class SSLServerResource extends BaseServerResource
 
                 LOG.info(fullchain);
                 LOG.info(privateKeyString);
-
+                ////////////////////////////////
                 jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
-
+                ////////////////////////////////
                 responseObject.put("code", Status.SUCCESS_OK.getCode());
                 responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
+
+                JSONObject certificate = new JSONObject();
+                certificate.put("certificate", fullchain);
+                certificate.put("privateKey", privateKeyString);
+
+                responseObject.put("result", certificate);
+
                 setStatus(Status.SUCCESS_OK);
                 Representation representation = new StringRepresentation(responseObject.toJSONString());
                 representation.setMediaType(MediaType.APPLICATION_JSON);

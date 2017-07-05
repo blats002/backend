@@ -45,29 +45,36 @@ public class JelasticService {
         LOG.info("Certificate: " + certificate);
         LOG.info("Private Key: " + privateKey);
         final String session = getSession();
-        writeCertificateFile(session, domain, certificate);
-        writePrivateKeyFile(session, domain, privateKey);
-        writeNginxConfFile(session, domain, Template.createFromTemplate(domain));
-        reloadNginx(session);
+        String certPath = writeCertificateFile(session, domain, certificate);
+        String keyPath = writePrivateKeyFile(session, domain, privateKey);
+        String confPath = writeNginxConfFile(session, domain, Template.createFromTemplate(domain));
+        if(!validateNginx()) {
+            removeFile(session, certPath);
+            removeFile(session, keyPath);
+            removeFile(session, confPath);
+        }
         LOG.info("Done NGINX reload");
     }
 
-    public void writeCertificateFile(String session, String domain, String certificate) {
+    public String writeCertificateFile(String session, String domain, String certificate) {
         String completePath = CERTIFICATE_PATH_TEMPLATE.replaceAll("DOMAIN_NAME", domain);
         LOG.info(completePath);
         writeFile(session, completePath, certificate);
+        return completePath;
     }
 
-    public void writePrivateKeyFile(String session, String domain, String privateKey) {
+    public String writePrivateKeyFile(String session, String domain, String privateKey) {
         String completePath = PRIVATE_KEY_PATH_TEMPLATE.replaceAll("DOMAIN_NAME", domain);
         LOG.info(completePath);
         writeFile(session, completePath, privateKey);
+        return completePath;
     }
 
-    public void writeNginxConfFile(String session, String domain, String configuration) {
+    public String writeNginxConfFile(String session, String domain, String configuration) {
         String completePath = NGINX_CONF_PATH_TEMPLATE.replaceAll("DOMAIN_NAME", domain);
         LOG.info(completePath);
         writeFile(session, completePath, configuration);
+        return completePath;
     }
 
     @Deprecated
@@ -103,25 +110,59 @@ public class JelasticService {
         }
     }
 
-    private void reloadNginx(String s) {
-        /*
-        try {
-            String session = getSession();
-            JSONArray commandlist = new JSONArray();
-            JSONObject command = new JSONObject();
-            command.put("command", "sudo service nginx reload");
-            //command.put("params", "");
-            commandlist.add(command);
-            LOG.info(commandlist.toJSONString());
-            Control environmentService = new Control();
-            environmentService.setServerUrl(Configuration.JELASTIC_HOSTER_URL);
-            ExecResponse response = environmentService.execCmdById(Configuration.JELASTIC_ENV_NAME, session, Configuration.JELASTIC_NGINX_NODE_ID, commandlist.toString(), true);
-            LOG.info("Exec error: " + response.getError());
-            LOG.info("Exec raw: " + response.getRaw());
-        } catch (Exception e) {
-            e.printStackTrace();
+    private static void removeFile(String session, String path) {
+        System.out.println("Session: " + session);
+        System.out.println("Path: " + path);
+        if (session != null) {
+            File fileService = new File(Configuration.JELASTIC_ENV_NAME);
+            fileService.setServerUrl(Configuration.JELASTIC_HOSTER_URL);
+
+            String nodeType = "nginx";
+
+            NodeSSHResponses responses = fileService.delete(Configuration.JELASTIC_ENV_NAME, session, path, nodeType, "cp", false, Configuration.JELASTIC_NGINX_NODE_ID);
+
+            System.out.println("Error: " + responses.getError());
+            System.out.println("Response: " + responses.getResult());
         }
-        */
+    }
+
+    private boolean validateNginx() {
+        boolean isOK = false;
+        String HOSTER_URL = "https://app.divroll.space/";
+        String USER_EMAIL = Configuration.JELASTIC_USER_EMAIL;
+        String USER_PASSWORD = Configuration.JELASTIC_USER_PASSWORD;
+        String ENV_NAME = Configuration.JELASTIC_ENV_NAME;
+        Integer ContainerID = Configuration.JELASTIC_NGINX_NODE_ID;
+        JSONArray commandlist = new JSONArray();
+        JSONObject command = new JSONObject();
+        Authentication authenticationService = new Authentication(Configuration.JELASTIC_CLUSTER_APPID);
+        authenticationService.setServiceUrl(HOSTER_URL + "1.0/users/authentication/");
+        AuthenticationResponse authenticationResponse = authenticationService.signin(USER_EMAIL, USER_PASSWORD);
+        LOG.info("Signin response: " + authenticationResponse);
+        if (authenticationResponse.isOK()) {
+            String session = authenticationResponse.getSession();
+            try {
+                command.put("command", "sudo service nginx configtest");
+                commandlist.add(command);
+                Control environmentService = new Control();
+                environmentService.setServerUrl(HOSTER_URL + "1.0/");
+                ExecResponse res = environmentService.execCmdById(ENV_NAME, session, ContainerID, commandlist.toString(), true);
+                LOG.info("<br>Exec response: " + res.toString());
+                if(res.getError() == null || res.getError().isEmpty()) {
+                    reloadNginx();
+                    isOK = true;
+                    return isOK;
+                }
+            }
+            catch (Exception e) {
+                LOG.info(e.getMessage());
+            }
+        }
+        return isOK;
+    }
+
+    private void reloadNginx() {
+        LOG.info("Trying to reload Nginx");
         String HOSTER_URL = "https://app.divroll.space/";
         String USER_EMAIL = Configuration.JELASTIC_USER_EMAIL;
         String USER_PASSWORD = Configuration.JELASTIC_USER_PASSWORD;

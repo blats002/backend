@@ -157,17 +157,6 @@
             <artifactId>jelastic-public-j2se</artifactId>
             <version>4.9.5</version>
         </dependency>
-        <!-- TO BE REMOVED -->
-        <dependency>
-            <groupId>org.shredzone.acme4j</groupId>
-            <artifactId>acme4j-client</artifactId>
-            <version>0.11-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.shredzone.acme4j</groupId>
-            <artifactId>acme4j-utils</artifactId>
-            <version>0.11-SNAPSHOT</version>
-        </dependency>
         <!-- Let's encrypt -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -193,6 +182,11 @@
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
             <version>0.1.50</version>
+        </dependency>
+        <dependency>
+            <groupId>org.logback-extensions</groupId>
+            <artifactId>logback-ext-loggly</artifactId>
+            <version>0.1.2</version>
         </dependency>
     </dependencies>
     <profiles>

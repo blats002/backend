@@ -11,69 +11,71 @@ import com..bucket.Configuration;
 import com..bucket.resource.WebsiteUploadResource;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.tika.Tika;
 import org.restlet.Request;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Delete;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
-import java.util.logging.Logger;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class WebsiteUploadServerResource extends BaseServerResource
         implements WebsiteUploadResource {
 
-    private static final Logger LOG
-            = Logger.getLogger(WebsiteUploadServerResource.class.getName());
+//    final static Logger LOG
+//            = LoggerFactory.getLogger(WebsiteUploadServerResource.class);
+
+    private static final java.util.logging.Logger LOG
+            = java.util.logging.Logger.getLogger(WebsiteUploadServerResource.class.getName());
+
 
     private String appObjectId = null;
+    private Integer MAX_SIZE = 100000000; // 100MB
 
-    @Override
-    public Representation post(Representation entity) {
+    @Delete
+    public Representation delete(Representation entity) {
+        if(!hasUserRole()) {
+            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+            return null;
+        }
+        if(subdomain == null || subdomain.isEmpty()) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return null;
+        }
         try {
-            if(!hasUserRole()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-
-            if(!isQuotaAndMeterExists()) {
-                return createErrorResponse(Status.CLIENT_ERROR_NOT_FOUND);
-            }
-
-            if(isQuotaTraffic()) {
-                return createErrorResponse(new Status(509, "Bandwidth Limit Exceeded"));
-            }
-
-            if(isQuotaStorage()) {
-                return createErrorResponse(Status.SERVER_ERROR_INSUFFICIENT_STORAGE);
-            }
-
-            if(subdomain == null || subdomain.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Check if Subdomain exists
             // and owned by client
             JSONObject whereObject = new JSONObject();
             whereObject.put("appId", subdomain);
-
-            HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
-                    "/classes/Application")
+            HttpResponse<String> getRequest = Unirest.get(
+                    Configuration.TXTSTREET_PARSE_URL + "/classes/Application")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                     .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
-//                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             String body = getRequest.getBody();
-            //String appObjectId = null;
             if(getRequest.getStatus() == 200) {
                 JSONObject results = JSON.parseObject(body);
                 JSONArray resultsArray = results.getJSONArray("results");
@@ -96,48 +98,171 @@ public class WebsiteUploadServerResource extends BaseServerResource
                         }
                     }
                 }
+            }
+            LOG.info("Subdomain: " + subdomain);
+            LOG.info("Application ID: " + appObjectId);
+            if(appObjectId == null || appObjectId.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
+            }
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            boolean isOk = clean(sessionToken, appObjectId);
+            if(isOk) {
+                return success();
+            } else {
+                return internalError();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-                LOG.info("Subdomain: " + subdomain);
-                LOG.info("Application ID: " + appObjectId);
-
-                if(appObjectId == null || appObjectId.isEmpty()) {
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    return null;
-                }
-
-                if (entity != null) {
-                    if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-                        Request restletRequest = getRequest();
-                        HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
-                        ServletFileUpload upload = new ServletFileUpload();
-                        FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
-                        getLogger().info("content type: " + servletRequest.getContentType());
-                        getLogger().info("content: " + new ServletRequestContext(servletRequest).getContentLength());
-                        getLogger().info("iterator: " + fileIterator.hasNext());
-
-                        //////////////////
-                        // Clean assets
-                        /////////////////
-                        clean(sessionToken, subdomain);
-
-                        while (fileIterator.hasNext()) {
-                            FileItemStream item = fileIterator.next();
-                            String name = item.getName();
-                            byte[] byteContent = ByteStreams.toByteArray(item.openStream());
-                            // TODO byteContent is basically the file uploaded
-                            LOG.info("contentName: " + name);
-                            LOG.info("contentType: " + item.getContentType());
-                            String result = processFile(sessionToken, byteContent, getQueryValue("upload_type"), appObjectId);
-                            Representation response = new StringRepresentation(result);
-                            response.setMediaType(MediaType.APPLICATION_JSON);
-                            return response;
+    @Override
+    public Representation post(Representation entity) {
+        try {
+            if(!hasUserRole()) {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
+            }
+            if(!isQuotaAndMeterExists()) {
+                return createErrorResponse(Status.CLIENT_ERROR_NOT_FOUND);
+            }
+            if(isQuotaTraffic()) {
+                return createErrorResponse(new Status(509, "Bandwidth Limit Exceeded"));
+            }
+            if(isQuotaStorage()) {
+                return createErrorResponse(Status.SERVER_ERROR_INSUFFICIENT_STORAGE);
+            }
+            if(subdomain == null || subdomain.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return null;
+            }
+            // Check if Subdomain exists
+            // and owned by client
+            JSONObject whereObject = new JSONObject();
+            whereObject.put("appId", subdomain);
+            HttpResponse<String> getRequest = Unirest.get(
+                    Configuration.TXTSTREET_PARSE_URL + "/classes/Application")
+                    .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                    .queryString("where", whereObject.toJSONString())
+                    .asString();
+            String body = getRequest.getBody();
+            if(getRequest.getStatus() == 200) {
+                JSONObject results = JSON.parseObject(body);
+                JSONArray resultsArray = results.getJSONArray("results");
+                if(!resultsArray.isEmpty()){
+                    for(int i=0;i<resultsArray.size();i++){
+                        JSONObject jsonObject = resultsArray.getJSONObject(i);
+                        LOG.info("jsonObject: " + jsonObject.toJSONString());
+                        String appId = jsonObject.getString("objectId");
+                        String appSubdomain = jsonObject.getString("appId");
+                        JSONObject userPointer = jsonObject.getJSONObject("userId");
+                        if(userPointer == null) {
+                            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                            return null;
+                        } else {
+                            String id = userPointer.getString("objectId");
+                            if(userId.equals(id) && subdomain.equals(appSubdomain)) {
+                                appObjectId = appId;
+                                break;
+                            }
                         }
-                    } else {
-                        return badRequest();
+                    }
+                }
+            }
+            LOG.info("Subdomain: " + subdomain);
+            LOG.info("Application ID: " + appObjectId);
+            if(appObjectId == null || appObjectId.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
+            }
+            if (entity != null) {
+                if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+                    Request restletRequest = getRequest();
+                    HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
+                    ServletFileUpload upload = new ServletFileUpload();
+                    FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+//                    LOG.info("Content Type: " + servletRequest.getContentType());
+//                    LOG.info("Content: " + new ServletRequestContext(servletRequest).getContentLength());
+//                    LOG.info("Iterator: " + fileIterator.hasNext());
+//                    DiskFileItemFactory factory = new DiskFileItemFactory();
+//                    factory.setSizeThreshold(MAX_SIZE);
+//                    RestletFileUpload upload = new RestletFileUpload(factory);
+//                    FileItemIterator fileIterator = upload.getItemIterator(entity);
+
+
+                    String qqPath = null;
+
+                    while (fileIterator.hasNext()) {
+                        FileItemStream item = fileIterator.next();
+                        String fieldName = item.getFieldName();
+                        String name = item.getName();
+                        if(item.isFormField()) {
+                            //LOG.info("Got a form field: " + item.getFieldName()  + " " + Streams.asString(item.openStream()));
+                            if(item.getFieldName().equals("qqpath")) {
+                                qqPath = Streams.asString(item.openStream());
+                            }
+                        } else {
+                            //LOG.info("Got uploaded file");
+                            byte[] byteContent  = ByteStreams.toByteArray(item.openStream());
+                            // TODO byteContent is basically the file uploaded
+
+                            LOG.info("Field Name: " + fieldName);
+                            LOG.info("Content Name: " + name);
+                            LOG.info("Content Type: " + item.getContentType());
+                            LOG.info("Content Length: " + byteContent.length);
+
+                            if(qqPath == null || qqPath.isEmpty()) {
+                                qqPath = name;
+                            } else {
+                                qqPath = qqPath + name;
+                            }
+
+                            if(byteContent != null) {
+                                //String result = processFile(sessionToken, byteContent, getQueryValue("upload_type"), appObjectId);
+                                String filePath = qqPath;
+                                boolean isSuccess = false;
+                                JSONObject jsonObject = new JSONObject();
+                                int status = writeFileToCloud(sessionToken, byteContent, name, filePath, appObjectId, userId);
+                                //LOG.info("Write Status: " + status);
+                                final int bLength = byteContent.length;
+                                if(status == 200) {
+                                    Runnable runnable = new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            updateStorage(Double.valueOf(bLength));
+                                            updateTraffic(Double.valueOf(bLength));
+                                        }
+                                    };
+                                    Thread thread = new Thread(runnable);
+                                    thread.start();
+                                    jsonObject.put("success", true);
+                                    jsonObject.put("status", status);
+                                    Representation response = new StringRepresentation(jsonObject.toJSONString());
+                                    response.setMediaType(MediaType.APPLICATION_JSON);
+                                    return response;
+                                } else {
+                                    jsonObject.put("success", false);
+                                    jsonObject.put("status", status);
+                                    Representation response = new StringRepresentation(jsonObject.toJSONString());
+                                    response.setMediaType(MediaType.APPLICATION_JSON);
+                                    return response;
+                                }
+
+                            }
+                        }
+
+
+
+
                     }
                 } else {
                     return badRequest();
                 }
+            } else {
+                return badRequest();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,68 +270,278 @@ public class WebsiteUploadServerResource extends BaseServerResource
         }
         return null;
     }
+
+    @Deprecated
     private String processFile(final String sessionToken, final byte[] bytes, final String uploadType, final String appId) throws UnirestException {
-        JSONObject result = new JSONObject();
+        final JSONObject result = new JSONObject();
         if("assets_zip".equals(uploadType)){
+            final String deploymentId = createWebsiteStartDeployment();
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        ZipInputStream zipStream = new ZipInputStream(new ByteArrayInputStream(bytes));
-                        InputStreamReader isr = new InputStreamReader(zipStream);
-                        ZipEntry ze;
-                        Double unzippedSize = 0.00;
-
                         String user = getUser(sessionToken);
                         JSONObject userObject = JSONObject.parseObject(user);
-                        String userId = userObject.getString("objectId");
-
-                        while ((ze = zipStream.getNextEntry()) != null) {
-                            String filePath = ze.getName();
-                            long fileSize = ze.getCompressedSize();
-                            getLogger().info("fileName: " + filePath);
-                            getLogger().info("fileSize: " + fileSize);
-                            ByteArrayOutputStream streamBuilder = new ByteArrayOutputStream();
-                            int bytesRead;
-                            byte[] tempBuffer = new byte[8192*2];
-                            while ( (bytesRead = zipStream.read(tempBuffer)) != -1 ){
-                                streamBuilder.write(tempBuffer, 0, bytesRead);
-                            }
-                            LOG.info("File path: " + filePath);
-                            String filename = filePath.replaceFirst("(^.*[/\\\\])?([^/\\\\]*)$","$2");
-                            LOG.info("File name: "+ filename);
-                            byte[] byteArray = streamBuilder.toByteArray();
-                            if(userId != null) {
-                                writeFileToCloud(sessionToken, byteArray, filename, filePath, appId, userId);
-                                unzippedSize = unzippedSize + byteArray.length;
-                            }
+                        final String userId = userObject.getString("objectId");
+                        if(userId == null || userId.isEmpty()) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+//                            result.put("success", false);
+//                            return result.toJSONString();
                         }
-                        if(userId != null) {
+                        ///////////////////////////////////////////
+                        // Clean assets first then deploy
+                        ///////////////////////////////////////////
+                        if(clean(sessionToken, subdomain)) {
+                            ZipInputStream zipStream = new ZipInputStream(new ByteArrayInputStream(bytes));
+                            InputStreamReader isr = new InputStreamReader(zipStream);
+                            ZipEntry ze;
+                            Double unzippedSize = 0.00;
+
+                            ExecutorService es = Executors.newFixedThreadPool(16);
+                            Collection<Callable<Integer>> runnableList = new LinkedList<Callable<Integer>>();
+                            final int[] count = {0};
+                            while ((ze = zipStream.getNextEntry()) != null) {
+                                final String filePath = ze.getName();
+                                final long fileSize = ze.getCompressedSize();
+                                //LOG.info("fileName: " + filePath);
+                                //LOG.info("fileSize: " + fileSize);
+                                ByteArrayOutputStream streamBuilder = new ByteArrayOutputStream();
+                                int bytesRead;
+                                byte[] tempBuffer = new byte[8192*2];
+                                while ( (bytesRead = zipStream.read(tempBuffer)) != -1 ){
+                                    streamBuilder.write(tempBuffer, 0, bytesRead);
+                                }
+                                //LOG.info("File path: " + filePath);
+                                final String filename = filePath.replaceFirst("(^.*[/\\\\])?([^/\\\\]*)$","$2");
+                                //LOG.info("File name: "+ filename);
+                                final byte[] byteArray = streamBuilder.toByteArray();
+                                final boolean isDirectory = ze.isDirectory();
+                                if(userId != null) {
+                                    Callable<Integer> callable = new Callable<Integer>() {
+                                        @Override
+                                        public Integer call() throws Exception {
+                                            try {
+                                                int status =  writeFileToCloud(sessionToken, byteArray, filename, filePath, appId, userId);
+                                                LOG.info("File Name: " + filename);
+                                                LOG.info("Application ID: " + appId);
+                                                LOG.info("Status: " + status);
+                                                if(!isDirectory) {
+                                                    count[0] = count[0] + 1;
+                                                }
+                                                return status;
+                                            } catch (Exception e) {
+                                                LOG.info(e.getMessage());
+                                                e.printStackTrace();
+                                            }
+                                            return null;
+                                        }
+                                    };
+                                    unzippedSize = unzippedSize + byteArray.length;
+                                    runnableList.add(callable);
+                                    //es.execute(runnableWrite);
+                                }
+                            }
+                            Date start = new Date();
+                            LOG.info("START: " + start.getTime());
+                            es.invokeAll(runnableList);
+                            Date end = new Date();
+                            LOG.info("END: " + end.getTime());
+                            LOG.info("TOTAL: " + (end.getTime() - start.getTime()));
+                            LOG.info("TOTAL COUNT: " + count[0]);
+
                             updateStorage(Double.valueOf(unzippedSize));
                             updateTraffic(Double.valueOf(bytes.length));
 
+                            es.shutdown();
+                            try {
+                                es.awaitTermination(5L, TimeUnit.MINUTES);
+                                LOG.info("Website Deployment Finished: " + appObjectId);
+                                updateWebsiteDeploymentDone(deploymentId, true);
+                                zipStream.close();
+//                                result.put("success", true);
+//                                result.put("deploymentId", deploymentId);
+//                                return result.toJSONString();
+                            } catch (InterruptedException e) {
+                                LOG.info(e.getMessage());
+                                LOG.info("Website Deployment Finished with Errors: " + appObjectId);
+                                updateWebsiteDeploymentDone(deploymentId, false);
+                                zipStream.close();
+//                                result.put("success", false);
+//                                result.put("deploymentId", deploymentId);
+//                                return result.toJSONString();
+                            }
                         }
-                        zipStream.close();
-                    } catch (IOException e){
+                    } catch (Exception e){
                         LOG.info("Error: " + e.getMessage());
                         e.printStackTrace();
-                    } catch (UnirestException e) {
-                        LOG.info("Error: " + e.getMessage());
-                        e.printStackTrace();
+                        updateWebsiteDeploymentDone(deploymentId, false);
+//                        result.put("success", false);
+//                        result.put("deploymentId", deploymentId);
+//                        return result.toJSONString();
                     }
                 }
             };
             Thread thread = new Thread(runnable);
             thread.start();
             setStatus(Status.SUCCESS_OK);
-            result.put("success", "true");
+            result.put("deploymentId", deploymentId);
+            return result.toJSONString();
         } else {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            result.put("success", false);
         }
         return result.toJSONString();
     }
 
-    private static void writeFileToCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String appId, String userId)
+    private String createWebsiteStartDeployment() {
+        try {
+            //////////////////////////////////////////////////////////
+            // Save WebsiteDeployment to Parse:
+            JSONObject deployment = new JSONObject();
+            deployment.put("app", createPointer("Application", appObjectId));
+            deployment.put("user", createPointer("_User", userId));
+            deployment.put("subdomain", subdomain);
+            deployment.put("isDone", false);
+            JSONObject acl = new JSONObject();
+            JSONObject asterisk = new JSONObject();
+            asterisk.put("read", true);
+            asterisk.put("write", false);
+            acl.put("*", asterisk);
+            deployment.put("ACL", acl);
+            HttpResponse<String> post = Unirest.post(Configuration.TXTSTREET_PARSE_URL + "/classes/WebsiteDeployment")
+                    .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                    .header("Content-Type", "application/json")
+                    .body(deployment.toJSONString())
+                    .asString();
+            String websiteDeployRes = post.getBody();
+            return JSONObject.parseObject(websiteDeployRes).getString("objectId");
+            //////////////////////////////////////////////////////////
+        } catch (Exception e) {
+            LOG.info("Failed to start deploy " + appObjectId + " properly");
+            LOG.info(e.getMessage());
+        }
+        return null;
+    }
+
+    private void updateWebsiteDeploymentDone(String deploymentId, boolean success) {
+        try {
+            //////////////////////////////////////////////////////////
+            // Save WebsiteDeployment to Parse:
+            JSONObject deployment = new JSONObject();
+            deployment.put("app", createPointer("Application", appObjectId));
+            deployment.put("user", createPointer("_User", userId));
+            deployment.put("subdomain", subdomain);
+            deployment.put("isDone", true);
+            deployment.put("success", success);
+            JSONObject acl = new JSONObject();
+            JSONObject asterisk = new JSONObject();
+            asterisk.put("read", true);
+            asterisk.put("write", false);
+            acl.put("*", asterisk);
+            deployment.put("ACL", acl);
+            deployment.put("createdAt", null);
+            deployment.put("updatedAt", null);
+            HttpResponse<String> post = Unirest.put(Configuration.TXTSTREET_PARSE_URL + "/classes/WebsiteDeployment/" + deploymentId)
+                    .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                    .header("Content-Type", "application/json")
+                    .body(deployment.toJSONString())
+                    .asString();
+            String websiteDeployRes = post.getBody();
+            //////////////////////////////////////////////////////////
+        } catch (Exception e) {
+            LOG.info("Failed to end deploy " + appObjectId + " properly");
+            LOG.info(e.getMessage());
+        }
+    }
+
+    /**
+     * Writes file into Parse File without checking if file exists for faster round-trip.
+     * The checking is removed since before calling this function is it required to call the 'clean' function
+     * that removes all File objects with the given appId
+     *
+     * @param sessionToken
+     * @param fileBytes
+     * @param fileName
+     * @param path
+     * @param appId
+     * @param userId
+     * @throws UnirestException
+     * @throws IOException
+     */
+    private static void writeFileToCloud2(String sessionToken, byte[] fileBytes, String fileName, String path, String appId, String userId)
+            throws UnirestException, IOException {
+
+        // Pre-process
+
+        JSONObject appPointer = new JSONObject();
+        appPointer.put("__type", "Pointer");
+        appPointer.put("className", "Application");
+        appPointer.put("objectId", appId);
+
+        JSONObject file = new JSONObject();
+        file.put("name", fileName);
+        file.put("path", path);
+        file.put("size", fileBytes.length);
+        file.put("appId", appPointer);
+
+        try {
+            String mimeType = new Tika().detect(fileName);
+            HttpResponse<String> response = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
+                    "/files/" + fileName)
+                    .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                    .header("Content-Type", mimeType)
+                    .body(fileBytes)
+                    .asString();
+            if(response.getStatus() == 201){
+                String location = response.getHeaders().get("Location").get(0);
+                String filename = location.substring(location.lastIndexOf("/")+1, location.length());
+                JSONObject filePointer = new JSONObject();
+                filePointer.put("__type", "File");
+                filePointer.put("name", filename);
+                filePointer.put("url", location);
+                file.put("filePointer", filePointer);
+
+                JSONObject acl = new JSONObject();
+                JSONObject asterisk = new JSONObject();
+                asterisk.put("read", true);
+                asterisk.put("write", false);
+
+                JSONObject user = new JSONObject();
+                user.put("read", true);
+                user.put("write", true);
+
+                acl.put("*", asterisk);
+                acl.put(userId, user);
+                file.put("ACL", acl);
+
+                file.put("createdAt", null);
+                file.put("updatedAt", null);
+
+                //LOG.info(file.toJSONString());
+
+                // Associate to Parse Object
+                HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL + "/classes/File")
+                        .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                        .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                        .header("Content-Type", "application/json")
+                        .body(file.toJSONString())
+                        .asString();
+                String body = res.getBody();
+                //LOG.info("Post Response:" + res.getBody());
+                //LOG.info("Post Status:" + res.getStatus());
+            }
+        } catch (UnirestException e){
+            LOG.info("Failed to upload: " + path);
+        } catch (Exception e) {
+            LOG.info("Failed to upload: " + e.getLocalizedMessage());
+        }
+
+    }
+
+    private static int writeFileToCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String appId, String userId)
             throws UnirestException, IOException {
 
         // Pre-process
@@ -228,12 +563,10 @@ public class WebsiteUploadServerResource extends BaseServerResource
         whereObject.put("path", path);
         whereObject.put("appId", appPointer);
 
-        HttpResponse<String> getRequest = Unirest.get(Configuration.TXTSTREET_PARSE_URL +
-                "/classes/File")
+        HttpResponse<String> getRequest = Unirest.get(
+                Configuration.TXTSTREET_PARSE_URL + "/classes/File")
                 .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                 .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
-//                .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-//                .header(X_PARSE_SESSION_TOKEN, sessionToken)
                 .queryString("where", whereObject.toJSONString())
                 .asString();
 
@@ -248,19 +581,16 @@ public class WebsiteUploadServerResource extends BaseServerResource
                         .getJSONArray("results")
                         .getJSONObject(0)
                         .getString("objectId");
-                LOG.info("File exists, updating: " + path);
+                //LOG.info("File exists, updating: " + path);
                 // Upload new file
                 String mimeType = new Tika().detect(fileName);
-                HttpResponse<String> response = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
-                        "/files/" + fileName)
+                HttpResponse<String> response = Unirest.post(Configuration.TXTSTREET_PARSE_URL + "/files/" + fileName)
                         .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                         .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
-//                        .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-//                        .header(X_PARSE_SESSION_TOKEN, sessionToken)
                         .header("Content-Type", mimeType)
                         .body(fileBytes)
                         .asString();
-                //if(response.getStatus() == 201){
+                if(response.getStatus() == 201){
                     // Update existing File
                     String location = response.getHeaders().get("Location").get(0);
                     String filename = location.substring(location.lastIndexOf("/")+1, location.length());
@@ -292,27 +622,25 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     HttpResponse<String> updateResponse = Unirest.put(Configuration.TXTSTREET_PARSE_URL +
                             "/classes/File/" + existingObjectId)
                             .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-//                            .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-//                            .header(X_PARSE_SESSION_TOKEN, sessionToken)
                             .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
                             .header("Content-Type", "application/json")
                             .body(updateObject.toJSONString())
                             .asString();
-                    LOG.info("Update Status:" + updateResponse.getStatusText());
-                //}
+                    //LOG.info("Put Response:" + updateResponse.getBody());
+                    //LOG.info("Put Status:" + updateResponse.getStatus());
+                    return updateResponse.getStatus();
+                }
             }
         }
 
         if(!fileExist){
             // Upload file
-            LOG.info("Uploading file: " + path);
+            //LOG.info("Uploading file: " + path);
             try {
                 String mimeType = new Tika().detect(fileName);
                 HttpResponse<String> response = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
                         "/files/" + fileName)
                         .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
-//                        .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-//                        .header(X_PARSE_SESSION_TOKEN, sessionToken)
                         .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
                         .header("Content-Type", mimeType)
                         .body(fileBytes)
@@ -342,11 +670,10 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     file.put("createdAt", null);
                     file.put("updatedAt", null);
 
-                    LOG.info(file.toJSONString());
+                    //LOG.info(file.toJSONString());
 
                     // Associate to Parse Object
-                    HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
-                            "/classes/File")
+                    HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL + "/classes/File")
                             .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                             .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
 //                            .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
@@ -354,8 +681,9 @@ public class WebsiteUploadServerResource extends BaseServerResource
                             .header("Content-Type", "application/json")
                             .body(file.toJSONString())
                             .asString();
-                    LOG.info("Status:" + res.getBody());
-
+                    //LOG.info("Post Response:" + res.getBody());
+                    //LOG.info("Post Status:" + res.getStatus());
+                    return res.getStatus();
                 }
             } catch (UnirestException e){
                 LOG.info("Failed to upload: " + path);
@@ -363,56 +691,72 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 LOG.info("Failed to upload: " + e.getLocalizedMessage());
             }
         }
-
+        return -1;
     }
 
-    /*
-    if(clean != null && clean.equalsIgnoreCase("true")) {
-                        JSONObject param = new JSONObject();
-                        param.put("appId", appId);
-                        HttpResponse<String> res = Unirest.post(Configuration.PARSE_URL +
-                                "/functions/clean")
-                                .header("X-Parse-Application-Id", Configuration.PARSE_APP_ID)
-                                .header("X-Parse-REST-API-Key", Configuration.PARSE_REST_API_KEY)
-                                .header("X-Parse-Session-Token", sessionToken)
-                                .header("X-Parse-Revocable-Session", "1")
-                                .header("Content-Type", "application/json")
-                                .body(param.toString())
-                                .asString();
-                        if(res.getBody().contains("success")) {
-                            System.out.println("Success Clean files");
-                        } else {
-                            System.out.println("Failed Clean files");
-                            return;
-                        }
-                    }
-     */
-    protected void clean(String sessionToken, String appId) {
+    protected boolean clean(String sessionToken, String appId) {
+        LOG.info("Clean start");
+        LOG.info("App ID: " + appId);
+        boolean isSuccess = false;
         try {
-            Double appByteSize = calculateAppUsedStorage();
-            JSONObject param = new JSONObject();
-            param.put("appId", appId);
-            HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL +
-                    "/functions/clean")
+            JSONObject appPointer = new JSONObject();
+            appPointer.put("__type", "Pointer");
+            appPointer.put("className", "Application");
+            appPointer.put("objectId", appId);
+
+            JSONObject whereObject = new JSONObject();
+            whereObject.put("appId", appPointer);
+
+            HttpResponse<String> getRequest = Unirest.get(
+                    Configuration.TXTSTREET_PARSE_URL + "/classes/File")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                     .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
-//                    .header(X_PARSE_REST_API_KEY, Configuration.TXTSTREET_PARSE_REST_API_KEY)
-//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
-                    .header("X-Parse-Revocable-Session", "1")
-                    .header("Content-Type", "application/json")
-                    .body(param.toString())
+                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .queryString("where", whereObject.toJSONString())
                     .asString();
-            if(res.getBody().contains("success")) {
-                LOG.info("Success clean files: " + appId);
-                LOG.info("App size: " + appByteSize);
-                updateStorage(-appByteSize);
+            if(getRequest.getStatus() == 200){
+                JSONArray resultsArray = JSON.parseObject(getRequest.getBody())
+                        .getJSONArray("results");
+                if(!resultsArray.isEmpty()){
+                    for(int i=0;i<resultsArray.size();i++) {
+                        JSONObject result = resultsArray.getJSONObject(i);
+                        if(result != null) {
+                            String objectId = result.getString("objectId");
+                            JSONObject filePointer = result.getJSONObject("filePointer");
+                            String url = filePointer.getString("url");
+                            LOG.info("Removing " + objectId);
+                            deleteFile(objectId);
+                            deleteParseFile(url);
+                        }
+                    }
+                    isSuccess = true;
+                }
             } else {
-                LOG.info("Failed clean files: " + appId);
+                LOG.info("not found");
             }
         } catch (Exception e) {
             e.printStackTrace();
+            isSuccess = false;
         }
+        LOG.info("Clean end: " + isSuccess);
+        return isSuccess;
     }
+
+    private void deleteFile(String objectId) throws UnirestException {
+        HttpResponse<String> deleteRequest = Unirest.delete(
+                Configuration.TXTSTREET_PARSE_URL + "/classes/File/" + objectId)
+                .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                .asString();
+    }
+
+    private void deleteParseFile(String url) throws UnirestException {
+        HttpResponse<String> deleteRequest = Unirest.delete(url)
+                .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                .asString();
+    }
+
 
     public void updateStorage(Double value) {
         try {
