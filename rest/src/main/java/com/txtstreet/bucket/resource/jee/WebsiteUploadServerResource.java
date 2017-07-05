@@ -711,7 +711,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     Configuration.TXTSTREET_PARSE_URL + "/classes/File")
                     .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                     .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    //.header(X_PARSE_SESSION_TOKEN, sessionToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             if(getRequest.getStatus() == 200){
@@ -748,6 +748,10 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                 .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
                 .asString();
+        int status = deleteRequest.getStatus();
+        String body = deleteRequest.getBody();
+        LOG.info("Delete Status: " + status);
+        LOG.info("Delete Body: " + body);
     }
 
     private void deleteParseFile(String url) throws UnirestException {
@@ -755,6 +759,10 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
                 .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
                 .asString();
+        int status = deleteRequest.getStatus();
+        String body = deleteRequest.getBody();
+        LOG.info("Delete Status: " + status);
+        LOG.info("Delete Body: " + body);
     }
 
 
