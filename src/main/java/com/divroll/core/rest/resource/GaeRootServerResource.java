@@ -25,6 +25,7 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
+import com.google.api.client.json.JsonParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.mashape.unirest.http.*;
 import org.restlet.data.*;
@@ -37,6 +38,7 @@ import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 import org.slf4j.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -156,6 +158,90 @@ public class GaeRootServerResource extends ServerResource {
                     postOobject.put("path", p);
                     postOobject.put("appId", subdomain);
 
+                    String appObjectId = null;
+
+                    // Get objectId give subdomain
+                    JSONObject whereObject = new JSONObject();
+                    whereObject.put("appId", subdomain);
+                    com.mashape.unirest.http.HttpResponse<String> quotaRequest = Unirest.get(Config.PARSE_URL +
+                            "/classes/Application")
+                            .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
+                            .header("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY)
+                            .header("X-Parse-Revocable-Session", "1")
+                            .queryString("where", whereObject.toJSONString())
+                            .asString();
+                    String body = quotaRequest.getBody();
+                    System.out.println("Body: " + body);
+                    JSONArray jsonArray = JSONObject.parseObject(body).getJSONArray("results");
+                    if(!jsonArray.isEmpty()) {
+                        for(int i=0;i<jsonArray.size();i++){
+                            JSONObject item = jsonArray.getJSONObject(i);
+                            if(item.getString("appId") != null && item.getString("appId").equals(subdomain)) {
+                                appObjectId = item.getString("objectId");
+                            }
+
+                        }
+                    }
+
+                    if(appObjectId == null) {
+                        System.out.println("Application objectId is null for " + subdomain);
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    }
+                    System.out.println("Application ID: " + appObjectId);
+
+                    HttpRequestFactory requestFactory =
+                            HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
+                                @Override
+                                public void initialize(HttpRequest request) {
+                                    request.setParser(new JsonObjectParser(JSON_FACTORY));
+                                }
+                            });
+
+                    // Get the file given Application objectId and path
+                    JSONObject getFileWhereObject = new JSONObject();
+                    getFileWhereObject.put("appId", createPointer("Application", appObjectId));
+                    getFileWhereObject.put("path", p);
+                    com.mashape.unirest.http.HttpResponse<String> getFileResponse = Unirest.get(Config.PARSE_URL +
+                            "/classes/File")
+                            .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
+                            .header("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY)
+                            .header("X-Parse-Revocable-Session", "1")
+                            .header("Content-Type", "application/json")
+                            .queryString("where", getFileWhereObject.toJSONString())
+                            .asString();
+                    String getFileBody = getFileResponse.getBody();
+                    JSONObject getFileJSONObject = JSONObject.parseObject(getFileBody);
+                    JSONArray fileJsonArray = getFileJSONObject.getJSONArray("results");
+                    if(!fileJsonArray.isEmpty()) {
+                        for(int j=0;j<fileJsonArray.size();j++) {
+                            try {
+                                JSONObject jsonObject = fileJsonArray.getJSONObject(j);
+                                JSONObject filePonter = jsonObject.getJSONObject("filePointer");
+                                String fileUrl = filePonter.getString("url");
+                                if(fileUrl.startsWith("http://localhost:8080/parse")){
+                                    fileUrl = fileUrl.replace("http://localhost:8080/parse", Config.PARSE_URL);
+                                } else if(fileUrl.startsWith(Config.PARSE_PUBLIC_URL)) {
+                                    fileUrl = fileUrl.replace(Config.PARSE_PUBLIC_URL, Config.PARSE_URL);
+                                }
+                                Representation entity = new ParseFileRepresentation(Config.PARSE_URL,
+                                        Config.PARSE_APP_ID,
+                                        Config.PARSE_REST_API_KEY,
+                                        fileUrl,
+                                        processMediaType(fileUrl));
+                                entity.setMediaType(processMediaType(completePath));
+                                if(!canAcceptGzip) {
+                                    return entity;
+                                }
+                                encoded = new EncodeRepresentation(Encoding.GZIP, entity);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+
+                    /*
                     com.mashape.unirest.http.HttpResponse<String> postResponse = null;
                     postResponse = Unirest.post(Config.PARSE_URL + "/functions/file")
                                 .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
@@ -189,6 +275,7 @@ public class GaeRootServerResource extends ServerResource {
                             }
                             encoded = new EncodeRepresentation(Encoding.GZIP, entity);
                         }
+                    */
                 }
             }
         } catch (MalformedURLException e) {
@@ -386,5 +473,13 @@ public class GaeRootServerResource extends ServerResource {
             e.printStackTrace();
         }
         return false;
+    }
+
+    protected JSONObject createPointer(String className, String objectId) {
+        JSONObject pointer = new JSONObject();
+        pointer.put("__type", "Pointer");
+        pointer.put("className", className);
+        pointer.put("objectId", objectId);
+        return pointer;
     }
 }
