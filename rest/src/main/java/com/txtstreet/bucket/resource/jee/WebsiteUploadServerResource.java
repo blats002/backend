@@ -3,11 +3,14 @@ package com..bucket.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.*;
 import com.google.common.io.ByteStreams;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com..bucket.Configuration;
+import com..bucket.GoogleJsonKey;
 import com..bucket.resource.WebsiteUploadResource;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -25,14 +28,9 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -48,7 +46,6 @@ public class WebsiteUploadServerResource extends BaseServerResource
 
     private static final java.util.logging.Logger LOG
             = java.util.logging.Logger.getLogger(WebsiteUploadServerResource.class.getName());
-
 
     private String appObjectId = null;
     private Integer MAX_SIZE = 100000000; // 100MB
@@ -225,7 +222,8 @@ public class WebsiteUploadServerResource extends BaseServerResource
                                 String filePath = qqPath;
                                 boolean isSuccess = false;
                                 JSONObject jsonObject = new JSONObject();
-                                int status = writeFileToCloud(sessionToken, byteContent, name, filePath, appObjectId, userId);
+                                //int status = writeFileToCloud(sessionToken, byteContent, name, filePath, appObjectId, userId);
+                                int status = writeFileToGoogleCloud(sessionToken, byteContent, name, filePath, subdomain, userId);
                                 //LOG.info("Write Status: " + status);
                                 final int bLength = byteContent.length;
                                 if(status == 200) {
@@ -321,7 +319,8 @@ public class WebsiteUploadServerResource extends BaseServerResource
                                         @Override
                                         public Integer call() throws Exception {
                                             try {
-                                                int status =  writeFileToCloud(sessionToken, byteArray, filename, filePath, appId, userId);
+//                                                int status =  writeFileToCloud(sessionToken, byteArray, filename, filePath, appId, userId);
+                                                int status =  writeFileToGoogleCloud(sessionToken, byteArray, filename, filePath, subdomain, userId);
                                                 LOG.info("File Name: " + filename);
                                                 LOG.info("Application ID: " + appId);
                                                 LOG.info("Status: " + status);
@@ -539,6 +538,60 @@ public class WebsiteUploadServerResource extends BaseServerResource
             LOG.info("Failed to upload: " + e.getLocalizedMessage());
         }
 
+    }
+
+    private static int writeFileToGoogleCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String subdomain, String userId) {
+        int status = 500;
+        try {
+            InputStream stream = new ByteArrayInputStream(GoogleJsonKey.JSON_KEY.getBytes(StandardCharsets.UTF_8));
+            StorageOptions options = StorageOptions.newBuilder()
+                    .setProjectId(PROJECT_ID)
+                    .setCredentials(GoogleCredentials.fromStream(stream)).build();
+            Storage storage = options.getService();
+            String bucketName = "divrolls";
+
+            List<Acl> acls = new ArrayList<>();
+            acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
+
+            BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, subdomain + "/" + path)
+                    .setAcl(acls).build();
+
+            Blob blob = storage.create(blobInfo, fileBytes);
+
+            String md5 = blob.getMd5();
+            String mediLink = blob.getMediaLink();
+
+            System.out.println(md5);
+            System.out.println(mediLink);
+
+            BlobId id = blob.getBlobId();
+            String blobBucket = id.getBucket();
+            String blobName = id.getName();
+            Long blobGeneration = id.getGeneration();
+
+            System.out.println("Bucket: " + blobBucket);
+            System.out.println("Name: " + blobName);
+            System.out.println("Generation: " + blobGeneration);
+
+            JSONObject file = new JSONObject();
+            file.put("bucket", id.getBucket());
+            file.put("name", id.getName());
+            file.put("generation", id.getGeneration());
+            file.put("md5", md5);
+            file.put("size", fileBytes.length);
+
+            HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL + "/classes/GoogleStorageFile")
+                    .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                    .header("Content-Type", "application/json")
+                    .body(file.toJSONString())
+                    .asString();
+
+            status = 200;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return status;
     }
 
     private static int writeFileToCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String appId, String userId)

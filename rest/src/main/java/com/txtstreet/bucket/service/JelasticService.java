@@ -24,7 +24,7 @@ public class JelasticService {
 
     protected final static String CERTIFICATE_PATH_TEMPLATE = "/var/lib/nginx/ssl/DOMAIN_NAME.crt";
     protected final static String PRIVATE_KEY_PATH_TEMPLATE = "/var/lib/nginx/ssl/DOMAIN_NAME.key";
-    protected final static String NGINX_CONF_PATH_TEMPLATE = "/etc/nginx/conf.d/DOMAIN_NAME.conf";
+    protected final static String NGINX_CONF_PATH_TEMPLATE = "/var/lib/nginx/conf.d/DOMAIN_NAME.conf";
 
     public String getSession() {
         LOG.info("Authenticate user...");

@@ -3,16 +3,23 @@ package com..bucket.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.*;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com..bucket.Configuration;
+import com..bucket.GoogleJsonKey;
 import com..bucket.resource.jee.BaseServerResource;
 import it.zero11.acme.AcmeChallengeListener;
 import org.apache.tika.Tika;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class HttpChallengeListener implements AcmeChallengeListener, BaseService{
@@ -20,18 +27,26 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
     private static final Logger LOG
             = Logger.getLogger(HttpChallengeListener.class.getName());
 
+    private static final String BUCKET_NAME = "divrolls";
     private final String host;
-    private final String appId;
+    //private final String appId;
+    private final String subdomain;
     private final String userId;
     private final String webroot;
     private final String session;
 
-    public HttpChallengeListener(String session, String appId, String userId, String host, String webroot) {
+
+    private String fileName;
+    private String filePath;
+
+
+    public HttpChallengeListener(String session, String subdomain, String userId, String host, String webroot) {
         this.host = host;
         this.webroot = webroot;
         this.session = session;
-        this.appId = appId;
+        //this.appId = appId;
         this.userId = userId;
+        this.subdomain = subdomain;
     }
 
     @Override
@@ -44,9 +59,14 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
         try {
             System.out.println("Token: " + token);
             System.out.println("Challenge Body: " + challengeBody);
-            String fileName = token;
-            String filePath = ".well-known/acme-challenge/" + token;
-            return writeFileToCloud(session, challengeBody.getBytes(), fileName, filePath, appId, userId);
+            fileName = token;
+            filePath = ".well-known/acme-challenge/" + token;
+            if(writeFileToGoogleCloud(token, challengeBody.getBytes(), fileName, filePath, subdomain, userId) == 200) {
+                return true;
+            } else {
+                return false;
+            }
+            //return writeFileToCloud(session, challengeBody.getBytes(), fileName, filePath, appId, userId);
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -59,48 +79,9 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
     }
 
     private void deleteChallengeFiles() {
-        /*
-        FTPClient ftp = new FTPClient();
-        try {
-            ftp.connect(host);
-            if(!FTPReply.isPositiveCompletion(ftp.getReplyCode())) {
-                ftp.disconnect();
-                return;
-            }
-
-            ftp.login(username, password);
-            ftp.changeWorkingDirectory(webroot);
-            ftp.changeWorkingDirectory(".well-known");
-            ftp.changeWorkingDirectory("acme-challenge");
-
-            FTPFile[] subFiles = ftp.listFiles();
-
-            if (subFiles != null && subFiles.length > 0) {
-                for (FTPFile aFile : subFiles) {
-                    String currentFileName = aFile.getName();
-                    if (currentFileName.equals(".") || currentFileName.equals("..")) {
-                        continue;
-                    }else{
-                        ftp.deleteFile(currentFileName);
-                    }
-                }
-            }
-            ftp.changeToParentDirectory();
-            ftp.removeDirectory("acme-challenge");
-            ftp.changeToParentDirectory();
-            ftp.removeDirectory(".well-known");
-            ftp.logout();
-        } catch(IOException e) {
-            throw new AcmeException(e);
-        } finally {
-            if(ftp.isConnected()) {
-                try {
-                    ftp.disconnect();
-                } catch(IOException ioe) {
-                }
-            }
+        if(filePath != null && !filePath.isEmpty()) {
+            deleteFileFromGoogleCloud(filePath);
         }
-        */
     }
 
     @Override
@@ -108,6 +89,75 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
         deleteChallengeFiles();
     }
 
+    private boolean deleteFileFromGoogleCloud(String path) {
+        try {
+            InputStream stream = new ByteArrayInputStream(GoogleJsonKey.JSON_KEY.getBytes(StandardCharsets.UTF_8));
+            StorageOptions options = StorageOptions.newBuilder()
+                    .setProjectId(BaseServerResource.PROJECT_ID)
+                    .setCredentials(GoogleCredentials.fromStream(stream)).build();
+            Storage storage = options.getService();
+            storage.delete(BlobId.of(BUCKET_NAME, path));
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private int writeFileToGoogleCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String subdomain, String userId) {
+        int status = 500;
+        try {
+            InputStream stream = new ByteArrayInputStream(GoogleJsonKey.JSON_KEY.getBytes(StandardCharsets.UTF_8));
+            StorageOptions options = StorageOptions.newBuilder()
+                    .setProjectId(BaseServerResource.PROJECT_ID)
+                    .setCredentials(GoogleCredentials.fromStream(stream)).build();
+            Storage storage = options.getService();
+
+            List<Acl> acls = new ArrayList<>();
+            acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));
+
+            BlobInfo blobInfo = BlobInfo.newBuilder(BUCKET_NAME, subdomain + "/" + path)
+                    .setAcl(acls).build();
+
+            Blob blob = storage.create(blobInfo, fileBytes);
+
+            String md5 = blob.getMd5();
+            String mediLink = blob.getMediaLink();
+
+            System.out.println(md5);
+            System.out.println(mediLink);
+
+            BlobId id = blob.getBlobId();
+            String blobBucket = id.getBucket();
+            String blobName = id.getName();
+            Long blobGeneration = id.getGeneration();
+
+            System.out.println("Bucket: " + blobBucket);
+            System.out.println("Name: " + blobName);
+            System.out.println("Generation: " + blobGeneration);
+
+            JSONObject file = new JSONObject();
+            file.put("bucket", id.getBucket());
+            file.put("name", id.getName());
+            file.put("generation", id.getGeneration());
+            file.put("md5", md5);
+            file.put("size", fileBytes.length);
+
+            HttpResponse<String> res = Unirest.post(Configuration.TXTSTREET_PARSE_URL + "/classes/GoogleStorageFile")
+                    .header(X_PARSE_APPLICATION_ID, Configuration.TXTSTREET_PARSE_APP_ID)
+                    .header(X_MASTER_KEY, Configuration.TXTSTREET_MASTER_KEY)
+                    .header("Content-Type", "application/json")
+                    .body(file.toJSONString())
+                    .asString();
+            int resStatus = res.getStatus();
+            status = 200;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
+
+    @Deprecated
     protected static boolean writeFileToCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String appId, String userId)
             throws UnirestException, IOException {
 

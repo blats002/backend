@@ -9,6 +9,7 @@ import com..bucket.Configuration;
 import com..bucket.resource.SSLResource;
 import com..bucket.service.CertificateHelper;
 import com..bucket.service.HttpChallengeListener;
+import com..bucket.validator.EmailValidator;
 import it.zero11.acme.Acme;
 import it.zero11.acme.AcmeChallengeListener;
 import it.zero11.acme.storage.impl.DefaultCertificateStorage;
@@ -73,9 +74,9 @@ public class SSLServerResource extends BaseServerResource
             String privateKey = jsonObject.getString("privateKey");
             if(certificate.startsWith(CERTIFICATE_HEADER) && certificate.endsWith(CERTIFICATE_FOOTER)
                     && privateKey.startsWith(PRIVATE_KEY_HEADER) && privateKey.endsWith(PRIVATE_KEY_FOOTER)) {
-                /////////////////////////
-                //jelasticService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
-                /////////////////////////
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            jelasticService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             }
@@ -159,8 +160,17 @@ public class SSLServerResource extends BaseServerResource
                 // Let's Encrypt !
                 //////////////////////////////
 
+
                 Security.addProvider(new BouncyCastleProvider());
-                String mailTo = "mailto:webmaster@***REMOVED***";
+                //String mailTo = "mailto:webmaster@***REMOVED***";
+
+                JSONObject userObject = JSONObject.parseObject(user);
+                String mailTo = userObject.getString("email");
+
+                if(mailTo == null || mailTo.isEmpty() || !EmailValidator.validate(mailTo)) {
+                    return badRequest("Must have valid email");
+                }
+
                 LOG.info("WARNING: this sample application is using the Let's Encrypt staging API. Certificated created with this application won't be trusted.");
                 LOG.info("By using this application you agree to Let's Encrypt Terms and Conditions");
                 LOG.info(AGREEMENT_URL);
@@ -168,7 +178,7 @@ public class SSLServerResource extends BaseServerResource
                 String[] contacts = new String[1];
                 domains[0] = domain;
                 contacts[0] = mailTo;
-                AcmeChallengeListener challengeListener = new HttpChallengeListener(sessionToken, appObjectId, userId, domains[0], "");
+                AcmeChallengeListener challengeListener = new HttpChallengeListener(sessionToken, subdomain, userId, domains[0], "");
                 Acme acme = new Acme(CA_PRODUCTION_URL, new DefaultCertificateStorage(true), true, true);
                 X509Certificate cert = acme.getCertificate(domains, AGREEMENT_URL, contacts, challengeListener);
 

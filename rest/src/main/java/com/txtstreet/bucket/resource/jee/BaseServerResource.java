@@ -28,6 +28,8 @@ public class BaseServerResource extends ServerResource
     private static final Logger LOG
             = Logger.getLogger(BaseServerResource.class.getName());
 
+    public static final String PROJECT_ID = "873831973341";
+
     protected static final long MEGABYTE_BYTE_MULTIPLIER = 1000000;
     protected static final String FREE_STORAGE_QUOTA_CONFIG  = "FREE_STORAGE_QUOTA";
     protected static final String FREE_TRAFFIC_QUOTA_CONFIG  = "FREE_TRAFFIC_QUOTA";
@@ -38,6 +40,7 @@ public class BaseServerResource extends ServerResource
     protected String user = null;
     protected String userId = null;
     protected String sessionToken = null;
+    protected String masterKey;
     protected String subdomain;
     protected String domain;
 
@@ -79,7 +82,9 @@ public class BaseServerResource extends ServerResource
             LOG.info("Header: " + headerName);
             LOG.info("Header Value: " + header);
             LOG.info("===================================================================");
-
+            if(headerName.equals(X_MASTER_KEY) || headerName.equals(X_MASTER_KEY.toLowerCase())) {
+                masterKey = header;
+            }
         }
         //return headers;
     }
@@ -118,6 +123,17 @@ public class BaseServerResource extends ServerResource
         }
         return null;
     }
+
+    protected boolean hasMasterRole() {
+        boolean hasMasterRole = false;
+        if(masterKey != null
+                && !masterKey.isEmpty()
+                && masterKey.equals(Configuration.TXTSTREET_MASTER_KEY)) {
+            hasMasterRole = true;
+        }
+        return hasMasterRole;
+    }
+
     protected boolean hasUserRole() {
         String headerField = X_PARSE_SESSION_TOKEN;
         String sessionToken = headers.get(headerField.toLowerCase());
@@ -448,6 +464,17 @@ public class BaseServerResource extends ServerResource
         return response;
     }
 
+    protected Representation badRequest(String message) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", false);
+        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
+        jsonObject.put("error", message);
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return response;
+    }
+
     protected Representation internalError() {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("success", false);
@@ -459,5 +486,14 @@ public class BaseServerResource extends ServerResource
         return response;
     }
 
+    protected Representation unauthorized() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", Status.CLIENT_ERROR_UNAUTHORIZED.getCode());
+        jsonObject.put("error", Status.CLIENT_ERROR_UNAUTHORIZED.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return response;
+    }
 
 }
