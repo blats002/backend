@@ -103,9 +103,9 @@ public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMeth
 
 		postBody.put("ACL", acl);
 
-		HttpResponse<String> post = Unirest.post(Config.TXTSTREET_PARSE_URL + "/classes/Token")
-				.header(X_PARSE_APPLICATION_ID, Config.TXTSTREET_PARSE_APP_ID)
-				.header(X_MASTER_KEY, Config.TXTSTREET_MASTER_KEY)
+		HttpResponse<String> post = Unirest.post(Config.PARSE_URL + "/classes/Token")
+				.header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
+				.header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
 				.header("Content-Type", "application/json")
 				.body(postBody.toJSONString())
 				.asString();

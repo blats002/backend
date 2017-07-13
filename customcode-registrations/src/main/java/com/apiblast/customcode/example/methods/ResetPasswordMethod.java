@@ -10,7 +10,6 @@ import com.apiblast.sdkapi.rest.CustomCodeResponse;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import jdk.nashorn.internal.parser.JSONParser;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -60,9 +59,9 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
         where.put("email", email);
         where.put("type", "RESET_PASSWORD");
         where.put("isExpired", false);
-        HttpResponse<String> get = Unirest.get(Config.TXTSTREET_PARSE_URL + "/classes/Token")
-                .header(X_PARSE_APPLICATION_ID, Config.TXTSTREET_PARSE_APP_ID)
-                .header(X_MASTER_KEY, Config.TXTSTREET_MASTER_KEY)
+        HttpResponse<String> get = Unirest.get(Config.PARSE_URL + "/classes/Token")
+                .header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
+                .header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
                 .header("Content-Type", "application/json")
                 .queryString("where", where.toJSONString())
                 .asString();
@@ -94,9 +93,9 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
             UnsupportedEncodingException, NoSuchAlgorithmException {
         JSONObject putBody = new JSONObject();
         putBody.put("isExpired", true);
-        HttpResponse<String> put = Unirest.put(Config.TXTSTREET_PARSE_URL + "/classes/Token/" + objectId)
-                .header(X_PARSE_APPLICATION_ID, Config.TXTSTREET_PARSE_APP_ID)
-                .header(X_MASTER_KEY, Config.TXTSTREET_MASTER_KEY)
+        HttpResponse<String> put = Unirest.put(Config.PARSE_URL + "/classes/Token/" + objectId)
+                .header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
+                .header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
                 .header("Content-Type", "application/json")
                 .body(putBody.toJSONString())
                 .asString();
@@ -105,9 +104,9 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
     private void setNewPassword(String email, String newPassword) throws UnirestException {
         JSONObject where = new JSONObject();
         where.put("email", email);
-        HttpResponse<String> get = Unirest.get(Config.TXTSTREET_PARSE_URL + "/classes/Token/")
-                .header(X_PARSE_APPLICATION_ID, Config.TXTSTREET_PARSE_APP_ID)
-                .header(X_MASTER_KEY, Config.TXTSTREET_MASTER_KEY)
+        HttpResponse<String> get = Unirest.get(Config.PARSE_URL + "/classes/Token/")
+                .header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
+                .header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
                 .header("Content-Type", "application/json")
                 .queryString("where", where.toJSONString())
                 .asString();
@@ -121,9 +120,9 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
                     String objectId = jsonObject.getString("objectId");
                     JSONObject putBody = new JSONObject();
                     putBody.put("password", newPassword);
-                    HttpResponse<String> put = Unirest.put(Config.TXTSTREET_PARSE_URL + "/classes/_User/" + objectId)
-                            .header(X_PARSE_APPLICATION_ID, Config.TXTSTREET_PARSE_APP_ID)
-                            .header(X_MASTER_KEY, Config.TXTSTREET_MASTER_KEY)
+                    HttpResponse<String> put = Unirest.put(Config.PARSE_URL + "/classes/_User/" + objectId)
+                            .header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
+                            .header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
                             .header("Content-Type", "application/json")
                             .body(putBody.toJSONString())
                             .asString();
