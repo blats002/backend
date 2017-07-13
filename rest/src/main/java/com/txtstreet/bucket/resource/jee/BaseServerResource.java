@@ -456,6 +456,17 @@ public class BaseServerResource extends ServerResource
         return response;
     }
 
+    protected Representation success(int code, String reasonPhrase) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", true);
+        jsonObject.put("code", code);
+        jsonObject.put("error", reasonPhrase);
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SUCCESS_OK);
+        return response;
+    }
+
     protected Representation success(int code) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("success", true);
@@ -507,6 +518,16 @@ public class BaseServerResource extends ServerResource
         Representation response = new StringRepresentation(jsonObject.toJSONString());
         response.setMediaType(MediaType.APPLICATION_JSON);
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return response;
+    }
+
+    protected Representation notFound() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", Status.CLIENT_ERROR_NOT_FOUND.getCode());
+        jsonObject.put("error", Status.CLIENT_ERROR_NOT_FOUND.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
         return response;
     }
 

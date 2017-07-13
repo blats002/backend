@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
+public class VerifyEmailMethod implements CustomCodeMethod, BaseMethod {
     @Override
     public String getMethodName() {
-        return "reset_password";
+        return "verify_email";
     }
 
     @Override
@@ -38,13 +38,12 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
             JSONObject jsonObject = JSONObject.parseObject(requestBody);
             String email = jsonObject.getString("email");
             String token = jsonObject.getString("token");
-            String newPassword = jsonObject.getString("password");
             String objectId = validateToken(email, token);
-            System.out.println("Object ID: " + objectId);
             if(objectId != null) {
-                setNewPassword(email, newPassword);
+                setEmailVerified(email, true);
                 result = new CustomCodeResponse(200, map);
             } else {
+                setEmailVerified(email, false);
                 map.put("reasonPhrase", "Invalid Token");
                 result = new CustomCodeResponse(400, map);
             }
@@ -59,7 +58,7 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
             UnsupportedEncodingException, NoSuchAlgorithmException {
         JSONObject where = new JSONObject();
         where.put("email", email);
-        where.put("type", "RESET_PASSWORD");
+        where.put("type", "EMAIL_VERIFY");
         where.put("isExpired", false);
         HttpResponse<String> get = Unirest.get(Config.PARSE_URL + "/classes/Token")
                 .header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
@@ -115,7 +114,7 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
                 .asString();
     }
 
-    private void setNewPassword(String email, String newPassword) throws UnirestException {
+    private void setEmailVerified(String email, boolean verified) throws UnirestException {
         JSONObject where = new JSONObject();
         where.put("email", email);
         HttpResponse<String> get = Unirest.get(Config.PARSE_URL + "/classes/_User")
@@ -133,7 +132,7 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
                 if(jsonObject != null) {
                     String objectId = jsonObject.getString("objectId");
                     JSONObject putBody = new JSONObject();
-                    putBody.put("password", newPassword);
+                    putBody.put("emailVerified", verified);
                     HttpResponse<String> put = Unirest.put(Config.PARSE_URL + "/classes/_User/" + objectId)
                             .header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
                             .header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
@@ -141,11 +140,12 @@ public class ResetPasswordMethod implements CustomCodeMethod, BaseMethod {
                             .body(putBody.toJSONString())
                             .asString();
                     String putResponse = put.getBody();
-                    System.out.println("Reset password update: " + putResponse);
+                    System.out.println("Verify update: " + putResponse);
                 }
             }
 
         }
     }
+
 
 }
