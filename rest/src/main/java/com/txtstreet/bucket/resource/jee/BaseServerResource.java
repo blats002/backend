@@ -8,6 +8,7 @@ import com.mashape.unirest.http.Unirest;
 import com..bucket.Configuration;
 import com..bucket.service.BaseService;
 import com..bucket.service.JelasticService;
+import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
@@ -43,6 +44,7 @@ public class BaseServerResource extends ServerResource
     protected String masterKey;
     protected String subdomain;
     protected String domain;
+    protected String functioName;
 
     protected JelasticService jelasticService;
 
@@ -51,6 +53,7 @@ public class BaseServerResource extends ServerResource
         super.doInit();
         subdomain = getAttribute("subdomain");
         domain = getAttribute("domain");
+        functioName = getAttribute("function_name");
         getHeaders();
         jelasticService = new JelasticService();
     }
@@ -446,6 +449,17 @@ public class BaseServerResource extends ServerResource
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("success", true);
         jsonObject.put("code", Status.SUCCESS_OK.getCode());
+        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SUCCESS_OK);
+        return response;
+    }
+
+    protected Representation success(int code) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", true);
+        jsonObject.put("code", code);
         jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
         Representation response = new StringRepresentation(jsonObject.toJSONString());
         response.setMediaType(MediaType.APPLICATION_JSON);
