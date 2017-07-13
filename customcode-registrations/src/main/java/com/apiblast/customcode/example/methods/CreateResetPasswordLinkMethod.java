@@ -1,6 +1,7 @@
 package com.apiblast.customcode.example.methods;
 
 import com.alibaba.fastjson.JSONObject;
+import com.apiblast.customcode.example.Config;
 import com.apiblast.customcode.example.ResetPasswordRequest;
 import com.apiblast.customcode.example.helper.Sha256;
 import com.apiblast.sdkapi.customcode.CustomCodeMethod;
@@ -42,7 +43,7 @@ public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMeth
 		String requestBody = request.getBody();
 		JSONObject jsonObject = JSONObject.parseObject(requestBody);
 		SendingAPIApi apiInstance = new SendingAPIApi();
-		String xPostmarkServerToken = POSTMARK_API_KEY; // String | The token associated with the Server on which this request will operate.
+		String xPostmarkServerToken = Config.POSTMARK_API_KEY; // String | The token associated with the Server on which this request will operate.
 		SendEmailRequest body = new SendEmailRequest(); // SendEmailRequest |
 		try {
 			String email = jsonObject.getString("email");
@@ -102,9 +103,9 @@ public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMeth
 
 		postBody.put("ACL", acl);
 
-		HttpResponse<String> post = Unirest.post(TXTSTREET_PARSE_URL + "/classes/Token")
-				.header(X_PARSE_APPLICATION_ID, TXTSTREET_PARSE_APP_ID)
-				.header(X_MASTER_KEY, TXTSTREET_MASTER_KEY)
+		HttpResponse<String> post = Unirest.post(Config.TXTSTREET_PARSE_URL + "/classes/Token")
+				.header(X_PARSE_APPLICATION_ID, Config.TXTSTREET_PARSE_APP_ID)
+				.header(X_MASTER_KEY, Config.TXTSTREET_MASTER_KEY)
 				.header("Content-Type", "application/json")
 				.body(postBody.toJSONString())
 				.asString();

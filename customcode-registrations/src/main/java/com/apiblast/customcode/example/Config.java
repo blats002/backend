@@ -2,13 +2,15 @@ package com.apiblast.customcode.example;
 
 
 public class Config {
+    //public static final String TXTSTREET_PARSE_URL        = "***REMOVED***";
 
-    //Panama
-    public static String APP_ID = "summitpanama";
-    public static String APP_REST_API_ID = "gAlcj7E6oP1CwENAX4Xxsl21mwva401hKWA3zbjj";
-    public static String APP_MASTER_KEY = "wTcVbJAWE9qhW3UzBBceLjTXgDBTqMGxSffrtKID";
-    public static String CUSTOM_SERVER_PATH = "https://summitpanama.divroll.space/parse";
-    public static int TIMEZONE;
-    public static String OFFSET;
-    public static String TIMEZONE_OFFSET;
+    public static final String TXTSTREET_PARSE_URL          = "***REMOVED***";
+    //public static final String TXTSTREET_PARSE_URL        = "https://parse2.divroll.space/parse";
+    //public static final String TXTSTREET_PARSE_URL        = "http://localhost:1337/parse";
+
+    public static final String TXTSTREET_PARSE_APP_ID       = "";
+    public static final String TXTSTREET_PARSE_REST_API_KEY = "***REMOVED***";
+    public static final String TXTSTREET_MASTER_KEY         = "";
+
+    public static final String POSTMARK_API_KEY             = "";
 }
