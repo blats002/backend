@@ -31,7 +31,7 @@ import org.slf4j.*;
 public class DivrollApplication extends Application {
   final static Logger LOG
           = LoggerFactory.getLogger(DivrollApplication.class);
-  private static final String ROOT_URI = "/rest/";
+  private static final String ROOT_URI = "/";
   /**
    * Creates a root Restlet that will receive all incoming calls.
    */

@@ -15,10 +15,11 @@
 package com.divroll.core.rest.exception;
 
 import org.restlet.resource.Status;
-
 import java.io.IOException;
 
 /**
+ * Exception thrown when file cannot be found.
+ *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 1.0
  * @since 1.0

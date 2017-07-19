@@ -1,11 +1,3 @@
-package com.divroll.core.rest.util;
-
-/**
- * Source: http://snipt.net/tweakt/gwt-base64/
- * http://sahers.wordpress.com/2011/08/04/gwt-base64-decoding-into-binary-supports-unsigned-byte-data/
- */
-
-
 /*
 Copyright (c) 2009, Mark Renouf
 All rights reserved.
@@ -32,6 +24,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+package com.divroll.core.rest.util;
 /**
  * Custom Base64 encode/decode implementation suitable for use in
  * GWT applications (uses only translatable classes). 

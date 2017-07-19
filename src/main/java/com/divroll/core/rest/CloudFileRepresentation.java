@@ -1,3 +1,17 @@
+/*
+*
+* Copyright (c) 2017 Kerby Martino and Divroll. All Rights Reserved.
+* Licensed under Divroll Commercial License, Version 1.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   https://www.divroll.com/licenses/LICENSE-1.0
+*
+* Unless required by applicable law or agreed to in writing, software distributed
+* under the License is distributed as Proprietary and Confidential to
+* Divroll and must not be redistributed in any form.
+*
+*/
 package com.divroll.core.rest;
 
 import com.divroll.core.rest.util.CachingOutputStream;
@@ -7,7 +21,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.common.io.CountingOutputStream;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.ConnectionFactoryBuilder;
@@ -21,15 +34,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 /**
- * Created by Kerby on 7/10/2017.
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 1.0
+ * @since 1.0
  */
 public class CloudFileRepresentation extends OutputRepresentation {
 

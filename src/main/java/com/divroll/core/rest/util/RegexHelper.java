@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  * @since 1.0
  */
 public class RegexHelper {
+
     public static boolean isNumeric(String string){
         Pattern pattern = Pattern.compile("^[0-9]+$");
         return pattern.matcher(string).matches();
@@ -43,6 +44,7 @@ public class RegexHelper {
         }
         return true;
     }
+
     public static String parseSubdomain(String string, String domain){
         Pattern pattern = Pattern.compile("(.*)." + domain);
         if(pattern.matcher(string).matches()){

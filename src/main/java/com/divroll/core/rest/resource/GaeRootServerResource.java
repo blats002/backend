@@ -14,21 +14,23 @@
 */
 package com.divroll.core.rest.resource;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.CloudFileRepresentation;
 import com.divroll.core.rest.Config;
 import com.divroll.core.rest.exception.FileNotFoundException;
 import com.divroll.core.rest.util.RegexHelper;
-import com.divroll.core.rest.ParseFileRepresentation;
 import com.google.api.client.http.*;
-import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.mashape.unirest.http.*;
-import net.spy.memcached.*;
+import com.mashape.unirest.http.Unirest;
+import net.spy.memcached.AddrUtil;
+import net.spy.memcached.ConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.MemcachedClient;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -36,17 +38,19 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
-import com.alibaba.fastjson.JSON;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Scanner;
 
 /**
  *
@@ -64,24 +68,25 @@ public class GaeRootServerResource extends ServerResource {
     //private static final String PRERENDER_URL = "***REMOVED***";
     private static final String PRERENDER_URL = "***REMOVED***";
     private static final String HASH = "#";
+    private static final String APP_ROOT_URI = "";
     private static final String ESCAPED_FRAGMENT_FORMAT1 = "_escaped_fragment_=";
     private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
-    private static final String APP_ROOT_URI = "";
-
-//    private static final String MEMCACHED_CONN = "localhost:11211";
-//    private static final String MEMCACHED_CONN_2 = "localhost:11211";
 
     // Roller-1
     private static final String MEMCACHED_CONN = "127.0.0.1:11211";
     private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
 
     // Roller-2
-//    private static final String MEMCACHED_CONN = "127.0.0.1:11211";
-//    private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
+    /*
+    private static final String MEMCACHED_CONN = "127.0.0.1:11211";
+    private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
+
+    private static final String MEMCACHED_CONN = "localhost:11211";
+    private static final String MEMCACHED_CONN_2 = "localhost:11211";
+    */
 
     public static final int MEMCACHED_EXPIRY_ONE_HOUR = 60 * 60;
     public static final int MEMCACHED_TIMEOUT = 60;
-
     public static final int YEAR_IN_MINUTES = 365 * 24 * 60 * 60;
 
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
@@ -89,8 +94,7 @@ public class GaeRootServerResource extends ServerResource {
 
     private String acceptEncodings;
     private String cacheKey;
-
-    MemcachedClient mc;
+    private MemcachedClient mc;
 
     public static class ParseUrl extends GenericUrl {
         public ParseUrl(String encodedUrl) {
@@ -132,6 +136,7 @@ public class GaeRootServerResource extends ServerResource {
         return encoded;
     }
 
+    @SuppressWarnings("unused")
     @Get
     public Representation represent() {
         boolean canAcceptGzip = (acceptEncodings.contains("gzip") || acceptEncodings.contains("GZIP"));
@@ -160,23 +165,24 @@ public class GaeRootServerResource extends ServerResource {
                     return entity;
                 }
                 encoded = new EncodeRepresentation(Encoding.GZIP, entity);
-            }else if(queries != null && !queries.isEmpty() && queries.getValues("f") != null) { // TODO: just a quick
+            } else if(queries != null && !queries.isEmpty() && queries.getValues("f") != null) {
+                // TODO: just a quick
                 String escapedFragment = queries.getValues("f");
-                    if(_completePath.endsWith("/")) {
-                        _completePath = _completePath.substring(0, _completePath.length() - 1);
-                    }
-                    String getPath = PRERENDER_URL + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
-                    LOG.info("GET Path=" + getPath);
-                    com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPath)
-                            .asString();
-                    String body = response.getBody();
-                    Representation entity = new StringRepresentation(body);
-                    //entity.setMediaType(processMediaType(s));
-                    entity.setMediaType(MediaType.TEXT_HTML);
-                    if(!canAcceptGzip) {
-                        return entity;
-                    }
-                    encoded = new EncodeRepresentation(Encoding.GZIP, entity);
+                if(_completePath.endsWith("/")) {
+                    _completePath = _completePath.substring(0, _completePath.length() - 1);
+                }
+                String getPath = PRERENDER_URL + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
+                LOG.info("GET Path=" + getPath);
+                com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPath)
+                    .asString();
+                String body = response.getBody();
+                Representation entity = new StringRepresentation(body);
+                //entity.setMediaType(processMediaType(s));
+                entity.setMediaType(MediaType.TEXT_HTML);
+                if(!canAcceptGzip) {
+                    return entity;
+                }
+                encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else {
                 url = new URL(_completePath);
                 String host = url.getHost();
@@ -187,8 +193,7 @@ public class GaeRootServerResource extends ServerResource {
                 }else if(p.startsWith("/")){
                     p = p.substring(1);
                 }
-                String subdomain;
-                subdomain = parseSubdomain(host);
+                String subdomain = parseSubdomain(host);
                 LOG.info("Application ID: " + subdomain);
                 if(subdomain == null || subdomain.isEmpty()){
                     subdomain = "404";
@@ -196,17 +201,19 @@ public class GaeRootServerResource extends ServerResource {
                     p = p.replace("%20", " ");
                     final String completePath = APP_ROOT_URI + p;
 
-                    LOG.info("Complete Path: " + completePath);
-                    LOG.info("Host: " + host);
+                    LOG.info("Complete Path:            " + completePath);
+                    LOG.info("Host:                     " + host);
                     LOG.info("Application ID/Subdomain: " + subdomain);
 
-                    JSONObject postObject = new JSONObject();
-                    postObject.put("path", p);
-                    postObject.put("appId", subdomain);
+                    //JSONObject postObject = new JSONObject();
+                    //postObject.put("path", p);
+                    //postObject.put("appId", subdomain);
 
                     ////////////////////////////////////////////////////////////////////////////////////////////////////
+                    // Main code that reads file from cache or Cloud Storage
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
                     String completeFilePath = subdomain + "/" + p;
-                    LOG.info("COMPLETE PATH: " + completeFilePath);
+                    LOG.info("Complete File Path:       " + completeFilePath);
                     byte[] cachedBytes = byteCacheGet(completeFilePath);
                     Representation responseEntity = null;
                     if(cachedBytes != null) {
@@ -230,24 +237,12 @@ public class GaeRootServerResource extends ServerResource {
                     ////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
             }
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | UnsupportedEncodingException e) {
             e.printStackTrace();
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
-            if(e instanceof FileNotFoundException) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            }
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
-            if(e instanceof FileNotFoundException) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            }
         }
         /*
         GWT Headers
@@ -394,6 +389,7 @@ public class GaeRootServerResource extends ServerResource {
         }
     }
 
+    @Deprecated
     private boolean isExist(String subdomain){
         try {
             JSONObject where = new JSONObject();
@@ -451,8 +447,8 @@ public class GaeRootServerResource extends ServerResource {
             Object value = mc.get(key);
             if(value != null) {
                 LOG.info("=================================================================================");
-                LOG.info("KEY: " + key);
-                LOG.info("VALUE: " + value);
+                LOG.info("KEY   : " + key);
+                LOG.info("VALUE : " + value);
                 LOG.info("=================================================================================");
                 return String.valueOf(value);
             }
@@ -499,8 +495,8 @@ public class GaeRootServerResource extends ServerResource {
             Object value = mc.get(key);
             if(value != null) {
                 LOG.info("=================================================================================");
-                LOG.info("KEY: " + key);
-                LOG.info("VALUE: " + value);
+                LOG.info("KEY   : " + key);
+                LOG.info("VALUE : " + value);
                 LOG.info("=================================================================================");
                 return (byte[]) value;
             }
