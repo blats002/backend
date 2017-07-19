@@ -2,9 +2,7 @@ package com.apiblast.customcode.example.methods;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.apiblast.customcode.example.Config;
-import com.apiblast.customcode.example.EmailVerifyRequest;
-import com.apiblast.customcode.example.ResetPasswordRequest;
+import com.apiblast.customcode.example.*;
 import com.apiblast.customcode.example.helper.Sha256;
 import com.apiblast.sdkapi.customcode.CustomCodeMethod;
 import com.apiblast.sdkapi.rest.CustomCodeRequest;
@@ -20,10 +18,7 @@ import net.nextpulse.postmarkapp.models.server.SendEmailResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CreateVerifyEmailLinkMethod implements CustomCodeMethod, BaseMethod {
 
@@ -51,7 +46,7 @@ public class CreateVerifyEmailLinkMethod implements CustomCodeMethod, BaseMethod
 		try {
 			String email = jsonObject.getString("email");
 			String username = getUsernameFromEmail(email);
-			String url = "https://www.divroll.com/#/verify?email=" + email + "&token=";
+			String url = "https://www.divroll.com/#/verify;email=" + email + "&token=";
 			EmailWithTemplateRequest templateRequest = new EmailWithTemplateRequest();
 			templateRequest.setTemplateId(2490624);
 			templateRequest.setFrom(FROM);
@@ -100,7 +95,7 @@ public class CreateVerifyEmailLinkMethod implements CustomCodeMethod, BaseMethod
 
 	private String createTokenFromUsername(String username) throws UnirestException,
 			UnsupportedEncodingException, NoSuchAlgorithmException {
-
+		/*
 		JSONObject postBody = new JSONObject();
 		postBody.put("email", username);
 		postBody.put("type", "EMAIL_VERIFY");
@@ -124,26 +119,40 @@ public class CreateVerifyEmailLinkMethod implements CustomCodeMethod, BaseMethod
 		JSONObject jsonObject = JSONObject.parseObject(body);
 		String objectId = jsonObject.getString("objectId");
 		return Sha256.hash(objectId.getBytes("UTF-8"));
+		*/
+		String token = UUID.randomUUID().toString().replaceAll("-", "");
+		String saved = (String) AstroKV.put(new KeyBuilder().key("email").key(username).key("token").get(), token);
+
+		assert token == saved;
+
+		AstroKV.put(new KeyBuilder().key("email").key(username).key("token").key(token).key("type").get(), "EMAIL_VERIFY");
+		AstroKV.put(new KeyBuilder().key("email").key(username).key("token").key(token).key("isExpired").get(), false);
+		return token;
 	}
 
 	private String getUsernameFromEmail(String email) throws UnirestException {
-		JSONObject where = new JSONObject();
-		where.put("email", email);
-		HttpResponse<String> get = Unirest.get(Config.PARSE_URL + "/classes/_User")
-				.header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
-				.header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
-				.header("Content-Type", "application/json")
-				.queryString("where", where.toJSONString())
-				.asString();
-		String body = get.getBody();
-		JSONObject jsonBody = JSONObject.parseObject(body);
-		JSONArray jsonArray = jsonBody.getJSONArray("results");
-		if(jsonArray != null && !jsonArray.isEmpty()) {
-			for(int i=0;i<jsonArray.size();i++) {
-				JSONObject jsonObject = jsonArray.getJSONObject(i);
-				String username = jsonObject.getString("username");
-				return username;
-			}
+//		JSONObject where = new JSONObject();
+//		where.put("email", email);
+//		HttpResponse<String> get = Unirest.get(Config.PARSE_URL + "/classes/_User")
+//				.header(X_PARSE_APPLICATION_ID, Config.PARSE_APP_ID)
+//				.header(X_MASTER_KEY, Config.PARSE_MASTER_KEY)
+//				.header("Content-Type", "application/json")
+//				.queryString("where", where.toJSONString())
+//				.asString();
+//		String body = get.getBody();
+//		JSONObject jsonBody = JSONObject.parseObject(body);
+//		JSONArray jsonArray = jsonBody.getJSONArray("results");
+//		if(jsonArray != null && !jsonArray.isEmpty()) {
+//			for(int i=0;i<jsonArray.size();i++) {
+//				JSONObject jsonObject = jsonArray.getJSONObject(i);
+//				String username = jsonObject.getString("username");
+//				return username;
+//			}
+//		}
+//		return null;
+		Object value = AstroKV.get(new KeyBuilder().key("email").key(email));
+		if(value != null) {
+			return (String) value;
 		}
 		return null;
 	}

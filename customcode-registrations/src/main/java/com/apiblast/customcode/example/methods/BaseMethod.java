@@ -4,4 +4,7 @@ public interface BaseMethod {
     static final String X_PARSE_REST_API_KEY = "X-Parse-REST-API-Key";
     static final String X_PARSE_SESSION_TOKEN = "X-Parse-Session-Token";
     static final String X_MASTER_KEY = "X-Parse-Master-Key";
+
+    public final static String KEY_SEPARATOR = ":";
+
 }

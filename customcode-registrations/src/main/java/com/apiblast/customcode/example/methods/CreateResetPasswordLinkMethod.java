@@ -1,14 +1,13 @@
 package com.apiblast.customcode.example.methods;
 
 import com.alibaba.fastjson.JSONObject;
+import com.apiblast.customcode.example.AstroKV;
 import com.apiblast.customcode.example.Config;
+import com.apiblast.customcode.example.KeyBuilder;
 import com.apiblast.customcode.example.ResetPasswordRequest;
-import com.apiblast.customcode.example.helper.Sha256;
 import com.apiblast.sdkapi.customcode.CustomCodeMethod;
 import com.apiblast.sdkapi.rest.CustomCodeRequest;
 import com.apiblast.sdkapi.rest.CustomCodeResponse;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import net.nextpulse.postmarkapp.api.ApiException;
 import net.nextpulse.postmarkapp.api.server.SendingAPIApi;
@@ -18,10 +17,7 @@ import net.nextpulse.postmarkapp.models.server.SendEmailResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMethod {
 
@@ -47,7 +43,7 @@ public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMeth
 		SendEmailRequest body = new SendEmailRequest(); // SendEmailRequest |
 		try {
 			String email = jsonObject.getString("email");
-			String url = "https://www.divroll.com/#/resetPassword?email=" + email + "&token=";
+			String url = "https://www.divroll.com/#/reset;email=" + email + "&token=";
 			EmailWithTemplateRequest templateRequest = new EmailWithTemplateRequest();
 			templateRequest.setTemplateId(***REMOVED***);
 			templateRequest.setFrom(FROM);
@@ -90,6 +86,7 @@ public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMeth
 	private String createTokenFromUsername(String username) throws UnirestException,
 			UnsupportedEncodingException, NoSuchAlgorithmException {
 
+		/*
 		JSONObject postBody = new JSONObject();
 		postBody.put("email", username);
 		postBody.put("type", "RESET_PASSWORD");
@@ -113,6 +110,16 @@ public class CreateResetPasswordLinkMethod implements CustomCodeMethod, BaseMeth
 		JSONObject jsonObject = JSONObject.parseObject(body);
 		String objectId = jsonObject.getString("objectId");
 		return Sha256.hash(objectId.getBytes("UTF-8"));
+		*/
+
+		String token = UUID.randomUUID().toString().replaceAll("-", "");
+		String saved = (String) AstroKV.put(new KeyBuilder().key("email").key(username).key("token").get(), token);
+
+		assert token == saved;
+
+		AstroKV.put(new KeyBuilder().key("email").key(username).key("token").key(token).key("type").get(), "RESET_PASSWORD");
+		AstroKV.put(new KeyBuilder().key("email").key(username).key("token").key(token).key("isExpired").get(), false);
+		return token;
 	}
 
 }
