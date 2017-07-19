@@ -23,7 +23,6 @@ import java.io.OutputStream;
  * @version 1.0
  * @since 1.0
  */
-@Deprecated
 public class CachingOutputStream extends OutputStream
 {
 	private final OutputStream os;

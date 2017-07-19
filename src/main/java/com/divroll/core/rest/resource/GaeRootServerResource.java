@@ -16,6 +16,7 @@ package com.divroll.core.rest.resource;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.core.rest.CloudFileRepresentation;
 import com.divroll.core.rest.Config;
 import com.divroll.core.rest.exception.FileNotFoundException;
 import com.divroll.core.rest.util.RegexHelper;
@@ -25,20 +26,21 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.JsonParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.mashape.unirest.http.*;
+import net.spy.memcached.*;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
+import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import com.alibaba.fastjson.JSON;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 import org.slf4j.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -59,12 +61,26 @@ public class GaeRootServerResource extends ServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
 
-//    private static final String PRERENDER_URL = "***REMOVED***";
+    //private static final String PRERENDER_URL = "***REMOVED***";
     private static final String PRERENDER_URL = "***REMOVED***";
     private static final String HASH = "#";
     private static final String ESCAPED_FRAGMENT_FORMAT1 = "_escaped_fragment_=";
     private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
     private static final String APP_ROOT_URI = "";
+
+//    private static final String MEMCACHED_CONN = "localhost:11211";
+//    private static final String MEMCACHED_CONN_2 = "localhost:11211";
+
+    // Roller-1
+    private static final String MEMCACHED_CONN = "127.0.0.1:11211";
+    private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
+
+    // Roller-2
+//    private static final String MEMCACHED_CONN = "127.0.0.1:11211";
+//    private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
+
+    public static final int MEMCACHED_EXPIRY_ONE_HOUR = 60 * 60;
+    public static final int MEMCACHED_TIMEOUT = 60;
 
     public static final int YEAR_IN_MINUTES = 365 * 24 * 60 * 60;
 
@@ -72,6 +88,9 @@ public class GaeRootServerResource extends ServerResource {
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
     private String acceptEncodings;
+    private String cacheKey;
+
+    MemcachedClient mc;
 
     public static class ParseUrl extends GenericUrl {
         public ParseUrl(String encodedUrl) {
@@ -84,6 +103,33 @@ public class GaeRootServerResource extends ServerResource {
         super.doInit();
         Series<Header> series = (Series<Header>)getRequestAttributes().get("org.restlet.http.headers");
         acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
+        try {
+            ConnectionFactory factory = new ConnectionFactoryBuilder()
+                    .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                    .build();
+            mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        cacheKey = getQueryValue("cachekey");
+    }
+
+    @Delete
+    public Representation delete() {
+        EncodeRepresentation encoded = null;
+        try {
+            if(cacheKey != null && !cacheKey.isEmpty()) {
+                mc.delete(cacheKey);
+                setStatus(Status.SUCCESS_OK);
+                encoded = new EncodeRepresentation(Encoding.GZIP, new StringRepresentation("OK"));
+            } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+            e.printStackTrace();
+        }
+        return encoded;
     }
 
     @Get
@@ -120,7 +166,7 @@ public class GaeRootServerResource extends ServerResource {
                         _completePath = _completePath.substring(0, _completePath.length() - 1);
                     }
                     String getPath = PRERENDER_URL + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
-                    System.out.println("GET Path=" + getPath);
+                    LOG.info("GET Path=" + getPath);
                     com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPath)
                             .asString();
                     String body = response.getBody();
@@ -143,139 +189,45 @@ public class GaeRootServerResource extends ServerResource {
                 }
                 String subdomain;
                 subdomain = parseSubdomain(host);
-                System.out.println("Application ID: " + subdomain);
+                LOG.info("Application ID: " + subdomain);
                 if(subdomain == null || subdomain.isEmpty()){
                     subdomain = "404";
                 } else {
                     p = p.replace("%20", " ");
                     final String completePath = APP_ROOT_URI + p;
 
-                    System.out.println("Complete Path: " + completePath);
-                    System.out.println("Host: " + host);
-                    System.out.println("Application ID/Subdomain: " + subdomain);
+                    LOG.info("Complete Path: " + completePath);
+                    LOG.info("Host: " + host);
+                    LOG.info("Application ID/Subdomain: " + subdomain);
 
-                    JSONObject postOobject = new JSONObject();
-                    postOobject.put("path", p);
-                    postOobject.put("appId", subdomain);
+                    JSONObject postObject = new JSONObject();
+                    postObject.put("path", p);
+                    postObject.put("appId", subdomain);
 
-                    String appObjectId = null;
-
-                    // Get objectId give subdomain
-                    JSONObject whereObject = new JSONObject();
-                    whereObject.put("appId", subdomain);
-                    com.mashape.unirest.http.HttpResponse<String> quotaRequest = Unirest.get(Config.PARSE_URL +
-                            "/classes/Application")
-                            .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
-                            .header("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY)
-                            .header("X-Parse-Revocable-Session", "1")
-                            .queryString("where", whereObject.toJSONString())
-                            .asString();
-                    String body = quotaRequest.getBody();
-                    System.out.println("Body: " + body);
-                    JSONArray jsonArray = JSONObject.parseObject(body).getJSONArray("results");
-                    if(!jsonArray.isEmpty()) {
-                        for(int i=0;i<jsonArray.size();i++){
-                            JSONObject item = jsonArray.getJSONObject(i);
-                            if(item.getString("appId") != null && item.getString("appId").equals(subdomain)) {
-                                appObjectId = item.getString("objectId");
-                            }
-
-                        }
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
+                    String completeFilePath = subdomain + "/" + p;
+                    LOG.info("COMPLETE PATH: " + completeFilePath);
+                    byte[] cachedBytes = byteCacheGet(completeFilePath);
+                    Representation responseEntity = null;
+                    if(cachedBytes != null) {
+                        responseEntity = new ByteArrayRepresentation(cachedBytes);
+                        responseEntity.setMediaType(processMediaType(completePath));
+                    } else {
+                        responseEntity = new CloudFileRepresentation(
+                                completeFilePath,
+                                processMediaType(path),
+                                mc,
+                                MEMCACHED_TIMEOUT,
+                                MEMCACHED_EXPIRY_ONE_HOUR,
+                                Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2));
+                        responseEntity.setMediaType(processMediaType(completePath));
                     }
-
-                    if(appObjectId == null) {
-                        System.out.println("Application objectId is null for " + subdomain);
-                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                        return null;
+                    if(!canAcceptGzip) {
+                        return responseEntity;
                     }
-                    System.out.println("Application ID: " + appObjectId);
-
-                    HttpRequestFactory requestFactory =
-                            HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
-                                @Override
-                                public void initialize(HttpRequest request) {
-                                    request.setParser(new JsonObjectParser(JSON_FACTORY));
-                                }
-                            });
-
-                    // Get the file given Application objectId and path
-                    JSONObject getFileWhereObject = new JSONObject();
-                    getFileWhereObject.put("appId", createPointer("Application", appObjectId));
-                    getFileWhereObject.put("path", p);
-                    com.mashape.unirest.http.HttpResponse<String> getFileResponse = Unirest.get(Config.PARSE_URL +
-                            "/classes/File")
-                            .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
-                            .header("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY)
-                            .header("X-Parse-Revocable-Session", "1")
-                            .header("Content-Type", "application/json")
-                            .queryString("where", getFileWhereObject.toJSONString())
-                            .asString();
-                    String getFileBody = getFileResponse.getBody();
-                    JSONObject getFileJSONObject = JSONObject.parseObject(getFileBody);
-                    JSONArray fileJsonArray = getFileJSONObject.getJSONArray("results");
-                    if(!fileJsonArray.isEmpty()) {
-                        for(int j=0;j<fileJsonArray.size();j++) {
-                            try {
-                                JSONObject jsonObject = fileJsonArray.getJSONObject(j);
-                                JSONObject filePonter = jsonObject.getJSONObject("filePointer");
-                                String fileUrl = filePonter.getString("url");
-                                if(fileUrl.startsWith("http://localhost:8080/parse")){
-                                    fileUrl = fileUrl.replace("http://localhost:8080/parse", Config.PARSE_URL);
-                                } else if(fileUrl.startsWith(Config.PARSE_PUBLIC_URL)) {
-                                    fileUrl = fileUrl.replace(Config.PARSE_PUBLIC_URL, Config.PARSE_URL);
-                                }
-                                Representation entity = new ParseFileRepresentation(Config.PARSE_URL,
-                                        Config.PARSE_APP_ID,
-                                        Config.PARSE_REST_API_KEY,
-                                        fileUrl,
-                                        processMediaType(fileUrl));
-                                entity.setMediaType(processMediaType(completePath));
-                                if(!canAcceptGzip) {
-                                    return entity;
-                                }
-                                encoded = new EncodeRepresentation(Encoding.GZIP, entity);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-
-
-                    /*
-                    com.mashape.unirest.http.HttpResponse<String> postResponse = null;
-                    postResponse = Unirest.post(Config.PARSE_URL + "/functions/file")
-                                .header("X-Parse-Application-Id", Config.PARSE_APP_ID)
-                                .header("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY)
-                                .header("X-Parse-Revocable-Session", "1")
-                                .body(postOobject.toJSONString())
-                                .asString();
-                        System.out.println("========================================================================================");
-                        System.out.println("Function Response: " + postResponse.getBody());
-                        System.out.println("========================================================================================");
-
-                        JSONObject jsonObject = JSON.parseObject(postResponse.getBody());
-
-                        if(jsonObject.get("error") != null
-                                && jsonObject.get("code") != null) {
-                             throw new FileNotFoundException(jsonObject.getString("error"));
-                        } else {
-                            String fileUrl = jsonObject.getJSONObject("result").getString("url");
-                            System.out.println("File URL: " + fileUrl);
-                            if(fileUrl == null || fileUrl.isEmpty()) {
-                                throw new FileNotFoundException();
-                            }
-                            Representation entity = new ParseFileRepresentation(Config.PARSE_URL,
-                                    Config.PARSE_APP_ID,
-                                    Config.PARSE_REST_API_KEY,
-                                    fileUrl,
-                                    processMediaType(fileUrl));
-                            entity.setMediaType(processMediaType(completePath));
-                            if(!canAcceptGzip) {
-                                return entity;
-                            }
-                            encoded = new EncodeRepresentation(Encoding.GZIP, entity);
-                        }
-                    */
+                    encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
+                    return encoded;
+                    ////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
             }
         } catch (MalformedURLException e) {
@@ -347,7 +299,10 @@ public class GaeRootServerResource extends ServerResource {
     // TODO: Convert to cloud code
     private String getStoredSubdomain(String host){
         LOG.info("Get stored subdomain: " + host);
-        String result = null;
+        String result = cacheGet("domain:" + host + ":subdomain");
+        if(result != null) {
+            return result;
+        }
         try {
             HttpRequestFactory requestFactory =
                     HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
@@ -367,12 +322,13 @@ public class GaeRootServerResource extends ServerResource {
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
             String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-            System.out.println("Response: " + body);
+            LOG.info("Response: " + body);
             JSONObject jsonBody = JSON.parseObject(body);
             JSONArray array = jsonBody.getJSONArray("results");
             JSONObject resultItem = (JSONObject) array.iterator().next();
             JSONObject appPointer = resultItem.getJSONObject("appId");
             result = getApplicationName(appPointer);
+            cachePut("domain:" + host + ":subdomain", MEMCACHED_EXPIRY_ONE_HOUR, result);
         } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
@@ -402,7 +358,7 @@ public class GaeRootServerResource extends ServerResource {
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
             String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-            System.out.println("Get Application Name Response: " + body);
+            LOG.info("Get Application Name Response: " + body);
 
             JSONObject jsonBody = JSON.parseObject(body);
             JSONArray array = jsonBody.getJSONArray("results");
@@ -466,7 +422,7 @@ public class GaeRootServerResource extends ServerResource {
                     .getJSONArray("results");
 
             if(!resultsArray.isEmpty()){
-                System.out.println("Result: " + body);
+                LOG.info("Result: " + body);
                 return true;
             }
         } catch (Exception e) {
@@ -482,4 +438,80 @@ public class GaeRootServerResource extends ServerResource {
         pointer.put("objectId", objectId);
         return pointer;
     }
+
+    private String cacheGet(String key) {
+        try {
+            if(mc == null) {
+                ConnectionFactory factory = new ConnectionFactoryBuilder()
+                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                        .setOpTimeout(MEMCACHED_TIMEOUT)
+                        .build();
+                mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
+            }
+            Object value = mc.get(key);
+            if(value != null) {
+                LOG.info("=================================================================================");
+                LOG.info("KEY: " + key);
+                LOG.info("VALUE: " + value);
+                LOG.info("=================================================================================");
+                return String.valueOf(value);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            mc.shutdown();
+            mc = null;
+        } finally {
+            //mc.shutdown();
+        }
+        return null;
+    }
+
+    private String cachePut(String key, int expiration, String value) {
+        ConnectionFactory factory = null;
+        try {
+            if(mc == null) {
+                factory = new ConnectionFactoryBuilder()
+                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                        .setOpTimeout(MEMCACHED_TIMEOUT)
+                        .build();
+                mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
+            }
+            mc.set(key, expiration, value).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            mc.shutdown();
+            mc = null;
+        } finally {
+            //mc.shutdown();
+        }
+        return null;
+    }
+
+    private byte[] byteCacheGet(String key) {
+        try {
+            if(mc == null) {
+                ConnectionFactory factory = new ConnectionFactoryBuilder()
+                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                        .setOpTimeout(MEMCACHED_TIMEOUT)
+                        .build();
+                mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
+            }
+            Object value = mc.get(key);
+            if(value != null) {
+                LOG.info("=================================================================================");
+                LOG.info("KEY: " + key);
+                LOG.info("VALUE: " + value);
+                LOG.info("=================================================================================");
+                return (byte[]) value;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            mc.shutdown();
+            mc = null;
+        } finally {
+            //mc.shutdown();
+        }
+        return null;
+    }
+
 }

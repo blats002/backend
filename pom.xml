@@ -100,6 +100,26 @@
             <artifactId>jelastic-public-j2se</artifactId>
             <version>3.1</version>
         </dependency>
+        <dependency>
+            <groupId>spy</groupId>
+            <artifactId>spymemcached</artifactId>
+            <version>2.999.999-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud</artifactId>
+            <version>0.20.1-alpha</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-datastore</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.google.cloud</groupId>-->
+            <!--<artifactId>google-cloud-storage</artifactId>-->
+            <!--<version>1.0.1</version>-->
+        <!--</dependency>-->
     </dependencies>
     <profiles>
         <profile>
@@ -148,6 +168,7 @@
                             <email></email>
                             <password></password>
                             <environment></environment>
+                            <!--<environment>roller2</environment>-->
                             <!--<context>[specify the context if you need it]</context>-->
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>
@@ -237,6 +258,15 @@
         </profile>
     </profiles>
     <repositories>
+        <!--<repository>-->
+            <!--<id>spy</id>-->
+            <!--<name>Spy Repository</name>-->
+            <!--<layout>default</layout>-->
+            <!--<url>http://files.couchbase.com/maven2/</url>-->
+            <!--<snapshots>-->
+                <!--<enabled>false</enabled>-->
+            <!--</snapshots>-->
+        <!--</repository>-->
         <repository>
             <id>maven-db4o</id>
             <name>Db4o repository</name>
