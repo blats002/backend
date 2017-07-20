@@ -27,10 +27,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.mashape.unirest.http.Unirest;
-import net.spy.memcached.AddrUtil;
-import net.spy.memcached.ConnectionFactory;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.*;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -43,6 +40,7 @@ import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -69,6 +67,7 @@ public class GaeRootServerResource extends ServerResource {
     private static final String PRERENDER_URL = "***REMOVED***";
     private static final String HASH = "#";
     private static final String APP_ROOT_URI = "";
+    private static final String ESCAPED_FRAGMENT_FORMAT = "_escaped_fragment_";
     private static final String ESCAPED_FRAGMENT_FORMAT1 = "_escaped_fragment_=";
     private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
 
@@ -149,7 +148,7 @@ public class GaeRootServerResource extends ServerResource {
         LOG.info("Request Path: " + path);
 
         try {
-            String escapeQuery = getQueryValue("_escaped_fragment_");
+            String escapeQuery = getQueryValue(ESCAPED_FRAGMENT_FORMAT);
             Form queries = getQuery();
             if(escapeQuery != null && !escapeQuery.isEmpty()) {
                 String decodedFragment = URLDecoder.decode(escapeQuery, "UTF-8");
@@ -438,11 +437,7 @@ public class GaeRootServerResource extends ServerResource {
     private String cacheGet(String key) {
         try {
             if(mc == null) {
-                ConnectionFactory factory = new ConnectionFactoryBuilder()
-                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-                        .setOpTimeout(MEMCACHED_TIMEOUT)
-                        .build();
-                mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
+                mc = getMemcached();
             }
             Object value = mc.get(key);
             if(value != null) {
@@ -463,14 +458,9 @@ public class GaeRootServerResource extends ServerResource {
     }
 
     private String cachePut(String key, int expiration, String value) {
-        ConnectionFactory factory = null;
         try {
             if(mc == null) {
-                factory = new ConnectionFactoryBuilder()
-                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-                        .setOpTimeout(MEMCACHED_TIMEOUT)
-                        .build();
-                mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
+                mc = getMemcached();
             }
             mc.set(key, expiration, value).get();
         } catch (Exception e) {
@@ -486,11 +476,7 @@ public class GaeRootServerResource extends ServerResource {
     private byte[] byteCacheGet(String key) {
         try {
             if(mc == null) {
-                ConnectionFactory factory = new ConnectionFactoryBuilder()
-                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-                        .setOpTimeout(MEMCACHED_TIMEOUT)
-                        .build();
-                mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
+                mc = getMemcached();
             }
             Object value = mc.get(key);
             if(value != null) {
@@ -508,6 +494,15 @@ public class GaeRootServerResource extends ServerResource {
             //mc.shutdown();
         }
         return null;
+    }
+
+    private MemcachedClient getMemcached() throws IOException {
+        ConnectionFactory factory = new ConnectionFactoryBuilder()
+                .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                .setFailureMode(FailureMode.Redistribute)
+                .setOpTimeout(MEMCACHED_TIMEOUT)
+                .build();
+        return new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
     }
 
 }
