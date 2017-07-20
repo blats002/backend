@@ -14,6 +14,7 @@
 */
 package com.divroll.core.rest.resource;
 
+import com.divroll.core.rest.guice.SelfInjectingServerResource;
 import org.json.JSONObject;
 import org.restlet.Context;
 import org.restlet.data.ClientInfo;
@@ -37,7 +38,7 @@ import java.util.Properties;
  * @version 1.0
  * @since 1.0
  */
-public class GaeSystemInfoResource extends ServerResource {
+public class GaeSystemInfoResource extends BaseServerResource {
     @Get("json")
     public Representation represent(){
         if(!hasAdminRole()){

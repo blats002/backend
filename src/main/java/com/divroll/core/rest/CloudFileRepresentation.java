@@ -14,6 +14,7 @@
 */
 package com.divroll.core.rest;
 
+import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.CachingOutputStream;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ReadChannel;
@@ -21,10 +22,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import net.spy.memcached.AddrUtil;
-import net.spy.memcached.ConnectionFactory;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.MemcachedClient;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
@@ -36,7 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -45,26 +41,17 @@ import java.util.List;
  */
 public class CloudFileRepresentation extends OutputRepresentation {
 
-    final static Logger LOG
-            = LoggerFactory.getLogger(CloudFileRepresentation.class);
+    final static Logger LOG = LoggerFactory.getLogger(CloudFileRepresentation.class);
     private static final String PROJECT_ID = "873831973341";
     private static final String BUCKET = "divrolls";
 
     private String path;
+    private CacheService cacheService;
 
-    private MemcachedClient mc;
-    private List<String> connections;
-    private int memcachedTimout;
-    private int memcahcedExpiry;
-
-    public CloudFileRepresentation(String path, MediaType mediaType, MemcachedClient mc, int memcachedTimout, int memcachedExpiry, List<String> connections) {
+    public CloudFileRepresentation(String path, MediaType mediaType, CacheService cacheService) {
         super(mediaType);
         this.path = path;
-        this.mc = mc;
-        this.connections = connections;
-        this.memcachedTimout = memcachedTimout;
-        this.memcahcedExpiry = memcachedExpiry;
-
+        this.cacheService = cacheService;
     }
 
     @Override
@@ -89,7 +76,7 @@ public class CloudFileRepresentation extends OutputRepresentation {
             InputStream is = Channels.newInputStream(reader);
             flow(is, cachingOutputStream, buff);
             byte[] cached = cachingOutputStream.getCache();
-            byteCachePut(path, memcahcedExpiry, cached);
+            cacheService.put(path, cached);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,24 +94,4 @@ public class CloudFileRepresentation extends OutputRepresentation {
         }
     }
 
-    private void byteCachePut(String key, int expiration, byte[] value) {
-        LOG.info("Byte caching: " + key);
-        ConnectionFactory factory = null;
-        try {
-            if(mc == null) {
-                factory = new ConnectionFactoryBuilder()
-                        .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-                        .setOpTimeout(memcachedTimout)
-                        .build();
-                mc = new MemcachedClient(factory, AddrUtil.getAddresses(connections));
-            }
-            mc.set(key, expiration, value).get();
-        } catch (Exception e) {
-            e.printStackTrace();
-            mc.shutdown();
-            mc = null;
-        } finally {
-            //mc.shutdown();
-        }
-    }
 }

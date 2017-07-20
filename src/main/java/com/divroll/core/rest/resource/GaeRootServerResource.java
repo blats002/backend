@@ -18,16 +18,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.CloudFileRepresentation;
-import com.divroll.core.rest.Config;
-import com.divroll.core.rest.exception.FileNotFoundException;
+import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.RegexHelper;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.inject.Inject;
 import com.mashape.unirest.http.Unirest;
-import net.spy.memcached.*;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -35,17 +34,14 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
@@ -58,42 +54,23 @@ import java.util.Scanner;
  * @version 1.0
  * @since 1.0
  */
-public class GaeRootServerResource extends ServerResource {
+public class GaeRootServerResource extends BaseServerResource {
 
     final static Logger LOG
             = LoggerFactory.getLogger(GaeRootServerResource.class);
 
-    //private static final String PRERENDER_URL = "***REMOVED***";
-    private static final String PRERENDER_URL = "***REMOVED***";
     private static final String HASH = "#";
     private static final String APP_ROOT_URI = "";
     private static final String ESCAPED_FRAGMENT_FORMAT = "_escaped_fragment_";
     private static final String ESCAPED_FRAGMENT_FORMAT1 = "_escaped_fragment_=";
     private static final int ESCAPED_FRAGMENT_LENGTH1 = ESCAPED_FRAGMENT_FORMAT1.length();
-
-    // Roller-1
-    private static final String MEMCACHED_CONN = "127.0.0.1:11211";
-    private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
-
-    // Roller-2
-    /*
-    private static final String MEMCACHED_CONN = "127.0.0.1:11211";
-    private static final String MEMCACHED_CONN_2 = "127.0.0.1:11211";
-
-    private static final String MEMCACHED_CONN = "localhost:11211";
-    private static final String MEMCACHED_CONN_2 = "localhost:11211";
-    */
-
-    public static final int MEMCACHED_EXPIRY_ONE_HOUR = 60 * 60;
-    public static final int MEMCACHED_TIMEOUT = 60;
-    public static final int YEAR_IN_MINUTES = 365 * 24 * 60 * 60;
+    private static final int YEAR_IN_MINUTES = 365 * 24 * 60 * 60;
 
     static final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     static final JsonFactory JSON_FACTORY = new JacksonFactory();
 
     private String acceptEncodings;
     private String cacheKey;
-    private MemcachedClient mc;
 
     public static class ParseUrl extends GenericUrl {
         public ParseUrl(String encodedUrl) {
@@ -106,14 +83,6 @@ public class GaeRootServerResource extends ServerResource {
         super.doInit();
         Series<Header> series = (Series<Header>)getRequestAttributes().get("org.restlet.http.headers");
         acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
-        try {
-            ConnectionFactory factory = new ConnectionFactoryBuilder()
-                    .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-                    .build();
-            mc = new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         cacheKey = getQueryValue("cachekey");
     }
 
@@ -122,7 +91,7 @@ public class GaeRootServerResource extends ServerResource {
         EncodeRepresentation encoded = null;
         try {
             if(cacheKey != null && !cacheKey.isEmpty()) {
-                mc.delete(cacheKey);
+                cacheService.delete(cacheKey);
                 setStatus(Status.SUCCESS_OK);
                 encoded = new EncodeRepresentation(Encoding.GZIP, new StringRepresentation("OK"));
             } else {
@@ -152,7 +121,7 @@ public class GaeRootServerResource extends ServerResource {
             Form queries = getQuery();
             if(escapeQuery != null && !escapeQuery.isEmpty()) {
                 String decodedFragment = URLDecoder.decode(escapeQuery, "UTF-8");
-                com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(PRERENDER_URL)
+                com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPrerenderUrl())
                         .queryString("url", _completePath)
                         .queryString("_escaped_fragment_", decodedFragment)
                         .asString();
@@ -170,7 +139,7 @@ public class GaeRootServerResource extends ServerResource {
                 if(_completePath.endsWith("/")) {
                     _completePath = _completePath.substring(0, _completePath.length() - 1);
                 }
-                String getPath = PRERENDER_URL + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
+                String getPath = getPrerenderUrl() + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
                 LOG.info("GET Path=" + getPath);
                 com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPath)
                     .asString();
@@ -196,45 +165,41 @@ public class GaeRootServerResource extends ServerResource {
                 LOG.info("Application ID: " + subdomain);
                 if(subdomain == null || subdomain.isEmpty()){
                     subdomain = "404";
-                } else {
-                    p = p.replace("%20", " ");
-                    final String completePath = APP_ROOT_URI + p;
-
-                    LOG.info("Complete Path:            " + completePath);
-                    LOG.info("Host:                     " + host);
-                    LOG.info("Application ID/Subdomain: " + subdomain);
-
-                    //JSONObject postObject = new JSONObject();
-                    //postObject.put("path", p);
-                    //postObject.put("appId", subdomain);
-
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////
-                    // Main code that reads file from cache or Cloud Storage
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////
-                    String completeFilePath = subdomain + "/" + p;
-                    LOG.info("Complete File Path:       " + completeFilePath);
-                    byte[] cachedBytes = byteCacheGet(completeFilePath);
-                    Representation responseEntity = null;
-                    if(cachedBytes != null) {
-                        responseEntity = new ByteArrayRepresentation(cachedBytes);
-                        responseEntity.setMediaType(processMediaType(completePath));
-                    } else {
-                        responseEntity = new CloudFileRepresentation(
-                                completeFilePath,
-                                processMediaType(path),
-                                mc,
-                                MEMCACHED_TIMEOUT,
-                                MEMCACHED_EXPIRY_ONE_HOUR,
-                                Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2));
-                        responseEntity.setMediaType(processMediaType(completePath));
-                    }
-                    if(!canAcceptGzip) {
-                        return responseEntity;
-                    }
-                    encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
-                    return encoded;
-                    ////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
+                p = p.replace("%20", " ");
+                final String completePath = APP_ROOT_URI + p;
+
+                LOG.info("Complete Path:            " + completePath);
+                LOG.info("Host:                     " + host);
+                LOG.info("Application ID/Subdomain: " + subdomain);
+
+                //JSONObject postObject = new JSONObject();
+                //postObject.put("path", p);
+                //postObject.put("appId", subdomain);
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                // Main code that reads file from cache or Cloud Storage
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                String completeFilePath = subdomain + "/" + p;
+                LOG.info("Complete File Path:       " + completeFilePath);
+                byte[] cachedBytes = cacheService.get(completeFilePath);
+                Representation responseEntity = null;
+                if(cachedBytes != null) {
+                    responseEntity = new ByteArrayRepresentation(cachedBytes);
+                    responseEntity.setMediaType(processMediaType(completePath));
+                } else {
+                    responseEntity = new CloudFileRepresentation(
+                            completeFilePath,
+                            processMediaType(path),
+                            cacheService);
+                    responseEntity.setMediaType(processMediaType(completePath));
+                }
+                if(!canAcceptGzip) {
+                    return responseEntity;
+                }
+                encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
+                return encoded;
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         } catch (MalformedURLException | UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -293,7 +258,7 @@ public class GaeRootServerResource extends ServerResource {
     // TODO: Convert to cloud code
     private String getStoredSubdomain(String host){
         LOG.info("Get stored subdomain: " + host);
-        String result = cacheGet("domain:" + host + ":subdomain");
+        String result = cacheService.getString("domain:" + host + ":subdomain");
         if(result != null) {
             return result;
         }
@@ -307,11 +272,11 @@ public class GaeRootServerResource extends ServerResource {
                     });
             JSONObject where = new JSONObject();
             where.put("name", host);
-            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(Config.PARSE_URL + "/classes/Domain");
+            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(getParseServerUrl() + "/classes/Domain");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", Config.PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", getParseAppId());
+            request.getHeaders().set("X-Parse-REST-API-Key", getParseRestAPIkey());
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
@@ -322,7 +287,7 @@ public class GaeRootServerResource extends ServerResource {
             JSONObject resultItem = (JSONObject) array.iterator().next();
             JSONObject appPointer = resultItem.getJSONObject("appId");
             result = getApplicationName(appPointer);
-            cachePut("domain:" + host + ":subdomain", MEMCACHED_EXPIRY_ONE_HOUR, result);
+            cacheService.putString("domain:" + host + ":subdomain", result);
         } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
@@ -343,11 +308,11 @@ public class GaeRootServerResource extends ServerResource {
                     });
             JSONObject where = new JSONObject();
             where.put("objectId", objectId);
-            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(Config.PARSE_URL + "/classes/Application");
+            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(getParseServerUrl() + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", Config.PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", getParseAppId());
+            request.getHeaders().set("X-Parse-REST-API-Key", getParseRestAPIkey());
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
             com.google.api.client.http.HttpResponse response = request.execute();
@@ -400,11 +365,11 @@ public class GaeRootServerResource extends ServerResource {
                             request.setParser(new JsonObjectParser(JSON_FACTORY));
                         }
                     });
-            ParseUrl url = new ParseUrl(Config.PARSE_URL + "/classes/Application");
+            ParseUrl url = new ParseUrl(getParseServerUrl() + "/classes/Application");
             url.put("where", where.toJSONString());
             HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", Config.PARSE_APP_ID);
-            request.getHeaders().set("X-Parse-REST-API-Key", Config.PARSE_REST_API_KEY);
+            request.getHeaders().set("X-Parse-Application-Id", getParseAppId());
+            request.getHeaders().set("X-Parse-REST-API-Key", getParseRestAPIkey());
             request.getHeaders().set("X-Parse-Revocable-Session", "1");
             request.setRequestMethod("GET");
 
@@ -434,75 +399,5 @@ public class GaeRootServerResource extends ServerResource {
         return pointer;
     }
 
-    private String cacheGet(String key) {
-        try {
-            if(mc == null) {
-                mc = getMemcached();
-            }
-            Object value = mc.get(key);
-            if(value != null) {
-                LOG.info("=================================================================================");
-                LOG.info("KEY   : " + key);
-                LOG.info("VALUE : " + value);
-                LOG.info("=================================================================================");
-                return String.valueOf(value);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            mc.shutdown();
-            mc = null;
-        } finally {
-            //mc.shutdown();
-        }
-        return null;
-    }
-
-    private String cachePut(String key, int expiration, String value) {
-        try {
-            if(mc == null) {
-                mc = getMemcached();
-            }
-            mc.set(key, expiration, value).get();
-        } catch (Exception e) {
-            e.printStackTrace();
-            mc.shutdown();
-            mc = null;
-        } finally {
-            //mc.shutdown();
-        }
-        return null;
-    }
-
-    private byte[] byteCacheGet(String key) {
-        try {
-            if(mc == null) {
-                mc = getMemcached();
-            }
-            Object value = mc.get(key);
-            if(value != null) {
-                LOG.info("=================================================================================");
-                LOG.info("KEY   : " + key);
-                LOG.info("VALUE : " + value);
-                LOG.info("=================================================================================");
-                return (byte[]) value;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            mc.shutdown();
-            mc = null;
-        } finally {
-            //mc.shutdown();
-        }
-        return null;
-    }
-
-    private MemcachedClient getMemcached() throws IOException {
-        ConnectionFactory factory = new ConnectionFactoryBuilder()
-                .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-                .setFailureMode(FailureMode.Redistribute)
-                .setOpTimeout(MEMCACHED_TIMEOUT)
-                .build();
-        return new MemcachedClient(factory, AddrUtil.getAddresses(Arrays.asList(MEMCACHED_CONN, MEMCACHED_CONN_2)));
-    }
 
 }

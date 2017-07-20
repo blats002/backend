@@ -12,22 +12,22 @@
 * Divroll and must not be redistributed in any form.
 *
 */
-package com.divroll.core.rest;
+package com.divroll.core.rest.service;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 1.0
  * @since 1.0
  */
-public class Config {
-    public static final String PARSE_REST_API_KEY = "***REMOVED***";
-    public static final String PARSE_APP_ID = "";
-    public static final String PARSE_URL = "***REMOVED***";
-    public static final String PARSE_PUBLIC_URL = "***REMOVED***";
-
-    /*
-    public static final String PARSE_URL = "***REMOVED***";
-    public static final String PARSE_URL = "http://localhost:1337/parse";
-    */
-
+public interface CacheService {
+    String getString(String key);
+    void putString(String key, int expiration, String value);
+    void putString(String key, String value);
+    byte[] get(String key);
+    void put(String key, int expiration, byte[] value);
+    void put(String key, byte[] value);
+    void delete(String key);
+    void setAddress(List<String> address);
 }
