@@ -77,6 +77,7 @@ public class CloudFileRepresentation extends OutputRepresentation {
             flow(is, cachingOutputStream, buff);
             byte[] cached = cachingOutputStream.getCache();
             cacheService.put(path, cached);
+            cachingOutputStream.close();
 
         } catch (Exception e) {
             e.printStackTrace();

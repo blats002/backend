@@ -16,6 +16,7 @@ package com.divroll.core.rest.guice;
 
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.service.MemcachedCacheService;
+import com.divroll.core.rest.service.RedisCacheService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
@@ -49,7 +50,7 @@ public class GuiceConfigModule extends AbstractModule {
         // Suppress Guice warning when on GAE
         // see https://code.google.com/p/google-guice/issues/detail?id=488
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
-        bind(CacheService.class).to(MemcachedCacheService.class).in(Scopes.SINGLETON);
+        bind(CacheService.class).to(RedisCacheService.class).in(Scopes.SINGLETON);
         Names.bindProperties(binder(), readProperties());
     }
 

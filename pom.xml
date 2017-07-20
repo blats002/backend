@@ -30,6 +30,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-servlet</artifactId>
+            <version>3.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.restlet.jse</groupId>
             <artifactId>org.restlet</artifactId>
             <version>${restletVersion}</version>
@@ -99,6 +109,11 @@
             <groupId>com.jelastic</groupId>
             <artifactId>jelastic-public-j2se</artifactId>
             <version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>5.0.0.M2</version>
         </dependency>
         <dependency>
             <groupId>spy</groupId>

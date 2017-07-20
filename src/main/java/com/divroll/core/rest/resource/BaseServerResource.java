@@ -82,12 +82,25 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String memcachedAddressDev;
 
     @Inject
+    @Named("redis.connection.dev")
+    protected String redisConnectionDev;
+
+    @Inject
+    @Named("redis.connection")
+    protected String redisConnection;
+
+    @Inject
     protected CacheService cacheService;
 
     @Override
     protected void doInit() {
         super.doInit();
-        cacheService.setAddress(getMemcachedAddress());
+        //cacheService.setAddress(getMemcachedAddress());
+        cacheService.setAddress(Arrays.asList(getRedisConnection()));
+    }
+
+    public String getRedisConnection() {
+        return isDevmode() ? redisConnectionDev : redisConnection;
     }
 
     public List<String> getMemcachedAddress() {
