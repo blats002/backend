@@ -46,7 +46,8 @@ public class WebsiteUploadServerResource extends BaseServerResource
 
     private static final java.util.logging.Logger LOG
             = java.util.logging.Logger.getLogger(WebsiteUploadServerResource.class.getName());
-
+    private static final String DIVROLL_URL = "http://10.88.17.14";
+//    private static final String DIVROLL_URL = "https://divroll.com";
     private String appObjectId = null;
     private Integer MAX_SIZE = 100000000; // 100MB
 
@@ -540,6 +541,17 @@ public class WebsiteUploadServerResource extends BaseServerResource
 
     }
 
+    private static void deleteCache(String subdomain, String path) {
+        try {
+            String url = DIVROLL_URL + "?cachekey=" + subdomain + "/" + path;
+            LOG.info("Remove cache: " + url);
+            String response = Unirest.delete(url).asString().getBody();
+            LOG.info("Response: " + response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static int writeFileToGoogleCloud(String sessionToken, byte[] fileBytes, String fileName, String path, String subdomain, String userId) {
         int status = 500;
         try {
@@ -590,6 +602,8 @@ public class WebsiteUploadServerResource extends BaseServerResource
             status = 200;
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            deleteCache(subdomain, path);
         }
         return status;
     }
