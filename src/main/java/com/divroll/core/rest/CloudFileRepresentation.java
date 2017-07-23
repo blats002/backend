@@ -27,10 +27,7 @@ import org.restlet.representation.OutputRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 
@@ -70,15 +67,21 @@ public class CloudFileRepresentation extends OutputRepresentation {
 
             BlobId blobId = BlobId.of(BUCKET, path);
             Blob blob = storage.get(blobId);
-            ReadChannel reader = blob.reader();
-            byte[] buff = new byte[64*1024];
-            final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
-            InputStream is = Channels.newInputStream(reader);
-            flow(is, cachingOutputStream, buff);
-            byte[] cached = cachingOutputStream.getCache();
-            cacheService.put(path, cached);
-            cachingOutputStream.close();
-
+            if(blob != null && blob.exists()) {
+                ReadChannel reader = blob.reader();
+                byte[] buff = new byte[64*1024];
+                final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
+                InputStream is = Channels.newInputStream(reader);
+                flow(is, cachingOutputStream, buff);
+                byte[] cached = cachingOutputStream.getCache();
+                cacheService.put(path, cached);
+                cachingOutputStream.close();
+            } else {
+                throw new FileNotFoundException(path);
+            }
+        } catch (FileNotFoundException e) {
+            outputStream.close();
+            throw new FileNotFoundException(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             outputStream.close();

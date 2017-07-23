@@ -17,6 +17,8 @@ package com.divroll.core.rest.guice;
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.service.MemcachedCacheService;
 import com.divroll.core.rest.service.RedisCacheService;
+import com.divroll.core.rest.util.StringUtil;
+import com.google.common.io.ByteStreams;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
@@ -52,6 +54,7 @@ public class GuiceConfigModule extends AbstractModule {
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
         bind(CacheService.class).to(RedisCacheService.class).in(Scopes.SINGLETON);
         Names.bindProperties(binder(), readProperties());
+
     }
 
     protected Properties readProperties(){

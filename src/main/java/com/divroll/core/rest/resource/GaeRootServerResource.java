@@ -20,6 +20,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.divroll.core.rest.CloudFileRepresentation;
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.RegexHelper;
+import com.divroll.core.rest.util.StringUtil;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -38,6 +39,8 @@ import org.restlet.util.Series;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -164,7 +167,15 @@ public class GaeRootServerResource extends BaseServerResource {
                 String subdomain = parseSubdomain(host);
                 LOG.info("Application ID: " + subdomain);
                 if(subdomain == null || subdomain.isEmpty()){
-                    subdomain = "404";
+                    //subdomain = "404";
+                    Representation responseEntity = new StringRepresentation(read404template());
+                    responseEntity.setMediaType(MediaType.TEXT_HTML);
+                    setStatus(Status.SUCCESS_OK);
+                    if(!canAcceptGzip) {
+                        return responseEntity;
+                    }
+                    encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
+                    return encoded;
                 }
                 p = p.replace("%20", " ");
                 final String completePath = APP_ROOT_URI + p;
@@ -206,7 +217,11 @@ public class GaeRootServerResource extends BaseServerResource {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            if(e instanceof FileNotFoundException) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            } else {
+                setStatus(Status.SERVER_ERROR_INTERNAL);
+            }
         }
         /*
         GWT Headers
@@ -284,10 +299,12 @@ public class GaeRootServerResource extends BaseServerResource {
             LOG.info("Response: " + body);
             JSONObject jsonBody = JSON.parseObject(body);
             JSONArray array = jsonBody.getJSONArray("results");
-            JSONObject resultItem = (JSONObject) array.iterator().next();
-            JSONObject appPointer = resultItem.getJSONObject("appId");
-            result = getApplicationName(appPointer);
-            cacheService.putString("domain:" + host + ":subdomain", result);
+            if(!array.isEmpty()) {
+                JSONObject resultItem = (JSONObject) array.iterator().next();
+                JSONObject appPointer = resultItem.getJSONObject("appId");
+                result = getApplicationName(appPointer);
+                cacheService.putString("domain:" + host + ":subdomain", result);
+            }
         } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
@@ -399,5 +416,9 @@ public class GaeRootServerResource extends BaseServerResource {
         return pointer;
     }
 
+    protected String read404template(){
+        InputStream is = this.getClass().getResourceAsStream("/error404.html");
+        return StringUtil.toString(is);
+    }
 
 }
