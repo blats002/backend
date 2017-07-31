@@ -153,6 +153,7 @@
                             <include>**/*.java</include>
                             <include>**/*.properties</include>
                             <include>**/*.xml</include>
+                            <include>**/*.html</include>
                         </includes>
                     </resource>
                 </resources>
@@ -179,11 +180,7 @@
                         <artifactId>jelastic-maven-plugin</artifactId>
                         <version>1.7</version>
                         <configuration>
-                            <api_hoster></api_hoster>
-                            <email></email>
-                            <password></password>
-                            <environment></environment>
-                            <!--<environment>roller2</environment>-->
+                            <!--<environment>roller</environment>-->
                             <!--<context>[specify the context if you need it]</context>-->
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>

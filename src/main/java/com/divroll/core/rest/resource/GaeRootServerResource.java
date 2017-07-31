@@ -164,7 +164,13 @@ public class GaeRootServerResource extends BaseServerResource {
                 }else if(p.startsWith("/")){
                     p = p.substring(1);
                 }
-                String subdomain = parseSubdomain(host);
+                String subdomain = null;
+                if(host.equals("divroll.com")) {
+                    subdomain = "www";
+                } else {
+                    subdomain = parseSubdomain(host);
+                }
+
                 LOG.info("Application ID: " + subdomain);
                 if(subdomain == null || subdomain.isEmpty()){
                     //subdomain = "404";
