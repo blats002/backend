@@ -16,6 +16,7 @@ package com.divroll.core.rest;
 
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.CachingOutputStream;
+import com.divroll.core.rest.util.StringUtil;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.Blob;
@@ -39,8 +40,8 @@ import java.nio.charset.StandardCharsets;
 public class CloudFileRepresentation extends OutputRepresentation {
 
     final static Logger LOG = LoggerFactory.getLogger(CloudFileRepresentation.class);
-    private static final String PROJECT_ID = "873831973341";
-    private static final String BUCKET = "divrolls";
+    private static final String PROJECT_ID = "sonorous-cacao-192200";
+    private static final String BUCKET = "appsbucket";
 
     private String path;
     private CacheService cacheService;
@@ -70,18 +71,26 @@ public class CloudFileRepresentation extends OutputRepresentation {
             if(blob != null && blob.exists()) {
                 ReadChannel reader = blob.reader();
                 byte[] buff = new byte[64*1024];
-                final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
+//                final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
                 InputStream is = Channels.newInputStream(reader);
-                flow(is, cachingOutputStream, buff);
-                byte[] cached = cachingOutputStream.getCache();
-                cacheService.put(path, cached);
-                cachingOutputStream.close();
+//                flow(is, cachingOutputStream, buff);
+//                byte[] cached = cachingOutputStream.getCache();
+//                cacheService.put(path, cached);
+//                cachingOutputStream.close();
+                flow(is, outputStream, buff);
+                //outputStream.close();
             } else {
                 throw new FileNotFoundException(path);
             }
         } catch (FileNotFoundException e) {
-            outputStream.close();
-            throw new FileNotFoundException(e.getMessage());
+            if(path.endsWith("index.html") || path.endsWith("index.htm")) {
+                byte[] array = StringUtil.toByteArray(read404template());
+                outputStream.write(array);
+                outputStream.close();
+            } else {
+                outputStream.close();
+                throw new FileNotFoundException(e.getMessage());
+            }
         } catch (Exception e) {
             e.printStackTrace();
             outputStream.close();
@@ -96,6 +105,11 @@ public class CloudFileRepresentation extends OutputRepresentation {
         while ( (numRead = is.read(buf) ) >= 0) {
             os.write(buf, 0, numRead);
         }
+    }
+
+    protected String read404template(){
+        InputStream is = this.getClass().getResourceAsStream("/error404.html");
+        return StringUtil.toString(is);
     }
 
 }
