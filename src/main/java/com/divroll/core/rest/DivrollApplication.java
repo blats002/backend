@@ -42,6 +42,7 @@ public class DivrollApplication extends Application {
   public Restlet createInboundRoot() {
     Guice.createInjector(new GuiceConfigModule(this.getContext()),
             new SelfInjectingServerResourceModule());
+    getRangeService().setEnabled(false);
     Router router = new Router(getContext());
     router.attachDefault(GaeRootServerResource.class);
     return router;

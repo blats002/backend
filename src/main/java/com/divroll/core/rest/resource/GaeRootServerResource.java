@@ -270,8 +270,12 @@ public class GaeRootServerResource extends BaseServerResource {
             type = MediaType.IMAGE_JPEG;
         } else if (path.endsWith("png")){
             type = MediaType.IMAGE_PNG;
+        } else if (path.endsWith("svg")) {
+            type = MediaType.IMAGE_SVG;
         } else if (path.endsWith("ico")){
             type = MediaType.IMAGE_ICON;
+        } else if (path.endsWith("ogg")) {
+            type = MediaType.valueOf("audio/ogg");
         }
         return type;
     }
