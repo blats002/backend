@@ -33,7 +33,7 @@
 * Divroll and must not be redistributed in any form.
 *
 */
-package com..bucket;
+package com.divroll.bucket;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

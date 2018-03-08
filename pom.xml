@@ -10,10 +10,10 @@ xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLS
     <version>14</version>
 </parent>
 
-<groupId>com.</groupId>
+<groupId>com.divroll</groupId>
 <artifactId>parent</artifactId>
 <version>0-SNAPSHOT</version>
-<name>Txtstreet::Parent</name>
+<name>Divroll::Parent</name>
 <packaging>pom</packaging>
 
   <prerequisites>
@@ -203,6 +203,7 @@ xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLS
 <modules>
     <module>rest</module>
     <module>customcode-registrations</module>
+    <module>customcode-sdk-java-example</module>
 </modules>
 
 </project>

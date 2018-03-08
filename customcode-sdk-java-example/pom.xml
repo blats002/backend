@@ -3,22 +3,28 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.divroll.puppet</groupId>
-  <artifactId>customcode-registrations</artifactId>
+  <parent>
+      <groupId>com.divroll.hiphop</groupId>
+      <artifactId>parent</artifactId>
+      <version>0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>com.divroll.hiphop</groupId>
+  <artifactId>customcode-sdk-java-example</artifactId>
   <version>0-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>customcode-registrations</name>
+  <name>customcode-sdk-java-example</name>
   <url>http://maven.apache.org</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <customcode.version>1-SNAPSHOT</customcode.version>
+    <customcode.version>0-SNAPSHOT</customcode.version>
   </properties>
     
   <dependencies>
     <dependency>
-        <groupId>com.apiblast</groupId>
+        <groupId>com.divroll.hiphop</groupId>
         <artifactId>customcode-sdk</artifactId>
         <version>${customcode.version}</version>
     </dependency>
@@ -48,15 +54,33 @@
           <artifactId>google-http-client-jackson2</artifactId>
           <version>1.21.0</version>
       </dependency>
+
       <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-          <version>4.5.3</version>
+          <groupId>com.alibaba</groupId>
+          <artifactId>fastjson</artifactId>
+          <version>1.2.8</version>
       </dependency>
       <dependency>
           <groupId>com.mashape.unirest</groupId>
           <artifactId>unirest-java</artifactId>
           <version>1.4.9</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.3</version>
+      </dependency>
+
+
+      <dependency>
+          <groupId>com.kinvey</groupId>
+          <artifactId>java-api-core</artifactId>
+          <version>2.10.5</version>
+      </dependency>
+      <dependency>
+          <groupId>com.kinvey</groupId>
+          <artifactId>java-lib</artifactId>
+          <version>2.10.5</version>
       </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -74,38 +98,6 @@
           <version>4.12</version>
           <scope>test</scope>
       </dependency>
-
-      <dependency>
-          <groupId>com.alibaba</groupId>
-          <artifactId>fastjson</artifactId>
-          <version>1.2.31</version>
-      </dependency>
-      <dependency>
-          <groupId>com.google.code.gson</groupId>
-          <artifactId>gson</artifactId>
-          <version>2.8.0</version>
-      </dependency>
-      <dependency>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-          <version>2.8.7</version>
-      </dependency>
-      <dependency>
-          <groupId>net.nextpulse</groupId>
-          <artifactId>postmarkapp</artifactId>
-          <version>1.0-SNAPSHOT</version>
-          <exclusions>
-              <exclusion>
-                  <groupId>com.sun.jersey</groupId>
-                  <artifactId>jersey-client</artifactId>
-              </exclusion>
-              <exclusion>
-                  <groupId>com.sun.jersey.contribs</groupId>
-                  <artifactId>jersey-multipart</artifactId>
-              </exclusion>
-          </exclusions>
-      </dependency>
-
   </dependencies>
     
   <build>
@@ -116,8 +108,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.3.2</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
       <plugin>
@@ -133,7 +125,7 @@
             <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.apiblast.customcode.example.MyJarEntryObject</mainClass>
+                  <mainClass>com.divroll.hiphop.customcode.example.MyJarEntryObject</mainClass>
                 </transformer>
               </transformers>
               <createDependencyReducedPom>false</createDependencyReducedPom>

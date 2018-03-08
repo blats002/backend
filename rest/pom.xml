@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
-		<groupId>com.</groupId>
+		<groupId>com.divroll</groupId>
 		<artifactId>parent</artifactId>
 		<version>0-SNAPSHOT</version>
 	</parent>	 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com..bucket</groupId>
+    <groupId>com.divroll.bucket</groupId>
     <artifactId>puppet</artifactId>
     <packaging>war</packaging>
     <version>1.0</version>
-    <name>Txtsteet::Puppet</name>
+    <name>Divroll::Puppet</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
@@ -109,7 +109,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>22.0</version>
+            <version>${guava.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.http-client</groupId>
@@ -166,17 +166,17 @@
         <dependency>
             <groupId>it.zero11</groupId>
             <artifactId>acme-client</artifactId>
-            <version>0.1.2</version>
+            <version>DIVROLL-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>2.0.1</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
             <version>3.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>2.18</version>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>
@@ -206,7 +206,7 @@
         <!--</dependency>-->
         <!-- Custom Codes -->
         <dependency>
-            <groupId>com..puppet</groupId>
+            <groupId>com.divroll.puppet</groupId>
             <artifactId>customcode-registrations</artifactId>
             <version>0-SNAPSHOT</version>
         </dependency>
@@ -252,12 +252,12 @@
                     <plugin>
                         <groupId>com.jelastic</groupId>
                         <artifactId>jelastic-maven-plugin</artifactId>
-                        <version>1.7</version>
+                        <version>1.8.2</version>
                         <configuration>
-                            <api_hoster></api_hoster>
-                            <email></email>
-                            <password></password>
-                            <environment></environment>
+                            <api_hoster>app.divroll.space</api_hoster>
+                            <email>webmaster@divroll.com</email>
+                            <password>2bESNZpw04</password>
+                            <environment>puppet</environment>
                             <!--<context>[specify the context if you need it]</context>-->
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>
@@ -350,22 +350,22 @@
         <repository>
             <id>oss-jfrog-artifactory-snapshots</id>
             <name>oss-jfrog-artifactory-snapshots</name>
-            <url>https://crossorigin.divroll.space/https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+            <url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
         </repository>
         <repository>
             <id>maven-restlet</id>
             <name>Public online Restlet repository</name>
-            <url>https://crossorigin.divroll.space/http://maven.restlet.com</url>
+            <url>http://maven.restlet.com</url>
         </repository>
         <!-- Needed by ApiSpark due to RAML dependency-->
         <repository>
             <id>mulesoft-releases</id>
             <name>MuleSoft Releases Repository</name>
-            <url>https://crossorigin.divroll.space/https://repository-master.mulesoft.org/releases/</url>
+            <url>https://repository-master.mulesoft.org/releases/</url>
         </repository>
         <repository>
             <id>atlassian-public</id>
-            <url>https://crossorigin.divroll.space/https://maven.atlassian.com/repository/public</url>
+            <url>https://maven.atlassian.com/repository/public</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>never</updatePolicy>
