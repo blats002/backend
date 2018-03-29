@@ -29,7 +29,7 @@ public class BaseServerResource extends ServerResource
     private static final Logger LOG
             = Logger.getLogger(BaseServerResource.class.getName());
 
-    public static final String PROJECT_ID = "873831973341";
+    public static final String PROJECT_ID = "sonorous-cacao-192200";
 
     protected static final long MEGABYTE_BYTE_MULTIPLIER = 1000000;
     protected static final String FREE_STORAGE_QUOTA_CONFIG  = "FREE_STORAGE_QUOTA";

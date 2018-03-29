@@ -27,7 +27,7 @@ public class HttpChallengeListener implements AcmeChallengeListener, BaseService
     private static final Logger LOG
             = Logger.getLogger(HttpChallengeListener.class.getName());
 
-    private static final String BUCKET_NAME = "divrolls";
+    private static final String BUCKET_NAME = "appsbucket";
     private final String host;
     //private final String appId;
     private final String subdomain;

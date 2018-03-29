@@ -46,7 +46,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
 
     private static final java.util.logging.Logger LOG
             = java.util.logging.Logger.getLogger(WebsiteUploadServerResource.class.getName());
-    private static final String DIVROLL_URL = "http://10.88.17.14";
+    private static final String DIVROLL_URL = "http://10.88.17.85";
 //    private static final String DIVROLL_URL = "https://divroll.com";
     private String appObjectId = null;
     private Integer MAX_SIZE = 100000000; // 100MB
@@ -560,7 +560,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     .setProjectId(PROJECT_ID)
                     .setCredentials(GoogleCredentials.fromStream(stream)).build();
             Storage storage = options.getService();
-            String bucketName = "divrolls";
+            String bucketName = "appsbucket";
 
             List<Acl> acls = new ArrayList<>();
             acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));

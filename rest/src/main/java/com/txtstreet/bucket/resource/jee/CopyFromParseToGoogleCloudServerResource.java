@@ -117,7 +117,7 @@ public class CopyFromParseToGoogleCloudServerResource extends BaseServerResource
                                         JSONObject appPointerGetResponseObj = JSONObject.parseObject(appPointerGetResponse);
                                         LOG.info("Body: " + appPointerGetResponseObj.toJSONString());
                                         String subdomain = appPointerGetResponseObj.getString("appId");
-                                        String bucketName = "divrolls";
+                                        String bucketName = "appsbucket";
 
                                         List<Acl> acls = new ArrayList<>();
                                         acls.add(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER));

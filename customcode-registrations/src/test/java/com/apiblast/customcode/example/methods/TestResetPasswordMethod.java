@@ -43,7 +43,7 @@ public class TestResetPasswordMethod extends TestCase {
 		Map<String, String> params = new LinkedHashMap<String, String>();
 
 		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("token", "62307c85080f9e6e20a3e0073601382b761f94d9aa764e6326a4a45b3857892a");
+		jsonObject.put("token", "d4d0b7f0-8f70-4673-9e07-aff6e53a7ece");
 		jsonObject.put("email", "***REMOVED***");
 		jsonObject.put("password", "new_password");
 		String body = jsonObject.toJSONString();

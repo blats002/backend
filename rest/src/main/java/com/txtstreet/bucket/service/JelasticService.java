@@ -103,7 +103,7 @@ public class JelasticService {
 
             String nodeType = "nginx";
 
-            NodeSSHResponses responses = fileService.write(session, path, body, nodeType, "cp", false, Configuration.JELASTIC_NGINX_NODE_ID);
+            NodeSSHResponses responses = fileService.write(session, path, body, nodeType, "bl", false, Configuration.JELASTIC_NGINX_NODE_ID);
 
             System.out.println("Error: " + responses.getError());
             System.out.println("Response: " + responses.getResult());

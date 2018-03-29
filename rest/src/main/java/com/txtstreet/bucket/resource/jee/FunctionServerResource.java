@@ -1,9 +1,6 @@
 package com..bucket.resource.jee;
 
-import com.apiblast.customcode.example.methods.CreateResetPasswordLinkMethod;
-import com.apiblast.customcode.example.methods.CreateVerifyEmailLinkMethod;
-import com.apiblast.customcode.example.methods.ResetPasswordMethod;
-import com.apiblast.customcode.example.methods.VerifyEmailMethod;
+import com.apiblast.customcode.example.methods.*;
 import com.apiblast.sdkapi.MethodVerb;
 import com.apiblast.sdkapi.customcode.CustomCodeMethod;
 import com.apiblast.sdkapi.rest.CustomCodeRequest;
@@ -11,7 +8,6 @@ import com.apiblast.sdkapi.rest.CustomCodeResponse;
 import com..bucket.resource.FunctionResource;
 import org.restlet.data.Form;
 import org.restlet.data.Parameter;
-import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ResourceException;
 
@@ -28,6 +24,9 @@ public class FunctionServerResource extends BaseServerResource
 
     @Override
     protected void doInit() throws ResourceException {
+        //SignupMethod signupMethod = new SignupMethod();
+        //LoginMethod loginMethod = new LoginMethod();
+        //ApplicationsMethod applicationMethod = new ApplicationsMethod();
         ResetPasswordMethod resetPasswordMethod = new ResetPasswordMethod();
         CreateResetPasswordLinkMethod createResetPasswordLinkMethod = new CreateResetPasswordLinkMethod();
         CreateVerifyEmailLinkMethod createVerifyEmailLinkMethod = new CreateVerifyEmailLinkMethod();
@@ -36,6 +35,9 @@ public class FunctionServerResource extends BaseServerResource
         methods.put(createResetPasswordLinkMethod.getMethodName(), createResetPasswordLinkMethod);
         methods.put(createVerifyEmailLinkMethod.getMethodName(), createVerifyEmailLinkMethod);
         methods.put(verifyEmailMethod.getMethodName(), verifyEmailMethod);
+        //methods.put(signupMethod.getMethodName(), signupMethod);
+        //methods.put(loginMethod.getMethodName(), loginMethod);
+        //methods.put(applicationMethod.getMethodName(), applicationMethod);
         Form parameters = getQuery();
         Iterator<Parameter> it = parameters.iterator();
         while(it.hasNext()){
@@ -83,18 +85,102 @@ public class FunctionServerResource extends BaseServerResource
 
     @Override
     public Representation get(Representation entity) {
-        return null;
-    }
+        try {
+            CustomCodeMethod customCodeMethod = methods.get(functioName);
+            if(customCodeMethod != null) {
+                CustomCodeResponse response = customCodeMethod.execute(processedRequest());
+                int status = response.getResponseStatus();
+                Map<String,?> map = response.getResponseMap();
+                if(status == 200) {
+                    if(map.get("reasonPhrase") != null) {
+                        String reasonPhrase = (String) map.get("reasonPhrase");
+                        return success(status, reasonPhrase);
+                    }
+                    return success();
+                } else if(status == 400) {
+                    if(map.get("reasonPhrase") != null) {
+                        String reasonPhrase = (String) map.get("reasonPhrase");
+                        return badRequest(reasonPhrase);
+                    }
+                    return badRequest();
+                } else if(status == 500) {
+                    return internalError();
+                } else {
+                    return internalError();
+                }
+            } else {
+                return notFound();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalError();
+        }    }
 
     @Override
     public Representation put(Representation entity) {
-        return null;
-    }
+        try {
+            CustomCodeMethod customCodeMethod = methods.get(functioName);
+            if(customCodeMethod != null) {
+                CustomCodeResponse response = customCodeMethod.execute(processedRequest());
+                int status = response.getResponseStatus();
+                Map<String,?> map = response.getResponseMap();
+                if(status == 200) {
+                    if(map.get("reasonPhrase") != null) {
+                        String reasonPhrase = (String) map.get("reasonPhrase");
+                        return success(status, reasonPhrase);
+                    }
+                    return success();
+                } else if(status == 400) {
+                    if(map.get("reasonPhrase") != null) {
+                        String reasonPhrase = (String) map.get("reasonPhrase");
+                        return badRequest(reasonPhrase);
+                    }
+                    return badRequest();
+                } else if(status == 500) {
+                    return internalError();
+                } else {
+                    return internalError();
+                }
+            } else {
+                return notFound();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalError();
+        }    }
 
     @Override
     public Representation delete(Representation entity) {
-        return null;
-    }
+        try {
+            CustomCodeMethod customCodeMethod = methods.get(functioName);
+            if(customCodeMethod != null) {
+                CustomCodeResponse response = customCodeMethod.execute(processedRequest());
+                int status = response.getResponseStatus();
+                Map<String,?> map = response.getResponseMap();
+                if(status == 200) {
+                    if(map.get("reasonPhrase") != null) {
+                        String reasonPhrase = (String) map.get("reasonPhrase");
+                        return success(status, reasonPhrase);
+                    }
+                    return success();
+                } else if(status == 400) {
+                    if(map.get("reasonPhrase") != null) {
+                        String reasonPhrase = (String) map.get("reasonPhrase");
+                        return badRequest(reasonPhrase);
+                    }
+                    return badRequest();
+                } else if(status == 500) {
+                    return internalError();
+                } else {
+                    return internalError();
+                }
+            } else {
+                return notFound();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return internalError();
+        }    }
 
     private CustomCodeRequest processedRequest() {
         Representation representation = getRequestEntity();

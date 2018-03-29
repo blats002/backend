@@ -177,12 +177,15 @@ public class SSLServerResource extends BaseServerResource
                 String[] domains = new String[1];
                 String[] contacts = new String[1];
                 domains[0] = domain;
-                contacts[0] = mailTo;
+                contacts[0] = "mailto:" + mailTo;
+                LOG.info("Mail to: " + mailTo);
+
                 AcmeChallengeListener challengeListener = new HttpChallengeListener(sessionToken, subdomain, userId, domains[0], "");
                 Acme acme = new Acme(CA_PRODUCTION_URL, new DefaultCertificateStorage(true), true, true);
                 X509Certificate cert = acme.getCertificate(domains, AGREEMENT_URL, contacts, challengeListener);
 
-                KeyPair domainKey = acme.getCertificateStorage().getDomainKeyPair(domains);
+                // TODO:
+                KeyPair domainKey = null; //acme.getCertificateStorage().getDomainKeyPair(domains);
                 PrivateKey privateKey = domainKey.getPrivate();
 
                 String fullchain = CertificateHelper.x509ToBase64PEMString(cert);
