@@ -22,6 +22,7 @@
 package com.divroll.domino.model;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 

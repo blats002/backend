@@ -28,5 +28,6 @@ package com.divroll.domino.model;
  */
 public interface ACL {
     public String[] getRead();
+
     public String[] getWrite();
 }

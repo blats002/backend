@@ -26,11 +26,12 @@ import com.divroll.domino.resource.ApplicationResource;
 import com.divroll.domino.xodus.XodusStore;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import jetbrains.exodus.entitystore.*;
+import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 
-import java.util.*;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -95,7 +96,7 @@ public class JeeApplicationServerResource extends BaseServerResource
         final EntityId id = applicationService.create(application);
         if (id != null) {
             //Application app =  applicationService.read(id.toString());
-            if(application != null) {
+            if (application != null) {
                 application.setAppId(appId);
                 application.setApiKey(apiKey);
                 application.setMasterKey(masterKey);

@@ -30,6 +30,8 @@ import java.util.Map;
  */
 public interface WebTokenService {
     public String createToken(String secret, String userId);
-    public Map<String,Object> readToken(String secret);
+
+    public Map<String, Object> readToken(String secret);
+
     public String readUserIdFromToken(String secret, String token);
 }

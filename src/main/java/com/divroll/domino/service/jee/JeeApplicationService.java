@@ -59,9 +59,9 @@ public class JeeApplicationService implements ApplicationService {
     @Override
     public Application read(String applicationId) {
         EntityId id = store.getFirstEntityId(DIR, KIND, "appId", applicationId, String.class);
-        if(id != null) {
+        if (id != null) {
             Map<String, Comparable> entityMap = store.get(DIR, id.toString());
-            if(entityMap != null) {
+            if (entityMap != null) {
                 Application application = new Application();
                 application.setAppId((String) entityMap.get("appId"));
                 application.setApiKey((String) entityMap.get("apiKey"));
@@ -75,7 +75,7 @@ public class JeeApplicationService implements ApplicationService {
     @Override
     public void update(Application application, String theMasterKey) {
         application.setModified(new Date());
-        Map<String,Comparable> comparableMap = new LinkedHashMap<>();
+        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         comparableMap.put("appId", application.getAppId());
         comparableMap.put("apiKey", application.getApiKey());
         comparableMap.put("masterKey", application.getMasterKey());

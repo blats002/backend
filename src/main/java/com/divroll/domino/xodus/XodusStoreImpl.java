@@ -113,7 +113,7 @@ public class XodusStoreImpl implements XodusStore {
 
     @Override
     public EntityId put(String dir, final String kind, final Map<String, Comparable> properties) {
-        if(dir == null || kind == null) {
+        if (dir == null || kind == null) {
             return null;
         }
         final EntityId[] entityId = {null};
@@ -123,7 +123,7 @@ public class XodusStoreImpl implements XodusStore {
             public void execute(@NotNull final StoreTransaction txn) {
                 final Entity entity = txn.newEntity(kind);
                 Iterator<String> it = properties.keySet().iterator();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     String key = it.next();
                     Comparable comparable = properties.get(key);
                     entity.setProperty(key, comparable);
@@ -146,7 +146,7 @@ public class XodusStoreImpl implements XodusStore {
                 EntityId entityId = txn.toEntityId(id);
                 Entity entity = txn.getEntity(entityId);
                 Iterator<String> it = properties.keySet().iterator();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     String key = it.next();
                     Comparable comparable = properties.get(key);
                     entity.setProperty(key, comparable);
@@ -192,7 +192,7 @@ public class XodusStoreImpl implements XodusStore {
                 entityId[0] = txn.toEntityId(id);
                 Entity entity = txn.getEntity(entityId[0]);
                 Iterator<String> it = properties.keySet().iterator();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     String key = it.next();
                     Comparable comparable = properties.get(key);
                     entity.setProperty(key, comparable);
@@ -204,7 +204,7 @@ public class XodusStoreImpl implements XodusStore {
     }
 
     @Override
-    public Map<String,Comparable> get(String dir, final String id) {
+    public Map<String, Comparable> get(String dir, final String id) {
         final Map<String, Comparable>[] result = new Map[]{null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -214,7 +214,7 @@ public class XodusStoreImpl implements XodusStore {
                 Entity entity = txn.getEntity(entityId);
                 result[0] = new LinkedHashMap<>();
                 List<String> props = entity.getPropertyNames();
-                for(String prop : props) {
+                for (String prop : props) {
                     result[0].put(prop, entity.getProperty(prop));
                 }
             }
@@ -246,14 +246,13 @@ public class XodusStoreImpl implements XodusStore {
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-                for(String p : ids) {
+                for (String p : ids) {
                     // TODO
                 }
             }
         });
         entityStore.close();
     }
-
 
 
     @Override
@@ -265,7 +264,7 @@ public class XodusStoreImpl implements XodusStore {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
                 Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
-                if(entity != null) {
+                if (entity != null) {
                     entityId[0] = entity.getId();
                 }
             }

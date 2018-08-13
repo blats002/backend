@@ -21,7 +21,9 @@
  */
 package com.divroll.domino.xodus;
 
-import com.divroll.domino.model.*;
+import com.divroll.domino.model.ACL;
+import com.divroll.domino.model.ByteValue;
+import com.divroll.domino.model.ByteValueIterable;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.ByteIterable;
@@ -45,6 +47,26 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Inject
     @Named("xodusRoot")
     String xodusRoot;
+
+    public static byte[] serialize(Object obj) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ObjectOutputStream os = new ObjectOutputStream(out);
+        os.writeObject(obj);
+        return out.toByteArray();
+    }
+
+    public static <T> T deserialize(byte[] data, Class<T> clazz) {
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(data);
+            ObjectInputStream is = new ObjectInputStream(in);
+            return (T) is.readObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     @Override
     public void put(String instance, final String storeName, final String key, final String value) {
@@ -176,7 +198,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
             public void execute(@NotNull final Transaction txn) {
                 final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
                 Iterator<String> it = properties.keySet().iterator();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     String key = it.next();
                     String string = properties.get(key);
                     isSuccess[0] = store.put(txn, StringBinding.stringToEntry(key), StringBinding.stringToEntry(string));
@@ -195,26 +217,26 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
             @Override
             public void execute(@NotNull final Transaction txn) {
                 final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
-                final ByteIterable value  = store.get(txn, StringBinding.stringToEntry(key));
-                if(value != null) {
-                     if(ByteValue.class.equals(clazz)) {
+                final ByteIterable value = store.get(txn, StringBinding.stringToEntry(key));
+                if (value != null) {
+                    if (ByteValue.class.equals(clazz)) {
                         ByteValue byteValue = deserialize(value.getBytesUnsafe(), ByteValue.class);
                         result[0] = byteValue;
-                    } else if(String.class.equals(clazz)) {
+                    } else if (String.class.equals(clazz)) {
                         result[0] = StringBinding.entryToString(value);
-                    } else if(Boolean.class.equals(clazz)) {
+                    } else if (Boolean.class.equals(clazz)) {
                         result[0] = BooleanBinding.entryToBoolean(value);
-                    } else if(Double.class.equals(clazz)) {
+                    } else if (Double.class.equals(clazz)) {
                         result[0] = DoubleBinding.entryToDouble(value);
-                    } else if(Float.class.equals(clazz)) {
+                    } else if (Float.class.equals(clazz)) {
                         result[0] = FloatBinding.entryToFloat(value);
-                    } else if(Integer.class.equals(clazz)) {
+                    } else if (Integer.class.equals(clazz)) {
                         result[0] = StringBinding.entryToString(value);
-                    } else if(Long.class.equals(clazz)) {
+                    } else if (Long.class.equals(clazz)) {
                         result[0] = LongBinding.entryToLong(value);
-                    } else if(Short.class.equals(clazz)) {
+                    } else if (Short.class.equals(clazz)) {
                         result[0] = ShortBinding.entryToShort(value);
-                    } else if(ACL.class.equals(clazz)) {
+                    } else if (ACL.class.equals(clazz)) {
                         // for delete operation
                         ACL valueACL = null;
                         try {
@@ -249,6 +271,19 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
         return isSuccess[0];
     }
 
+//    @Override
+//    public void putIfNotExists(String instance, final String storeName, final String key, final byte[] value) {
+//        final Environment env = Environments.newInstance(xodusRoot + instance);
+//        env.executeInTransaction(new TransactionalExecutable() {
+//            @Override
+//            public void execute(@NotNull final Transaction txn) {
+//                final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+//                store.putIfNotExists(txn, StringBinding.stringValueToEntry(key), ByteBinding.byteToEntry(value));
+//            }
+//        });
+//        env.close();
+//    }
+
     @Override
     public boolean delete(String instance, final String storeName, String... keys) {
         final Boolean[] isSuccess = {false};
@@ -258,7 +293,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
             @Override
             public void execute(@NotNull final Transaction txn) {
                 final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
-                for(String key : keyList) {
+                for (String key : keyList) {
                     isSuccess[0] = store.delete(txn, StringBinding.stringToEntry(key));
                 }
             }
@@ -285,11 +320,11 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
             @Override
             public void execute(@NotNull final Transaction txn) {
                 final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
-                for(String key : keyList) {
+                for (String key : keyList) {
                     isSuccess[0] = store.delete(txn, StringBinding.stringToEntry(key));
                 }
                 Iterator<String> it = properties.keySet().iterator();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     String key = it.next();
                     String string = properties.get(key);
                     isSuccess[0] = store.put(txn, StringBinding.stringToEntry(key), StringBinding.stringToEntry(string));
@@ -299,43 +334,6 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
         env.close();
         return isSuccess[0];
     }
-
-//    @Override
-//    public void putIfNotExists(String instance, final String storeName, final String key, final byte[] value) {
-//        final Environment env = Environments.newInstance(xodusRoot + instance);
-//        env.executeInTransaction(new TransactionalExecutable() {
-//            @Override
-//            public void execute(@NotNull final Transaction txn) {
-//                final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
-//                store.putIfNotExists(txn, StringBinding.stringValueToEntry(key), ByteBinding.byteToEntry(value));
-//            }
-//        });
-//        env.close();
-//    }
-
-
-
-    public static byte[] serialize(Object obj) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ObjectOutputStream os = new ObjectOutputStream(out);
-        os.writeObject(obj);
-        return out.toByteArray();
-    }
-
-    public static <T> T deserialize(byte[] data, Class<T> clazz) {
-        try {
-            ByteArrayInputStream in = new ByteArrayInputStream(data);
-            ObjectInputStream is = new ObjectInputStream(in);
-            return (T) is.readObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
 
 
 }

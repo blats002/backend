@@ -74,14 +74,14 @@ public class JeeUserServerResource extends BaseServerResource implements
         String existingUsername = store.get(appId, storeName, usernameKey, String.class);
         String existingPassword = store.get(appId, storeName, passwordKey, String.class);
 
-        if(existingUsername == null || existingPassword == null) {
+        if (existingUsername == null || existingPassword == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return returnNull();
         }
 
-        if(BCrypt.checkpw(password, existingPassword)) {
+        if (BCrypt.checkpw(password, existingPassword)) {
             Application app = applicationService.read(appId);
-            if(app != null) {
+            if (app != null) {
                 String webToken = webTokenService.createToken(app.getMasterKey(), existingUsername);
                 JSONObject result = new JSONObject();
                 result.put("webToken", webToken);
@@ -118,7 +118,7 @@ public class JeeUserServerResource extends BaseServerResource implements
             String uuidKey = "username:" + username + ":uuid";
 
             String existingUUID = store.get(appId, storeName, uuidKey, String.class);
-            if(existingUUID != null) {
+            if (existingUUID != null) {
                 JSONObject result = new JSONObject();
                 result.put("error", "User already exists");
                 representation = new JsonRepresentation(result.toJSONString());
@@ -126,13 +126,13 @@ public class JeeUserServerResource extends BaseServerResource implements
             } else {
                 Application app = applicationService.read(appId);
                 if (app != null) {
-                    Map<String,String> properties = new LinkedHashMap<>();
+                    Map<String, String> properties = new LinkedHashMap<>();
                     properties.put(usernameKey, username);
                     properties.put(passwordKey, BCrypt.hashpw(plainPassword, BCrypt.gensalt()));
                     properties.put(uuidKey, uuid);
 
                     Boolean success = store.batchPut(appId, storeName, properties);
-                    if(success) {
+                    if (success) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), username);
                         JSONObject result = new JSONObject();
                         result.put("webToken", webToken);
@@ -162,11 +162,11 @@ public class JeeUserServerResource extends BaseServerResource implements
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if(username == null || password == null) {
+            if (username == null || password == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return missingUsernamePasswordPair();
             }
-            if(authToken == null || authToken.isEmpty()) {
+            if (authToken == null || authToken.isEmpty()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return returnMissingAuthToken();
             }
@@ -180,19 +180,19 @@ public class JeeUserServerResource extends BaseServerResource implements
             String newUsername = jsonObject.getString("username");
             String newPlainPassword = jsonObject.getString("password");
 
-            if(newUsername == null || newPlainPassword == null) {
+            if (newUsername == null || newPlainPassword == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return returnNull();
             }
 
             Application app = applicationService.read(appId);
-            if(app == null) {
+            if (app == null) {
                 return returnNull();
 
             }
             String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
 
-            if(authUsername.equals(username)) {
+            if (authUsername.equals(username)) {
 
                 String uuidKey = "username:" + authUsername + ":uuid";
 
@@ -204,7 +204,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 String existingUsername = store.get(appId, storeName, usernameKey, String.class);
                 String existingPassword = store.get(appId, storeName, passwordKey, String.class);
 
-                if( (existingUsername != null && existingUsername.equals(authUsername))
+                if ((existingUsername != null && existingUsername.equals(authUsername))
                         && (BCrypt.checkpw(password, existingPassword))) {
 
                     String newUUIDKey = "username:" + newUsername + ":uuid";
@@ -213,13 +213,13 @@ public class JeeUserServerResource extends BaseServerResource implements
 
                     String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
 
-                    Map<String,String> properties = new LinkedHashMap<>();
+                    Map<String, String> properties = new LinkedHashMap<>();
                     properties.put(newUsernameKey, newUsername);
                     properties.put(newPasswordKey, newHashPassword);
                     properties.put(newUUIDKey, existingUUID);
 
                     Boolean success = store.batchPutDelete(appId, storeName, properties, uuidKey, usernameKey, passwordKey);
-                    if(success) {
+                    if (success) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), newUsername);
                         JSONObject result = new JSONObject();
                         result.put("webToken", webToken);

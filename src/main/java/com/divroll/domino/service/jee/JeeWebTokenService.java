@@ -46,11 +46,11 @@ public class JeeWebTokenService implements WebTokenService {
             = Logger.getLogger(JeeWebTokenService.class.getName());
 
     @Inject
-    public JeeWebTokenService(){
+    public JeeWebTokenService() {
     }
 
     @Override
-    public String createToken(String secret, String userId){
+    public String createToken(String secret, String userId) {
         JWTSigner signer = new JWTSigner(secret);
         JWTVerifier verifier = new JWTVerifier(secret);
         HashMap<String, Object> claims = new HashMap<String, Object>();
@@ -73,7 +73,7 @@ public class JeeWebTokenService implements WebTokenService {
             JWTVerifier verifier = new JWTVerifier(secret);
             Map<String, Object> parsed = verifier.verify(token);
             Object objectId = parsed.get("id");
-            if(objectId instanceof String){
+            if (objectId instanceof String) {
                 id = String.valueOf((String) objectId);
             }
         } catch (NoSuchAlgorithmException e) {
@@ -86,7 +86,7 @@ public class JeeWebTokenService implements WebTokenService {
             e.printStackTrace();
         } catch (JWTVerifyException e) {
             e.printStackTrace();
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return id;

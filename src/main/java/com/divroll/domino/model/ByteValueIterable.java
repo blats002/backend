@@ -39,10 +39,10 @@ import java.io.ObjectOutputStream;
  */
 public class ByteValueIterable implements ByteIterable {
 
-    private ByteValue byteValue;
-    private byte[] bytes;
     private final long offset;
     private final int length;
+    private ByteValue byteValue;
+    private byte[] bytes;
 
     public ByteValueIterable(ByteValue byteValue) {
         byte[] bytes = toByteArray(byteValue);
@@ -91,6 +91,8 @@ public class ByteValueIterable implements ByteIterable {
             e.printStackTrace();
         }
         return null;
-    };
+    }
+
+    ;
 
 }

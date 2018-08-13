@@ -37,8 +37,8 @@ public interface KeyValueService {
             throws ACLException;
 
     public <T> boolean put(String instance, final String storeName, final String key, final Comparable value, String uuid,
-                     String[] read, String[] write,
-                     Class<T> clazz)
+                           String[] read, String[] write,
+                           Class<T> clazz)
             throws ACLException;
 
     public boolean delete(String instance, final String storeName, final String key, final String uuid)

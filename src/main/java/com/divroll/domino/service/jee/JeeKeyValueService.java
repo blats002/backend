@@ -47,14 +47,14 @@ public class JeeKeyValueService implements KeyValueService {
     public <T> boolean putIfNotExists(String instance, String storeName, String key, Comparable value,
                                       String[] read, String[] write,
                                       Class<T> clazz) {
-        if(value == null) {
+        if (value == null) {
             return false;
         }
 
-        if(String.class.equals(clazz)) {
+        if (String.class.equals(clazz)) {
             ByteValue byteValue = new ByteValue();
             try {
-                byteValue.setValue(((String)value).getBytes("utf-8"));
+                byteValue.setValue(((String) value).getBytes("utf-8"));
                 byteValue.setRead(read);
                 byteValue.setWrite(write);
             } catch (Exception e) {
@@ -62,7 +62,7 @@ public class JeeKeyValueService implements KeyValueService {
             } finally {
                 return store.putIfNotExists(instance, storeName, key, byteValue);
             }
-        } else if(ByteBuffer.class.equals(clazz)) {
+        } else if (ByteBuffer.class.equals(clazz)) {
             ByteBuffer byteBuffer = ((ByteBuffer) value);
             byte[] arr = new byte[byteBuffer.remaining()];
             byteBuffer.get(arr);
@@ -80,14 +80,14 @@ public class JeeKeyValueService implements KeyValueService {
 
     @Override
     public <T> T get(String instance, String storeName, String key, String uuid, Class<T> clazz)
-        throws ACLException {
-        if(String.class.equals(clazz)) {
+            throws ACLException {
+        if (String.class.equals(clazz)) {
             ByteValue value = store.get(instance, storeName, key, ByteValue.class);
-            if(value != null) {
+            if (value != null) {
                 String[] read = value.getRead();
                 Boolean publicRead = read != null ? Arrays.asList(read).contains("*") : false;
-                if(!publicRead) {
-                    if( Arrays.asList(read).contains(uuid)) {
+                if (!publicRead) {
+                    if (Arrays.asList(read).contains(uuid)) {
                         try {
                             byte[] bytes = value.getValue();
                             String s = new String(bytes, "utf-8");
@@ -108,13 +108,13 @@ public class JeeKeyValueService implements KeyValueService {
                     }
                 }
             }
-        } else if(ByteBuffer.class.equals(clazz)) {
+        } else if (ByteBuffer.class.equals(clazz)) {
             ByteValue value = store.get(instance, storeName, key, ByteValue.class);
-            if(value != null) {
+            if (value != null) {
                 String[] read = value.getRead();
                 Boolean publicRead = read != null ? Arrays.asList(read).contains("*") : false;
-                if(!publicRead) {
-                    if( Arrays.asList(read).contains(uuid)) {
+                if (!publicRead) {
+                    if (Arrays.asList(read).contains(uuid)) {
                         return (T) ByteBuffer.wrap(value.getValue());
                     } else {
                         throw new ACLException();
@@ -123,13 +123,13 @@ public class JeeKeyValueService implements KeyValueService {
                     return (T) ByteBuffer.wrap(value.getValue());
                 }
             }
-        } else if(ACL.class.equals(clazz)) { // Helper case to delete a key
+        } else if (ACL.class.equals(clazz)) { // Helper case to delete a key
             ACL value = store.get(instance, storeName, key, ACL.class);
-            if(value != null) {
+            if (value != null) {
                 String[] read = value.getRead();
                 Boolean publicRead = read != null ? Arrays.asList(read).contains("*") : false;
-                if(!publicRead) {
-                    if( Arrays.asList(read).contains(uuid)) {
+                if (!publicRead) {
+                    if (Arrays.asList(read).contains(uuid)) {
                         return (T) value;
                     } else {
                         throw new ACLException();
@@ -144,17 +144,17 @@ public class JeeKeyValueService implements KeyValueService {
 
     @Override
     public <T> boolean put(String instance, String storeName, String key, Comparable value, String uuid,
-                     String[] read, String[] write, Class<T> clazz)
+                           String[] read, String[] write, Class<T> clazz)
             throws ACLException {
 
-        if(value == null) {
+        if (value == null) {
             return false;
         }
 
         // This will throw the ACLException
         ACL acl = get(instance, storeName, key, uuid, ACL.class);
 
-        if(acl == null) {
+        if (acl == null) {
             return false;
         }
 
@@ -163,31 +163,31 @@ public class JeeKeyValueService implements KeyValueService {
         String[] aclWrite = acl.getWrite();
 
         Boolean publicWrite = false;
-        if(aclWrite != null) {
+        if (aclWrite != null) {
             publicWrite = Arrays.asList(aclWrite).contains("*");
         }
 
-        if(!publicWrite) {
-            if(uuid == null) {
-                throw  new ACLException();
-            } else if(aclWrite == null) {
+        if (!publicWrite) {
+            if (uuid == null) {
+                throw new ACLException();
+            } else if (aclWrite == null) {
                 throw new ACLException();
             } else {
-                if(!Arrays.asList(aclWrite).contains(uuid)) {
-                    throw  new ACLException();
+                if (!Arrays.asList(aclWrite).contains(uuid)) {
+                    throw new ACLException();
                 }
             }
         }
 
 
-        if(read != null && !Arrays.asList(read).isEmpty()) {
-            if(aclRead == null) {
+        if (read != null && !Arrays.asList(read).isEmpty()) {
+            if (aclRead == null) {
                 aclRead = read;
             } else {
                 List<String> aclReadList = Arrays.asList(aclRead);
                 List<String> aclReadListAdd = Arrays.asList(read);
-                for(String s : aclReadListAdd) {
-                    if(!aclReadList.contains(s)) {
+                for (String s : aclReadListAdd) {
+                    if (!aclReadList.contains(s)) {
                         aclReadList.add(s);
                     }
                 }
@@ -196,14 +196,14 @@ public class JeeKeyValueService implements KeyValueService {
             }
         }
 
-        if(write != null && !Arrays.asList(write).isEmpty()) {
-            if(aclWrite == null) {
+        if (write != null && !Arrays.asList(write).isEmpty()) {
+            if (aclWrite == null) {
                 aclWrite = write;
             } else {
                 List<String> aclWriteList = Arrays.asList(aclWrite);
                 List<String> aclWriteListAdd = Arrays.asList(write);
-                for(String s : aclWriteListAdd) {
-                    if(!aclWriteList.contains(s)) {
+                for (String s : aclWriteListAdd) {
+                    if (!aclWriteList.contains(s)) {
                         aclWriteList.add(s);
                     }
                 }
@@ -212,10 +212,10 @@ public class JeeKeyValueService implements KeyValueService {
             }
         }
 
-        if(String.class.equals(clazz)) {
+        if (String.class.equals(clazz)) {
             ByteValue byteValue = new ByteValue();
             try {
-                byteValue.setValue(((String)value).getBytes("utf-8"));
+                byteValue.setValue(((String) value).getBytes("utf-8"));
                 byteValue.setRead(read);
                 byteValue.setWrite(aclWrite);
             } catch (Exception e) {
@@ -223,7 +223,7 @@ public class JeeKeyValueService implements KeyValueService {
             } finally {
                 return store.put(instance, storeName, key, byteValue);
             }
-        } else if(ByteBuffer.class.equals(clazz)) {
+        } else if (ByteBuffer.class.equals(clazz)) {
             ByteBuffer byteBuffer = ((ByteBuffer) value);
             byte[] arr = new byte[byteBuffer.remaining()];
             byteBuffer.get(arr);
@@ -240,7 +240,7 @@ public class JeeKeyValueService implements KeyValueService {
 
     @Override
     public boolean delete(String instance, String storeName, String key, String uuid) throws ACLException {
-        if(get(instance, storeName, key, uuid,ACL.class) != null) {
+        if (get(instance, storeName, key, uuid, ACL.class) != null) {
             return store.delete(instance, storeName, key);
         } else {
             throw new ACLException();
