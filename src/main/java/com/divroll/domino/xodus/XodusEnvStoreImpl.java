@@ -26,6 +26,7 @@ import com.divroll.domino.model.ByteValue;
 import com.divroll.domino.model.ByteValueIterable;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.bindings.*;
 import jetbrains.exodus.env.*;

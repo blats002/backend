@@ -8,6 +8,8 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class User {
     @ApiModelProperty(required = true, value = "Username")
+    private String userId;
+    @ApiModelProperty(required = true, value = "Username")
     private String username;
     @ApiModelProperty(required = true, value = "Password")
     private String password;
@@ -36,5 +38,13 @@ public class User {
 
     public void setWebToken(String webToken) {
         this.webToken = webToken;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

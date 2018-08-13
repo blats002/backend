@@ -37,6 +37,7 @@ import org.restlet.representation.Representation;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -45,6 +46,10 @@ import java.util.UUID;
  */
 public class JeeUserServerResource extends BaseServerResource implements
         UserResource {
+
+    private static final Logger LOG
+            = Logger.getLogger(JeeUserServerResource.class.getName());
+
 
     private static final String KEY_SPACE = ":";
 
@@ -119,8 +124,8 @@ public class JeeUserServerResource extends BaseServerResource implements
             String passwordKey = "uuid:" + uuid + ":username:" + username + ":password";
             String uuidKey = "username:" + username + ":uuid";
 
-            String existingUUID = store.get(appId, storeName, uuidKey, String.class);
-            if (existingUUID != null) {
+            String userUUID = store.get(appId, storeName, uuidKey, String.class);
+            if (userUUID != null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Username already exists");
                 return null;
             } else {
@@ -138,6 +143,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                         result.put("webToken", webToken);
                         setStatus(Status.SUCCESS_CREATED);
                         User user = new User();
+                        user.setUserId(uuid);
+                        user.setUsername(username);
                         user.setWebToken(webToken);
                         return user;
                     } else {
@@ -247,6 +254,42 @@ public class JeeUserServerResource extends BaseServerResource implements
 
     @Override
     public void deleteUser(User entity) {
-        // TODO:
+        try {
+            if(appId == null || masterKey == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing Application ID or Master Key");
+                return;
+            }
+            if (!isMaster(appId, masterKey)) {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "Invalid Application ID and/or Master Key");
+                return;
+            }
+            if(userId == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing User ID in path");
+                return;
+            }
+            if(username == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Query parameter username is required");
+                return;
+            }
+
+            String uuidKey = "username:" + username + ":uuid";
+            String usernameKey = "uuid:" + userId + ":username";
+            String passwordKey = "uuid:" + userId + ":username:" + username + ":password";
+
+            LOG.info("Delete key: " + uuidKey);
+            LOG.info("Delete key: " + usernameKey);
+            LOG.info("Delete key: " + passwordKey);
+
+            if(store.delete(appId, storeName, uuidKey, usernameKey, passwordKey)) {
+                setStatus(Status.SUCCESS_OK);
+            } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Cannot delete user or user does not exist");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+        }
+        return;
     }
 }

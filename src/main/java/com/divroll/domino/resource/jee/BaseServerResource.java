@@ -67,6 +67,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String accept;
     protected String contentType;
 
+    protected String userId;
+    protected String username;
+
     @Inject
     ApplicationService applicationService;
 
@@ -88,6 +91,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
         propsMap = appProperties();
         entityId = getAttribute("entityId");
         kind = getAttribute("kind");
+        userId = getAttribute("userId");
+
+        username = getQueryValue("username");
 
         Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
         appId = headers.getFirstValue("X-Domino-App-Id");
@@ -100,6 +106,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         accept = headers.getFirstValue("Accept");
         contentType = headers.getFirstValue("Content-Type");
+
 
     }
 
@@ -149,6 +156,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
         }
         return false;
     }
+
+    protected boolean isMaster(String appId, String masterKey) {
+        if (appId != null) {
+            Application app = applicationService.read(appId);
+            if (app != null) {
+                if (BCrypt.checkpw(masterKey, app.getMasterKey())) {
+                    return true;
+                }
+                if (BCrypt.checkpw(apiKey, app.getApiKey())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     protected Representation returnNull() {
         JSONObject jsonObject = new JSONObject();

@@ -79,6 +79,7 @@ public class DominoApplication extends Application {
 
         router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationServerResource.class); // TODO: Rename to directories
         router.attach(DOMINO_ROOT_URI + "entities/users", JeeUserServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{kind}", JeeKeyValueServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{kind}/{entityId}", JeeKeyValueServerResource.class);
 
