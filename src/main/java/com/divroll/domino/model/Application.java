@@ -36,14 +36,9 @@ import java.util.Date;
 @XStreamAlias("application")
 @ApiModel
 public class Application {
+
     @ApiModelProperty(position = 0, required = false, value = "Auto-generated id")
     private String appId;
-    @ApiModelProperty(hidden = true)
-    @XStreamOmitField
-    private Date created;
-    @ApiModelProperty(hidden = true)
-    @XStreamOmitField
-    private Date modified;
     @ApiModelProperty(required = true, value = "Generated Application Key")
     private String apiKey;
     @ApiModelProperty(required = true, value = "Generated Master Key")
@@ -55,22 +50,6 @@ public class Application {
 
     public void setId(String id) {
         this.appId = id;
-    }
-
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public Date getModified() {
-        return modified;
-    }
-
-    public void setModified(Date modified) {
-        this.modified = modified;
     }
 
     public String getAppId() {

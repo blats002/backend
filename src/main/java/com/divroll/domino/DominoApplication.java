@@ -65,7 +65,7 @@ public class DominoApplication extends Application {
 
         configureConverters();
 
-        Router router = publicResources();
+        Router router = new Router(getContext());
 
         CorsFilter corsFilter = new CorsFilter(getContext());
         corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
@@ -77,18 +77,15 @@ public class DominoApplication extends Application {
                 "Content-Type"));
         corsFilter.setAllowedCredentials(true);
 
-
-        Directory directory = new Directory(getContext(), "war:///doc");
-        directory.setIndexName("index.html");
-        router.attach(ROOT_URI + "ping", JeePingServerResource.class);
-        router.attach(ROOT_URI + "ping/", JeePingServerResource.class);
         router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationServerResource.class); // TODO: Rename to directories
         router.attach(DOMINO_ROOT_URI + "entities/users", JeeUserServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{kind}", JeeKeyValueServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{kind}/{entityId}", JeeKeyValueServerResource.class);
-        router.attach("/directory/", directory);
 
         router.attachDefault(JeeRootServerResource.class);
+
+        attachSwaggerSpecification2(router);
+
         corsFilter.setNext(router);
 
         return corsFilter;
@@ -136,8 +133,8 @@ public class DominoApplication extends Application {
     private void attachSwaggerSpecification1(Router router) {
         SwaggerSpecificationRestlet swaggerSpecificationRestlet = new SwaggerSpecificationRestlet(
                 this);
-        swaggerSpecificationRestlet.setBasePath("http://localhost:8080/api-docs");
-        swaggerSpecificationRestlet.attach(router);
+        swaggerSpecificationRestlet.setBasePath("http://localhost:8080/");
+        swaggerSpecificationRestlet.attach(router,"/docs");
     }
 
     /**
@@ -151,25 +148,8 @@ public class DominoApplication extends Application {
     private void attachSwaggerSpecification2(Router router) {
         Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(
                 this);
-        restlet.setBasePath("http://localhost:8080/api-docs");
-        restlet.attach(router);
-    }
-
-    /**
-     * Creates the public resources.
-     *
-     * @return
-     */
-    public Router publicResources() {
-        Router router = new Router(getContext());
-
-        // FIXME: fix file introspection
-        // router.attach("/", RootResource.class);
-
-        // Attach Swagger Specifications
-        attachSwaggerSpecification1(router);
-        attachSwaggerSpecification2(router);
-        return router;
+        restlet.setBasePath("http://localhost:8080/");
+        restlet.attach(router, "/docs");
     }
 
 }

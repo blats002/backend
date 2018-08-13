@@ -22,6 +22,10 @@
 package com.divroll.domino.resource;
 
 import com.divroll.domino.model.Application;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
 
@@ -30,10 +34,19 @@ import org.restlet.resource.Put;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Application", description = "Application resource")
 public interface ApplicationResource {
+
+    @ApiOperation(value = "get a new application", tags = "application")
+    @ApiResponses({ @ApiResponse(code = 200, message = "the application", response = Application.class), })
     @Get
     Application getApp();
 
+    @ApiOperation(value = "update a existing application", tags = "application")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "the updated application"),
+            @ApiResponse(code = 404, message = "application not found"),
+            @ApiResponse(code = 401, message = "unauthorized access") })
     @Put
     Application updateApp(Application application);
 }

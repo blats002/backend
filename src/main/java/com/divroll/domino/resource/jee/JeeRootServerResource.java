@@ -22,6 +22,11 @@
 package com.divroll.domino.resource.jee;
 
 import com.divroll.domino.guice.SelfInjectingServerResource;
+import com.divroll.domino.model.Server;
+import com.divroll.domino.resource.RootResource;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.resource.Get;
 
@@ -32,15 +37,28 @@ import javax.servlet.http.HttpServletRequest;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeRootServerResource extends SelfInjectingServerResource {
+public class JeeRootServerResource extends SelfInjectingServerResource
+        implements RootResource {
+
+    @Inject
+    @Named("app")
+    String name;
+
+    @Inject
+    @Named("xodusRoot")
+    String xodusRoot;
+
+    @Inject
+    @Named("defaultUserStore")
+    String defaultUserStore;
+
     @Get("json")
-    public String represent() {
-        String client = getRequest().getClientInfo().getAddress();
-        org.restlet.Request restletRequest = getRequest();
-        HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
-        String localName = servletRequest.getLocalName();
-        String path = getRequest().getResourceRef().getHostIdentifier() +
-                getRequest().getResourceRef().getPath();
-        return "All system is up, your client IP: " + client;
+    public Server represent() {
+        Server server = new Server();
+        server.setName(name);
+        server.setXodusRoot(xodusRoot);
+        server.setdefaultUserStore(defaultUserStore);
+        setStatus(Status.SUCCESS_OK);
+        return server;
     }
 }

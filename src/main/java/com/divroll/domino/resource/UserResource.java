@@ -21,6 +21,11 @@
  */
 package com.divroll.domino.resource;
 
+import com.divroll.domino.model.User;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -32,16 +37,33 @@ import org.restlet.resource.Put;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "User", description = "User resource")
 public interface UserResource {
+    @ApiOperation(value = "retrieve a webToken of user", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "the updated application"),
+            @ApiResponse(code = 404, message = "user not found"),
+            @ApiResponse(code = 401, message = "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair") })
     @Get
-    Representation getUser();
-
+    User getUser();
+    @ApiOperation(value = "create a new user", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "user created"),
+            @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair") })
     @Post
-    Representation createUser(Representation entity);
-
+    User createUser(User entity);
+    @ApiOperation(value = "update existing user", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "user updated"),
+            @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token") })
     @Put
-    Representation updateUser(Representation entity);
-
+    User updateUser(User entity);
+    @ApiOperation(value = "delete existing user", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "user deleted"),
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key/Master Key headers") })
     @Delete
-    void deleteUser(Representation entity);
+    void deleteUser(User entity);
 }

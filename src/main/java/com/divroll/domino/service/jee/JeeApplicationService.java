@@ -74,7 +74,6 @@ public class JeeApplicationService implements ApplicationService {
 
     @Override
     public void update(Application application, String theMasterKey) {
-        application.setModified(new Date());
         Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         comparableMap.put("appId", application.getAppId());
         comparableMap.put("apiKey", application.getApiKey());

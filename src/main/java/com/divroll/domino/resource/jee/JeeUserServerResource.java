@@ -23,6 +23,7 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.model.Application;
+import com.divroll.domino.model.User;
 import com.divroll.domino.resource.UserResource;
 import com.divroll.domino.service.WebTokenService;
 import com.divroll.domino.xodus.XodusEnvStore;
@@ -48,7 +49,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     private static final String KEY_SPACE = ":";
 
     @Inject
-    @Named("defaultSUserStore")
+    @Named("defaultUserStore")
     String storeName;
 
     @Inject
@@ -58,7 +59,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     WebTokenService webTokenService;
 
     @Override
-    public Representation getUser() {
+    public User getUser() {
         if (!isAuthorized(appId, apiKey, masterKey)) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
@@ -76,7 +77,7 @@ public class JeeUserServerResource extends BaseServerResource implements
 
         if (existingUsername == null || existingPassword == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            return returnNull();
+            return null;
         }
 
         if (BCrypt.checkpw(password, existingPassword)) {
@@ -85,32 +86,33 @@ public class JeeUserServerResource extends BaseServerResource implements
                 String webToken = webTokenService.createToken(app.getMasterKey(), existingUsername);
                 JSONObject result = new JSONObject();
                 result.put("webToken", webToken);
-                Representation representation = new JsonRepresentation(result.toJSONString());
                 setStatus(Status.SUCCESS_OK);
-                return representation;
+                User user = new User();
+                user.setWebToken(webToken);
+                return user;
             }
+        } else {
+            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+            return null;
         }
-
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-        return returnNull();
+        return null;
     }
 
     @Override
-    public Representation createUser(Representation entity) {
-        Representation representation = returnNull();
+    public User createUser(User entity) {
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if (entity == null || entity.isEmpty()) {
+            if (entity == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
-            JSONObject jsonObject = JSONObject.parseObject(entity.getText());
 
-            String username = jsonObject.getString("username");
-            String plainPassword = jsonObject.getString("password");
+            String username = entity.getUsername();
+            String plainPassword = entity.getPassword();
             String uuid = UUID.randomUUID().toString().replace("-", "");
 
             String usernameKey = "uuid:" + uuid + ":username";
@@ -119,10 +121,8 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             String existingUUID = store.get(appId, storeName, uuidKey, String.class);
             if (existingUUID != null) {
-                JSONObject result = new JSONObject();
-                result.put("error", "User already exists");
-                representation = new JsonRepresentation(result.toJSONString());
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Username already exists");
+                return null;
             } else {
                 Application app = applicationService.read(appId);
                 if (app != null) {
@@ -136,8 +136,10 @@ public class JeeUserServerResource extends BaseServerResource implements
                         String webToken = webTokenService.createToken(app.getMasterKey(), username);
                         JSONObject result = new JSONObject();
                         result.put("webToken", webToken);
-                        representation = new JsonRepresentation(result.toJSONString());
-                        setStatus(Status.SUCCESS_OK);
+                        setStatus(Status.SUCCESS_CREATED);
+                        User user = new User();
+                        user.setWebToken(webToken);
+                        return user;
                     } else {
                         setStatus(Status.SERVER_ERROR_INTERNAL);
                     }
@@ -149,11 +151,11 @@ public class JeeUserServerResource extends BaseServerResource implements
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
         }
-        return representation;
+        return null;
     }
 
     @Override
-    public Representation updateUser(Representation entity) {
+    public User updateUser(User entity) {
         Representation representation = returnNull();
         String username = getQueryValue("username");
         String password = getQueryValue("password");
@@ -164,30 +166,30 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
             if (username == null || password == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return missingUsernamePasswordPair();
+                return null;
+                //return missingUsernamePasswordPair();
             }
             if (authToken == null || authToken.isEmpty()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return returnMissingAuthToken();
+                return null;
+                //return returnMissingAuthToken();
             }
-            if (entity == null || entity.isEmpty()) {
+            if (entity == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
 
-            JSONObject jsonObject = JSONObject.parseObject(entity.getText());
-
-            String newUsername = jsonObject.getString("username");
-            String newPlainPassword = jsonObject.getString("password");
+            String newUsername = entity.getUsername();
+            String newPlainPassword = entity.getPassword();
 
             if (newUsername == null || newPlainPassword == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return returnNull();
+                return null;
             }
 
             Application app = applicationService.read(appId);
             if (app == null) {
-                return returnNull();
+                return null;
 
             }
             String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
@@ -221,31 +223,30 @@ public class JeeUserServerResource extends BaseServerResource implements
                     Boolean success = store.batchPutDelete(appId, storeName, properties, uuidKey, usernameKey, passwordKey);
                     if (success) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), newUsername);
-                        JSONObject result = new JSONObject();
-                        result.put("webToken", webToken);
-                        representation = new JsonRepresentation(result.toJSONString());
+                        User user = new User();
+                        user.setWebToken(webToken);
                         setStatus(Status.SUCCESS_OK);
                     } else {
                         setStatus(Status.SERVER_ERROR_INTERNAL);
                     }
                 } else {
                     setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                    return returnNull();
+                    return null;
                 }
 
             } else {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return returnNull();
+                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
         }
-        return representation;
+        return null;
     }
 
     @Override
-    public void deleteUser(Representation entity) {
-
+    public void deleteUser(User entity) {
+        // TODO:
     }
 }

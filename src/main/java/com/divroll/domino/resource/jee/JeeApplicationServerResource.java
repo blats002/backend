@@ -82,8 +82,6 @@ public class JeeApplicationServerResource extends BaseServerResource
     @Override
     public Application getApp() {
         Application application = new Application();
-        application.setCreated(new Date());
-        application.setModified(new Date());
 
         String appId = UUID.randomUUID().toString().replace("-", "");
         String apiKey = UUID.randomUUID().toString().replace("-", "");
@@ -100,6 +98,7 @@ public class JeeApplicationServerResource extends BaseServerResource
                 application.setAppId(appId);
                 application.setApiKey(apiKey);
                 application.setMasterKey(masterKey);
+                setStatus(Status.SUCCESS_OK);
                 return application;
             }
         } else {
