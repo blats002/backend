@@ -164,9 +164,6 @@ public class BaseServerResource extends SelfInjectingServerResource {
                 if (BCrypt.checkpw(masterKey, app.getMasterKey())) {
                     return true;
                 }
-                if (BCrypt.checkpw(apiKey, app.getApiKey())) {
-                    return true;
-                }
             }
         }
         return false;
