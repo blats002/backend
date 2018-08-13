@@ -11,9 +11,10 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.target>1.7</maven.compiler.target>
+        <jackson.version>2.6.0</jackson.version>
         <guava.version>18.0</guava.version>
         <xtend.version>2.9.1</xtend.version>
-        <version.restlet>2.3.7</version.restlet>
+        <version.restlet>2.3.12</version.restlet>
         <version.junit>4.11</version.junit>
     </properties>
     <dependencyManagement>
@@ -134,6 +135,21 @@
             <artifactId>guice-junit-test-runner</artifactId>
             <version>1.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.xodus</groupId>

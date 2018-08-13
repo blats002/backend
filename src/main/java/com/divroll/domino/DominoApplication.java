@@ -33,6 +33,7 @@ import org.restlet.engine.application.CorsFilter;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
+import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
 import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 
@@ -64,7 +65,7 @@ public class DominoApplication extends Application {
 
         configureConverters();
 
-        Router router = new Router(getContext());
+        Router router = publicResources();
 
         CorsFilter corsFilter = new CorsFilter(getContext());
         corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
@@ -86,11 +87,6 @@ public class DominoApplication extends Application {
         router.attach(DOMINO_ROOT_URI + "entities/{kind}", JeeKeyValueServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{kind}/{entityId}", JeeKeyValueServerResource.class);
         router.attach("/directory/", directory);
-        // Configuring Swagger 2 support
-        Swagger2SpecificationRestlet swagger2SpecificationRestlet
-                = new Swagger2SpecificationRestlet(this);
-        swagger2SpecificationRestlet.setBasePath("/api-docs");
-        swagger2SpecificationRestlet.attach(router);
 
         router.attachDefault(JeeRootServerResource.class);
         corsFilter.setNext(router);
@@ -127,6 +123,53 @@ public class DominoApplication extends Application {
             Engine.getInstance()
                     .getRegisteredConverters().remove(jacksonConverter);
         }
+    }
+
+    /**
+     * Adds the "/api-docs" path to the given router and attaches the
+     * {@link Restlet} that computes the Swagger documentation in the format
+     * defined by the swagger-spec project v1.2.
+     *
+     * @param router
+     *            The router to update.
+     */
+    private void attachSwaggerSpecification1(Router router) {
+        SwaggerSpecificationRestlet swaggerSpecificationRestlet = new SwaggerSpecificationRestlet(
+                this);
+        swaggerSpecificationRestlet.setBasePath("http://localhost:8080/api-docs");
+        swaggerSpecificationRestlet.attach(router);
+    }
+
+    /**
+     * Adds the "/swagger.json" path to the given router and attaches the
+     * {@link Restlet} that computes the Swagger documentation in the format
+     * defined by the swagger-spec project v2.0.
+     *
+     * @param router
+     *            The router to update.
+     */
+    private void attachSwaggerSpecification2(Router router) {
+        Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(
+                this);
+        restlet.setBasePath("http://localhost:8080/api-docs");
+        restlet.attach(router);
+    }
+
+    /**
+     * Creates the public resources.
+     *
+     * @return
+     */
+    public Router publicResources() {
+        Router router = new Router(getContext());
+
+        // FIXME: fix file introspection
+        // router.attach("/", RootResource.class);
+
+        // Attach Swagger Specifications
+        attachSwaggerSpecification1(router);
+        attachSwaggerSpecification2(router);
+        return router;
     }
 
 }
