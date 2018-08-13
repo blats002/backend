@@ -59,7 +59,7 @@ curl -X POST \
   -d world
 ```
 
-#### Update and Entity
+#### Update an Entity
 
 ```$xslt
 curl -X PUT \
@@ -106,18 +106,24 @@ curl -X POST \
   -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
   -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -d '{
-        "username" : "user",
-        "password" : "pass"
+      	"user": {
+      		"username": "user",
+      		"password": "pass",
+      		"webToken": ""
+      	}
       }'
 ```
 
-Response will be a token that can be used as `X-Domino-Auth-Token` for future
+Example response will be a token that can be used as `X-Domino-Auth-Token` for future
 HTTP request:
 
 ```
 {
-    "webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8ifQ.bIoJS9WJcr3gg5KIkkK9ZEf1XXXaUCyePdFbU9sKhw0"
+	"user": {
+		"webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
+	}
 }
+
 ```
 
 #### Update a User
@@ -129,17 +135,23 @@ curl -X POST \
   -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
   -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -d '{
-        "username" : "newuser",
-        "password" : "newpass"
+      	"user": {
+      		"username": "newuser",
+      		"password": "newpass",
+      		"webToken": ""
+      	}
       }'
 ```
 
-Reponse will be like this:
+Example reponse will be like this:
 
 ```
 {
-    "webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
+	"user": {
+		"webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
+	}
 }
+
 ```
 #### Delete a User
 
