@@ -19,25 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.domino.resource;
+package com.divroll.domino.repository;
 
-import com.divroll.domino.model.Server;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
-import org.restlet.resource.Get;
+import com.divroll.domino.model.User;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@Api(value = "Default", description = "Default Resource")
-public interface RootResource {
-    @ApiOperation(value = "retrieve server info", tags = "server")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the server info")})
-    @Get("json")
-    public Server represent();
+public interface UserRepository {
+    String createUser(String instance, String storeName, String username, String password, String[] read, String[] write);
+    boolean updateUser(String instance, String storeName, String entityId, String newUsername, String newPassword, String[] read, String[] write);
+    User getUser(String instance, String storeName, String userID);
+    User getUserByUsername(String instance, String storeName, String username);
+    boolean deleteUser(String instance, String storeName, String userID);
+    List<User> listUsers(String instance, String storeName, long skip, long limit);
 }

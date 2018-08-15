@@ -19,25 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.domino.resource;
+package com.divroll.domino.model;
 
-import com.divroll.domino.model.Server;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
-import org.restlet.resource.Get;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.wordnik.swagger.annotations.ApiModel;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@Api(value = "Default", description = "Default Resource")
-public interface RootResource {
-    @ApiOperation(value = "retrieve server info", tags = "server")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the server info")})
-    @Get("json")
-    public Server represent();
+@XStreamAlias("users")
+@ApiModel
+public class Users {
+    private List<User> results;
+    private long skip;
+    private long limit;
+
+    public List<User> getResults() {
+        return results;
+    }
+
+    public void setResults(List<User> results) {
+        this.results = results;
+    }
+
+    public long getSkip() {
+        return skip;
+    }
+
+    public void setSkip(long skip) {
+        this.skip = skip;
+    }
+
+    public long getLimit() {
+        return limit;
+    }
+
+    public void setLimit(long limit) {
+        this.limit = limit;
+    }
 }

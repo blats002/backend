@@ -26,10 +26,8 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
-import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 
 /**
@@ -46,13 +44,6 @@ public interface UserResource {
             @ApiResponse(code = 401, message = "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair") })
     @Get
     User getUser();
-    @ApiOperation(value = "create a new user", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "user created"),
-            @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair") })
-    @Post
-    User createUser(User entity);
     @ApiOperation(value = "update existing user", tags = "user")
     @ApiResponses({
             @ApiResponse(code = 200, message = "user updated"),

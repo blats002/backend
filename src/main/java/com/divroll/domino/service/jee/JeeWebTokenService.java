@@ -79,15 +79,10 @@ public class JeeWebTokenService implements WebTokenService {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
         } catch (SignatureException e) {
-            e.printStackTrace();
         } catch (JWTVerifyException e) {
-            e.printStackTrace();
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return id;
     }

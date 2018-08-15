@@ -21,23 +21,39 @@
  */
 package com.divroll.domino.resource;
 
-import com.divroll.domino.model.Server;
-import com.wordnik.swagger.annotations.Api;
+import com.divroll.domino.model.Role;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
+import org.restlet.resource.Post;
+import org.restlet.resource.Put;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@Api(value = "Default", description = "Default Resource")
-public interface RootResource {
-    @ApiOperation(value = "retrieve server info", tags = "server")
+public interface RoleResource {
+    @ApiOperation(value = "retrieve a role", tags = "role")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "the server info")})
-    @Get("json")
-    public Server represent();
+            @ApiResponse(code = 200, message = "the role"),
+            @ApiResponse(code = 404, message = "role not found"),
+            @ApiResponse(code = 401, message = "unauthorized access or missing Appliation ID/API Key headers pair") })
+    @Get
+    Role getRole();
+    @ApiOperation(value = "update existing role", tags = "role")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "user updated"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token") })
+    @Put
+    Role updateRole(Role entity);
+    @ApiOperation(value = "delete existing role", tags = "role")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "user deleted"),
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key/Master Key headers") })
+    @Delete
+    void deleteRole(Role entity);
 }

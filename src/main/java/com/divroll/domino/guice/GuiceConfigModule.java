@@ -21,6 +21,12 @@
  */
 package com.divroll.domino.guice;
 
+import com.divroll.domino.repository.EntityRepository;
+import com.divroll.domino.repository.RoleRepository;
+import com.divroll.domino.repository.UserRepository;
+import com.divroll.domino.repository.jee.JeeEntityRepository;
+import com.divroll.domino.repository.jee.JeeRoleRepository;
+import com.divroll.domino.repository.jee.JeeUserRepository;
 import com.divroll.domino.service.ApplicationService;
 import com.divroll.domino.service.KeyValueService;
 import com.divroll.domino.service.WebTokenService;
@@ -64,8 +70,14 @@ public class GuiceConfigModule extends AbstractModule {
     protected void configure() {
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
         bind(String.class).annotatedWith(Names.named("app")).toInstance("Domino");
+
         bind(XodusStore.class).to(XodusStoreImpl.class).in(Scopes.SINGLETON);
         bind(XodusEnvStore.class).to(XodusEnvStoreImpl.class).in(Scopes.SINGLETON);
+
+        bind(UserRepository.class).to(JeeUserRepository.class).in(Scopes.SINGLETON);
+        bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
+        bind(EntityRepository.class).to(JeeEntityRepository.class).in(Scopes.SINGLETON);
+
         bind(WebTokenService.class).to(JeeWebTokenService.class).in(Scopes.SINGLETON);
         bind(ApplicationService.class).to(JeeApplicationService.class).in(Scopes.SINGLETON);
         bind(KeyValueService.class).to(JeeKeyValueService.class).in(Scopes.SINGLETON);

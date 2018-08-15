@@ -70,6 +70,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String userId;
     protected String username;
 
+    protected String roleId;
+
     @Inject
     ApplicationService applicationService;
 
@@ -92,6 +94,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
         entityId = getAttribute("entityId");
         kind = getAttribute("kind");
         userId = getAttribute("userId");
+        roleId = getAttribute("roleId");
 
         username = getQueryValue("username");
 
@@ -191,6 +194,12 @@ public class BaseServerResource extends SelfInjectingServerResource {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("error", "Missing username/password pair");
         return new JsonRepresentation(jsonObject.toJSONString());
+    }
+
+    protected Map<String, Object> cleanup(Map<String,Object> result) {
+        result.remove("publicWrite");
+        result.remove("publicRead");
+        return result;
     }
 
 }

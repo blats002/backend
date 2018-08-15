@@ -78,10 +78,19 @@ public class DominoApplication extends Application {
         corsFilter.setAllowedCredentials(true);
 
         router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationServerResource.class); // TODO: Rename to directories
-        router.attach(DOMINO_ROOT_URI + "entities/users", JeeUserServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/users", JeeUsersServerReource.class);
         router.attach(DOMINO_ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
-        router.attach(DOMINO_ROOT_URI + "entities/{kind}", JeeKeyValueServerResource.class);
-        router.attach(DOMINO_ROOT_URI + "entities/{kind}/{entityId}", JeeKeyValueServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/roles", JeeRolesServerReource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
+
+        router.attach(DOMINO_ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
+
+        router.attach(DOMINO_ROOT_URI + "entities", JeeEntitiesServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/{kind}", JeeEntitiesServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/{kind}/{entityId}", JeeEntityServerResource.class);
+
+        router.attach(DOMINO_ROOT_URI + "kv/{kind}", JeeKeyValueServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "kv/{kind}/{entityId}", JeeKeyValueServerResource.class);
 
         router.attachDefault(JeeRootServerResource.class);
 

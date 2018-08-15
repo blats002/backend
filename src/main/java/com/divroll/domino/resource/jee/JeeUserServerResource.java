@@ -21,22 +21,20 @@
  */
 package com.divroll.domino.resource.jee;
 
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.User;
+import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.resource.UserResource;
 import com.divroll.domino.service.WebTokenService;
-import com.divroll.domino.xodus.XodusEnvStore;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
-import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -58,13 +56,13 @@ public class JeeUserServerResource extends BaseServerResource implements
     String storeName;
 
     @Inject
-    XodusEnvStore store;
+    UserRepository userRepository;
 
     @Inject
     WebTokenService webTokenService;
 
     @Override
-    public User getUser() {
+    public User getUser() { // login
         if (!isAuthorized(appId, apiKey, masterKey)) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
@@ -72,15 +70,11 @@ public class JeeUserServerResource extends BaseServerResource implements
         String username = getQueryValue("username");
         String password = getQueryValue("password");
 
-        String uuidKey = "username:" + username + ":uuid";
-        String existingUUID = store.get(appId, storeName, uuidKey, String.class);
-        String usernameKey = "uuid:" + existingUUID + ":username";
-        String passwordKey = "uuid:" + existingUUID + ":username:" + username + ":password";
+        User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+        String userId = userEntity.getEntityId();
+        String existingPassword = userEntity.getPassword();
 
-        String existingUsername = store.get(appId, storeName, usernameKey, String.class);
-        String existingPassword = store.get(appId, storeName, passwordKey, String.class);
-
-        if (existingUsername == null || existingPassword == null) {
+        if(userEntity == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
         }
@@ -88,11 +82,10 @@ public class JeeUserServerResource extends BaseServerResource implements
         if (BCrypt.checkpw(password, existingPassword)) {
             Application app = applicationService.read(appId);
             if (app != null) {
-                String webToken = webTokenService.createToken(app.getMasterKey(), existingUsername);
-                JSONObject result = new JSONObject();
-                result.put("webToken", webToken);
+                String webToken = webTokenService.createToken(app.getMasterKey(), username);
                 setStatus(Status.SUCCESS_OK);
                 User user = new User();
+                user.setEntityId(userId);
                 user.setWebToken(webToken);
                 return user;
             }
@@ -101,63 +94,6 @@ public class JeeUserServerResource extends BaseServerResource implements
             return null;
         }
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-        return null;
-    }
-
-    @Override
-    public User createUser(User entity) {
-        try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-            if (entity == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
-
-            String username = entity.getUsername();
-            String plainPassword = entity.getPassword();
-            String uuid = UUID.randomUUID().toString().replace("-", "");
-
-            String usernameKey = "uuid:" + uuid + ":username";
-            String passwordKey = "uuid:" + uuid + ":username:" + username + ":password";
-            String uuidKey = "username:" + username + ":uuid";
-
-            String userUUID = store.get(appId, storeName, uuidKey, String.class);
-            if (userUUID != null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Username already exists");
-                return null;
-            } else {
-                Application app = applicationService.read(appId);
-                if (app != null) {
-                    Map<String, String> properties = new LinkedHashMap<>();
-                    properties.put(usernameKey, username);
-                    properties.put(passwordKey, BCrypt.hashpw(plainPassword, BCrypt.gensalt()));
-                    properties.put(uuidKey, uuid);
-
-                    Boolean success = store.batchPut(appId, storeName, properties);
-                    if (success) {
-                        String webToken = webTokenService.createToken(app.getMasterKey(), username);
-                        JSONObject result = new JSONObject();
-                        result.put("webToken", webToken);
-                        setStatus(Status.SUCCESS_CREATED);
-                        User user = new User();
-                        user.setUserId(uuid);
-                        user.setUsername(username);
-                        user.setWebToken(webToken);
-                        return user;
-                    } else {
-                        setStatus(Status.SERVER_ERROR_INTERNAL);
-                    }
-                }
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
         return null;
     }
 
@@ -199,35 +135,50 @@ public class JeeUserServerResource extends BaseServerResource implements
                 return null;
 
             }
+
+            String[] read = new String[]{"*"};
+            String[] write = new String[]{"*"};
+
+            if (aclRead != null) {
+                try {
+                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
+                    List<String> aclReadList = new LinkedList<>();
+                    for (int i = 0; i < jsonArray.size(); i++) {
+                        aclReadList.add(jsonArray.getString(i));
+                    }
+                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }
+
+            if (aclWrite != null) {
+                try {
+                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+                    List<String> aclWriteList = new LinkedList<>();
+                    for (int i = 0; i < jsonArray.size(); i++) {
+                        aclWriteList.add(jsonArray.getString(i));
+                    }
+                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }
+
             String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
 
             if (authUsername.equals(username)) {
 
-                String uuidKey = "username:" + authUsername + ":uuid";
-
-                String existingUUID = store.get(appId, storeName, uuidKey, String.class);
-
-                String usernameKey = "uuid:" + existingUUID + ":username";
-                String passwordKey = "uuid:" + existingUUID + ":username:" + authUsername + ":password";
-
-                String existingUsername = store.get(appId, storeName, usernameKey, String.class);
-                String existingPassword = store.get(appId, storeName, passwordKey, String.class);
+                User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+                String existingUsername = userEntity.getUsername();
+                String existingPassword = userEntity.getPassword();
 
                 if ((existingUsername != null && existingUsername.equals(authUsername))
                         && (BCrypt.checkpw(password, existingPassword))) {
 
-                    String newUUIDKey = "username:" + newUsername + ":uuid";
-                    String newUsernameKey = "uuid:" + existingUUID + ":username";
-                    String newPasswordKey = "uuid:" + existingUUID + ":username:" + newUsername + ":password";
-
                     String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
+                    Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername, newHashPassword, read, write);
 
-                    Map<String, String> properties = new LinkedHashMap<>();
-                    properties.put(newUsernameKey, newUsername);
-                    properties.put(newPasswordKey, newHashPassword);
-                    properties.put(newUUIDKey, existingUUID);
-
-                    Boolean success = store.batchPutDelete(appId, storeName, properties, uuidKey, usernameKey, passwordKey);
                     if (success) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), newUsername);
                         User user = new User();
@@ -272,15 +223,12 @@ public class JeeUserServerResource extends BaseServerResource implements
                 return;
             }
 
-            String uuidKey = "username:" + username + ":uuid";
-            String usernameKey = "uuid:" + userId + ":username";
-            String passwordKey = "uuid:" + userId + ":username:" + username + ":password";
+            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+            String id = userEntity.getEntityId();
+            String existingUsername = userEntity.getUsername();
+            String existingPassword = userEntity.getPassword();
 
-            LOG.info("Delete key: " + uuidKey);
-            LOG.info("Delete key: " + usernameKey);
-            LOG.info("Delete key: " + passwordKey);
-
-            if(store.delete(appId, storeName, uuidKey, usernameKey, passwordKey)) {
+            if(userRepository.deleteUser(appId, storeName, id.toString())) {
                 setStatus(Status.SUCCESS_OK);
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Cannot delete user or user does not exist");

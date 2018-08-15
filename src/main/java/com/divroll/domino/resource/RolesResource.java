@@ -21,23 +21,19 @@
  */
 package com.divroll.domino.resource;
 
-import com.divroll.domino.model.Server;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.divroll.domino.model.Role;
+import com.divroll.domino.model.Roles;
 import org.restlet.resource.Get;
+import org.restlet.resource.Post;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@Api(value = "Default", description = "Default Resource")
-public interface RootResource {
-    @ApiOperation(value = "retrieve server info", tags = "server")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the server info")})
-    @Get("json")
-    public Server represent();
+public interface RolesResource {
+    @Post
+    Role createRole(Role entity);
+    @Get
+    Roles getRoles();
 }
