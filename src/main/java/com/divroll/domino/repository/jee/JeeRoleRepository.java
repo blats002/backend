@@ -48,72 +48,76 @@ public class JeeRoleRepository implements RoleRepository {
     UserRepository userRepository;
 
     @Override
-    public String createRole(final String instance, final String storeName, final String roleName, final String[] read, final String[] write) {
+    public String createRole(final String instance, final String storeName, final String roleName,
+                             final String[] read, final String[] write) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(storeName);
-                entity.setProperty("name", roleName);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    final Entity entity = txn.newEntity(storeName);
+                    entity.setProperty("name", roleName);
 
-                boolean publicRead = true;
-                boolean publicWrite = true;
+                    boolean publicRead = true;
+                    boolean publicWrite = true;
 
-                if(read != null) {
-                    List<String> aclRead = Arrays.asList(read);
-                    if(aclRead.contains("*")) {
-                        publicRead = true;
-                    } else {
-                        publicRead = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclRead) {
-                        if(userId.equals("*")) {
-                            continue;
+                    if(read != null) {
+                        List<String> aclRead = Arrays.asList(read);
+                        if(aclRead.contains("*")) {
+                            publicRead = true;
                         } else {
-                            EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if(userEntity != null) {
-                                entity.addLink("aclRead", userEntity);
-                            }
+                            publicRead = false;
                         }
+                        // Add User to ACL
+                        for(String userId : aclRead) {
+                            if(userId.equals("*")) {
+                                continue;
+                            } else {
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if(userEntity != null) {
+                                    entity.addLink("aclRead", userEntity);
+                                }
+                            }
 
+                        }
                     }
-                }
 
-                entity.setProperty("publicRead", publicRead);
+                    entity.setProperty("publicRead", publicRead);
 
-                if(write != null) {
-                    List<String> aclWrite = Arrays.asList(write);
-                    if(aclWrite.contains("*")) {
-                        publicWrite = true;
-                    } else {
-                        publicWrite = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclWrite) {
-                        if(userId.equals("*")) {
-                            continue;
+                    if(write != null) {
+                        List<String> aclWrite = Arrays.asList(write);
+                        if(aclWrite.contains("*")) {
+                            publicWrite = true;
                         } else {
-                            EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if(userEntity != null) {
-                                entity.addLink("aclWrite", userEntity);
-                            }
+                            publicWrite = false;
                         }
+                        // Add User to ACL
+                        for(String userId : aclWrite) {
+                            if(userId.equals("*")) {
+                                continue;
+                            } else {
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if(userEntity != null) {
+                                    entity.addLink("aclWrite", userEntity);
+                                }
+                            }
 
+                        }
                     }
+
+                    entity.setProperty("publicWrite", publicWrite);
+
+
+                    entityId[0] = entity.getId().toString();
                 }
-
-                entity.setProperty("publicWrite", publicWrite);
-
-
-                entityId[0] = entity.getId().toString();
-            }
-        });
-        entityStore.close();
-        return entityId[0];
+            });
+        } finally {
+            entityStore.close();
+            return entityId[0];
+        }
     }
 
     @Override
@@ -121,56 +125,59 @@ public class JeeRoleRepository implements RoleRepository {
                               final String[] read, final String[] write) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId roleEntityId = txn.toEntityId(roleId);
-                final Entity entity = txn.getEntity(roleEntityId);
-                entity.setProperty("name", newRoleName);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId roleEntityId = txn.toEntityId(roleId);
+                    final Entity entity = txn.getEntity(roleEntityId);
+                    entity.setProperty("name", newRoleName);
 
-                if(read != null) {
-                    boolean publicRead = true;
-                    List<String> aclRead = Arrays.asList(read);
-                    if(aclRead.contains("*")) {
-                        publicRead = true;
-                    } else {
-                        publicRead = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclRead) {
-                        EntityId userEntityId = txn.toEntityId(userId);
-                        Entity userEntity = txn.getEntity(userEntityId);
-                        if(userEntity != null) {
-                            entity.addLink("aclRead", userEntity);
+                    if(read != null) {
+                        boolean publicRead = true;
+                        List<String> aclRead = Arrays.asList(read);
+                        if(aclRead.contains("*")) {
+                            publicRead = true;
+                        } else {
+                            publicRead = false;
                         }
-                    }
-                    entity.setProperty("publicRead", publicRead);
-                }
-
-
-                if(write != null) {
-                    boolean publicWrite = true;
-                    List<String> aclWrite = Arrays.asList(write);
-                    if(aclWrite.contains("*")) {
-                        publicWrite = true;
-                    } else {
-                        publicWrite = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclWrite) {
-                        EntityId userEntityId = txn.toEntityId(userId);
-                        Entity userEntity = txn.getEntity(userEntityId);
-                        if(userEntity != null) {
-                            entity.addLink("aclWrite", userEntity);
+                        // Add User to ACL
+                        for(String userId : aclRead) {
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userEntity = txn.getEntity(userEntityId);
+                            if(userEntity != null) {
+                                entity.addLink("aclRead", userEntity);
+                            }
                         }
+                        entity.setProperty("publicRead", publicRead);
                     }
-                    entity.setProperty("publicWrite", publicWrite);
-                }
 
-                success[0] = true;
-            }
-        });
-        entityStore.close();
+
+                    if(write != null) {
+                        boolean publicWrite = true;
+                        List<String> aclWrite = Arrays.asList(write);
+                        if(aclWrite.contains("*")) {
+                            publicWrite = true;
+                        } else {
+                            publicWrite = false;
+                        }
+                        // Add User to ACL
+                        for(String userId : aclWrite) {
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userEntity = txn.getEntity(userEntityId);
+                            if(userEntity != null) {
+                                entity.addLink("aclWrite", userEntity);
+                            }
+                        }
+                        entity.setProperty("publicWrite", publicWrite);
+                    }
+
+                    success[0] = true;
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 
@@ -178,35 +185,38 @@ public class JeeRoleRepository implements RoleRepository {
     public Role getRole(String instance, String storeName, final String roleId) {
         final Role[] entity = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId roleEntityId = txn.toEntityId(roleId);
-                final Entity roleEntity = txn.getEntity(roleEntityId);
-                Role role = new Role();
-                role.setEntityId(roleEntityId.toString());
-                role.setName((String) roleEntity.getProperty("name"));
-                role.setPublicRead((Boolean) roleEntity.getProperty("publicRead"));
-                role.setPublicWrite((Boolean) roleEntity.getProperty("publicWrite"));
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId roleEntityId = txn.toEntityId(roleId);
+                    final Entity roleEntity = txn.getEntity(roleEntityId);
+                    Role role = new Role();
+                    role.setEntityId(roleEntityId.toString());
+                    role.setName((String) roleEntity.getProperty("name"));
+                    role.setPublicRead((Boolean) roleEntity.getProperty("publicRead"));
+                    role.setPublicWrite((Boolean) roleEntity.getProperty("publicWrite"));
 
-                List<String> aclRead = new LinkedList<>();
-                List<String> aclWrite = new LinkedList<>();
+                    List<String> aclRead = new LinkedList<>();
+                    List<String> aclWrite = new LinkedList<>();
 
-                for(Entity aclReadLink : roleEntity.getLinks("aclRead")) {
-                    aclRead.add(aclReadLink.getId().toString());
+                    for(Entity aclReadLink : roleEntity.getLinks("aclRead")) {
+                        aclRead.add(aclReadLink.getId().toString());
+                    }
+
+                    for(Entity aclWriteLink : roleEntity.getLinks("aclWrite")) {
+                        aclWrite.add(aclWriteLink.getId().toString());
+                    }
+
+                    role.setAclRead(aclRead);
+                    role.setAclWrite(aclWrite);
+
+                    entity[0] = role;
                 }
-
-                for(Entity aclWriteLink : roleEntity.getLinks("aclWrite")) {
-                    aclWrite.add(aclWriteLink.getId().toString());
-                }
-
-                role.setAclRead(aclRead);
-                role.setAclWrite(aclWrite);
-
-                entity[0] = role;
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return entity[0];
     }
 
@@ -214,15 +224,19 @@ public class JeeRoleRepository implements RoleRepository {
     public boolean deleteRole(String instance, String storeName, final String roleID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId roleEntityId = txn.toEntityId(roleID);
-                Entity entity = txn.getEntity(roleEntityId);
-                success[0] = entity.delete();
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId roleEntityId = txn.toEntityId(roleID);
+                    Entity entity = txn.getEntity(roleEntityId);
+                    success[0] = entity.delete();
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
+
         return success[0];
     }
 
@@ -230,17 +244,20 @@ public class JeeRoleRepository implements RoleRepository {
     public boolean linkRole(String instance, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId userEntityId = txn.toEntityId(userID);
-                EntityId roleEntityId = txn.toEntityId(roleID);
-                Entity userEntity = txn.getEntity(userEntityId);
-                Entity roleEntity = txn.getEntity(roleEntityId);
-                success[0] = userEntity.addLink("role", roleEntity);
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId userEntityId = txn.toEntityId(userID);
+                    EntityId roleEntityId = txn.toEntityId(roleID);
+                    Entity userEntity = txn.getEntity(userEntityId);
+                    Entity roleEntity = txn.getEntity(roleEntityId);
+                    success[0] = userEntity.addLink("role", roleEntity);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 
@@ -248,17 +265,20 @@ public class JeeRoleRepository implements RoleRepository {
     public boolean unlinkRole(String instance, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId userEntityId = txn.toEntityId(userID);
-                EntityId roleEntityId = txn.toEntityId(roleID);
-                Entity userEntity = txn.getEntity(userEntityId);
-                Entity roleEntity = txn.getEntity(roleEntityId);
-                success[0] = userEntity.deleteLink("role", roleEntity);
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId userEntityId = txn.toEntityId(userID);
+                    EntityId roleEntityId = txn.toEntityId(roleID);
+                    Entity userEntity = txn.getEntity(userEntityId);
+                    Entity roleEntity = txn.getEntity(roleEntityId);
+                    success[0] = userEntity.deleteLink("role", roleEntity);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 
@@ -266,18 +286,21 @@ public class JeeRoleRepository implements RoleRepository {
     public boolean isLinked(String instance, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId userEntityId = txn.toEntityId(userID);
-                EntityId roleEntityId = txn.toEntityId(roleID);
-                Entity userEntity = txn.getEntity(userEntityId);
-                Entity roleEntity = txn.getEntity(roleEntityId);
-                Entity linkedRole = userEntity.getLink("role");
-                success[0] = linkedRole.getId().toString().equals(roleEntity.getId().toString());
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId userEntityId = txn.toEntityId(userID);
+                    EntityId roleEntityId = txn.toEntityId(roleID);
+                    Entity userEntity = txn.getEntity(userEntityId);
+                    Entity roleEntity = txn.getEntity(roleEntityId);
+                    Entity linkedRole = userEntity.getLink("role");
+                    success[0] = linkedRole.getId().toString().equals(roleEntity.getId().toString());
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 

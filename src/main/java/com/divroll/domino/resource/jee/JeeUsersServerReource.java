@@ -128,7 +128,7 @@ public class JeeUsersServerReource extends BaseServerResource
                     String hashPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
                     String entityId = userRepository.createUser(appId, storeName, username, hashPassword, read, write);
                     if (entityId != null) {
-                        String webToken = webTokenService.createToken(app.getMasterKey(), username);
+                        String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
                         JSONObject result = new JSONObject();
                         result.put("webToken", webToken);
                         setStatus(Status.SUCCESS_CREATED);

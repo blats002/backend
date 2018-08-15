@@ -48,73 +48,76 @@ public class JeeEntityRepository implements EntityRepository {
 
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(storeName);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    final Entity entity = txn.newEntity(storeName);
 
-                Iterator<String> it = comparableMap.keySet().iterator();
-                while(it.hasNext()) {
-                    String key = it.next();
-                    Comparable value = comparableMap.get(key);
-                    entity.setProperty(key, value);
-                }
-
-                boolean publicRead = true;
-                boolean publicWrite = true;
-
-                if(read != null) {
-                    List<String> aclRead = Arrays.asList(read);
-                    if(aclRead.contains("*")) {
-                        publicRead = true;
-                    } else {
-                        publicRead = false;
+                    Iterator<String> it = comparableMap.keySet().iterator();
+                    while(it.hasNext()) {
+                        String key = it.next();
+                        Comparable value = comparableMap.get(key);
+                        entity.setProperty(key, value);
                     }
-                    // Add User to ACL
-                    for(String userId : aclRead) {
-                        if(userId.equals("*")) {
-                            continue;
+
+                    boolean publicRead = true;
+                    boolean publicWrite = true;
+
+                    if(read != null) {
+                        List<String> aclRead = Arrays.asList(read);
+                        if(aclRead.contains("*")) {
+                            publicRead = true;
                         } else {
-                            EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if(userEntity != null) {
-                                entity.addLink("aclRead", userEntity);
-                            }
+                            publicRead = false;
                         }
+                        // Add User to ACL
+                        for(String userId : aclRead) {
+                            if(userId.equals("*")) {
+                                continue;
+                            } else {
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if(userEntity != null) {
+                                    entity.addLink("aclRead", userEntity);
+                                }
+                            }
 
+                        }
                     }
-                }
 
-                if(write != null) {
-                    List<String> aclWrite = Arrays.asList(write);
-                    if(aclWrite.contains("*")) {
-                        publicWrite = true;
-                    } else {
-                        publicWrite = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclWrite) {
-                        if(userId.equals("*")) {
-                            continue;
+                    if(write != null) {
+                        List<String> aclWrite = Arrays.asList(write);
+                        if(aclWrite.contains("*")) {
+                            publicWrite = true;
                         } else {
-                            EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if(userEntity != null) {
-                                entity.addLink("aclWrite", userEntity);
-                            }
+                            publicWrite = false;
                         }
+                        // Add User to ACL
+                        for(String userId : aclWrite) {
+                            if(userId.equals("*")) {
+                                continue;
+                            } else {
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if(userEntity != null) {
+                                    entity.addLink("aclWrite", userEntity);
+                                }
+                            }
 
+                        }
                     }
+
+                    entity.setProperty("publicRead", publicRead);
+                    entity.setProperty("publicWrite", publicWrite);
+
+
+                    entityId[0] = entity.getId().toString();
                 }
-
-                entity.setProperty("publicRead", publicRead);
-                entity.setProperty("publicWrite", publicWrite);
-
-
-                entityId[0] = entity.getId().toString();
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return entityId[0];
     }
 
@@ -123,118 +126,125 @@ public class JeeEntityRepository implements EntityRepository {
                                 final String[] read, final String[] write) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId roleEntityId = txn.toEntityId(entityId);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId roleEntityId = txn.toEntityId(entityId);
 
-                final Entity entity = txn.getEntity(roleEntityId);
-                Iterator<String> it = comparableMap.keySet().iterator();
-                while(it.hasNext()) {
-                    String key = it.next();
-                    Comparable value = comparableMap.get(key);
-                    entity.setProperty(key, value);
+                    final Entity entity = txn.getEntity(roleEntityId);
+                    Iterator<String> it = comparableMap.keySet().iterator();
+                    while(it.hasNext()) {
+                        String key = it.next();
+                        Comparable value = comparableMap.get(key);
+                        entity.setProperty(key, value);
+                    }
+
+                    if(read != null) {
+                        boolean publicRead = true;
+                        List<String> aclRead = Arrays.asList(read);
+                        if(aclRead.contains("*")) {
+                            publicRead = true;
+                        } else {
+                            publicRead = false;
+                        }
+                        // Add User to ACL
+                        for(String userId : aclRead) {
+                            if(userId.equalsIgnoreCase("*")) {
+                                continue;
+                            }
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userEntity = txn.getEntity(userEntityId);
+                            if(userEntity != null) {
+                                entity.addLink("aclRead", userEntity);
+                            }
+                        }
+                        entity.setProperty("publicRead", publicRead);
+                    }
+
+                    if(write != null) {
+                        boolean publicWrite = true;
+                        List<String> aclWrite = Arrays.asList(write);
+                        if(aclWrite.contains("*")) {
+                            publicWrite = true;
+                        } else {
+                            publicWrite = false;
+                        }
+                        // Add User to ACL
+                        for(String userId : aclWrite) {
+                            if(userId.equalsIgnoreCase("*")) {
+                                continue;
+                            }
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userEntity = txn.getEntity(userEntityId);
+                            if(userEntity != null) {
+                                entity.addLink("aclWrite", userEntity);
+                            }
+                        }
+                        entity.setProperty("publicWrite", publicWrite);
+                    }
+
+                    success[0] = true;
                 }
-
-                if(read != null) {
-                    boolean publicRead = true;
-                    List<String> aclRead = Arrays.asList(read);
-                    if(aclRead.contains("*")) {
-                        publicRead = true;
-                    } else {
-                        publicRead = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclRead) {
-                        if(userId.equalsIgnoreCase("*")) {
-                            continue;
-                        }
-                        EntityId userEntityId = txn.toEntityId(userId);
-                        Entity userEntity = txn.getEntity(userEntityId);
-                        if(userEntity != null) {
-                            entity.addLink("aclRead", userEntity);
-                        }
-                    }
-                    entity.setProperty("publicRead", publicRead);
-                }
-
-                if(write != null) {
-                    boolean publicWrite = true;
-                    List<String> aclWrite = Arrays.asList(write);
-                    if(aclWrite.contains("*")) {
-                        publicWrite = true;
-                    } else {
-                        publicWrite = false;
-                    }
-                    // Add User to ACL
-                    for(String userId : aclWrite) {
-                        if(userId.equalsIgnoreCase("*")) {
-                            continue;
-                        }
-                        EntityId userEntityId = txn.toEntityId(userId);
-                        Entity userEntity = txn.getEntity(userEntityId);
-                        if(userEntity != null) {
-                            entity.addLink("aclWrite", userEntity);
-                        }
-                    }
-                    entity.setProperty("publicWrite", publicWrite);
-                }
-
-                success[0] = true;
-            }
-        });
-        entityStore.close();
-        return success[0];    }
+            });
+        } finally {
+            entityStore.close();
+        }
+        return success[0];
+    }
 
     @Override
     public  Map<String,Object> getEntity(String instance, final String storeName, final String entityId) {
         final Map<String,Object> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId idOfEntity = txn.toEntityId(entityId);
-                final Entity entity = txn.getEntity(idOfEntity);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
 
-                for(String property : entity.getPropertyNames()) {
-                    comparableMap.put(property, entity.getProperty(property));
+                    for(String property : entity.getPropertyNames()) {
+                        comparableMap.put(property, entity.getProperty(property));
+                    }
+
+                    List<String> aclRead = new LinkedList<>();
+                    List<String> aclWrite = new LinkedList<>();
+
+                    Boolean publicRead = (Boolean) entity.getProperty("publicRead");
+                    Boolean publicWrite = (Boolean) entity.getProperty("publicWrite");
+
+                    for(Entity aclReadLink : entity.getLinks("aclRead")) {
+                        aclRead.add(aclReadLink.getId().toString());
+                    }
+
+                    for(Entity aclWriteLink : entity.getLinks("aclWrite")) {
+                        aclWrite.add(aclWriteLink.getId().toString());
+                    }
+
+                    if(publicRead) {
+                        aclRead.add("*");
+                    }
+
+                    if(publicWrite) {
+                        aclWrite.add("*");
+                    }
+
+                    Map<String,Object> metadata = new TreeMap<String,Object>();
+
+                    metadata.put("entityId", idOfEntity.toString());
+                    metadata.put("aclRead", aclRead);
+                    metadata.put("aclWrite", aclWrite);
+                    metadata.put("blobnames", entity.getBlobNames());
+                    metadata.put("links", entity.getLinkNames());
+
+                    comparableMap.put("_md", metadata);
+
                 }
-
-                List<String> aclRead = new LinkedList<>();
-                List<String> aclWrite = new LinkedList<>();
-
-                Boolean publicRead = (Boolean) entity.getProperty("publicRead");
-                Boolean publicWrite = (Boolean) entity.getProperty("publicWrite");
-
-                for(Entity aclReadLink : entity.getLinks("aclRead")) {
-                    aclRead.add(aclReadLink.getId().toString());
-                }
-
-                for(Entity aclWriteLink : entity.getLinks("aclWrite")) {
-                    aclWrite.add(aclWriteLink.getId().toString());
-                }
-
-                if(publicRead) {
-                    aclRead.add("*");
-                }
-
-                if(publicWrite) {
-                    aclWrite.add("*");
-                }
-
-                Map<String,Object> metadata = new TreeMap<String,Object>();
-
-                metadata.put("entityId", idOfEntity.toString());
-                metadata.put("aclRead", aclRead);
-                metadata.put("aclWrite", aclWrite);
-                metadata.put("blobnames", entity.getBlobNames());
-                metadata.put("links", entity.getLinkNames());
-
-                comparableMap.put("_md", metadata);
-
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return comparableMap;
     }
 
@@ -243,15 +253,18 @@ public class JeeEntityRepository implements EntityRepository {
                                         final String propertyName) {
         final Comparable[] comparable = new Comparable[1];
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId idOfEntity = txn.toEntityId(entityId);
-                final Entity entity = txn.getEntity(idOfEntity);
-                comparable[0] = entity.getProperty(propertyName);
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    comparable[0] = entity.getProperty(propertyName);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return comparable[0];
     }
 
@@ -259,15 +272,18 @@ public class JeeEntityRepository implements EntityRepository {
     public InputStream getEntityBlob(String instance, String storeName, final String entityId, final String blobKey) {
         final InputStream[] inputStream = new InputStream[1];
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId idOfEntity = txn.toEntityId(entityId);
-                final Entity entity = txn.getEntity(idOfEntity);
-                inputStream[0] = entity.getBlob(blobKey);
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    inputStream[0] = entity.getBlob(blobKey);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return inputStream[0];
     }
 
@@ -275,15 +291,18 @@ public class JeeEntityRepository implements EntityRepository {
     public boolean deleteEntity(String instance, String storeName, final String entityId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId roleEntityId = txn.toEntityId(entityId);
-                Entity entity = txn.getEntity(roleEntityId);
-                success[0] = entity.delete();
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId roleEntityId = txn.toEntityId(entityId);
+                    Entity entity = txn.getEntity(roleEntityId);
+                    success[0] = entity.delete();
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 
@@ -291,17 +310,20 @@ public class JeeEntityRepository implements EntityRepository {
     public boolean linkEntity(String instance, String storeName, final String linkName, final String sourceId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId userEntityId = txn.toEntityId(sourceId);
-                EntityId roleEntityId = txn.toEntityId(targetId);
-                Entity sourceEntity = txn.getEntity(userEntityId);
-                Entity targetEntity = txn.getEntity(roleEntityId);
-                success[0] = sourceEntity.addLink(linkName, targetEntity);
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId userEntityId = txn.toEntityId(sourceId);
+                    EntityId roleEntityId = txn.toEntityId(targetId);
+                    Entity sourceEntity = txn.getEntity(userEntityId);
+                    Entity targetEntity = txn.getEntity(roleEntityId);
+                    success[0] = sourceEntity.addLink(linkName, targetEntity);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 
@@ -309,35 +331,42 @@ public class JeeEntityRepository implements EntityRepository {
     public boolean unlinkEntity(String instance, String storeName, final String linkName, final String entityId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId sourceEntityId = txn.toEntityId(entityId);
-                EntityId targetEntityId = txn.toEntityId(targetId);
-                Entity sourceEntity = txn.getEntity(sourceEntityId);
-                Entity targetEntity = txn.getEntity(targetEntityId);
-                success[0] = sourceEntity.deleteLink(linkName, targetEntity);
-            }
-        });
-        entityStore.close();
-        return success[0];    }
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId sourceEntityId = txn.toEntityId(entityId);
+                    EntityId targetEntityId = txn.toEntityId(targetId);
+                    Entity sourceEntity = txn.getEntity(sourceEntityId);
+                    Entity targetEntity = txn.getEntity(targetEntityId);
+                    success[0] = sourceEntity.deleteLink(linkName, targetEntity);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
+        return success[0];
+    }
 
     @Override
     public boolean isLinked(String instance, String storeName, final String linkName, final String entityId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId sourceEntityId = txn.toEntityId(entityId);
-                EntityId targetEntityId = txn.toEntityId(targetId);
-                Entity sourceEntity = txn.getEntity(sourceEntityId);
-                Entity targetEntity = txn.getEntity(targetEntityId);
-                Entity linkedRole = sourceEntity.getLink(linkName);
-                success[0] = linkedRole.getId().toString().equals(targetEntity.getId().toString());
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId sourceEntityId = txn.toEntityId(entityId);
+                    EntityId targetEntityId = txn.toEntityId(targetId);
+                    Entity sourceEntity = txn.getEntity(sourceEntityId);
+                    Entity targetEntity = txn.getEntity(targetEntityId);
+                    Entity linkedRole = sourceEntity.getLink(linkName);
+                    success[0] = linkedRole.getId().toString().equals(targetEntity.getId().toString());
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         return success[0];
     }
 
@@ -345,53 +374,55 @@ public class JeeEntityRepository implements EntityRepository {
     public Map<String, Object> getFirstLinkedEntity(String instance, String storeName, final String entityId, final String linkName) {
         final Map<String,Object> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId sourceEntityId = txn.toEntityId(entityId);
-                final Entity source = txn.getEntity(sourceEntityId);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId sourceEntityId = txn.toEntityId(entityId);
+                    final Entity source = txn.getEntity(sourceEntityId);
 
-                Entity entity = source.getLink(linkName);
+                    Entity entity = source.getLink(linkName);
 
-                for(String property : entity.getPropertyNames()) {
-                    comparableMap.put(property, entity.getProperty(property));
+                    for(String property : entity.getPropertyNames()) {
+                        comparableMap.put(property, entity.getProperty(property));
+                    }
+
+                    List<String> aclRead = new LinkedList<>();
+                    List<String> aclWrite = new LinkedList<>();
+
+                    Boolean publicRead = (Boolean) entity.getProperty("publicRead");
+                    Boolean publicWrite = (Boolean) entity.getProperty("publicWrite");
+
+                    for(Entity aclReadLink : entity.getLinks("aclRead")) {
+                        aclRead.add(aclReadLink.getId().toString());
+                    }
+
+                    for(Entity aclWriteLink : entity.getLinks("aclWrite")) {
+                        aclWrite.add(aclWriteLink.getId().toString());
+                    }
+
+                    if(publicRead) {
+                        aclRead.add("*");
+                    }
+
+                    if(publicWrite) {
+                        aclWrite.add("*");
+                    }
+
+                    Map<String,Object> metadata = new TreeMap<String,Object>();
+
+                    metadata.put("entityId", entity.getId().toString());
+                    metadata.put("aclRead", aclRead);
+                    metadata.put("aclWrite", aclWrite);
+                    metadata.put("blobnames", entity.getBlobNames());
+                    metadata.put("links", entity.getLinkNames());
+
+                    comparableMap.put("_md", metadata);
                 }
-
-                List<String> aclRead = new LinkedList<>();
-                List<String> aclWrite = new LinkedList<>();
-
-                Boolean publicRead = (Boolean) entity.getProperty("publicRead");
-                Boolean publicWrite = (Boolean) entity.getProperty("publicWrite");
-
-                for(Entity aclReadLink : entity.getLinks("aclRead")) {
-                    aclRead.add(aclReadLink.getId().toString());
-                }
-
-                for(Entity aclWriteLink : entity.getLinks("aclWrite")) {
-                    aclWrite.add(aclWriteLink.getId().toString());
-                }
-
-                if(publicRead) {
-                    aclRead.add("*");
-                }
-
-                if(publicWrite) {
-                    aclWrite.add("*");
-                }
-
-                Map<String,Object> metadata = new TreeMap<String,Object>();
-
-                metadata.put("entityId", entity.getId().toString());
-                metadata.put("aclRead", aclRead);
-                metadata.put("aclWrite", aclWrite);
-                metadata.put("blobnames", entity.getBlobNames());
-                metadata.put("links", entity.getLinkNames());
-
-                comparableMap.put("_md", metadata);
-
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return comparableMap;
     }
 

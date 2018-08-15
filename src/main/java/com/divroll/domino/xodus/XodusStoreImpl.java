@@ -118,20 +118,23 @@ public class XodusStoreImpl implements XodusStore {
         }
         final EntityId[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
-                Iterator<String> it = properties.keySet().iterator();
-                while (it.hasNext()) {
-                    String key = it.next();
-                    Comparable comparable = properties.get(key);
-                    entity.setProperty(key, comparable);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    final Entity entity = txn.newEntity(kind);
+                    Iterator<String> it = properties.keySet().iterator();
+                    while (it.hasNext()) {
+                        String key = it.next();
+                        Comparable comparable = properties.get(key);
+                        entity.setProperty(key, comparable);
+                    }
+                    entityId[0] = entity.getId();
                 }
-                entityId[0] = entity.getId();
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return entityId[0];
     }
 
@@ -140,21 +143,24 @@ public class XodusStoreImpl implements XodusStore {
                             final Map<String, Comparable> properties) {
         final EntityId[] result = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId entityId = txn.toEntityId(id);
-                Entity entity = txn.getEntity(entityId);
-                Iterator<String> it = properties.keySet().iterator();
-                while (it.hasNext()) {
-                    String key = it.next();
-                    Comparable comparable = properties.get(key);
-                    entity.setProperty(key, comparable);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId entityId = txn.toEntityId(id);
+                    Entity entity = txn.getEntity(entityId);
+                    Iterator<String> it = properties.keySet().iterator();
+                    while (it.hasNext()) {
+                        String key = it.next();
+                        Comparable comparable = properties.get(key);
+                        entity.setProperty(key, comparable);
+                    }
+                    result[0] = entityId;
                 }
-                result[0] = entityId;
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return result[0];
     }
 
@@ -162,15 +168,18 @@ public class XodusStoreImpl implements XodusStore {
     public byte[] getBlob(final String dir, final String kind, final String blobKey) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         final List<Comparable<InputStream>> results = new LinkedList<Comparable<InputStream>>();
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
-                InputStream is = entity.getBlob(blobKey);
-                results.add((Comparable<InputStream>) is);
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    final Entity entity = txn.newEntity(kind);
+                    InputStream is = entity.getBlob(blobKey);
+                    results.add((Comparable<InputStream>) is);
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
         try {
             InputStream is = (InputStream) ((LinkedList<Comparable<InputStream>>) results).getFirst();
             byte[] byteArray = ByteStreams.toByteArray(is);
@@ -186,20 +195,23 @@ public class XodusStoreImpl implements XodusStore {
                            final Map<String, Comparable> properties) {
         final EntityId[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                entityId[0] = txn.toEntityId(id);
-                Entity entity = txn.getEntity(entityId[0]);
-                Iterator<String> it = properties.keySet().iterator();
-                while (it.hasNext()) {
-                    String key = it.next();
-                    Comparable comparable = properties.get(key);
-                    entity.setProperty(key, comparable);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    entityId[0] = txn.toEntityId(id);
+                    Entity entity = txn.getEntity(entityId[0]);
+                    Iterator<String> it = properties.keySet().iterator();
+                    while (it.hasNext()) {
+                        String key = it.next();
+                        Comparable comparable = properties.get(key);
+                        entity.setProperty(key, comparable);
+                    }
                 }
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return entityId[0];
     }
 
@@ -207,19 +219,22 @@ public class XodusStoreImpl implements XodusStore {
     public Map<String, Comparable> get(String dir, final String id) {
         final Map<String, Comparable>[] result = new Map[]{null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                EntityId entityId = txn.toEntityId(id);
-                Entity entity = txn.getEntity(entityId);
-                result[0] = new LinkedHashMap<>();
-                List<String> props = entity.getPropertyNames();
-                for (String prop : props) {
-                    result[0].put(prop, entity.getProperty(prop));
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId entityId = txn.toEntityId(id);
+                    Entity entity = txn.getEntity(entityId);
+                    result[0] = new LinkedHashMap<>();
+                    List<String> props = entity.getPropertyNames();
+                    for (String prop : props) {
+                        result[0].put(prop, entity.getProperty(prop));
+                    }
                 }
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return result[0];
     }
 
@@ -231,27 +246,33 @@ public class XodusStoreImpl implements XodusStore {
     @Override
     public void delete(String dir, final String id) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                // TODO
-            }
-        });
-        entityStore.close();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    // TODO
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
     }
 
     @Override
     public void delete(String dir, final String... ids) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                for (String p : ids) {
-                    // TODO
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    for (String p : ids) {
+                        // TODO
+                    }
                 }
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
     }
 
 
@@ -260,16 +281,19 @@ public class XodusStoreImpl implements XodusStore {
                                          Class<T> clazz) {
         final EntityId[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
-        entityStore.executeInTransaction(new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final StoreTransaction txn) {
-                Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
-                if (entity != null) {
-                    entityId[0] = entity.getId();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
+                    if (entity != null) {
+                        entityId[0] = entity.getId();
+                    }
                 }
-            }
-        });
-        entityStore.close();
+            });
+        } finally {
+            entityStore.close();
+        }
         return entityId[0];
     }
 

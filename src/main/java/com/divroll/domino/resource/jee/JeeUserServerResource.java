@@ -82,7 +82,7 @@ public class JeeUserServerResource extends BaseServerResource implements
         if (BCrypt.checkpw(password, existingPassword)) {
             Application app = applicationService.read(appId);
             if (app != null) {
-                String webToken = webTokenService.createToken(app.getMasterKey(), username);
+                String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                 setStatus(Status.SUCCESS_OK);
                 User user = new User();
                 user.setEntityId(userId);

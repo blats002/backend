@@ -84,7 +84,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 String authUserId = null;
 
                 try {
-                    webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -100,13 +100,13 @@ public class JeeEntityServerResource extends BaseServerResource
                     } else if(authUserId != null && aclReadList.contains(authUserId)) {
                         isAccess = true;
                     }
-                    if(!publicRead && !isAccess) {
+                    if(publicRead || isAccess) {
+                        setStatus(Status.SUCCESS_OK);
+                        return new JsonRepresentation(cleanup(entityObj));
+                    } else {
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                         return null;
                     }
-
-                    setStatus(Status.SUCCESS_OK);
-                    return new JsonRepresentation(cleanup(entityObj));
                 } else {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 }
