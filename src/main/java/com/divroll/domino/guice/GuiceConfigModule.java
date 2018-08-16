@@ -21,6 +21,7 @@
  */
 package com.divroll.domino.guice;
 
+import com.divroll.domino.Constants;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.repository.UserRepository;
@@ -69,7 +70,7 @@ public class GuiceConfigModule extends AbstractModule {
     @Override
     protected void configure() {
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
-        bind(String.class).annotatedWith(Names.named("app")).toInstance("Domino");
+        bind(String.class).annotatedWith(Names.named("app")).toInstance(Constants.SERVER_NAME);
 
         bind(XodusStore.class).to(XodusStoreImpl.class).in(Scopes.SINGLETON);
         bind(XodusEnvStore.class).to(XodusEnvStoreImpl.class).in(Scopes.SINGLETON);

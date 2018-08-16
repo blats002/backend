@@ -22,6 +22,7 @@
 package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.domino.Constants;
 import com.divroll.domino.guice.SelfInjectingServerResource;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.service.ApplicationService;
@@ -54,7 +55,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected Map<String, Object> queryMap = new LinkedHashMap<>();
     protected Map<String, String> propsMap = new LinkedHashMap<>();
     protected String entityId;
-    protected String kind;
+    protected String entityType;
 
     protected String appId;
     protected String apiKey;
@@ -84,32 +85,31 @@ public class BaseServerResource extends SelfInjectingServerResource {
             responseHeaders = new Series(Header.class);
             getResponse().getAttributes().put("org.restlet.http.headers", responseHeaders);
         }
-        responseHeaders.add(new Header("X-Powered-By", "Domino"));
+        responseHeaders.add(new Header("X-Powered-By", Constants.SERVER_NAME));
         setAllowedMethods(Sets.newHashSet(Method.GET,
                 Method.PUT,
                 Method.POST,
                 Method.DELETE,
                 Method.OPTIONS));
         propsMap = appProperties();
-        entityId = getAttribute("entityId");
-        kind = getAttribute("kind");
-        userId = getAttribute("userId");
-        roleId = getAttribute("roleId");
+        entityId = getAttribute(Constants.ENTITY_ID);
+        entityType = getAttribute(Constants.ENTITY_TYPE);
+        userId = getAttribute(Constants.USER_ID);
+        roleId = getAttribute(Constants.ROLE_ID);
 
-        username = getQueryValue("username");
+        username = getQueryValue(Constants.QUERY_USERNAME);
 
         Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-        appId = headers.getFirstValue("X-Domino-App-Id");
-        apiKey = headers.getFirstValue("X-Domino-Api-Key");
-        masterKey = headers.getFirstValue("X-Domino-Master-Key");
-        authToken = headers.getFirstValue("X-Domino-Auth-Token");
+        appId = headers.getFirstValue(Constants.HEADER_APP_ID);
+        apiKey = headers.getFirstValue(Constants.HEADER_API_KEY);
+        masterKey = headers.getFirstValue(Constants.HEADER_MASTER_KEY);
+        authToken = headers.getFirstValue(Constants.HEADER_AUTH_TOKEN);
 
-        aclRead = headers.getFirstValue("X-Domino-ACL-Read");
-        aclWrite = headers.getFirstValue("X-Domino-ACL-Write");
+        aclRead = headers.getFirstValue(Constants.HEADER_ACL_READ);
+        aclWrite = headers.getFirstValue(Constants.HEADER_ACL_WRITE);
 
-        accept = headers.getFirstValue("Accept");
-        contentType = headers.getFirstValue("Content-Type");
-
+        accept = headers.getFirstValue(Constants.HEADER_ACCEPT);
+        contentType = headers.getFirstValue(Constants.HEADER_CONTENT_TYPE);
 
     }
 
@@ -186,19 +186,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected Representation returnMissingAuthToken() {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("error", "Missing auth token");
+        jsonObject.put("error", Constants.ERROR_MISSING_AUTH_TOKEN);
         return new JsonRepresentation(jsonObject.toJSONString());
     }
 
     protected Representation missingUsernamePasswordPair() {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("error", "Missing username/password pair");
+        jsonObject.put("error", Constants.ERROR_MISSING_USERNAME_PASSWORD);
         return new JsonRepresentation(jsonObject.toJSONString());
     }
 
     protected Map<String, Object> cleanup(Map<String,Object> result) {
-        result.remove("publicWrite");
-        result.remove("publicRead");
+        result.remove(Constants.RESERVED_FIELD_PUBLICWRITE);
+        result.remove(Constants.RESERVED_FIELD_PUBLICREAD);
         return result;
     }
 

@@ -22,6 +22,7 @@
 package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.RoleRepository;
@@ -63,7 +64,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 return null;
             }
             if(roleId == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing role ID in request");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_ROLE_ID);
                 return null;
             }
             Application app = applicationService.read(appId);
@@ -80,7 +81,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 }
             } else {
                 if(authToken == null) {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Nissing Auth Token in request");
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_AUTH_TOKEN);
                     return null;
                 }
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
@@ -95,7 +96,7 @@ public class JeeRoleServerResource extends BaseServerResource
                         for (int i = 0; i < jsonArray.size(); i++) {
                             aclReadList.add(jsonArray.getString(i));
                         }
-                        if(aclReadList.contains("*")) {
+                        if(aclReadList.contains(Constants.ACL_ASTERISK)) {
                             publicRead = true;
                         } else if(aclReadList.contains(authUserId)) {
                             isAccess = true;
@@ -118,7 +119,7 @@ public class JeeRoleServerResource extends BaseServerResource
             }
 
         } catch (EntityRemovedInDatabaseException e) {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND, "Entity was removed ");
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND, Constants.ERROR_ENTITY_WAS_REMOVED);
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
@@ -147,8 +148,8 @@ public class JeeRoleServerResource extends BaseServerResource
                 return null;
             }
 
-            String[] read = new String[]{"*"};
-            String[] write = new String[]{"*"};
+            String[] read = new String[]{Constants.ACL_ASTERISK};
+            String[] write = new String[]{Constants.ACL_ASTERISK};
 
             if (aclRead != null) {
                 try {
@@ -190,11 +191,11 @@ public class JeeRoleServerResource extends BaseServerResource
                             role.setName(newRoleName);
                             if(read != null) {
                                 role.setAclRead(Lists.newArrayList(read));
-                                role.setPublicRead(Arrays.asList(read).contains("*"));
+                                role.setPublicRead(Arrays.asList(read).contains(Constants.ACL_ASTERISK));
                             }
                             if(write != null) {
                                 role.setAclWrite(Lists.newArrayList(write));
-                                role.setPublicWrite(Arrays.asList(write).contains("*"));
+                                role.setPublicWrite(Arrays.asList(write).contains(Constants.ACL_ASTERISK));
                             }
                             return role;
                         } else {

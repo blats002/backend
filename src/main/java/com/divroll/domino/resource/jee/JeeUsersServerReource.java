@@ -23,6 +23,7 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.User;
 import com.divroll.domino.model.Users;
@@ -57,8 +58,8 @@ public class JeeUsersServerReource extends BaseServerResource
 
     @Override
     public Users getUsers() {
-        String skip = getQueryValue("skip");
-        String limit = getQueryValue("limit");
+        String skip = getQueryValue(Constants.QUERY_SKIP);
+        String limit = getQueryValue(Constants.QUERY_LIMIT);
         if(!isMaster(appId, masterKey)) {
 
         } else {
@@ -85,8 +86,8 @@ public class JeeUsersServerReource extends BaseServerResource
                 return null;
             }
 
-            String[] read = new String[]{"*"};
-            String[] write = new String[]{"*"};
+            String[] read = new String[]{Constants.ACL_ASTERISK};
+            String[] write = new String[]{Constants.ACL_ASTERISK};
 
             if (aclRead != null) {
                 try {
@@ -120,7 +121,7 @@ public class JeeUsersServerReource extends BaseServerResource
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
 
             if (userEntity != null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Username already exists");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_USERNAME_EXISTS);
                 return null;
             } else {
                 Application app = applicationService.read(appId);
@@ -130,7 +131,7 @@ public class JeeUsersServerReource extends BaseServerResource
                     if (entityId != null) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
                         JSONObject result = new JSONObject();
-                        result.put("webToken", webToken);
+                        result.put(Constants.WEBTOKEN, webToken);
                         setStatus(Status.SUCCESS_CREATED);
                         User user = new User();
                         user.setEntityId(entityId.toString());

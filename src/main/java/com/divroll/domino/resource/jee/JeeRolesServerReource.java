@@ -22,6 +22,7 @@
 package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.model.Roles;
 import com.divroll.domino.repository.RoleRepository;
@@ -58,8 +59,8 @@ public class JeeRolesServerReource extends BaseServerResource
 
     @Override
     public Roles getRoles() {
-        String skip = getQueryValue("skip");
-        String limit = getQueryValue("limit");
+        String skip = getQueryValue(Constants.QUERY_SKIP);
+        String limit = getQueryValue(Constants.QUERY_LIMIT);
         if(!isMaster(appId, masterKey)) {
 
         } else {
@@ -86,8 +87,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 return null;
             }
 
-            String[] read = new String[]{"*"};
-            String[] write = new String[]{"*"};
+            String[] read = new String[]{Constants.ACL_ASTERISK};
+            String[] write = new String[]{Constants.ACL_ASTERISK};
 
             if (aclRead != null) {
                 try {

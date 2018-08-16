@@ -69,12 +69,12 @@ public class DominoApplication extends Application {
 
         CorsFilter corsFilter = new CorsFilter(getContext());
         corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
-        corsFilter.setAllowedHeaders(Sets.newHashSet("X-Domino-Master-Key",
-                "X-Domino-Api-Key",
-                "X-Domino-App-Id",
-                "X-Domino-Auth-Token",
-                "Accept",
-                "Content-Type"));
+        corsFilter.setAllowedHeaders(Sets.newHashSet(Constants.HEADER_MASTER_KEY,
+                Constants.HEADER_API_KEY,
+                Constants.HEADER_APP_ID,
+                Constants.HEADER_AUTH_TOKEN,
+                Constants.HEADER_ACCEPT,
+                Constants.HEADER_CONTENT_TYPE));
         corsFilter.setAllowedCredentials(true);
 
         router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationServerResource.class); // TODO: Rename to directories
@@ -87,11 +87,11 @@ public class DominoApplication extends Application {
         router.attach(DOMINO_ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
 
         router.attach(DOMINO_ROOT_URI + "entities", JeeEntitiesServerResource.class);
-        router.attach(DOMINO_ROOT_URI + "entities/{kind}", JeeEntitiesServerResource.class);
-        router.attach(DOMINO_ROOT_URI + "entities/{kind}/{entityId}", JeeEntityServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
 
-        router.attach(DOMINO_ROOT_URI + "kv/{kind}", JeeKeyValueServerResource.class);
-        router.attach(DOMINO_ROOT_URI + "kv/{kind}/{entityId}", JeeKeyValueServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
 
         router.attachDefault(JeeRootServerResource.class);
 

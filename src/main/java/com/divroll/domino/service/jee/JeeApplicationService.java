@@ -21,13 +21,14 @@
  */
 package com.divroll.domino.service.jee;
 
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.service.ApplicationService;
 import com.divroll.domino.xodus.XodusStore;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -38,8 +39,9 @@ import java.util.Map;
  */
 public class JeeApplicationService implements ApplicationService {
 
-    private static final String KIND = "Application";
-    private static final String DIR = "master";
+    @Inject
+    @Named("masterStore")
+    String masterStore;
 
     @Inject
     XodusStore store;
@@ -49,23 +51,24 @@ public class JeeApplicationService implements ApplicationService {
 //        Key entityId = applicationRepository.save(application, Application.class);
 //        return entityId;
         Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        comparableMap.put("masterKey", application.getMasterKey());
-        comparableMap.put("apiKey", application.getApiKey());
-        comparableMap.put("appId", application.getAppId());
-        EntityId entityId = store.put(DIR, KIND, comparableMap);
+        comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
+        comparableMap.put(Constants.API_KEY, application.getApiKey());
+        comparableMap.put(Constants.APP_ID, application.getAppId());
+        EntityId entityId = store.put(masterStore, Constants.ENTITYSTORE_APPLICATION, comparableMap);
         return entityId;
     }
 
     @Override
     public Application read(String applicationId) {
-        EntityId id = store.getFirstEntityId(DIR, KIND, "appId", applicationId, String.class);
+        EntityId id = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION, Constants.APP_ID,
+                applicationId, String.class);
         if (id != null) {
-            Map<String, Comparable> entityMap = store.get(DIR, id.toString());
+            Map<String, Comparable> entityMap = store.get(masterStore, id.toString());
             if (entityMap != null) {
                 Application application = new Application();
-                application.setAppId((String) entityMap.get("appId"));
-                application.setApiKey((String) entityMap.get("apiKey"));
-                application.setMasterKey((String) entityMap.get("masterKey"));
+                application.setAppId((String) entityMap.get(Constants.APP_ID));
+                application.setApiKey((String) entityMap.get(Constants.API_KEY));
+                application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 return application;
             }
         }
@@ -75,16 +78,17 @@ public class JeeApplicationService implements ApplicationService {
     @Override
     public void update(Application application, String theMasterKey) {
         Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        comparableMap.put("appId", application.getAppId());
-        comparableMap.put("apiKey", application.getApiKey());
-        comparableMap.put("masterKey", application.getMasterKey());
-        EntityId entityId = store.getFirstEntityId(DIR, KIND, "masterKey", theMasterKey, String.class);
-        store.update(DIR, KIND, entityId.toString(), comparableMap);
+        comparableMap.put(Constants.APP_ID, application.getAppId());
+        comparableMap.put(Constants.API_KEY, application.getApiKey());
+        comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
+        EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
+                Constants.MASTER_KEY, theMasterKey, String.class);
+        store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
     }
 
     @Override
     public void delete(String entityId) {
-        store.delete(DIR, KIND, entityId);
+        store.delete(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId);
     }
 
 }

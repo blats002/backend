@@ -44,36 +44,36 @@ public class XodusStoreImpl implements XodusStore {
 
     /*
     @Override
-    public void putIfNotExists(String dir, final String kind, final String propertyKey, final String propertyValue) {
+    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final String propertyValue) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
+                final Entity entity = txn.newEntity(entityType);
                 entity.setProperty(propertyKey, propertyValue);
             }
         });
         entityStore.close();
     }
     @Override
-    public void putIfNotExists(String dir, final String kind, final String propertyKey, final Double propertyValue) {
+    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Double propertyValue) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
+                final Entity entity = txn.newEntity(entityType);
                 entity.setProperty(propertyKey, propertyValue);
             }
         });
         entityStore.close();
     }
     @Override
-    public void putIfNotExists(String dir, final String kind, final String propertyKey, final Long propertyValue) {
+    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Long propertyValue) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
+                final Entity entity = txn.newEntity(entityType);
                 EntityId id = entity.getId();
                 entity.setProperty(propertyKey, propertyValue);
             }
@@ -81,12 +81,12 @@ public class XodusStoreImpl implements XodusStore {
         entityStore.close();
     }
     @Override
-    public void putIfNotExists(String dir, final String kind, final String propertyKey, final Boolean propertyValue) {
+    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Boolean propertyValue) {
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
+                final Entity entity = txn.newEntity(entityType);
                 entity.setProperty(propertyKey, propertyValue);
             }
         });
@@ -95,13 +95,13 @@ public class XodusStoreImpl implements XodusStore {
 
 
     @Override
-    public EntityId putIfNotExists(String dir, final String kind, final String propertyKey, final InputStream is) {
+    public EntityId putIfNotExists(String dir, final String entityType, final String propertyKey, final InputStream is) {
         final EntityId[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
         entityStore.executeInTransaction(new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-                final Entity entity = txn.newEntity(kind);
+                final Entity entity = txn.newEntity(entityType);
                 entity.setBlob(propertyKey, is);
                 entityId[0] = entity.getId();
             }

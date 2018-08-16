@@ -21,6 +21,7 @@
  */
 package com.divroll.domino.resource.jee;
 
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.model.User;
@@ -46,8 +47,6 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
     private static final Logger LOG
             = Logger.getLogger(JeeUserRoleServerResource.class.getName());
 
-
-    private static final String KEY_SPACE = ":";
 
     @Inject
     @Named("defaultUserStore")
@@ -95,7 +94,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
                     setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 }
             } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Application not found");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_APPLICATION_NOT_FOUND);
             }
 
         } catch (Exception e) {
@@ -138,7 +137,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
                     setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 }
             } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Application not found");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_APPLICATION_NOT_FOUND);
             }
 
         } catch (Exception e) {

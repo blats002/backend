@@ -22,6 +22,7 @@
 package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.User;
 import com.divroll.domino.repository.UserRepository;
@@ -49,8 +50,6 @@ public class JeeUserServerResource extends BaseServerResource implements
             = Logger.getLogger(JeeUserServerResource.class.getName());
 
 
-    private static final String KEY_SPACE = ":";
-
     @Inject
     @Named("defaultUserStore")
     String storeName;
@@ -67,8 +66,8 @@ public class JeeUserServerResource extends BaseServerResource implements
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
         }
-        String username = getQueryValue("username");
-        String password = getQueryValue("password");
+        String username = getQueryValue(Constants.QUERY_USERNAME);
+        String password = getQueryValue(Constants.QUERY_PASSWORD);
 
         User userEntity = userRepository.getUserByUsername(appId, storeName, username);
         String userId = userEntity.getEntityId();
@@ -100,8 +99,8 @@ public class JeeUserServerResource extends BaseServerResource implements
     @Override
     public User updateUser(User entity) {
         Representation representation = returnNull();
-        String username = getQueryValue("username");
-        String password = getQueryValue("password");
+        String username = getQueryValue(Constants.QUERY_USERNAME);
+        String password = getQueryValue(Constants.QUERY_PASSWORD);
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -136,8 +135,8 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             }
 
-            String[] read = new String[]{"*"};
-            String[] write = new String[]{"*"};
+            String[] read = new String[]{Constants.ACL_ASTERISK};
+            String[] write = new String[]{Constants.ACL_ASTERISK};
 
             if (aclRead != null) {
                 try {
@@ -207,19 +206,19 @@ public class JeeUserServerResource extends BaseServerResource implements
     public void deleteUser(User entity) {
         try {
             if(appId == null || masterKey == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing Application ID or Master Key");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MASTERKEY_MISSING);
                 return;
             }
             if (!isMaster(appId, masterKey)) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, "Invalid Application ID and/or Master Key");
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, Constants.ERROR_MASTERKEY_INVALID);
                 return;
             }
             if(userId == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing User ID in path");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USER_ID);
                 return;
             }
             if(username == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Query parameter username is required");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_QUERY_USERNAME_REQUIRED);
                 return;
             }
 
@@ -231,7 +230,7 @@ public class JeeUserServerResource extends BaseServerResource implements
             if(userRepository.deleteUser(appId, storeName, id.toString())) {
                 setStatus(Status.SUCCESS_OK);
             } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Cannot delete user or user does not exist");
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);
             }
 
         } catch (Exception e) {

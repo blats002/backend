@@ -23,6 +23,7 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.resource.EntityResource;
@@ -69,7 +70,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 return null;
             }
             if(isMaster(appId, masterKey)) {
-                Map<String,Object> entityObj = entityRepository.getEntity(appId, kind, entityId);
+                Map<String,Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if(entityObj != null) {
                     setStatus(Status.SUCCESS_OK);
                     return new JsonRepresentation(entityObj);
@@ -92,10 +93,10 @@ public class JeeEntityServerResource extends BaseServerResource
                 Boolean publicRead = false;
                 Boolean isAccess = false;
 
-                Map<String,Object> entityObj = entityRepository.getEntity(appId, kind, entityId);
+                Map<String,Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if(entityObj != null) {
                     List<String> aclReadList = (List<String>)((Map<String,Object>) entityObj.get("_md")).get("aclRead");
-                    if(aclReadList.contains("*")) {
+                    if(aclReadList.contains(Constants.ACL_ASTERISK)) {
                         publicRead = true;
                     } else if(authUserId != null && aclReadList.contains(authUserId)) {
                         isAccess = true;
@@ -184,8 +185,8 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 }
 
-                String[] read = new String[]{"*"};
-                String[] write = new String[]{"*"};
+                String[] read = new String[]{Constants.ACL_ASTERISK};
+                String[] write = new String[]{Constants.ACL_ASTERISK};
 
                 if (aclRead != null) {
                     try {
@@ -213,7 +214,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 }
                 if(!comparableMap.isEmpty()) {
-                    boolean success = entityRepository.updateEntity(appId, kind, entityId, comparableMap, read, write);
+                    boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write);
                     if(success) {
                         setStatus(Status.SUCCESS_OK);
                     } else {
@@ -248,14 +249,14 @@ public class JeeEntityServerResource extends BaseServerResource
                 return;
             }
             if(!isMaster(appId, masterKey)) {
-                Map<String,Object> entityMap = entityRepository.getEntity(appId, kind, roleId);
+                Map<String,Object> entityMap = entityRepository.getEntity(appId, entityType, roleId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if(entityMap == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
                     Boolean publicWrite = (Boolean) entityMap.get("publicWrite");
                     if(publicWrite || ((List<String>)entityMap.get("aclWrite")).contains(authUserId)) {
-                        Boolean success = entityRepository.deleteEntity(appId, kind, entityId);
+                        Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
                         if(success) {
                             setStatus(Status.SUCCESS_OK);
                         } else {
@@ -267,7 +268,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 }
             } else {
                 // Master key bypasses all checks
-                Boolean success = entityRepository.deleteEntity(appId, kind, entityId);
+                Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
                 if(success) {
                     setStatus(Status.SUCCESS_OK);
                 } else {

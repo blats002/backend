@@ -24,6 +24,7 @@ package com.divroll.domino.service.jee;
 import com.auth0.jwt.JWTSigner;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.JWTVerifyException;
+import com.divroll.domino.Constants;
 import com.divroll.domino.service.WebTokenService;
 import com.google.inject.Inject;
 
@@ -54,9 +55,9 @@ public class JeeWebTokenService implements WebTokenService {
         JWTSigner signer = new JWTSigner(secret);
         JWTVerifier verifier = new JWTVerifier(secret);
         HashMap<String, Object> claims = new HashMap<String, Object>();
-        claims.put("id", String.valueOf(userId));
+        claims.put(Constants.JWT_ID_KEY, String.valueOf(userId));
         String token = signer.sign(claims);
-        LOG.info("Generated token: " + token);
+        //LOG.info("Generated token: " + token);
         return token;
     }
 
@@ -72,7 +73,7 @@ public class JeeWebTokenService implements WebTokenService {
             JWTSigner signer = new JWTSigner(secret);
             JWTVerifier verifier = new JWTVerifier(secret);
             Map<String, Object> parsed = verifier.verify(token);
-            Object objectId = parsed.get("id");
+            Object objectId = parsed.get(Constants.JWT_ID_KEY);
             if (objectId instanceof String) {
                 id = String.valueOf((String) objectId);
             }

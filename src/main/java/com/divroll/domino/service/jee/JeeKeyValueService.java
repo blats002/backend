@@ -21,6 +21,7 @@
  */
 package com.divroll.domino.service.jee;
 
+import com.divroll.domino.Constants;
 import com.divroll.domino.model.ACL;
 import com.divroll.domino.model.ByteValue;
 import com.divroll.domino.model.exception.ACLException;
@@ -54,7 +55,7 @@ public class JeeKeyValueService implements KeyValueService {
         if (String.class.equals(clazz)) {
             ByteValue byteValue = new ByteValue();
             try {
-                byteValue.setValue(((String) value).getBytes("utf-8"));
+                byteValue.setValue(((String) value).getBytes(Constants.DEFAULT_CHARSET));
                 byteValue.setRead(read);
                 byteValue.setWrite(write);
             } catch (Exception e) {
@@ -85,12 +86,12 @@ public class JeeKeyValueService implements KeyValueService {
             ByteValue value = store.get(instance, storeName, key, ByteValue.class);
             if (value != null) {
                 String[] read = value.getRead();
-                Boolean publicRead = read != null ? Arrays.asList(read).contains("*") : false;
+                Boolean publicRead = read != null ? Arrays.asList(read).contains(Constants.ACL_ASTERISK) : false;
                 if (!publicRead) {
                     if (Arrays.asList(read).contains(uuid)) {
                         try {
                             byte[] bytes = value.getValue();
-                            String s = new String(bytes, "utf-8");
+                            String s = new String(bytes, Constants.DEFAULT_CHARSET);
                             return (T) s;
                         } catch (UnsupportedEncodingException e) {
                             // do nothing
@@ -101,7 +102,7 @@ public class JeeKeyValueService implements KeyValueService {
                 } else {
                     try {
                         byte[] bytes = value.getValue();
-                        String s = new String(bytes, "utf-8");
+                        String s = new String(bytes, Constants.DEFAULT_CHARSET);
                         return (T) s;
                     } catch (UnsupportedEncodingException e) {
                         // do nothing
@@ -112,7 +113,7 @@ public class JeeKeyValueService implements KeyValueService {
             ByteValue value = store.get(instance, storeName, key, ByteValue.class);
             if (value != null) {
                 String[] read = value.getRead();
-                Boolean publicRead = read != null ? Arrays.asList(read).contains("*") : false;
+                Boolean publicRead = read != null ? Arrays.asList(read).contains(Constants.ACL_ASTERISK) : false;
                 if (!publicRead) {
                     if (Arrays.asList(read).contains(uuid)) {
                         return (T) ByteBuffer.wrap(value.getValue());
@@ -127,7 +128,7 @@ public class JeeKeyValueService implements KeyValueService {
             ACL value = store.get(instance, storeName, key, ACL.class);
             if (value != null) {
                 String[] read = value.getRead();
-                Boolean publicRead = read != null ? Arrays.asList(read).contains("*") : false;
+                Boolean publicRead = read != null ? Arrays.asList(read).contains(Constants.ACL_ASTERISK) : false;
                 if (!publicRead) {
                     if (Arrays.asList(read).contains(uuid)) {
                         return (T) value;
@@ -164,7 +165,7 @@ public class JeeKeyValueService implements KeyValueService {
 
         Boolean publicWrite = false;
         if (aclWrite != null) {
-            publicWrite = Arrays.asList(aclWrite).contains("*");
+            publicWrite = Arrays.asList(aclWrite).contains(Constants.ACL_ASTERISK);
         }
 
         if (!publicWrite) {
@@ -215,7 +216,7 @@ public class JeeKeyValueService implements KeyValueService {
         if (String.class.equals(clazz)) {
             ByteValue byteValue = new ByteValue();
             try {
-                byteValue.setValue(((String) value).getBytes("utf-8"));
+                byteValue.setValue(((String) value).getBytes(Constants.DEFAULT_CHARSET));
                 byteValue.setRead(read);
                 byteValue.setWrite(aclWrite);
             } catch (Exception e) {

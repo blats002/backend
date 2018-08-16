@@ -32,11 +32,11 @@ import java.util.Map;
  */
 public interface XodusStore {
 
-    //    public void putIfNotExists(String dir, final String kind, final String propertyKey, final String propertyValue);
-//    public void putIfNotExists(String dir, final String kind, final String propertyKey, final Double propertyValue);
-//    public void putIfNotExists(String dir, final String kind, final String propertyKey, final Long propertyValue);
-//    public void putIfNotExists(String dir, final String kind, final String propertyKey, final Boolean propertyValue);
-//    public EntityId putIfNotExists(String dir, final String kind, final String propertyKey, final InputStream is);
+    //    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final String propertyValue);
+//    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Double propertyValue);
+//    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Long propertyValue);
+//    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Boolean propertyValue);
+//    public EntityId putIfNotExists(String dir, final String entityType, final String propertyKey, final InputStream is);
     public EntityId put(String dir, final String kind, Map<String, Comparable> properties);
 
     public <T> EntityId put(String dir, String kind, String id, Map<String, Comparable> comparableMap);

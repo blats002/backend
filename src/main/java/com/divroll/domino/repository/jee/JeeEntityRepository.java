@@ -21,6 +21,7 @@
  */
 package com.divroll.domino.repository.jee;
 
+import com.divroll.domino.Constants;
 import com.divroll.domino.repository.EntityRepository;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -66,20 +67,20 @@ public class JeeEntityRepository implements EntityRepository {
 
                     if(read != null) {
                         List<String> aclRead = Arrays.asList(read);
-                        if(aclRead.contains("*")) {
+                        if(aclRead.contains(Constants.ACL_ASTERISK)) {
                             publicRead = true;
                         } else {
                             publicRead = false;
                         }
                         // Add User to ACL
                         for(String userId : aclRead) {
-                            if(userId.equals("*")) {
+                            if(userId.equals(Constants.ACL_ASTERISK)) {
                                 continue;
                             } else {
                                 EntityId userEntityId = txn.toEntityId(userId);
                                 Entity userEntity = txn.getEntity(userEntityId);
                                 if(userEntity != null) {
-                                    entity.addLink("aclRead", userEntity);
+                                    entity.addLink(Constants.ACL_READ, userEntity);
                                 }
                             }
 
@@ -88,28 +89,28 @@ public class JeeEntityRepository implements EntityRepository {
 
                     if(write != null) {
                         List<String> aclWrite = Arrays.asList(write);
-                        if(aclWrite.contains("*")) {
+                        if(aclWrite.contains(Constants.ACL_ASTERISK)) {
                             publicWrite = true;
                         } else {
                             publicWrite = false;
                         }
                         // Add User to ACL
                         for(String userId : aclWrite) {
-                            if(userId.equals("*")) {
+                            if(userId.equals(Constants.ACL_ASTERISK)) {
                                 continue;
                             } else {
                                 EntityId userEntityId = txn.toEntityId(userId);
                                 Entity userEntity = txn.getEntity(userEntityId);
                                 if(userEntity != null) {
-                                    entity.addLink("aclWrite", userEntity);
+                                    entity.addLink(Constants.ACL_WRITE, userEntity);
                                 }
                             }
 
                         }
                     }
 
-                    entity.setProperty("publicRead", publicRead);
-                    entity.setProperty("publicWrite", publicWrite);
+                    entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                    entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
 
                     entityId[0] = entity.getId().toString();
@@ -143,45 +144,45 @@ public class JeeEntityRepository implements EntityRepository {
                     if(read != null) {
                         boolean publicRead = true;
                         List<String> aclRead = Arrays.asList(read);
-                        if(aclRead.contains("*")) {
+                        if(aclRead.contains(Constants.ACL_ASTERISK)) {
                             publicRead = true;
                         } else {
                             publicRead = false;
                         }
                         // Add User to ACL
                         for(String userId : aclRead) {
-                            if(userId.equalsIgnoreCase("*")) {
+                            if(userId.equalsIgnoreCase(Constants.ACL_ASTERISK)) {
                                 continue;
                             }
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userEntity = txn.getEntity(userEntityId);
                             if(userEntity != null) {
-                                entity.addLink("aclRead", userEntity);
+                                entity.addLink(Constants.ACL_READ, userEntity);
                             }
                         }
-                        entity.setProperty("publicRead", publicRead);
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     }
 
                     if(write != null) {
                         boolean publicWrite = true;
                         List<String> aclWrite = Arrays.asList(write);
-                        if(aclWrite.contains("*")) {
+                        if(aclWrite.contains(Constants.ACL_ASTERISK)) {
                             publicWrite = true;
                         } else {
                             publicWrite = false;
                         }
                         // Add User to ACL
                         for(String userId : aclWrite) {
-                            if(userId.equalsIgnoreCase("*")) {
+                            if(userId.equalsIgnoreCase(Constants.ACL_ASTERISK)) {
                                 continue;
                             }
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userEntity = txn.getEntity(userEntityId);
                             if(userEntity != null) {
-                                entity.addLink("aclWrite", userEntity);
+                                entity.addLink(Constants.ACL_WRITE, userEntity);
                             }
                         }
-                        entity.setProperty("publicWrite", publicWrite);
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     }
 
                     success[0] = true;
@@ -211,34 +212,34 @@ public class JeeEntityRepository implements EntityRepository {
                     List<String> aclRead = new LinkedList<>();
                     List<String> aclWrite = new LinkedList<>();
 
-                    Boolean publicRead = (Boolean) entity.getProperty("publicRead");
-                    Boolean publicWrite = (Boolean) entity.getProperty("publicWrite");
+                    Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
-                    for(Entity aclReadLink : entity.getLinks("aclRead")) {
+                    for(Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
                         aclRead.add(aclReadLink.getId().toString());
                     }
 
-                    for(Entity aclWriteLink : entity.getLinks("aclWrite")) {
+                    for(Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
                         aclWrite.add(aclWriteLink.getId().toString());
                     }
 
                     if(publicRead) {
-                        aclRead.add("*");
+                        aclRead.add(Constants.ACL_ASTERISK);
                     }
 
                     if(publicWrite) {
-                        aclWrite.add("*");
+                        aclWrite.add(Constants.ACL_ASTERISK);
                     }
 
                     Map<String,Object> metadata = new TreeMap<String,Object>();
 
-                    metadata.put("entityId", idOfEntity.toString());
-                    metadata.put("aclRead", aclRead);
-                    metadata.put("aclWrite", aclWrite);
-                    metadata.put("blobnames", entity.getBlobNames());
-                    metadata.put("links", entity.getLinkNames());
+                    metadata.put(Constants.ENTITY_ID, idOfEntity.toString());
+                    metadata.put(Constants.ACL_READ, aclRead);
+                    metadata.put(Constants.ACL_WRITE, aclWrite);
+                    metadata.put(Constants.BLOBNAMES, entity.getBlobNames());
+                    metadata.put(Constants.LINKS, entity.getLinkNames());
 
-                    comparableMap.put("_md", metadata);
+                    comparableMap.put(Constants.METADATA_KEY, metadata);
 
                 }
             });
@@ -390,34 +391,34 @@ public class JeeEntityRepository implements EntityRepository {
                     List<String> aclRead = new LinkedList<>();
                     List<String> aclWrite = new LinkedList<>();
 
-                    Boolean publicRead = (Boolean) entity.getProperty("publicRead");
-                    Boolean publicWrite = (Boolean) entity.getProperty("publicWrite");
+                    Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
-                    for(Entity aclReadLink : entity.getLinks("aclRead")) {
+                    for(Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
                         aclRead.add(aclReadLink.getId().toString());
                     }
 
-                    for(Entity aclWriteLink : entity.getLinks("aclWrite")) {
+                    for(Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
                         aclWrite.add(aclWriteLink.getId().toString());
                     }
 
                     if(publicRead) {
-                        aclRead.add("*");
+                        aclRead.add(Constants.ACL_ASTERISK);
                     }
 
                     if(publicWrite) {
-                        aclWrite.add("*");
+                        aclWrite.add(Constants.ACL_ASTERISK);
                     }
 
                     Map<String,Object> metadata = new TreeMap<String,Object>();
 
-                    metadata.put("entityId", entity.getId().toString());
-                    metadata.put("aclRead", aclRead);
-                    metadata.put("aclWrite", aclWrite);
-                    metadata.put("blobnames", entity.getBlobNames());
-                    metadata.put("links", entity.getLinkNames());
+                    metadata.put(Constants.ENTITY_ID, entity.getId().toString());
+                    metadata.put(Constants.ACL_READ, aclRead);
+                    metadata.put(Constants.ACL_WRITE, aclWrite);
+                    metadata.put(Constants.BLOBNAMES, entity.getBlobNames());
+                    metadata.put(Constants.LINKS, entity.getLinkNames());
 
-                    comparableMap.put("_md", metadata);
+                    comparableMap.put(Constants.METADATA_KEY, metadata);
                 }
             });
         } finally {

@@ -23,6 +23,7 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.domino.Constants;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.resource.EntitiesResource;
 import com.google.inject.Inject;
@@ -106,8 +107,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     }
                 }
 
-                String[] read = new String[]{"*"};
-                String[] write = new String[]{"*"};
+                String[] read = new String[]{Constants.ACL_ASTERISK};
+                String[] write = new String[]{Constants.ACL_ASTERISK};
 
                 if (aclRead != null) {
                     try {
@@ -136,9 +137,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 }
 
                 if(!comparableMap.isEmpty()) {
-                    String entityId = entityRepository.createEntity(appId, kind, comparableMap, read, write);
+                    String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write);
                     JSONObject entityObject = new JSONObject();
-                    entityObject.put("entityId", entityId);
+                    entityObject.put(Constants.ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     setStatus(Status.SUCCESS_CREATED);
 
