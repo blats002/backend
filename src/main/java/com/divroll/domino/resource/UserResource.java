@@ -41,20 +41,22 @@ public interface UserResource {
     @ApiResponses({
             @ApiResponse(code = 200, message = "the updated application"),
             @ApiResponse(code = 404, message = "user not found"),
-            @ApiResponse(code = 401, message = "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair") })
+            @ApiResponse(code = 401, message = "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair")})
     @Get
     User getUser();
+
     @ApiOperation(value = "update existing user", tags = "user")
     @ApiResponses({
             @ApiResponse(code = 200, message = "user updated"),
             @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token") })
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")})
     @Put
     User updateUser(User entity);
+
     @ApiOperation(value = "delete existing user", tags = "user")
     @ApiResponses({
             @ApiResponse(code = 200, message = "user deleted"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key/Master Key headers") })
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key/Master Key headers")})
     @Delete
     void deleteUser(User entity);
 }

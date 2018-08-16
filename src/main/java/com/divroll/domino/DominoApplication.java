@@ -34,7 +34,6 @@ import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
-import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 
 import java.io.IOException;
@@ -138,14 +137,13 @@ public class DominoApplication extends Application {
      * {@link Restlet} that computes the Swagger documentation in the format
      * defined by the swagger-spec project v1.2.
      *
-     * @param router
-     *            The router to update.
+     * @param router The router to update.
      */
     private void attachSwaggerSpecification1(Router router) {
         SwaggerSpecificationRestlet swaggerSpecificationRestlet = new SwaggerSpecificationRestlet(
                 this);
         swaggerSpecificationRestlet.setBasePath("http://localhost:8080/");
-        swaggerSpecificationRestlet.attach(router,"/docs");
+        swaggerSpecificationRestlet.attach(router, "/docs");
     }
 
     /**
@@ -153,8 +151,7 @@ public class DominoApplication extends Application {
      * {@link Restlet} that computes the Swagger documentation in the format
      * defined by the swagger-spec project v2.0.
      *
-     * @param router
-     *            The router to update.
+     * @param router The router to update.
      */
     private void attachSwaggerSpecification2(Router router) {
         Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(

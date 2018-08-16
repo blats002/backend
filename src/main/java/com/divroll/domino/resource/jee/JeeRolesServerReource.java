@@ -42,7 +42,7 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public class JeeRolesServerReource extends BaseServerResource
-    implements RolesResource {
+        implements RolesResource {
 
     @Inject
     @Named("defaultUserStore")
@@ -61,7 +61,7 @@ public class JeeRolesServerReource extends BaseServerResource
     public Roles getRoles() {
         String skip = getQueryValue(Constants.QUERY_SKIP);
         String limit = getQueryValue(Constants.QUERY_LIMIT);
-        if(!isMaster(appId, masterKey)) {
+        if (!isMaster(appId, masterKey)) {
 
         } else {
             List<Role> results = roleRepository.listRoles(appId, storeName, Long.valueOf(skip), Long.valueOf(limit));
@@ -120,7 +120,7 @@ public class JeeRolesServerReource extends BaseServerResource
             String roleId = null;
             roleId = roleRepository.createRole(appId, storeName, roleName, read, write);
 
-            if(roleId != null) {
+            if (roleId != null) {
                 setStatus(Status.SUCCESS_CREATED);
                 Role role = new Role();
                 role.setName(roleName);

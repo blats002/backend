@@ -30,7 +30,6 @@ import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 
-import java.util.Date;
 import java.util.UUID;
 
 /**

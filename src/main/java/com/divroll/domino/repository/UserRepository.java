@@ -32,9 +32,14 @@ import java.util.List;
  */
 public interface UserRepository {
     String createUser(String instance, String storeName, String username, String password, String[] read, String[] write);
+
     boolean updateUser(String instance, String storeName, String entityId, String newUsername, String newPassword, String[] read, String[] write);
+
     User getUser(String instance, String storeName, String userID);
+
     User getUserByUsername(String instance, String storeName, String username);
+
     boolean deleteUser(String instance, String storeName, String userID);
+
     List<User> listUsers(String instance, String storeName, long skip, long limit);
 }

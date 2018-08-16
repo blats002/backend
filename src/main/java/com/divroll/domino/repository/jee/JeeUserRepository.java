@@ -61,21 +61,21 @@ public class JeeUserRepository implements UserRepository {
                     boolean publicRead = true;
                     boolean publicWrite = true;
 
-                    if(read != null) {
+                    if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
-                        if(aclRead.contains(Constants.ACL_ASTERISK)) {
+                        if (aclRead.contains(Constants.ACL_ASTERISK)) {
                             publicRead = true;
                         } else {
                             publicRead = false;
                         }
                         // Add User to ACL
-                        for(String userId : aclRead) {
-                            if(userId.equals(Constants.ACL_ASTERISK)) {
+                        for (String userId : aclRead) {
+                            if (userId.equals(Constants.ACL_ASTERISK)) {
                                 continue;
                             } else {
                                 EntityId userEntityId = txn.toEntityId(userId);
                                 Entity userEntity = txn.getEntity(userEntityId);
-                                if(userEntity != null) {
+                                if (userEntity != null) {
                                     entity.addLink(Constants.ACL_READ, userEntity);
                                 }
                             }
@@ -84,21 +84,21 @@ public class JeeUserRepository implements UserRepository {
 
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
 
-                    if(write != null) {
+                    if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
-                        if(aclWrite.contains(Constants.ACL_ASTERISK)) {
+                        if (aclWrite.contains(Constants.ACL_ASTERISK)) {
                             publicWrite = true;
                         } else {
                             publicWrite = false;
                         }
                         // Add User to ACL
-                        for(String userId : aclWrite) {
-                            if(userId.equals(Constants.ACL_ASTERISK)) {
+                        for (String userId : aclWrite) {
+                            if (userId.equals(Constants.ACL_ASTERISK)) {
                                 continue;
                             } else {
                                 EntityId userEntityId = txn.toEntityId(userId);
                                 Entity userEntity = txn.getEntity(userEntityId);
-                                if(userEntity != null) {
+                                if (userEntity != null) {
                                     entity.addLink(Constants.ACL_WRITE, userEntity);
                                 }
                             }
@@ -119,7 +119,7 @@ public class JeeUserRepository implements UserRepository {
 
     @Override
     public boolean updateUser(String instance, String storeName, final String userId,
-                           final String newUsername, final String newPassword, final String[] read, final String[] write) {
+                              final String newUsername, final String newPassword, final String[] read, final String[] write) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
         try {
@@ -128,31 +128,31 @@ public class JeeUserRepository implements UserRepository {
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId roleEntityId = txn.toEntityId(userId);
                     final Entity entity = txn.getEntity(roleEntityId);
-                    if(newUsername != null) {
+                    if (newUsername != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_USERNAME, newUsername);
                     }
-                    if(newPassword != null) {
+                    if (newPassword != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, newPassword);
                     }
 
                     boolean publicRead = true;
                     boolean publicWrite = true;
 
-                    if(read != null) {
+                    if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
-                        if(aclRead.contains(Constants.ACL_ASTERISK)) {
+                        if (aclRead.contains(Constants.ACL_ASTERISK)) {
                             publicRead = true;
                         } else {
                             publicRead = false;
                         }
                         // Add User to ACL
-                        for(String userId : aclRead) {
-                            if(userId.equals(Constants.ACL_ASTERISK)) {
+                        for (String userId : aclRead) {
+                            if (userId.equals(Constants.ACL_ASTERISK)) {
                                 continue;
                             } else {
                                 EntityId userEntityId = txn.toEntityId(userId);
                                 Entity userEntity = txn.getEntity(userEntityId);
-                                if(userEntity != null) {
+                                if (userEntity != null) {
                                     entity.addLink(Constants.ACL_READ, userEntity);
                                 }
                             }
@@ -161,18 +161,18 @@ public class JeeUserRepository implements UserRepository {
 
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
 
-                    if(write != null) {
+                    if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
-                        if(aclWrite.contains(Constants.ACL_ASTERISK)) {
+                        if (aclWrite.contains(Constants.ACL_ASTERISK)) {
                             publicWrite = true;
                         } else {
                             publicWrite = false;
                         }
                         // Add User to ACL
-                        for(String userId : aclWrite) {
+                        for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userEntity = txn.getEntity(userEntityId);
-                            if(userEntity != null) {
+                            if (userEntity != null) {
                                 entity.addLink(Constants.ACL_WRITE, userEntity);
                             }
                         }
@@ -204,7 +204,7 @@ public class JeeUserRepository implements UserRepository {
                     user.setPassword((String) userEntity.getProperty(Constants.QUERY_PASSWORD));
                     user.setEntityId(userEntity.getId().toString());
 
-                    for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                    for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                         Role role = new Role();
                         role.setEntityId(roleEntity.getId().toString());
                         role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
@@ -214,11 +214,11 @@ public class JeeUserRepository implements UserRepository {
                         List<String> aclRead = new LinkedList<>();
                         List<String> aclWrite = new LinkedList<>();
 
-                        for(Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
+                        for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
                             aclRead.add(aclReadLink.getId().toString());
                         }
 
-                        for(Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
+                        for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
                             aclWrite.add(aclWriteLink.getId().toString());
                         }
 
@@ -245,7 +245,7 @@ public class JeeUserRepository implements UserRepository {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     final Entity userEntity = txn.find(storeName, Constants.QUERY_USERNAME, username).getFirst();
-                    if(userEntity != null) {
+                    if (userEntity != null) {
                         User user = new User();
                         user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
                         user.setPassword((String) userEntity.getProperty(Constants.QUERY_PASSWORD));
@@ -293,7 +293,7 @@ public class JeeUserRepository implements UserRepository {
                         User user = new User();
                         user.setEntityId((String) userEntity.getId().toString());
                         user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
-                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                        for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                             Role role = new Role();
                             role.setEntityId(roleEntity.getId().toString());
                             role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
@@ -303,11 +303,11 @@ public class JeeUserRepository implements UserRepository {
                             List<String> aclRead = new LinkedList<>();
                             List<String> aclWrite = new LinkedList<>();
 
-                            for(Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
+                            for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
                                 aclRead.add(aclReadLink.getId().toString());
                             }
 
-                            for(Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
+                            for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
                                 aclWrite.add(aclWriteLink.getId().toString());
                             }
 

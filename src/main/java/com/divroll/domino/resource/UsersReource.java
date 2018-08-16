@@ -39,9 +39,10 @@ public interface UsersReource {
     @ApiResponses({
             @ApiResponse(code = 201, message = "user created"),
             @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair") })
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair")})
     @Post
     User createUser(User entity);
+
     @Get
     Users getUsers();
 }

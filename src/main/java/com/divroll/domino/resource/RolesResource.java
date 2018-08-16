@@ -34,6 +34,7 @@ import org.restlet.resource.Post;
 public interface RolesResource {
     @Post
     Role createRole(Role entity);
+
     @Get
     Roles getRoles();
 }

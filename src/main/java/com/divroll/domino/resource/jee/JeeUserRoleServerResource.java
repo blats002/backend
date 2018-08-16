@@ -79,13 +79,13 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
                 Role role = roleRepository.getRole(appId, storeName, roleId);
                 User user = userRepository.getUser(appId, storeName, userId);
                 User authUser = userRepository.getUser(appId, storeName, authUserId);
-                if(authUser == null || user == null || role == null) {
+                if (authUser == null || user == null || role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     return;
                 }
-                if(isUserAuthForRole(user, role)) {
+                if (isUserAuthForRole(user, role)) {
                     boolean success = roleRepository.linkRole(appId, storeName, role.getEntityId(), user.getEntityId());
-                    if(success) {
+                    if (success) {
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -122,13 +122,13 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
                 Role role = roleRepository.getRole(appId, storeName, roleId);
                 User user = userRepository.getUser(appId, storeName, userId);
                 User authUser = userRepository.getUser(appId, storeName, authUserId);
-                if(authUser == null || user == null || role == null) {
+                if (authUser == null || user == null || role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     return;
                 }
-                if(isUserAuthForRole(user, role)) {
+                if (isUserAuthForRole(user, role)) {
                     boolean success = roleRepository.unlinkRole(appId, storeName, role.getEntityId(), user.getEntityId());
-                    if(success) {
+                    if (success) {
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

@@ -44,7 +44,7 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public class JeeUsersServerReource extends BaseServerResource
-    implements UsersReource {
+        implements UsersReource {
 
     @Inject
     @Named("defaultUserStore")
@@ -60,7 +60,7 @@ public class JeeUsersServerReource extends BaseServerResource
     public Users getUsers() {
         String skip = getQueryValue(Constants.QUERY_SKIP);
         String limit = getQueryValue(Constants.QUERY_LIMIT);
-        if(!isMaster(appId, masterKey)) {
+        if (!isMaster(appId, masterKey)) {
 
         } else {
             List<User> results = userRepository.listUsers(appId, storeName, Long.valueOf(skip), Long.valueOf(limit));

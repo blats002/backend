@@ -38,7 +38,7 @@ import org.restlet.resource.Put;
 public interface ApplicationResource {
 
     @ApiOperation(value = "get a new application", tags = "application")
-    @ApiResponses({ @ApiResponse(code = 200, message = "the application", response = Application.class), })
+    @ApiResponses({@ApiResponse(code = 200, message = "the application", response = Application.class),})
     @Get
     Application getApp();
 
@@ -46,7 +46,7 @@ public interface ApplicationResource {
     @ApiResponses({
             @ApiResponse(code = 200, message = "the updated application"),
             @ApiResponse(code = 404, message = "application not found"),
-            @ApiResponse(code = 401, message = "unauthorized access") })
+            @ApiResponse(code = 401, message = "unauthorized access")})
     @Put
     Application updateApp(Application application);
 }

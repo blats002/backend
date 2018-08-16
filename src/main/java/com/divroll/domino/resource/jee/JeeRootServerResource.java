@@ -27,10 +27,7 @@ import com.divroll.domino.resource.RootResource;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.restlet.data.Status;
-import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.resource.Get;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

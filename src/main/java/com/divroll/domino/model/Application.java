@@ -22,11 +22,8 @@
 package com.divroll.domino.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
-
-import java.util.Date;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

@@ -39,7 +39,7 @@ import java.util.*;
  * @since 0-SNAPSHOT
  */
 public class JeeEntitiesServerResource extends BaseServerResource
-    implements EntitiesResource {
+        implements EntitiesResource {
 
     @Inject
     EntityRepository entityRepository;
@@ -60,8 +60,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
             if (dir != null) {
                 JSONObject jsonObject = JSONObject.parseObject(entity.getText());
                 Iterator<String> it = jsonObject.keySet().iterator();
-                Map<String,Comparable> comparableMap = new LinkedHashMap<>();
-                while(it.hasNext()) {
+                Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+                while (it.hasNext()) {
                     String k = it.next();
                     try {
                         JSONObject jso = jsonObject.getJSONObject(k);
@@ -136,7 +136,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     }
                 }
 
-                if(!comparableMap.isEmpty()) {
+                if (!comparableMap.isEmpty()) {
                     String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.ENTITY_ID, entityId);
@@ -152,8 +152,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
             setStatus(Status.SERVER_ERROR_INTERNAL);
         }
         Representation representation = null;
-        if(result != null) {
-           representation = new JsonRepresentation(result.toJSONString());
+        if (result != null) {
+            representation = new JsonRepresentation(result.toJSONString());
         }
         return representation;
     }

@@ -33,6 +33,7 @@ import org.restlet.resource.Post;
 public interface EntitiesResource {
     @Post
     Representation createEntity(Representation representation);
+
     @Get
     Representation getEntities();
 }

@@ -22,6 +22,7 @@
 package com.divroll.domino.repository;
 
 import com.divroll.domino.model.Role;
+
 import java.util.List;
 
 /**
@@ -30,13 +31,20 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface RoleRepository {
-    String createRole(String instance, String storeName,String roleName, String[] read, String[] write);
+    String createRole(String instance, String storeName, String roleName, String[] read, String[] write);
+
     boolean updateRole(String instance, String storeName, String entityId, String newRoleName, final String[] read, final String[] write);
+
     Role getRole(String instance, String storeName, String entityId);
-    boolean deleteRole(String instance, String storeName,String roleID);
+
+    boolean deleteRole(String instance, String storeName, String roleID);
+
     boolean linkRole(String instance, String storeName, String roleID, String userID);
+
     boolean unlinkRole(String instance, String storeName, String roleID, String userID);
+
     boolean isLinked(String instance, String storeName, String roleID, String userID);
+
     List<Role> listRoles(String instance, String storeName, long skip, long limit);
 
 }

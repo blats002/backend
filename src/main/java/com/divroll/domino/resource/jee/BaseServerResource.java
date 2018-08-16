@@ -196,7 +196,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return new JsonRepresentation(jsonObject.toJSONString());
     }
 
-    protected Map<String, Object> cleanup(Map<String,Object> result) {
+    protected Map<String, Object> cleanup(Map<String, Object> result) {
         result.remove(Constants.RESERVED_FIELD_PUBLICWRITE);
         result.remove(Constants.RESERVED_FIELD_PUBLICREAD);
         return result;

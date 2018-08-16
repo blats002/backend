@@ -73,7 +73,7 @@ public class JeeUserServerResource extends BaseServerResource implements
         String userId = userEntity.getEntityId();
         String existingPassword = userEntity.getPassword();
 
-        if(userEntity == null) {
+        if (userEntity == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
         }
@@ -205,7 +205,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     @Override
     public void deleteUser(User entity) {
         try {
-            if(appId == null || masterKey == null) {
+            if (appId == null || masterKey == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MASTERKEY_MISSING);
                 return;
             }
@@ -213,11 +213,11 @@ public class JeeUserServerResource extends BaseServerResource implements
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, Constants.ERROR_MASTERKEY_INVALID);
                 return;
             }
-            if(userId == null) {
+            if (userId == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USER_ID);
                 return;
             }
-            if(username == null) {
+            if (username == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_QUERY_USERNAME_REQUIRED);
                 return;
             }
@@ -227,7 +227,7 @@ public class JeeUserServerResource extends BaseServerResource implements
             String existingUsername = userEntity.getUsername();
             String existingPassword = userEntity.getPassword();
 
-            if(userRepository.deleteUser(appId, storeName, id.toString())) {
+            if (userRepository.deleteUser(appId, storeName, id.toString())) {
                 setStatus(Status.SUCCESS_OK);
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);

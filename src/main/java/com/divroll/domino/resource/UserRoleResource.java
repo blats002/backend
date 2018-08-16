@@ -35,6 +35,7 @@ import org.restlet.resource.Post;
 public interface UserRoleResource {
     @Post
     void createUserRoleLink(Representation entity);
+
     @Delete
     void deleteUserRoleLink(Representation entity);
 }

@@ -33,15 +33,25 @@ import java.util.Map;
 public interface EntityRepository {
     String createEntity(String instance, String storeName, Map<String, Comparable> comparableMap,
                         final String[] read, final String[] write);
+
     boolean updateEntity(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write);
+
     Map<String, Object> getEntity(String instance, String storeName, String entityId);
+
     Comparable getEntityProperty(String instance, String storeName, String entityId, String propertyName);
+
     InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
+
     boolean deleteEntity(String instance, String storeName, String entityId);
+
     boolean linkEntity(String instance, String storeName, String linkName, String sourceId, String targetId);
+
     boolean unlinkEntity(String instance, String storeName, String linkName, String sourceId, String targetId);
+
     boolean isLinked(String instance, String storeName, String linkName, String sourceId, String targetId);
+
     Map<String, Object> getFirstLinkedEntity(String instance, String storeName, String entityId, String linkName);
+
     List<Map<String, Object>> getLinkedEntities(String instance, String storeName, String entityId, String linkName);
 }

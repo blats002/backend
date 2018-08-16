@@ -80,8 +80,8 @@ public class User {
     }
 
     public List<Role> getRoles() {
-        if(roles == null) {
-           return new LinkedList<Role>();
+        if (roles == null) {
+            return new LinkedList<Role>();
         }
         return roles;
     }
