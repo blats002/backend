@@ -39,7 +39,7 @@ import java.net.URL;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class TestDominoApplication {
+public class DominoApplicationTest {
     @Deployment
     public static WebArchive createDeployment() {
 

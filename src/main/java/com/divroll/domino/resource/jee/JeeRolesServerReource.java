@@ -33,6 +33,7 @@ import com.divroll.domino.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.restlet.data.Status;
+import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -122,13 +123,23 @@ public class JeeRolesServerReource extends BaseServerResource
                 return null;
             }
 
+            List<String> aclReadList = entity.getAclRead();
+            List<String> aclWriteList = entity.getAclWrite();
+
+            if(aclReadList == null) {
+                aclReadList = new LinkedList<>();
+            }
+
+            if(aclWriteList == null) {
+                aclWriteList = new LinkedList<>();
+            }
+
             String[] read = new String[]{Constants.ACL_ASTERISK};
             String[] write = new String[]{Constants.ACL_ASTERISK};
 
-            if (aclRead != null) {
+            if (aclRead != null && !(aclRead.length() == 0)) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    List<String> aclReadList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
                         aclReadList.add(jsonArray.getString(i));
                     }
@@ -138,10 +149,9 @@ public class JeeRolesServerReource extends BaseServerResource
                 }
             }
 
-            if (aclWrite != null) {
+            if (aclWrite != null && !(aclWrite.length() == 0)) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    List<String> aclWriteList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
                         aclWriteList.add(jsonArray.getString(i));
                     }
@@ -160,6 +170,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 Role role = new Role();
                 role.setName(roleName);
                 role.setEntityId(roleId);
+                role.setAclRead(Arrays.asList(read));
+                role.setAclWrite(Arrays.asList(write));
                 return role;
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
