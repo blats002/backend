@@ -31,14 +31,11 @@ import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.resource.EntityResource;
 import com.divroll.domino.service.ApplicationService;
 import com.divroll.domino.service.WebTokenService;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
-import org.boon.di.In;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
-import scala.actors.threadpool.Arrays;
 
 import java.util.*;
 
@@ -53,7 +50,7 @@ public class JeeEntityServerResource extends BaseServerResource
     @Inject
     EntityRepository entityRepository;
 
-    @In
+    @Inject
     RoleRepository roleRepository;
 
     @Inject

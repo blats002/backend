@@ -1,53 +1,201 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divroll</groupId>
     <artifactId>domino</artifactId>
     <packaging>war</packaging>
     <version>0-SNAPSHOT</version>
     <name>domino</name>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <maven.compiler.target>1.7</maven.compiler.target>
+
+        <java.version>1.8</java.version>
+
+        <javaee.version>7.0</javaee.version>
+        <jboss-javaee7.version>1.0.4.Final</jboss-javaee7.version>
+
+        <slf4j.version>1.6.4</slf4j.version>
+
+        <glassfish.version>4.1.1</glassfish.version>
+        <jboss.version>7.1.1.Final</jboss.version>
+        <tomcat.version>8.0.32</tomcat.version>
+        <wildfly.version>10.1.0.Final</wildfly.version>
+
+        <weld.version>2.4.1.Final</weld.version>
+        <el.version>2.2</el.version>
+        <eclipse-jdt.version>3.7</eclipse-jdt.version>
+
+        <junit.version>4.12</junit.version>
+        <arquillian.version>1.1.11.Final</arquillian.version>
+        <arquillian-tomcat.version>1.0.0.CR8</arquillian-tomcat.version>
+        <arquillian-glassfish.version>1.0.0.Final</arquillian-glassfish.version>
+        <arquillian-wildfly.version>1.1.0.Final</arquillian-wildfly.version>
+
+        <jacoco.version>0.8.0</jacoco.version>
+        <jacoco.path>
+            ${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar
+        </jacoco.path>
+        <jacoco.utReport>${project.build.directory}/jacoco.exec</jacoco.utReport>
+        <jacoco.itReport>${project.build.directory}/jacoco-it.exec</jacoco.itReport>
+        <jacoco.utAgentConfig>-javaagent:${jacoco.path}=destfile=${jacoco.utReport}</jacoco.utAgentConfig>
+        <jacoco.itAgentConfig>-javaagent:${jacoco.path}=destfile=${jacoco.itReport}</jacoco.itAgentConfig>
+
+        <jacoco-listeners.version>5.1.0.13090</jacoco-listeners.version>
+
+
         <jackson.version>2.6.0</jackson.version>
         <guava.version>18.0</guava.version>
         <xtend.version>2.9.1</xtend.version>
         <version.restlet>2.3.12</version.restlet>
-        <version.junit>4.11</version.junit>
+
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20.1</version>
+                <configuration>
+                    <argLine>${jacoco.utAgentConfig}</argLine>
+                    <excludes>
+                        <exclude>**/*IntegrationTestCase.java</exclude>
+                    </excludes>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>org.sonar.java.jacoco.JUnitListener</value>
+                        </property>
+                    </properties>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20.1</version>
+                <configuration>
+                    <argLine>${jacoco.itAgentConfig}</argLine>
+                    <includes>
+                        <include>**/*IntegrationTestCase.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${arquillian.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
     <dependencies>
+        <!-- do not use javax:javaee-api artifact, use jboss' instead -->
+        <!-- see reason here:
+             https://community.jboss.org/wiki/WhatsTheCauseOfThisExceptionJavalangClassFormatErrorAbsentCode -->
+        <!-- for glassfish embedded the artifact contains all needed classes and there is a clash
+             with jboss artifact therefore java ee dependencies are moved to the profiles section -->
         <dependency>
-            <groupId>org.jboss.spec</groupId>
-            <artifactId>jboss-javaee-6.0</artifactId>
-            <version>1.0.0.Final</version>
-            <type>pom</type>
-            <scope>provided</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.agent</artifactId>
+            <version>${jacoco.version}</version>
+            <classifier>runtime</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.sonarsource.java</groupId>
+            <artifactId>sonar-jacoco-listeners</artifactId>
+            <version>${jacoco-listeners.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Restlet -->
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet</artifactId>
+            <version>${version.restlet}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.fileupload</artifactId>
+            <version>${version.restlet}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.servlet</artifactId>
+            <version>${version.restlet}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.swagger</artifactId>
+            <version>${version.restlet}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.raml</groupId>
+                    <artifactId>raml-parser</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.xstream</artifactId>
+            <version>${version.restlet}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.restlet.jee</groupId>
+            <artifactId>org.restlet.ext.json</artifactId>
+            <version>${version.restlet}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.8</version>
-        </dependency>
-        <dependency>
-            <groupId>io.fastjson</groupId>
-            <artifactId>boon</artifactId>
-            <version>0.30</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -79,47 +227,8 @@
             <artifactId>guice-servlet</artifactId>
             <version>3.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.restlet.jee</groupId>
-            <artifactId>org.restlet</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.restlet.jee</groupId>-->
-            <!--<artifactId>org.restlet.ext.jee</artifactId>-->
-            <!--<version>${version.restlet}</version>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.restlet.jee</groupId>
-            <artifactId>org.restlet.ext.fileupload</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.restlet.jee</groupId>
-            <artifactId>org.restlet.ext.servlet</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.restlet.jee</groupId>
-            <artifactId>org.restlet.ext.swagger</artifactId>
-            <version>${version.restlet}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.raml</groupId>
-                    <artifactId>raml-parser</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.restlet.jee</groupId>
-            <artifactId>org.restlet.ext.xstream</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.restlet.jee</groupId>
-            <artifactId>org.restlet.ext.json</artifactId>
-            <version>${version.restlet}</version>
-        </dependency>
+
+
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
@@ -178,17 +287,30 @@
             <artifactId>datafactory</artifactId>
             <version>0.8</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
+
+
     </dependencies>
+
     <profiles>
+        <!-- tomcat embedded -->
+        <!-- only for cdi tests, i.e. no ejb -->
+        <!-- fails. needs different deployment. see http://www.hameister.org/ArquillianTomcatDependencyInjection.html -->
         <profile>
-            <id>jetty</id>
+            <id>arquillian-tomcat-embedded-jetty-run</id>
             <build>
                 <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/BasketTest.java</exclude>
+                            </excludes>
+                            <!-- as Surefire argLine is overwritten, JaCoCo agent
+                                 must be included again -->
+                            <argLine>-Darquillian.launch=tomcat-embedded ${jacoco.utAgentConfig}</argLine>
+                        </configuration>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.mortbay.jetty</groupId>
                         <artifactId>maven-jetty-plugin</artifactId>
@@ -219,50 +341,62 @@
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>
                     </plugin>
+
                 </plugins>
             </build>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.spec</groupId>
+                    <artifactId>jboss-javaee-7.0</artifactId>
+                    <version>${jboss-javaee7.version}</version>
+                    <type>pom</type>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.arquillian.container</groupId>
+                    <artifactId>arquillian-tomcat-embedded-8</artifactId>
+                    <version>${arquillian-tomcat.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.weld.servlet</groupId>
+                    <artifactId>weld-servlet</artifactId>
+                    <version>${weld.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.web</groupId>
+                    <artifactId>el-impl</artifactId>
+                    <version>${el.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-core</artifactId>
+                    <version>${tomcat.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-jasper</artifactId>
+                    <version>${tomcat.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat.embed</groupId>
+                    <artifactId>tomcat-embed-logging-juli</artifactId>
+                    <version>${tomcat.version}</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.eclipse.jdt.core.compiler</groupId>
+                    <artifactId>ecj</artifactId>
+                    <version>${eclipse-jdt.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
         </profile>
+
     </profiles>
-    <repositories>
-        <repository>
-            <id>atlassian-public</id>
-            <url>https://maven.atlassian.com/repository/public</url>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-                <checksumPolicy>warn</checksumPolicy>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>warn</checksumPolicy>
-            </releases>
-        </repository>
-        <repository>
-            <id>maven-restlet</id>
-            <name>Public online Restlet repository</name>
-            <url>http://maven.restlet.com</url>
-        </repository>
-        <!-- Needed by ApiSpark due to RAML dependency-->
-        <repository>
-            <id>mulesoft-releases</id>
-            <name>MuleSoft Releases Repository</name>
-            <url>https://repository-master.mulesoft.org/releases/</url>
-        </repository>
-        <!-- Snapshot repository -->
-        <repository>
-            <id>oss-jfrog-artifactory-snapshots</id>
-            <name>oss-jfrog-artifactory-snapshots</name>
-            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-        </repository>
-        <repository>
-            <id>jboss</id>
-            <name>JBoss Public Repo</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public</url>
-        </repository>
-        <repository>
-            <id>sonatype-public</id>
-            <name>Sonatype Public Snapshots Repo</name>
-            <url>https://oss.sonatype.org/content/repositories/public</url>
-        </repository>
-    </repositories>
+
 </project>
