@@ -47,4 +47,6 @@ public interface RoleRepository {
 
     List<Role> listRoles(String instance, String storeName, int skip, int limit);
 
+    List<Role> getRolesOfEntity(String instance, String entityId);
+
 }

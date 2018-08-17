@@ -25,15 +25,20 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
+import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.EntityRepository;
+import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.resource.EntityResource;
 import com.divroll.domino.service.ApplicationService;
 import com.divroll.domino.service.WebTokenService;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
+import org.boon.di.In;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
+import scala.actors.threadpool.Arrays;
 
 import java.util.*;
 
@@ -47,6 +52,9 @@ public class JeeEntityServerResource extends BaseServerResource
 
     @Inject
     EntityRepository entityRepository;
+
+    @In
+    RoleRepository roleRepository;
 
     @Inject
     ApplicationService applicationService;
@@ -100,6 +108,13 @@ public class JeeEntityServerResource extends BaseServerResource
                         publicRead = true;
                     } else if (authUserId != null && aclReadList.contains(authUserId)) {
                         isAccess = true;
+                    } else {
+                        List<Role> roles = roleRepository.getRolesOfEntity(appId, entityId);
+                        for(Role role : roles) {
+                            if(aclReadList.contains(role.getEntityId())) {
+                                isAccess = true;
+                            }
+                        }
                     }
                     if (publicRead || isAccess) {
                         setStatus(Status.SUCCESS_OK);
@@ -185,6 +200,12 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 }
 
+                Application app = applicationService.read(appId);
+                if (app == null) {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Application does not exists");
+                    return null;
+                }
+
                 String[] read = new String[]{Constants.ACL_ASTERISK};
                 String[] write = new String[]{Constants.ACL_ASTERISK};
 
@@ -213,16 +234,40 @@ public class JeeEntityServerResource extends BaseServerResource
                         // do nothing
                     }
                 }
-                if (!comparableMap.isEmpty()) {
-                    boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write);
-                    if (success) {
-                        setStatus(Status.SUCCESS_OK);
+
+                if(isMaster(appId, masterKey)) {
+                    if (!comparableMap.isEmpty()) {
+                        boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write);
+                        if (success) {
+                            setStatus(Status.SUCCESS_OK);
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        }
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     }
                 } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    if (!isMaster(appId, masterKey)) {
+                        Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, roleId);
+                        String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                        if (entityMap == null) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        } else {
+                            Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+                            if (publicWrite || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                                boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write);
+                                if (success) {
+                                    setStatus(Status.SUCCESS_OK);
+                                } else {
+                                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                                }
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                            }
+                        }
+                    }
                 }
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -254,8 +299,8 @@ public class JeeEntityServerResource extends BaseServerResource
                 if (entityMap == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
-                    Boolean publicWrite = (Boolean) entityMap.get("publicWrite");
-                    if (publicWrite || ((List<String>) entityMap.get("aclWrite")).contains(authUserId)) {
+                    Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+                    if (publicWrite || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
                         Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
                         if (success) {
                             setStatus(Status.SUCCESS_OK);

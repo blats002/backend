@@ -22,6 +22,7 @@
 package com.divroll.domino.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;
 
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.List;
 @XStreamAlias("roles")
 @ApiModel
 public class Roles {
+    @XStreamImplicit(itemFieldName = "results")
     private List<Role> results;
     private long skip;
     private long limit;

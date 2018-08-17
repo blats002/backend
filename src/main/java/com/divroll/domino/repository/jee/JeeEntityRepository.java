@@ -24,6 +24,7 @@ package com.divroll.domino.repository.jee;
 import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.EntityRepository;
+import com.divroll.domino.repository.RoleRepository;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
@@ -44,8 +45,15 @@ public class JeeEntityRepository implements EntityRepository {
     @Named("xodusRoot")
     String xodusRoot;
 
+    @Inject
+    @Named("defaultRoleStore")
+    String defaultRoleStore;
+
+    @Inject
+    RoleRepository roleRepository;
+
     @Override
-    public String createEntity(String instance, final String storeName, final Map<String, Comparable> comparableMap,
+    public String createEntity(final String instance, final String storeName, final Map<String, Comparable> comparableMap,
                                final String[] read, final String[] write) {
 
         final String[] entityId = {null};
@@ -74,14 +82,14 @@ public class JeeEntityRepository implements EntityRepository {
                             publicRead = false;
                         }
                         // Add User to ACL
-                        for (String userId : aclRead) {
-                            if (userId.equals(Constants.ACL_ASTERISK)) {
+                        for (String userOrRoleId : aclRead) {
+                            if (userOrRoleId.equals(Constants.ACL_ASTERISK)) {
                                 continue;
                             } else {
-                                EntityId userEntityId = txn.toEntityId(userId);
-                                Entity userEntity = txn.getEntity(userEntityId);
-                                if (userEntity != null) {
-                                    entity.addLink(Constants.ACL_READ, userEntity);
+                                EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
+                                Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
+                                if (userOrRoleEntity != null) {
+                                    entity.addLink(Constants.ACL_READ, userOrRoleEntity);
                                 }
                             }
 
