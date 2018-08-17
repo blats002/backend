@@ -38,7 +38,7 @@ import java.util.List;
 @XStreamAlias("user")
 @ApiModel
 public class User {
-    @ApiModelProperty(required = false, value = "Username")
+    @ApiModelProperty(required = false, value = "Entity Id")
     private String entityId;
     @ApiModelProperty(required = true, value = "Username")
     private String username;
@@ -47,6 +47,7 @@ public class User {
     @ApiModelProperty(required = false, value = "Generated Authentication Token")
     private String webToken;
     @ApiModelProperty(required = false)
+    @XStreamImplicit(itemFieldName = "roles")
     private List<Role> roles;
 
 

@@ -201,8 +201,12 @@ public class JeeRoleRepository implements RoleRepository {
                     Role role = new Role();
                     role.setEntityId(roleEntityId.toString());
                     role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
-                    role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
-                    role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+
+                    Boolean publicRead = (Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    Boolean publicWrite = (Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                    role.setPublicRead(publicRead);
+                    role.setPublicWrite(publicWrite);
 
                     List<String> aclRead = new LinkedList<>();
                     List<String> aclWrite = new LinkedList<>();

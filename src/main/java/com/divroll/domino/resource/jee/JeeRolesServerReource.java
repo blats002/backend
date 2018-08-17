@@ -146,7 +146,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        aclReadList.add(jsonArray.getString(i));
+                        if(!aclReadList.contains(jsonArray.getString(i)))
+                            aclReadList.add(jsonArray.getString(i));
                     }
                     read = aclReadList.toArray(new String[aclReadList.size()]);
                 } catch (Exception e) {
@@ -158,6 +159,7 @@ public class JeeRolesServerReource extends BaseServerResource
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     for (int i = 0; i < jsonArray.size(); i++) {
+                        if(!aclWriteList.contains(jsonArray.getString(i)))
                         aclWriteList.add(jsonArray.getString(i));
                     }
                     write = aclWriteList.toArray(new String[aclWriteList.size()]);

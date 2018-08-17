@@ -89,32 +89,30 @@ public class JeeRoleServerResource extends BaseServerResource
                 Boolean publicRead = false;
                 Boolean isAccess = false;
 
-                if (aclRead != null) {
-                    try {
-                        JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                        List<String> aclReadList = new LinkedList<>();
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            aclReadList.add(jsonArray.getString(i));
-                        }
-                        if (aclReadList.contains(Constants.ACL_ASTERISK)) {
-                            publicRead = true;
-                        } else if (aclReadList.contains(authUserId)) {
-                            isAccess = true;
-                        }
-                        if (!publicRead && !isAccess) {
-                            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                            return null;
-                        }
-                        Role role = roleRepository.getRole(appId, storeName, roleId);
-                        if (role != null) {
-                            setStatus(Status.SUCCESS_CREATED);
-                            return role;
-                        } else {
-                            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                        }
-                    } catch (Exception e) {
-                        // do nothing
+                try {
+                    Role role = roleRepository.getRole(appId, storeName, roleId);
+                    if(role.getAclRead().contains(Constants.ACL_ASTERISK)
+                        || role.getPublicRead()) {
+                        publicRead = true;
                     }
+                    if(authUserId != null && role.getAclRead().contains(authUserId)) {
+                        isAccess = true;
+                    }
+                    if (!publicRead && !isAccess) {
+                        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                        return null;
+                    }
+                    if (role != null) {
+                        if(publicRead && !role.getAclRead().contains(Constants.ACL_ASTERISK)) {
+                            role.getAclRead().add(Constants.ACL_ASTERISK);
+                        }
+                        setStatus(Status.SUCCESS_CREATED);
+                        return role;
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                    }
+                } catch (Exception e) {
+                    // do nothing
                 }
             }
 

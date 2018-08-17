@@ -83,7 +83,8 @@ public class JeeUsersServerReource extends BaseServerResource
             List<User> results = userRepository.listUsers(appId, storeName,
                     skipValue, limitValue);
             for(User user : results) {
-                if(user.getPublicRead() || user.getAclRead().contains(authUserId)) {
+                if(user.getPublicRead() || (user.getAclRead() != null
+                        && ( authUserId != null && user.getAclRead().contains(authUserId)) )) {
                     processedResults.add(user);
                 }
             }
@@ -163,11 +164,11 @@ public class JeeUsersServerReource extends BaseServerResource
                         String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
                         JSONObject result = new JSONObject();
                         result.put(Constants.WEBTOKEN, webToken);
-                        setStatus(Status.SUCCESS_CREATED);
                         User user = new User();
                         user.setEntityId(entityId.toString());
                         user.setUsername(username);
                         user.setWebToken(webToken);
+                        setStatus(Status.SUCCESS_CREATED);
                         return user;
                     } else {
                         setStatus(Status.SERVER_ERROR_INTERNAL);
