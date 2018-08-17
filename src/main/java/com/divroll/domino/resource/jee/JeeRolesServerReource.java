@@ -134,8 +134,13 @@ public class JeeRolesServerReource extends BaseServerResource
                 aclWriteList = new LinkedList<>();
             }
 
-            String[] read = new String[]{Constants.ACL_ASTERISK};
-            String[] write = new String[]{Constants.ACL_ASTERISK};
+            if(aclReadList.contains("") || aclWriteList.contains("")) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Invalid ACL");
+                return null;
+            }
+
+            String[] read = new String[]{};
+            String[] write = new String[]{};
 
             if (aclRead != null && !(aclRead.length() == 0)) {
                 try {

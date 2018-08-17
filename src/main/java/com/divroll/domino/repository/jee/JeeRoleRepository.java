@@ -65,23 +65,26 @@ public class JeeRoleRepository implements RoleRepository {
 
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
-                        if (aclRead.contains(Constants.ACL_ASTERISK)) {
-                            publicRead = true;
-                        } else {
-                            publicRead = false;
-                        }
-                        // Add User to ACL
-                        for (String userId : aclRead) {
-                            if (userId.equals(Constants.ACL_ASTERISK)) {
-                                continue;
+                        if(aclRead != null) {
+                            if (aclRead.contains(Constants.ACL_ASTERISK)) {
+                                publicRead = true;
                             } else {
-                                EntityId userEntityId = txn.toEntityId(userId);
-                                Entity userEntity = txn.getEntity(userEntityId);
-                                if (userEntity != null) {
-                                    entity.addLink(Constants.ACL_READ, userEntity);
-                                }
+                                publicRead = false;
                             }
+                            // Add User to ACL
+                            for (String userId : aclRead) {
+                                if (userId.equals(Constants.ACL_ASTERISK)
+                                        || userId.isEmpty()) {
+                                    continue;
+                                } else {
+                                    EntityId userEntityId = txn.toEntityId(userId);
+                                    Entity userEntity = txn.getEntity(userEntityId);
+                                    if (userEntity != null) {
+                                        entity.addLink(Constants.ACL_READ, userEntity);
+                                    }
+                                }
 
+                            }
                         }
                     }
 
@@ -89,23 +92,26 @@ public class JeeRoleRepository implements RoleRepository {
 
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
-                        if (aclWrite.contains(Constants.ACL_ASTERISK)) {
-                            publicWrite = true;
-                        } else {
-                            publicWrite = false;
-                        }
-                        // Add User to ACL
-                        for (String userId : aclWrite) {
-                            if (userId.equals(Constants.ACL_ASTERISK)) {
-                                continue;
+                        if(aclWrite != null) {
+                            if (aclWrite.contains(Constants.ACL_ASTERISK)) {
+                                publicWrite = true;
                             } else {
-                                EntityId userEntityId = txn.toEntityId(userId);
-                                Entity userEntity = txn.getEntity(userEntityId);
-                                if (userEntity != null) {
-                                    entity.addLink(Constants.ACL_WRITE, userEntity);
-                                }
+                                publicWrite = false;
                             }
+                            // Add User to ACL
+                            for (String userId : aclWrite) {
+                                if (userId.equals(Constants.ACL_ASTERISK)
+                                        || userId.isEmpty()) {
+                                    continue;
+                                } else {
+                                    EntityId userEntityId = txn.toEntityId(userId);
+                                    Entity userEntity = txn.getEntity(userEntityId);
+                                    if (userEntity != null) {
+                                        entity.addLink(Constants.ACL_WRITE, userEntity);
+                                    }
+                                }
 
+                            }
                         }
                     }
 
