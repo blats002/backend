@@ -45,6 +45,6 @@ public interface RoleRepository {
 
     boolean isLinked(String instance, String storeName, String roleID, String userID);
 
-    List<Role> listRoles(String instance, String storeName, long skip, long limit);
+    List<Role> listRoles(String instance, String storeName, int skip, int limit);
 
 }

@@ -306,20 +306,35 @@ public class JeeRoleRepository implements RoleRepository {
     }
 
     @Override
-    public List<Role> listRoles(String instance, final String storeName, long skip, long limit) {
+    public List<Role> listRoles(String instance, final String storeName, final int skip, final int limit) {
         final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    final EntityIterable allUsers = txn.getAll(storeName);
+                    final EntityIterable allUsers = txn.getAll(storeName).skip(skip).take(limit);
                     for (Entity roleEntity : allUsers) {
                         Role role = new Role();
                         role.setEntityId(roleEntity.getId().toString());
                         role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
                         role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
                         role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+
+                        List<String> aclRead = new LinkedList<>();
+                        List<String> aclWrite = new LinkedList<>();
+
+                        for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
+                            aclRead.add(aclReadLink.getId().toString());
+                        }
+
+                        for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
+                            aclWrite.add(aclWriteLink.getId().toString());
+                        }
+
+                        role.setAclRead(aclRead);
+                        role.setAclWrite(aclWrite);
+
                         roles.add(role);
                     }
                 }

@@ -33,6 +33,7 @@ import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
+import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -69,29 +70,43 @@ public class JeeUserServerResource extends BaseServerResource implements
         String username = getQueryValue(Constants.QUERY_USERNAME);
         String password = getQueryValue(Constants.QUERY_PASSWORD);
 
-        User userEntity = userRepository.getUserByUsername(appId, storeName, username);
-        String userId = userEntity.getEntityId();
-        String existingPassword = userEntity.getPassword();
-
-        if (userEntity == null) {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            return null;
-        }
-
-        if (BCrypt.checkpw(password, existingPassword)) {
-            Application app = applicationService.read(appId);
-            if (app != null) {
-                String webToken = webTokenService.createToken(app.getMasterKey(), userId);
-                setStatus(Status.SUCCESS_OK);
-                User user = new User();
-                user.setEntityId(userId);
-                user.setWebToken(webToken);
-                return user;
+        if(userId != null) {
+            User userEntity = userRepository.getUser(appId, storeName, userId);
+            if (userEntity == null) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
             }
-        } else {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return null;
+            userEntity.setPassword(null);
+            setStatus(Status.SUCCESS_OK);
+            return userEntity;
+        } else { // login
+            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+            String userId = userEntity.getEntityId();
+            String existingPassword = userEntity.getPassword();
+
+
+            if (userEntity == null) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
+            }
+
+            if (BCrypt.checkpw(password, existingPassword)) {
+                Application app = applicationService.read(appId);
+                if (app != null) {
+                    String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                    User user = new User();
+                    user.setEntityId(userId);
+                    user.setWebToken(webToken);
+                    userEntity.setPassword(null);
+                    setStatus(Status.SUCCESS_OK);
+                    return user;
+                }
+            } else {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
+            }
         }
+
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
         return null;
     }
@@ -99,19 +114,15 @@ public class JeeUserServerResource extends BaseServerResource implements
     @Override
     public User updateUser(User entity) {
         Representation representation = returnNull();
-        String username = getQueryValue(Constants.QUERY_USERNAME);
-        String password = getQueryValue(Constants.QUERY_PASSWORD);
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if (username == null || password == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-                //return missingUsernamePasswordPair();
-            }
-            if (authToken == null || authToken.isEmpty()) {
+
+            Boolean isMaster =isMaster(appId, masterKey);
+
+            if (!isMaster && (authToken == null || authToken.isEmpty()) ) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
                 //return returnMissingAuthToken();
@@ -163,37 +174,46 @@ public class JeeUserServerResource extends BaseServerResource implements
                     // do nothing
                 }
             }
-
-            String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-
-            if (authUsername.equals(username)) {
-
-                User userEntity = userRepository.getUserByUsername(appId, storeName, username);
-                String existingUsername = userEntity.getUsername();
-                String existingPassword = userEntity.getPassword();
-
-                if ((existingUsername != null && existingUsername.equals(authUsername))
-                        && (BCrypt.checkpw(password, existingPassword))) {
-
-                    String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                    Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername, newHashPassword, read, write);
-
-                    if (success) {
-                        String webToken = webTokenService.createToken(app.getMasterKey(), newUsername);
-                        User user = new User();
-                        user.setWebToken(webToken);
-                        setStatus(Status.SUCCESS_OK);
+            if (isMaster) {
+                String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
+                Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername, newHashPassword, read, write);
+                if (success) {
+                    // TODO: <-----------------------------
+                    String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                    User user = new User();
+                    user.setEntityId(entityId);
+                    user.setPassword(null);
+                    user.setAclRead(Arrays.asList(read));
+                    user.setAclWrite(Arrays.asList(write));
+                    user.setWebToken(webToken);
+                    setStatus(Status.SUCCESS_OK);
+                    return user;
+                } else {
+                    setStatus(Status.SERVER_ERROR_INTERNAL);
+                }
+            } else {
+                String authUserID = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                if(authUserID != null) {
+                    final User user = userRepository.getUser(appId, storeName, authUserID);
+                    if (authUserID.equals(user.getEntityId())) {
+                        String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
+                        Boolean success = userRepository.updateUser(appId, storeName, authUserID, userId, newHashPassword, read, write);
+                        if (success) {
+                            String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                            user.setPassword(null);
+                            user.setWebToken(webToken);
+                            setStatus(Status.SUCCESS_OK);
+                            return user;
+                        } else {
+                            setStatus(Status.SERVER_ERROR_INTERNAL);
+                        }
                     } else {
-                        setStatus(Status.SERVER_ERROR_INTERNAL);
+                        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                        return null;
                     }
                 } else {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                    return null;
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_AUTH_TOKEN);
                 }
-
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -224,9 +244,6 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
             String id = userEntity.getEntityId();
-            String existingUsername = userEntity.getUsername();
-            String existingPassword = userEntity.getPassword();
-
             if (userRepository.deleteUser(appId, storeName, id.toString())) {
                 setStatus(Status.SUCCESS_OK);
             } else {

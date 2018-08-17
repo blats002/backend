@@ -39,6 +39,8 @@ public interface EntityRepository {
 
     Map<String, Object> getEntity(String instance, String storeName, String entityId);
 
+    List<Map<String, Object>> listEntities(String instance, String storeName, int skip, int limit);
+
     Comparable getEntityProperty(String instance, String storeName, String entityId, String propertyName);
 
     InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);

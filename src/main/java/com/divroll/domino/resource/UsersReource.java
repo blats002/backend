@@ -44,5 +44,5 @@ public interface UsersReource {
     User createUser(User entity);
 
     @Get
-    Users getUsers();
+    Users listUsers();
 }

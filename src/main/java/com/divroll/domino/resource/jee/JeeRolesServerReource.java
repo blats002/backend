@@ -23,6 +23,7 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.domino.Constants;
+import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.model.Roles;
 import com.divroll.domino.repository.RoleRepository;
@@ -59,12 +60,45 @@ public class JeeRolesServerReource extends BaseServerResource
 
     @Override
     public Roles getRoles() {
-        String skip = getQueryValue(Constants.QUERY_SKIP);
-        String limit = getQueryValue(Constants.QUERY_LIMIT);
+
+        int skipValue = 0;
+        int limitValue = DEFAULT_LIMIT;
+
+        if(skip != null && limit != null) {
+            skipValue = skip;
+            limitValue = limit;
+        }
+
+        Application app = applicationService.read(appId);
+        if (app == null) {
+            return null;
+        }
+
         if (!isMaster(appId, masterKey)) {
 
+            String authUserId = null;
+
+            try {
+                authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+            } catch (Exception e) {
+                // do nothing
+            }
+            List<Role> processedResults = new LinkedList<>();
+            List<Role> results = roleRepository.listRoles(appId, storeName,
+                    skipValue, limitValue);
+            for(Role role : results) {
+                if(role.getPublicRead() || role.getAclRead().contains(authUserId)) {
+                    processedResults.add(role);
+                }
+            }
+            Roles roles = new Roles();
+            roles.setResults(processedResults);
+            roles.setLimit(Long.valueOf(limit));
+            roles.setSkip(Long.valueOf(skip));
+            setStatus(Status.SUCCESS_OK);
         } else {
-            List<Role> results = roleRepository.listRoles(appId, storeName, Long.valueOf(skip), Long.valueOf(limit));
+            List<Role> results = roleRepository.listRoles(appId, storeName,
+                    skipValue, limitValue);
             Roles roles = new Roles();
             roles.setResults(results);
             roles.setLimit(Long.valueOf(limit));
@@ -73,6 +107,7 @@ public class JeeRolesServerReource extends BaseServerResource
             return roles;
         }
         return null;
+
     }
 
     @Override

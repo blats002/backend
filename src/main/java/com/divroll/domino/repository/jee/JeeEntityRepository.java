@@ -22,6 +22,7 @@
 package com.divroll.domino.repository.jee;
 
 import com.divroll.domino.Constants;
+import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.EntityRepository;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -247,6 +248,63 @@ public class JeeEntityRepository implements EntityRepository {
             entityStore.close();
         }
         return comparableMap;
+    }
+
+    @Override
+    public List<Map<String, Object>> listEntities(String instance, final String storeName,
+                                                  final int skip, final int limit) {
+        final List<Map<String, Object>> entities = new LinkedList<>();
+        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    final EntityIterable allUsers = txn.getAll(storeName).skip(skip).take(limit);
+                    for (Entity entity : allUsers) {
+                        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+                        for (String property : entity.getPropertyNames()) {
+                            comparableMap.put(property, entity.getProperty(property));
+                        }
+
+                        List<String> aclRead = new LinkedList<>();
+                        List<String> aclWrite = new LinkedList<>();
+
+                        Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                        Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                        for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
+                            aclRead.add(aclReadLink.getId().toString());
+                        }
+
+                        for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
+                            aclWrite.add(aclWriteLink.getId().toString());
+                        }
+
+                        if (publicRead) {
+                            aclRead.add(Constants.ACL_ASTERISK);
+                        }
+
+                        if (publicWrite) {
+                            aclWrite.add(Constants.ACL_ASTERISK);
+                        }
+
+                        Map<String, Object> metadata = new TreeMap<String, Object>();
+
+                        metadata.put(Constants.ENTITY_ID, entity.getId().toString());
+                        metadata.put(Constants.ACL_READ, aclRead);
+                        metadata.put(Constants.ACL_WRITE, aclWrite);
+                        metadata.put(Constants.BLOBNAMES, entity.getBlobNames());
+                        metadata.put(Constants.LINKS, entity.getLinkNames());
+
+                        comparableMap.put(Constants.METADATA_KEY, metadata);
+                        entities.add(comparableMap);
+                    }
+                }
+            });
+        } finally {
+            entityStore.close();
+        }
+        return entities;
     }
 
     @Override

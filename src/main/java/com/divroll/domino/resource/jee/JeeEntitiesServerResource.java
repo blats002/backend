@@ -24,9 +24,12 @@ package com.divroll.domino.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
+import com.divroll.domino.model.Application;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.resource.EntitiesResource;
+import com.divroll.domino.service.WebTokenService;
 import com.google.inject.Inject;
+import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
@@ -41,8 +44,13 @@ import java.util.*;
 public class JeeEntitiesServerResource extends BaseServerResource
         implements EntitiesResource {
 
+    private static final Integer DEFAULT_LIMIT = 100;
+
     @Inject
     EntityRepository entityRepository;
+
+    @Inject
+    WebTokenService webTokenService;
 
     @Override
     public Representation createEntity(Representation entity) {
@@ -160,6 +168,79 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
     @Override
     public Representation getEntities() {
-        return null;
-    }
+        try {
+            if (!isAuthorized(appId, apiKey, masterKey)) {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
+            }
+            if (entityId == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing entity ID in request");
+                return null;
+            }
+            Application app = applicationService.read(appId);
+            if (app == null) {
+                return null;
+            }
+
+            int skipValue = 0;
+            int limitValue = DEFAULT_LIMIT;
+
+            if(skip != null && limit != null) {
+                skipValue = skip;
+                limitValue = limit;
+            }
+
+            if (isMaster(appId, masterKey)) {
+                try {
+                    List<Map<String, Object>> entityObjs
+                            = entityRepository.listEntities(appId, entityType, skipValue, limitValue);
+                    Representation representation = new JsonRepresentation(entityObjs);
+                    setStatus(Status.SUCCESS_OK);
+                    return representation;
+                } catch (Exception e) {
+                    setStatus(Status.SERVER_ERROR_INTERNAL);
+                }
+            } else {
+
+                String authUserId = null;
+
+                try {
+                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                } catch (Exception e) {
+                    // do nothing
+                }
+
+                Boolean publicRead = false;
+                Boolean isAccess = false;
+
+                List<Map<String, Object>> result = new LinkedList<>();
+
+                try {
+                    List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType, skipValue, limitValue);
+                    for(Map<String, Object> entityObj : entityObjs) {
+                        List<String> aclReadList = (List<String>) ((Map<String, Object>) entityObj.get("_md")).get("aclRead");
+                        if (aclReadList.contains(Constants.ACL_ASTERISK)) {
+                            publicRead = true;
+                        } else if (authUserId != null && aclReadList.contains(authUserId)) {
+                            isAccess = true;
+                        }
+                        if (publicRead || isAccess) {
+                            result.add(entityObj);
+                        }
+                    }
+                    Representation representation = new JsonRepresentation(result);
+                    setStatus(Status.SUCCESS_OK);
+                    return representation;
+                } catch (Exception e) {
+                    setStatus(Status.SERVER_ERROR_INTERNAL);
+                }
+            }
+
+        } catch (EntityRemovedInDatabaseException e) {
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND, "Entity was removed ");
+        } catch (Exception e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+        }
+        return null;    }
 }

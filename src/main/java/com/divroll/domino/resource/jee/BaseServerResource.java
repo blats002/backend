@@ -73,6 +73,12 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected String roleId;
 
+    protected Integer skip = null;
+    protected Integer limit = null;
+
+    protected static final Integer DEFAULT_LIMIT = 100;
+
+
     @Inject
     ApplicationService applicationService;
 
@@ -110,6 +116,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         accept = headers.getFirstValue(Constants.HEADER_ACCEPT);
         contentType = headers.getFirstValue(Constants.HEADER_CONTENT_TYPE);
+
+        try {
+            skip = Integer.valueOf(getQueryValue(Constants.QUERY_SKIP));
+            limit = Integer.valueOf(getQueryValue(Constants.QUERY_LIMIT));
+        } catch (Exception e) {
+            // do nothing
+        }
 
     }
 

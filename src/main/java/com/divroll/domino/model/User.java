@@ -22,6 +22,8 @@
 package com.divroll.domino.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -46,6 +48,21 @@ public class User {
     private String webToken;
     @ApiModelProperty(required = false)
     private List<Role> roles;
+
+
+    @XStreamImplicit(itemFieldName = "aclRead")
+    @ApiModelProperty(required = false, value = "")
+    private List<String> aclRead;
+    @XStreamImplicit(itemFieldName = "aclWrite")
+    @ApiModelProperty(required = false, value = "")
+    private List<String> aclWrite;
+    @XStreamOmitField
+    @ApiModelProperty(required = false, value = "")
+    private Boolean publicRead;
+    @XStreamOmitField
+    @ApiModelProperty(required = false, value = "")
+    private Boolean publicWrite;
+
 
     public String getUsername() {
         return username;
@@ -88,5 +105,37 @@ public class User {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public List<String> getAclRead() {
+        return aclRead;
+    }
+
+    public void setAclRead(List<String> aclRead) {
+        this.aclRead = aclRead;
+    }
+
+    public List<String> getAclWrite() {
+        return aclWrite;
+    }
+
+    public void setAclWrite(List<String> aclWrite) {
+        this.aclWrite = aclWrite;
+    }
+
+    public Boolean getPublicRead() {
+        return publicRead;
+    }
+
+    public void setPublicRead(Boolean publicRead) {
+        this.publicRead = publicRead;
+    }
+
+    public Boolean getPublicWrite() {
+        return publicWrite;
+    }
+
+    public void setPublicWrite(Boolean publicWrite) {
+        this.publicWrite = publicWrite;
     }
 }

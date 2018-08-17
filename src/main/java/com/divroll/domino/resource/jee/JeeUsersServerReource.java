@@ -24,9 +24,7 @@ package com.divroll.domino.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
-import com.divroll.domino.model.Application;
-import com.divroll.domino.model.User;
-import com.divroll.domino.model.Users;
+import com.divroll.domino.model.*;
 import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.resource.UsersReource;
 import com.divroll.domino.service.WebTokenService;
@@ -46,6 +44,8 @@ import java.util.List;
 public class JeeUsersServerReource extends BaseServerResource
         implements UsersReource {
 
+
+
     @Inject
     @Named("defaultUserStore")
     String storeName;
@@ -57,21 +57,52 @@ public class JeeUsersServerReource extends BaseServerResource
     WebTokenService webTokenService;
 
     @Override
-    public Users getUsers() {
-        String skip = getQueryValue(Constants.QUERY_SKIP);
-        String limit = getQueryValue(Constants.QUERY_LIMIT);
-        if (!isMaster(appId, masterKey)) {
+    public Users listUsers() {
 
-        } else {
-            List<User> results = userRepository.listUsers(appId, storeName, Long.valueOf(skip), Long.valueOf(limit));
+        int skipValue = 0;
+        int limitValue = DEFAULT_LIMIT;
+
+        if(skip != null && limit != null) {
+            skipValue = skip;
+            limitValue = limit;
+        }
+
+        Application app = applicationService.read(appId);
+        if (app == null) {
+            return null;
+        }
+
+        if (!isMaster(appId, masterKey)) {
+            String authUserId = null;
+            try {
+                authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+            } catch (Exception e) {
+                // do nothing
+            }
+            List<User> processedResults = new LinkedList<>();
+            List<User> results = userRepository.listUsers(appId, storeName,
+                    skipValue, limitValue);
+            for(User user : results) {
+                if(user.getPublicRead() || user.getAclRead().contains(authUserId)) {
+                    processedResults.add(user);
+                }
+            }
             Users users = new Users();
-            users.setResults(results);
+            users.setResults(processedResults);
             users.setLimit(Long.valueOf(limit));
             users.setSkip(Long.valueOf(skip));
             setStatus(Status.SUCCESS_OK);
             return users;
+        } else {
+            List<User> results = userRepository
+                    .listUsers(appId, storeName, skipValue, limitValue);
+            Users users = new Users();
+            users.setResults(results);
+            users.setLimit(Long.valueOf(skipValue));
+            users.setSkip(Long.valueOf(limitValue));
+            setStatus(Status.SUCCESS_OK);
+            return users;
         }
-        return null;
     }
 
     @Override
