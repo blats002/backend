@@ -128,6 +128,8 @@ public class JeeUsersServerReource extends BaseServerResource
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     List<String> aclReadList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
+                        if(jsonArray.getString(i).isEmpty())
+                            continue;
                         aclReadList.add(jsonArray.getString(i));
                     }
                     read = aclReadList.toArray(new String[aclReadList.size()]);
@@ -141,6 +143,8 @@ public class JeeUsersServerReource extends BaseServerResource
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     List<String> aclWriteList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
+                        if(jsonArray.getString(i).isEmpty())
+                            continue;
                         aclWriteList.add(jsonArray.getString(i));
                     }
                     write = aclWriteList.toArray(new String[aclWriteList.size()]);

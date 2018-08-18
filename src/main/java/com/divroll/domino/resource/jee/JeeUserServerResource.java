@@ -70,17 +70,45 @@ public class JeeUserServerResource extends BaseServerResource implements
         }
         String username = getQueryValue(Constants.QUERY_USERNAME);
         String password = getQueryValue(Constants.QUERY_PASSWORD);
-
+        Application app = applicationService.read(appId);
+        if (app == null) {
+            return null;
+        }
         if(userId != null) {
-            User userEntity = userRepository.getUser(appId, storeName, userId);
-            if (userEntity == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return null;
+            if (isMaster(appId, masterKey)) {
+                User userEntity = userRepository.getUser(appId, storeName, userId);
+                if (userEntity == null) {
+                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                    return null;
+                }
+                userEntity.setPassword(null);
+                setStatus(Status.SUCCESS_OK);
+                return userEntity;
+            } else {
+                String authUserId = null;
+                if(authToken != null) {
+                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                }
+                Boolean isAccess = false;
+                User userEntity = userRepository.getUser(appId, storeName, userId);
+                Boolean publicRead
+                        = userEntity.getPublicRead() != null ? userEntity.getPublicRead() : false;
+                if(authUserId != null && userEntity.getAclRead().contains(authUserId)) {
+                    isAccess = true;
+                }
+                if (!publicRead && !isAccess) {
+                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                    return null;
+                }
+                if (userEntity != null) {
+                    setStatus(Status.SUCCESS_OK);
+                    return userEntity;
+                } else {
+                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                }
             }
-            userEntity.setPassword(null);
-            setStatus(Status.SUCCESS_OK);
-            return userEntity;
         } else { // login
+
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
             String userId = userEntity.getEntityId();
             String existingPassword = userEntity.getPassword();
@@ -92,7 +120,6 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
 
             if (BCrypt.checkpw(password, existingPassword)) {
-                Application app = applicationService.read(appId);
                 if (app != null) {
                     String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                     User user = new User();
@@ -163,6 +190,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     List<String> aclReadList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
+                        if(jsonArray.getString(i).isEmpty())
+                            continue;
                         aclReadList.add(jsonArray.getString(i));
                     }
                     read = aclReadList.toArray(new String[aclReadList.size()]);
@@ -176,6 +205,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     List<String> aclWriteList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
+                        if(jsonArray.getString(i).isEmpty())
+                            continue;
                         aclWriteList.add(jsonArray.getString(i));
                     }
                     write = aclWriteList.toArray(new String[aclWriteList.size()]);
