@@ -80,11 +80,11 @@ public class JeeRoleServerResource extends BaseServerResource
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 }
             } else {
-                if (authToken == null) {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_AUTH_TOKEN);
-                    return null;
+
+                String authUserId = null;
+                if(authToken != null) {
+                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 }
-                String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
 
                 Boolean publicRead = false;
                 Boolean isAccess = false;
