@@ -239,11 +239,12 @@ public class JeeUserServerResource extends BaseServerResource implements
                     }
                     if(isAccess) {
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                        Boolean success = userRepository.updateUser(appId, storeName, authUserId, userId,
+                        Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername,
                                 newHashPassword, read, write, publicRead, publicWrite, roleArray);
                         if (success) {
                             String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                             user.setPassword(null);
+                            user.setUsername(newUsername);
                             user.setWebToken(webToken);
                             user.setPublicRead(publicRead);
                             user.setPublicWrite(publicWrite);
