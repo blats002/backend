@@ -51,6 +51,12 @@ public class Role {
     @ApiModelProperty(required = false, value = "")
     private Boolean publicWrite;
 
+    public Role() {}
+
+    public Role(String entityId) {
+        setEntityId(entityId);
+    }
+
     public String getEntityId() {
         return entityId;
     }

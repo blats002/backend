@@ -28,10 +28,12 @@ import com.divroll.domino.model.*;
 import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.resource.UsersReource;
 import com.divroll.domino.service.WebTokenService;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
+import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -152,6 +154,15 @@ public class JeeUsersServerReource extends BaseServerResource
             publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
             publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
+            List<Role> roles = entity.getRoles();
+            List<String> idsOfRoles = new LinkedList<String>();
+            if(roles != null) {
+                for(Role role : roles) {
+                    idsOfRoles.add(role.getEntityId());
+                }
+            }
+            String[] roleArray = idsOfRoles.toArray(new String[idsOfRoles.size()]);
+
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
 
             if (userEntity != null) {
@@ -161,7 +172,8 @@ public class JeeUsersServerReource extends BaseServerResource
                 Application app = applicationService.read(appId);
                 if (app != null) {
                     String hashPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
-                    String entityId = userRepository.createUser(appId, storeName, username, hashPassword, read, write, publicRead, publicWrite);
+                    String entityId = userRepository.createUser(appId, storeName, username, hashPassword, read, write,
+                            publicRead, publicWrite, roleArray);
                     if (entityId != null) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
                         JSONObject result = new JSONObject();
@@ -172,6 +184,11 @@ public class JeeUsersServerReource extends BaseServerResource
                         user.setWebToken(webToken);
                         user.setPublicRead(publicRead);
                         user.setPublicWrite(publicWrite);
+
+                        for(Object roleId : Arrays.asList(roleArray)) {
+                            user.getRoles().add(new Role((String) roleId));
+                        }
+
                         setStatus(Status.SUCCESS_CREATED);
                         return user;
                     } else {

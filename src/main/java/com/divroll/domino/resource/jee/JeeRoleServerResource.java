@@ -181,6 +181,8 @@ public class JeeRoleServerResource extends BaseServerResource
                         Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
                         if (success) {
                             setStatus(Status.SUCCESS_CREATED);
+                            role.setPublicWrite(publicWrite);
+                            role.setPublicRead(publicRead);
                             role.setName(newRoleName);
                             return role;
                         } else {

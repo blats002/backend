@@ -33,8 +33,9 @@ import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
-import scala.actors.threadpool.Arrays;
+import com.divroll.domino.model.Role;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -127,6 +128,12 @@ public class JeeUserServerResource extends BaseServerResource implements
                 return null;
                 //return returnMissingAuthToken();
             }
+
+            if(userId == null || userId.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return null;
+            }
+
             if (entity == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
@@ -137,10 +144,10 @@ public class JeeUserServerResource extends BaseServerResource implements
             publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
             publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
-            if (newUsername == null || newPlainPassword == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
+//            if (newUsername == null || newPlainPassword == null) {
+//                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+//                return null;
+//            }
 
             Application app = applicationService.read(appId);
             if (app == null) {
@@ -176,31 +183,64 @@ public class JeeUserServerResource extends BaseServerResource implements
                     // do nothing
                 }
             }
-            if (isMaster) {
+
+            final User user = userRepository.getUser(appId, storeName, userId);
+            if(user == null) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
+            }
+
+            List<Role> roles = entity.getRoles();
+            List<String> idsOfRoles = new LinkedList<String>();
+            if(roles != null) {
+                for(Role role : roles) {
+                    idsOfRoles.add(role.getEntityId());
+                }
+            }
+            String[] roleArray = idsOfRoles.toArray(new String[idsOfRoles.size()]);
+
+            if (isMaster || ( user.getPublicWrite() != null && user.getPublicWrite())) {
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername, newHashPassword, read, write, publicRead, publicWrite);
+                Boolean success = userRepository.updateUser(appId, storeName, userId,
+                        newUsername, newHashPassword, read, write, publicRead, publicWrite, roleArray);
                 if (success) {
                     String webToken = webTokenService.createToken(app.getMasterKey(), userId);
-                    User user = new User();
-                    user.setEntityId(entityId);
-                    user.setPassword(null);
-                    user.setAclRead(Arrays.asList(read));
-                    user.setAclWrite(Arrays.asList(write));
-                    user.setPublicRead(publicRead);
-                    user.setPublicWrite(publicWrite);
-                    user.setWebToken(webToken);
+                    User resultUser = new User();
+                    resultUser.setEntityId(entityId);
+                    resultUser.setPassword(null);
+                    resultUser.setAclRead(Arrays.asList(read));
+                    resultUser.setAclWrite(Arrays.asList(write));
+                    resultUser.setPublicRead(publicRead);
+                    resultUser.setPublicWrite(publicWrite);
+                    resultUser.setWebToken(webToken);
+                    for(Object roleId : scala.actors.threadpool.Arrays.asList(roleArray)) {
+                        user.getRoles().add(new Role((String) roleId));
+                    }
                     setStatus(Status.SUCCESS_OK);
-                    return user;
+                    return resultUser;
                 } else {
                     setStatus(Status.SERVER_ERROR_INTERNAL);
                 }
             } else {
-                String authUserID = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                if(authUserID != null) {
-                    final User user = userRepository.getUser(appId, storeName, authUserID);
-                    if (authUserID.equals(user.getEntityId())) {
+                System.out.println(authToken);
+                String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                boolean isAccess = false;
+                if(authUserId != null) {
+                    if (authUserId.equals(user.getEntityId())) {
+                        isAccess = true;
+                    } else {
+                        final User authUser = userRepository.getUser(appId, storeName, authUserId);
+                        for(Role role : authUser.getRoles()) {
+                            String roleId = role.getEntityId();
+                            if(user.getAclWrite().contains(roleId)) {
+                                isAccess = true;
+                            }
+                        }
+                    }
+                    if(isAccess) {
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                        Boolean success = userRepository.updateUser(appId, storeName, authUserID, userId, newHashPassword, read, write, publicRead, publicWrite);
+                        Boolean success = userRepository.updateUser(appId, storeName, authUserId, userId,
+                                newHashPassword, read, write, publicRead, publicWrite, roleArray);
                         if (success) {
                             String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                             user.setPassword(null);
@@ -216,6 +256,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                         return null;
                     }
+
+
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_AUTH_TOKEN);
                 }

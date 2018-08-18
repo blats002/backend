@@ -24,6 +24,7 @@ package com.divroll.domino.repository.jee;
 import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.model.User;
+import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.repository.UserRepository;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -47,7 +48,7 @@ public class JeeUserRepository implements UserRepository {
 
     @Override
     public String createUser(String instance, final String storeName, final String username, final String password,
-                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
+                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
 
@@ -87,6 +88,14 @@ public class JeeUserRepository implements UserRepository {
 
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
+                    for(Object roleId : Arrays.asList(roles)) {
+                        String id = (String) roleId;
+                        EntityId roleEntityId = txn.toEntityId(id);
+                        Entity roleEntity = txn.getEntity(roleEntityId);
+                        if(roleEntity != null) {
+                            entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                        }
+                    }
 
                     entityId[0] = entity.getId().toString();
                 }
@@ -100,15 +109,15 @@ public class JeeUserRepository implements UserRepository {
     @Override
     public boolean updateUser(String instance, String storeName, final String userId,
                               final String newUsername, final String newPassword, final String[] read, final String[] write,
-                              final Boolean publicRead, final Boolean publicWrite) {
+                              final Boolean publicRead, final Boolean publicWrite, String[] roles) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityId roleEntityId = txn.toEntityId(userId);
-                    final Entity entity = txn.getEntity(roleEntityId);
+                    EntityId idOfEntity = txn.toEntityId(userId);
+                    final Entity entity = txn.getEntity(idOfEntity);
                     if (newUsername != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_USERNAME, newUsername);
                     }
@@ -143,6 +152,18 @@ public class JeeUserRepository implements UserRepository {
                     }
 
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
+                    List<String> roleList = Arrays.asList(roles);
+                    if(!roleList.isEmpty()) {
+                        entity.deleteLinks(Constants.ROLE_LINKNAME);
+                }
+                    for(String roleId : roleList) {
+                    EntityId roleEntityId = txn.toEntityId(roleId);
+                    Entity roleEntity = txn.getEntity(roleEntityId);
+                    if(roleEntity != null) {
+                        entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                    }
+                }
 
                     success[0] = true;
                 }
@@ -195,6 +216,7 @@ public class JeeUserRepository implements UserRepository {
 
                         List<String> aclRead = new LinkedList<>();
                         List<String> aclWrite = new LinkedList<>();
+                        List<Role> roles = new LinkedList<>();
 
                         for (Entity aclReadLink : userEntity.getLinks(Constants.ACL_READ)) {
                             aclRead.add(aclReadLink.getId().toString());
@@ -207,6 +229,14 @@ public class JeeUserRepository implements UserRepository {
                         user.setAclRead(aclRead);
                         user.setAclWrite(aclWrite);
 
+                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role  = new Role();
+                            role.setEntityId(roleEntity.getId().toString());
+                            role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
+                            roles.add(role);
+                        }
+
+                        user.setRoles(roles);
                         entity[0] = user;
                     }
 
@@ -232,6 +262,16 @@ public class JeeUserRepository implements UserRepository {
                         user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
                         user.setPassword((String) userEntity.getProperty(Constants.QUERY_PASSWORD));
                         user.setEntityId(userEntity.getId().toString());
+
+                        List<Role> roles = new LinkedList<>();
+                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role  = new Role();
+                            role.setEntityId(roleEntity.getId().toString());
+                            role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
+                            roles.add(role);
+                        }
+                        user.setRoles(roles);
+
                         entity[0] = user;
                     }
                 }
@@ -312,6 +352,15 @@ public class JeeUserRepository implements UserRepository {
                         user.setAclWrite(aclWrite);
                         user.setPublicRead((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
                         user.setPublicWrite((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+
+                        List<Role> roles = new LinkedList<>();
+                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role  = new Role();
+                            role.setEntityId(roleEntity.getId().toString());
+                            role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
+                            roles.add(role);
+                        }
+                        user.setRoles(roles);
 
                         users.add(user);
                     }

@@ -31,10 +31,14 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface UserRepository {
-    String createUser(String instance, String storeName, String username, String password, String[] read, String[] write, final Boolean publicRead, final Boolean publicWrite);
+    String createUser(String instance, String storeName, String username, String password,
+                      String[] read, String[] write,
+                      final Boolean publicRead, final Boolean publicWrite, String[] roles);
 
     boolean updateUser(String instance, String storeName, String entityId,
-                       String newUsername, String newPassword, String[] read, String[] write, final Boolean publicRead, final Boolean publicWrite);
+                       String newUsername, String newPassword,
+                       String[] read, String[] write,
+                       final Boolean publicRead, final Boolean publicWrite, String[] roles);
 
     User getUser(String instance, String storeName, String userID);
 

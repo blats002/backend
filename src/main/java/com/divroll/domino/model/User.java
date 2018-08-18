@@ -99,7 +99,7 @@ public class User {
 
     public List<Role> getRoles() {
         if (roles == null) {
-            return new LinkedList<Role>();
+            roles =  new LinkedList<Role>();
         }
         return roles;
     }

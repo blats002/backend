@@ -47,7 +47,7 @@ public class JeeRolesServerReource extends BaseServerResource
         implements RolesResource {
 
     @Inject
-    @Named("defaultUserStore")
+    @Named("defaultRoleStore")
     String storeName;
 
     @Inject
@@ -94,20 +94,20 @@ public class JeeRolesServerReource extends BaseServerResource
             }
             Roles roles = new Roles();
             roles.setResults(processedResults);
-            roles.setLimit(Long.valueOf(limit));
-            roles.setSkip(Long.valueOf(skip));
+            roles.setLimit(Long.valueOf(limitValue));
+            roles.setSkip(Long.valueOf(skipValue));
             setStatus(Status.SUCCESS_OK);
+            return roles;
         } else {
             List<Role> results = roleRepository.listRoles(appId, storeName,
                     skipValue, limitValue);
             Roles roles = new Roles();
             roles.setResults(results);
-            roles.setLimit(Long.valueOf(limit));
-            roles.setSkip(Long.valueOf(skip));
+            roles.setLimit(Long.valueOf(limitValue));
+            roles.setSkip(Long.valueOf(skipValue));
             setStatus(Status.SUCCESS_OK);
             return roles;
         }
-        return null;
 
     }
 

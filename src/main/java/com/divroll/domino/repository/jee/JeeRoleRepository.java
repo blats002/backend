@@ -45,9 +45,6 @@ public class JeeRoleRepository implements RoleRepository {
     @Named("xodusRoot")
     String xodusRoot;
 
-    @Inject
-    UserRepository userRepository;
-
     @Override
     public String createRole(final String instance, final String storeName, final String roleName,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
