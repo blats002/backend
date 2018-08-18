@@ -169,8 +169,11 @@ public class JeeRolesServerReource extends BaseServerResource
             }
 
             String roleName = entity.getName();
+            publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
+            publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
+
             String roleId = null;
-            roleId = roleRepository.createRole(appId, storeName, roleName, read, write);
+            roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite);
 
             if (roleId != null) {
                 setStatus(Status.SUCCESS_CREATED);
@@ -179,6 +182,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 role.setEntityId(roleId);
                 role.setAclRead(Arrays.asList(read));
                 role.setAclWrite(Arrays.asList(write));
+                role.setPublicRead(publicRead);
+                role.setPublicWrite(publicWrite);
                 return role;
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

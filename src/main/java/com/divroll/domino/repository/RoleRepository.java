@@ -31,9 +31,9 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface RoleRepository {
-    String createRole(String instance, String storeName, String roleName, String[] read, String[] write);
+    String createRole(String instance, String storeName, String roleName, String[] read, String[] write, final Boolean publicRead, final Boolean publicWrite);
 
-    boolean updateRole(String instance, String storeName, String entityId, String newRoleName, final String[] read, final String[] write);
+    boolean updateRole(String instance, String storeName, String entityId, String newRoleName, final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
 
     Role getRole(String instance, String storeName, String entityId);
 

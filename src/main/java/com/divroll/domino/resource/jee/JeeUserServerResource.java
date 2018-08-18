@@ -134,6 +134,8 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             String newUsername = entity.getUsername();
             String newPlainPassword = entity.getPassword();
+            publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
+            publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
             if (newUsername == null || newPlainPassword == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -146,8 +148,8 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             }
 
-            String[] read = new String[]{Constants.ACL_ASTERISK};
-            String[] write = new String[]{Constants.ACL_ASTERISK};
+            String[] read = new String[]{};
+            String[] write = new String[]{};
 
             if (aclRead != null) {
                 try {
@@ -176,15 +178,16 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
             if (isMaster) {
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername, newHashPassword, read, write);
+                Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername, newHashPassword, read, write, publicRead, publicWrite);
                 if (success) {
-                    // TODO: <-----------------------------
                     String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                     User user = new User();
                     user.setEntityId(entityId);
                     user.setPassword(null);
                     user.setAclRead(Arrays.asList(read));
                     user.setAclWrite(Arrays.asList(write));
+                    user.setPublicRead(publicRead);
+                    user.setPublicWrite(publicWrite);
                     user.setWebToken(webToken);
                     setStatus(Status.SUCCESS_OK);
                     return user;
@@ -197,11 +200,13 @@ public class JeeUserServerResource extends BaseServerResource implements
                     final User user = userRepository.getUser(appId, storeName, authUserID);
                     if (authUserID.equals(user.getEntityId())) {
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                        Boolean success = userRepository.updateUser(appId, storeName, authUserID, userId, newHashPassword, read, write);
+                        Boolean success = userRepository.updateUser(appId, storeName, authUserID, userId, newHashPassword, read, write, publicRead, publicWrite);
                         if (success) {
                             String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                             user.setPassword(null);
                             user.setWebToken(webToken);
+                            user.setPublicRead(publicRead);
+                            user.setPublicWrite(publicWrite);
                             setStatus(Status.SUCCESS_OK);
                             return user;
                         } else {

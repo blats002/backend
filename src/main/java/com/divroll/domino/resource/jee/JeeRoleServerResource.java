@@ -86,15 +86,11 @@ public class JeeRoleServerResource extends BaseServerResource
                     authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 }
 
-                Boolean publicRead = false;
                 Boolean isAccess = false;
 
                 try {
                     Role role = roleRepository.getRole(appId, storeName, roleId);
-                    if(role.getAclRead().contains(Constants.ACL_ASTERISK)
-                        || role.getPublicRead()) {
-                        publicRead = true;
-                    }
+                    Boolean publicRead = role.getPublicRead();
                     if(authUserId != null && role.getAclRead().contains(authUserId)) {
                         isAccess = true;
                     }
@@ -103,10 +99,7 @@ public class JeeRoleServerResource extends BaseServerResource
                         return null;
                     }
                     if (role != null) {
-                        if(publicRead && !role.getAclRead().contains(Constants.ACL_ASTERISK)) {
-                            role.getAclRead().add(Constants.ACL_ASTERISK);
-                        }
-                        setStatus(Status.SUCCESS_CREATED);
+                        setStatus(Status.SUCCESS_OK);
                         return role;
                     } else {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -146,8 +139,8 @@ public class JeeRoleServerResource extends BaseServerResource
                 return null;
             }
 
-            String[] read = new String[]{Constants.ACL_ASTERISK};
-            String[] write = new String[]{Constants.ACL_ASTERISK};
+            String[] read = new String[]{};
+            String[] write = new String[]{};
 
             if (aclRead != null) {
                 try {
@@ -175,6 +168,8 @@ public class JeeRoleServerResource extends BaseServerResource
                 }
             }
             String newRoleName = entity.getName();
+            publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
+            publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
             if (!isMaster(appId, masterKey)) {
                 Role role = roleRepository.getRole(appId, storeName, roleId);
@@ -183,18 +178,10 @@ public class JeeRoleServerResource extends BaseServerResource
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
                     if (role.getPublicWrite() || role.getAclWrite().contains(authUserId)) {
-                        Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write);
+                        Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
                         if (success) {
                             setStatus(Status.SUCCESS_CREATED);
                             role.setName(newRoleName);
-                            if (read != null) {
-                                role.setAclRead(Lists.newArrayList(read));
-                                role.setPublicRead(Arrays.asList(read).contains(Constants.ACL_ASTERISK));
-                            }
-                            if (write != null) {
-                                role.setAclWrite(Lists.newArrayList(write));
-                                role.setPublicWrite(Arrays.asList(write).contains(Constants.ACL_ASTERISK));
-                            }
                             return role;
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -204,12 +191,16 @@ public class JeeRoleServerResource extends BaseServerResource
                     }
                 }
             } else {
-                Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write);
+                Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
                 if (success) {
                     setStatus(Status.SUCCESS_CREATED);
                     Role role = new Role();
                     role.setName(newRoleName);
                     role.setEntityId(roleId);
+                    role.setAclWrite(Arrays.asList(write));
+                    role.setAclRead(Arrays.asList(read));
+                    role.setPublicRead(publicRead);
+                    role.setPublicWrite(publicWrite);
                     return role;
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

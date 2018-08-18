@@ -50,7 +50,7 @@ public class JeeRoleRepository implements RoleRepository {
 
     @Override
     public String createRole(final String instance, final String storeName, final String roleName,
-                             final String[] read, final String[] write) {
+                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
         try {
@@ -60,30 +60,16 @@ public class JeeRoleRepository implements RoleRepository {
                     final Entity entity = txn.newEntity(storeName);
                     entity.setProperty(Constants.ROLE_NAME, roleName);
 
-                    boolean publicRead = true;
-                    boolean publicWrite = true;
-
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
                         if(aclRead != null) {
-                            if (aclRead.contains(Constants.ACL_ASTERISK)) {
-                                publicRead = true;
-                            } else {
-                                publicRead = false;
-                            }
                             // Add User to ACL
                             for (String userId : aclRead) {
-                                if (userId.equals(Constants.ACL_ASTERISK)
-                                        || userId.isEmpty()) {
-                                    continue;
-                                } else {
-                                    EntityId userEntityId = txn.toEntityId(userId);
-                                    Entity userEntity = txn.getEntity(userEntityId);
-                                    if (userEntity != null) {
-                                        entity.addLink(Constants.ACL_READ, userEntity);
-                                    }
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if (userEntity != null) {
+                                    entity.addLink(Constants.ACL_READ, userEntity);
                                 }
-
                             }
                         }
                     }
@@ -93,24 +79,13 @@ public class JeeRoleRepository implements RoleRepository {
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
                         if(aclWrite != null) {
-                            if (aclWrite.contains(Constants.ACL_ASTERISK)) {
-                                publicWrite = true;
-                            } else {
-                                publicWrite = false;
-                            }
                             // Add User to ACL
                             for (String userId : aclWrite) {
-                                if (userId.equals(Constants.ACL_ASTERISK)
-                                        || userId.isEmpty()) {
-                                    continue;
-                                } else {
-                                    EntityId userEntityId = txn.toEntityId(userId);
-                                    Entity userEntity = txn.getEntity(userEntityId);
-                                    if (userEntity != null) {
-                                        entity.addLink(Constants.ACL_WRITE, userEntity);
-                                    }
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if (userEntity != null) {
+                                    entity.addLink(Constants.ACL_WRITE, userEntity);
                                 }
-
                             }
                         }
                     }
@@ -129,7 +104,7 @@ public class JeeRoleRepository implements RoleRepository {
 
     @Override
     public boolean updateRole(String instance, final String storeName, final String roleId, final String newRoleName,
-                              final String[] read, final String[] write) {
+                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
         try {
@@ -143,11 +118,6 @@ public class JeeRoleRepository implements RoleRepository {
                     if (read != null) {
                         boolean publicRead = true;
                         List<String> aclRead = Arrays.asList(read);
-                        if (aclRead.contains(Constants.ACL_ASTERISK)) {
-                            publicRead = true;
-                        } else {
-                            publicRead = false;
-                        }
                         // Add User to ACL
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
@@ -163,11 +133,6 @@ public class JeeRoleRepository implements RoleRepository {
                     if (write != null) {
                         boolean publicWrite = true;
                         List<String> aclWrite = Arrays.asList(write);
-                        if (aclWrite.contains(Constants.ACL_ASTERISK)) {
-                            publicWrite = true;
-                        } else {
-                            publicWrite = false;
-                        }
                         // Add User to ACL
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
@@ -344,7 +309,8 @@ public class JeeRoleRepository implements RoleRepository {
 
                         role.setAclRead(aclRead);
                         role.setAclWrite(aclWrite);
-
+                        role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
+                        role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
                         roles.add(role);
                     }
                 }

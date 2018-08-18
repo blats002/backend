@@ -78,6 +78,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected static final Integer DEFAULT_LIMIT = 100;
 
+    protected Boolean publicRead;
+    protected Boolean publicWrite;
 
     @Inject
     ApplicationService applicationService;
@@ -122,6 +124,18 @@ public class BaseServerResource extends SelfInjectingServerResource {
             limit = Integer.valueOf(getQueryValue(Constants.QUERY_LIMIT));
         } catch (Exception e) {
             // do nothing
+        }
+
+        try {
+            publicRead = Boolean.valueOf(getQueryValue("publicRead"));
+        } catch (Exception e) {
+
+        }
+
+        try {
+            publicWrite = Boolean.valueOf(getQueryValue("publicWrite"));
+        } catch (Exception e) {
+
         }
 
     }

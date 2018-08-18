@@ -118,8 +118,8 @@ public class JeeUsersServerReource extends BaseServerResource
                 return null;
             }
 
-            String[] read = new String[]{Constants.ACL_ASTERISK};
-            String[] write = new String[]{Constants.ACL_ASTERISK};
+            String[] read = new String[]{};
+            String[] write = new String[]{};
 
             if (aclRead != null) {
                 try {
@@ -149,6 +149,8 @@ public class JeeUsersServerReource extends BaseServerResource
 
             String username = entity.getUsername();
             String plainPassword = entity.getPassword();
+            publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
+            publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
 
@@ -159,7 +161,7 @@ public class JeeUsersServerReource extends BaseServerResource
                 Application app = applicationService.read(appId);
                 if (app != null) {
                     String hashPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
-                    String entityId = userRepository.createUser(appId, storeName, username, hashPassword, read, write);
+                    String entityId = userRepository.createUser(appId, storeName, username, hashPassword, read, write, publicRead, publicWrite);
                     if (entityId != null) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
                         JSONObject result = new JSONObject();
@@ -168,6 +170,8 @@ public class JeeUsersServerReource extends BaseServerResource
                         user.setEntityId(entityId.toString());
                         user.setUsername(username);
                         user.setWebToken(webToken);
+                        user.setPublicRead(publicRead);
+                        user.setPublicWrite(publicWrite);
                         setStatus(Status.SUCCESS_CREATED);
                         return user;
                     } else {

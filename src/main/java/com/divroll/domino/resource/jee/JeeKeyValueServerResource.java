@@ -155,8 +155,8 @@ public class JeeKeyValueServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             }
 
-            String[] read = new String[]{Constants.ACL_ASTERISK};
-            String[] write = new String[]{Constants.ACL_ASTERISK};
+            String[] read = new String[]{};
+            String[] write = new String[]{};
 
             if (aclRead != null) {
                 try {
@@ -239,8 +239,8 @@ public class JeeKeyValueServerResource extends BaseServerResource
 
             }
 
-            String[] read = new String[]{Constants.ACL_ASTERISK};
-            String[] write = new String[]{Constants.ACL_ASTERISK};
+            String[] read = new String[]{};
+            String[] write = new String[]{};
 
             if (aclRead != null) {
                 try {

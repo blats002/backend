@@ -101,9 +101,8 @@ public class JeeEntityServerResource extends BaseServerResource
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
                     List<String> aclReadList = (List<String>) ((Map<String, Object>) entityObj.get("_md")).get("aclRead");
-                    if (aclReadList.contains(Constants.ACL_ASTERISK)) {
-                        publicRead = true;
-                    } else if (authUserId != null && aclReadList.contains(authUserId)) {
+                    publicRead = (Boolean) ((Map<String, Object>) entityObj.get("_md")).get("publicRead");
+                    if (authUserId != null && aclReadList.contains(authUserId)) {
                         isAccess = true;
                     } else {
                         List<Role> roles = roleRepository.getRolesOfEntity(appId, entityId);
@@ -203,8 +202,8 @@ public class JeeEntityServerResource extends BaseServerResource
                     return null;
                 }
 
-                String[] read = new String[]{Constants.ACL_ASTERISK};
-                String[] write = new String[]{Constants.ACL_ASTERISK};
+                String[] read = new String[]{};
+                String[] write = new String[]{};
 
                 if (aclRead != null) {
                     try {
@@ -234,7 +233,7 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if(isMaster(appId, masterKey)) {
                     if (!comparableMap.isEmpty()) {
-                        boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write);
+                        boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                         if (success) {
                             setStatus(Status.SUCCESS_OK);
                         } else {
@@ -252,7 +251,7 @@ public class JeeEntityServerResource extends BaseServerResource
                         } else {
                             Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
                             if (publicWrite || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
-                                boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write);
+                                boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 if (success) {
                                     setStatus(Status.SUCCESS_OK);
                                 } else {

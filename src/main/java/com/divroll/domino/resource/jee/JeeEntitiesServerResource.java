@@ -115,8 +115,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     }
                 }
 
-                String[] read = new String[]{Constants.ACL_ASTERISK};
-                String[] write = new String[]{Constants.ACL_ASTERISK};
+                String[] read = new String[]{};
+                String[] write = new String[]{};
 
                 if (aclRead != null) {
                     try {
@@ -145,7 +145,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 }
 
                 if (!comparableMap.isEmpty()) {
-                    String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write);
+                    String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.ENTITY_ID, entityId);
                     result.put("entity", entityObject);
@@ -219,9 +219,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType, skipValue, limitValue);
                     for(Map<String, Object> entityObj : entityObjs) {
                         List<String> aclReadList = (List<String>) ((Map<String, Object>) entityObj.get("_md")).get("aclRead");
-                        if (aclReadList.contains(Constants.ACL_ASTERISK)) {
-                            publicRead = true;
-                        } else if (authUserId != null && aclReadList.contains(authUserId)) {
+                        publicRead = (Boolean) ((Map<String, Object>) entityObj.get("_md")).get("publicRead");
+                        if (authUserId != null && aclReadList.contains(authUserId)) {
                             isAccess = true;
                         }
                         if (publicRead || isAccess) {

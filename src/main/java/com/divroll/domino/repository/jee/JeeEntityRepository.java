@@ -54,7 +54,7 @@ public class JeeEntityRepository implements EntityRepository {
 
     @Override
     public String createEntity(final String instance, final String storeName, final Map<String, Comparable> comparableMap,
-                               final String[] read, final String[] write) {
+                               final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
 
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
@@ -71,50 +71,27 @@ public class JeeEntityRepository implements EntityRepository {
                         entity.setProperty(key, value);
                     }
 
-                    boolean publicRead = true;
-                    boolean publicWrite = true;
-
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
-                        if (aclRead.contains(Constants.ACL_ASTERISK)) {
-                            publicRead = true;
-                        } else {
-                            publicRead = false;
-                        }
                         // Add User to ACL
                         for (String userOrRoleId : aclRead) {
-                            if (userOrRoleId.equals(Constants.ACL_ASTERISK)) {
-                                continue;
-                            } else {
-                                EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
-                                Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
-                                if (userOrRoleEntity != null) {
-                                    entity.addLink(Constants.ACL_READ, userOrRoleEntity);
-                                }
+                            EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
+                            Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
                             }
-
                         }
                     }
 
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
-                        if (aclWrite.contains(Constants.ACL_ASTERISK)) {
-                            publicWrite = true;
-                        } else {
-                            publicWrite = false;
-                        }
                         // Add User to ACL
                         for (String userId : aclWrite) {
-                            if (userId.equals(Constants.ACL_ASTERISK)) {
-                                continue;
-                            } else {
-                                EntityId userEntityId = txn.toEntityId(userId);
-                                Entity userEntity = txn.getEntity(userEntityId);
-                                if (userEntity != null) {
-                                    entity.addLink(Constants.ACL_WRITE, userEntity);
-                                }
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userEntity = txn.getEntity(userEntityId);
+                            if (userEntity != null) {
+                                entity.addLink(Constants.ACL_WRITE, userEntity);
                             }
-
                         }
                     }
 
@@ -133,7 +110,7 @@ public class JeeEntityRepository implements EntityRepository {
 
     @Override
     public boolean updateEntity(String instance, String storeName, final String entityId, final Map<String, Comparable> comparableMap,
-                                final String[] read, final String[] write) {
+                                final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
         try {
@@ -153,16 +130,8 @@ public class JeeEntityRepository implements EntityRepository {
                     if (read != null) {
                         boolean publicRead = true;
                         List<String> aclRead = Arrays.asList(read);
-                        if (aclRead.contains(Constants.ACL_ASTERISK)) {
-                            publicRead = true;
-                        } else {
-                            publicRead = false;
-                        }
                         // Add User to ACL
                         for (String userId : aclRead) {
-                            if (userId.equalsIgnoreCase(Constants.ACL_ASTERISK)) {
-                                continue;
-                            }
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userEntity = txn.getEntity(userEntityId);
                             if (userEntity != null) {
@@ -175,16 +144,8 @@ public class JeeEntityRepository implements EntityRepository {
                     if (write != null) {
                         boolean publicWrite = true;
                         List<String> aclWrite = Arrays.asList(write);
-                        if (aclWrite.contains(Constants.ACL_ASTERISK)) {
-                            publicWrite = true;
-                        } else {
-                            publicWrite = false;
-                        }
                         // Add User to ACL
                         for (String userId : aclWrite) {
-                            if (userId.equalsIgnoreCase(Constants.ACL_ASTERISK)) {
-                                continue;
-                            }
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userEntity = txn.getEntity(userEntityId);
                             if (userEntity != null) {
@@ -230,14 +191,6 @@ public class JeeEntityRepository implements EntityRepository {
 
                     for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
                         aclWrite.add(aclWriteLink.getId().toString());
-                    }
-
-                    if (publicRead) {
-                        aclRead.add(Constants.ACL_ASTERISK);
-                    }
-
-                    if (publicWrite) {
-                        aclWrite.add(Constants.ACL_ASTERISK);
                     }
 
                     Map<String, Object> metadata = new TreeMap<String, Object>();
@@ -286,14 +239,6 @@ public class JeeEntityRepository implements EntityRepository {
 
                         for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
                             aclWrite.add(aclWriteLink.getId().toString());
-                        }
-
-                        if (publicRead) {
-                            aclRead.add(Constants.ACL_ASTERISK);
-                        }
-
-                        if (publicWrite) {
-                            aclWrite.add(Constants.ACL_ASTERISK);
                         }
 
                         Map<String, Object> metadata = new TreeMap<String, Object>();
@@ -466,14 +411,6 @@ public class JeeEntityRepository implements EntityRepository {
 
                     for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
                         aclWrite.add(aclWriteLink.getId().toString());
-                    }
-
-                    if (publicRead) {
-                        aclRead.add(Constants.ACL_ASTERISK);
-                    }
-
-                    if (publicWrite) {
-                        aclWrite.add(Constants.ACL_ASTERISK);
                     }
 
                     Map<String, Object> metadata = new TreeMap<String, Object>();

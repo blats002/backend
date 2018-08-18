@@ -32,10 +32,10 @@ import java.util.Map;
  */
 public interface EntityRepository {
     String createEntity(String instance, String storeName, Map<String, Comparable> comparableMap,
-                        final String[] read, final String[] write);
+                        final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
 
     boolean updateEntity(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
-                         final String[] read, final String[] write);
+                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
 
     Map<String, Object> getEntity(String instance, String storeName, String entityId);
 
