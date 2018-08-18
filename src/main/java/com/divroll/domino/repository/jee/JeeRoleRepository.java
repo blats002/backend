@@ -116,7 +116,6 @@ public class JeeRoleRepository implements RoleRepository {
                     entity.setProperty(Constants.ROLE_NAME, newRoleName);
 
                     if (read != null) {
-                        boolean publicRead = true;
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
                         for (String userId : aclRead) {
@@ -131,7 +130,6 @@ public class JeeRoleRepository implements RoleRepository {
 
 
                     if (write != null) {
-                        boolean publicWrite = true;
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
                         for (String userId : aclWrite) {
