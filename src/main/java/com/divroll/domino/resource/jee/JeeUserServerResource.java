@@ -267,6 +267,11 @@ public class JeeUserServerResource extends BaseServerResource implements
                                 isAccess = true;
                             }
                         }
+                        if(!isAccess && user.getAclWrite() != null) {
+                            if(user.getAclWrite().contains(authUserId)) {
+                                isAccess = true;
+                            }
+                        }
                     }
                     if(isAccess) {
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());

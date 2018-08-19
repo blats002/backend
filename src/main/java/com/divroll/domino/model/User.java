@@ -57,10 +57,8 @@ public class User {
     @XStreamImplicit(itemFieldName = "aclWrite")
     @ApiModelProperty(required = false, value = "")
     private List<String> aclWrite;
-    @XStreamOmitField
     @ApiModelProperty(required = false, value = "")
     private Boolean publicRead;
-    @XStreamOmitField
     @ApiModelProperty(required = false, value = "")
     private Boolean publicWrite;
 

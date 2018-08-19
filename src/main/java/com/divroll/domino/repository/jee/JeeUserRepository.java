@@ -242,6 +242,13 @@ public class JeeUserRepository implements UserRepository {
                         }
 
                         user.setRoles(roles);
+
+                        Boolean publicRead = (Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                        Boolean publicWrite = (Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                        user.setPublicWrite(publicWrite);
+                        user.setPublicRead(publicRead);
+
                         entity[0] = user;
                     }
 
