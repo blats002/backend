@@ -258,13 +258,13 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 } else {
                     if (!isMaster(appId, masterKey)) {
-                        Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, roleId);
+                        Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
                         String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                         if (entityMap == null) {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                         } else {
                             Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
-                            if (publicWrite || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                            if ((publicWrite != null && publicWrite) || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
                                 boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 if (success) {
                                     setStatus(Status.SUCCESS_OK);
