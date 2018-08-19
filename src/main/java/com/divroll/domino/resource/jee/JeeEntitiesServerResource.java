@@ -182,8 +182,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 try {
                     List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType, skipValue, limitValue);
                     for(Map<String, Object> entityObj : entityObjs) {
-                        List<String> aclReadList = (List<String>) ((Map<String, Object>) entityObj.get("_md")).get("aclRead");
-                        publicRead = (Boolean) ((Map<String, Object>) entityObj.get("_md")).get("publicRead");
+                        List<String> aclReadList = (List<String>) entityObj.get("aclRead");
+                        publicRead = (Boolean) (entityObj.get("publicRead"));
                         if (authUserId != null && aclReadList.contains(authUserId)) {
                             isAccess = true;
                         }

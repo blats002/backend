@@ -322,7 +322,7 @@ public class JeeRoleRepository implements RoleRepository {
 
     @Override
     public List<Role> getRolesOfEntity(String instance, final String entityId) {
-        final List<Role>[] entity = new List[]{};
+        final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -330,19 +330,17 @@ public class JeeRoleRepository implements RoleRepository {
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId idOfEntity = txn.toEntityId(entityId);
                     final Entity theEntity = txn.getEntity(idOfEntity);
-                    List<Role> roles = new LinkedList<>();
                     for (Entity roleEntity : theEntity.getLinks(Constants.ROLE_LINKNAME)) {
                         Role role = new Role();
                         role.setEntityId(roleEntity.getId().toString());
                         roles.add(role);
                     }
-                    entity[0] = roles;
                 }
             });
         } finally {
             ////entityStore.close();
         }
-        return entity[0];
+        return roles;
     }
 
 }

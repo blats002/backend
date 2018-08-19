@@ -204,14 +204,11 @@ public class JeeEntityRepository implements EntityRepository {
 
                     Map<String, Object> metadata = new TreeMap<String, Object>();
 
-                    metadata.put(Constants.ENTITY_ID, idOfEntity.toString());
-                    metadata.put(Constants.ACL_READ, aclRead);
-                    metadata.put(Constants.ACL_WRITE, aclWrite);
-                    metadata.put(Constants.BLOBNAMES, entity.getBlobNames());
-                    metadata.put(Constants.LINKS, entity.getLinkNames());
-
-                    comparableMap.put(Constants.METADATA_KEY, metadata);
-
+                    comparableMap.put(Constants.ENTITY_ID, idOfEntity.toString());
+                    comparableMap.put(Constants.ACL_READ, aclRead);
+                    comparableMap.put(Constants.ACL_WRITE, aclWrite);
+                    comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
+                    comparableMap.put(Constants.LINKS, entity.getLinkNames());
                 }
             });
         } finally {
@@ -250,15 +247,12 @@ public class JeeEntityRepository implements EntityRepository {
                             aclWrite.add(aclWriteLink.getId().toString());
                         }
 
-                        Map<String, Object> metadata = new TreeMap<String, Object>();
+                        comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
+                        comparableMap.put(Constants.ACL_READ, aclRead);
+                        comparableMap.put(Constants.ACL_WRITE, aclWrite);
+                        comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
+                        comparableMap.put(Constants.LINKS, entity.getLinkNames());
 
-                        metadata.put(Constants.ENTITY_ID, entity.getId().toString());
-                        metadata.put(Constants.ACL_READ, aclRead);
-                        metadata.put(Constants.ACL_WRITE, aclWrite);
-                        metadata.put(Constants.BLOBNAMES, entity.getBlobNames());
-                        metadata.put(Constants.LINKS, entity.getLinkNames());
-
-                        comparableMap.put(Constants.METADATA_KEY, metadata);
                         entities.add(comparableMap);
                     }
                 }
@@ -422,15 +416,11 @@ public class JeeEntityRepository implements EntityRepository {
                         aclWrite.add(aclWriteLink.getId().toString());
                     }
 
-                    Map<String, Object> metadata = new TreeMap<String, Object>();
-
-                    metadata.put(Constants.ENTITY_ID, entity.getId().toString());
-                    metadata.put(Constants.ACL_READ, aclRead);
-                    metadata.put(Constants.ACL_WRITE, aclWrite);
-                    metadata.put(Constants.BLOBNAMES, entity.getBlobNames());
-                    metadata.put(Constants.LINKS, entity.getLinkNames());
-
-                    comparableMap.put(Constants.METADATA_KEY, metadata);
+                    comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
+                    comparableMap.put(Constants.ACL_READ, aclRead);
+                    comparableMap.put(Constants.ACL_WRITE, aclWrite);
+                    comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
+                    comparableMap.put(Constants.LINKS, entity.getLinkNames());
                 }
             });
         } finally {

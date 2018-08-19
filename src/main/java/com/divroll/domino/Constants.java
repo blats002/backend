@@ -28,7 +28,7 @@ public final class Constants {
     public static final String DEFAULT_CHARSET = "utf-8";
     public static final String ACL_ASTERISK = "*";
     public static final String ENTITYSTORE_APPLICATION = "Application";
-    public static final String METADATA_KEY = "_md";
+    //public static final String METADATA_KEY = "_md";
     public static final String BLOBNAMES = "blobnames";
     public static final String LINKS = "links";
     public static final String ACL_READ = "aclRead";
