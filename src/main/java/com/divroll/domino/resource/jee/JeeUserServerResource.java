@@ -110,15 +110,20 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
         } else { // login
 
-            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
-            String userId = userEntity.getEntityId();
-            String existingPassword = userEntity.getPassword();
+            if(username == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USERNAME_PASSWORD);
+                return null;
+            }
 
+            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
 
             if (userEntity == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 return null;
             }
+
+            String userId = userEntity.getEntityId();
+            String existingPassword = userEntity.getPassword();
 
             if (BCrypt.checkpw(password, existingPassword)) {
                 if (app != null) {
@@ -147,14 +152,6 @@ public class JeeUserServerResource extends BaseServerResource implements
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
-            }
-
-            Boolean isMaster =isMaster(appId, masterKey);
-
-            if (!isMaster && (authToken == null || authToken.isEmpty()) ) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-                //return returnMissingAuthToken();
             }
 
             if(!validateId(userId)) {
@@ -231,6 +228,8 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
             String[] roleArray = idsOfRoles.toArray(new String[idsOfRoles.size()]);
 
+            Boolean isMaster = isMaster(appId, masterKey);
+
             if (isMaster || ( user.getPublicWrite() != null && user.getPublicWrite())) {
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
                 Boolean success = userRepository.updateUser(appId, storeName, userId,
@@ -298,8 +297,6 @@ public class JeeUserServerResource extends BaseServerResource implements
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                         return null;
                     }
-
-
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_AUTH_TOKEN);
                 }
@@ -314,29 +311,68 @@ public class JeeUserServerResource extends BaseServerResource implements
     @Override
     public void deleteUser(User entity) {
         try {
-            if (appId == null || masterKey == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MASTERKEY_MISSING);
-                return;
+
+            Application app = applicationService.read(appId);
+            if (app == null) {
+                return ;
+
             }
-            if (!isMaster(appId, masterKey)) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED, Constants.ERROR_MASTERKEY_INVALID);
-                return;
-            }
-            if (userId == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USER_ID);
-                return;
-            }
-            if (username == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_QUERY_USERNAME_REQUIRED);
+
+            if (!isAuthorized(appId, apiKey, masterKey)) {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
 
-            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+            if (userId == null && username == null) {
+                if(userId == null) {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USER_ID);
+                    return;
+                }
+                if (username == null) {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_QUERY_USERNAME_REQUIRED);
+                    return;
+                }
+            }
+
+            boolean isMaster = false;
+            boolean publicWrite = false;
+
+            User userEntity = null;
+
+            if(userId != null) {
+                userEntity =  userRepository.getUser(appId, storeName, userId);
+            }
+            if(username != null) {
+                userEntity =  userRepository.getUserByUsername(appId, storeName, username);
+            }
+
             String id = userEntity.getEntityId();
-            if (userRepository.deleteUser(appId, storeName, id.toString())) {
-                setStatus(Status.SUCCESS_OK);
+            publicWrite = userEntity.getPublicWrite();
+
+            String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+            boolean isAccess = false;
+
+            if(authUserId != null && userEntity.getAclWrite().contains(authUserId)) {
+                isAccess = true;
+            } else if(authUserId != null) {
+                final User authUser = userRepository.getUser(appId, storeName, authUserId);
+                for(Role role : authUser.getRoles()) {
+                    String roleId = role.getEntityId();
+                    if(userEntity.getAclWrite().contains(roleId)) {
+                        isAccess = true;
+                    }
+                }
+            }
+
+            if(isMaster || isAccess || publicWrite) {
+                if (userRepository.deleteUser(appId, storeName, id.toString())) {
+                    setStatus(Status.SUCCESS_OK);
+                } else {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);
+                }
             } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return;
             }
 
         } catch (Exception e) {
