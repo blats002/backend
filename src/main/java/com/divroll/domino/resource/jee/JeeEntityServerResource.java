@@ -124,7 +124,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
                         }
                     }
-                    if (publicRead || isAccess) {
+                    if ((publicRead != null && publicRead) || isAccess) {
                         JSONObject jsonObject = new JSONObject();
                         jsonObject.put("entity", entityObj);
                         setStatus(Status.SUCCESS_OK);
