@@ -37,7 +37,7 @@ import org.restlet.resource.Put;
 @Api(value = "Application", description = "Application resource")
 public interface ApplicationResource {
 
-    @ApiOperation(value = "get a new application", tags = "application")
+    @ApiOperation(value = "getEnvironment a new application", tags = "application")
     @ApiResponses({@ApiResponse(code = 200, message = "the application", response = Application.class),})
     @Get
     Application getApp();

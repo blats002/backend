@@ -25,6 +25,7 @@ import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.repository.UserRepository;
+import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
@@ -45,11 +46,14 @@ public class JeeRoleRepository implements RoleRepository {
     @Named("xodusRoot")
     String xodusRoot;
 
+    @Inject
+    XodusManager manager;
+
     @Override
     public String createRole(final String instance, final String storeName, final String roleName,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final String[] entityId = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -94,7 +98,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
             return entityId[0];
         }
     }
@@ -103,7 +107,7 @@ public class JeeRoleRepository implements RoleRepository {
     public boolean updateRole(String instance, final String storeName, final String roleId, final String newRoleName,
                               final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -143,7 +147,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -151,7 +155,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public Role getRole(String instance, String storeName, final String roleId) {
         final Role[] entity = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -186,7 +190,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return entity[0];
     }
@@ -194,7 +198,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public boolean deleteRole(String instance, String storeName, final String roleID) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -205,7 +209,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
 
         return success[0];
@@ -214,7 +218,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public boolean linkRole(String instance, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -227,7 +231,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -235,7 +239,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public boolean unlinkRole(String instance, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -248,7 +252,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -256,7 +260,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public boolean isLinked(String instance, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -270,7 +274,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -278,7 +282,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public List<Role> listRoles(String instance, final String storeName, final int skip, final int limit) {
         final List<Role> roles = new LinkedList<>();
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -311,7 +315,7 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return roles;
     }
@@ -319,7 +323,7 @@ public class JeeRoleRepository implements RoleRepository {
     @Override
     public List<Role> getRolesOfEntity(String instance, final String entityId) {
         final List<Role>[] entity = new List[]{};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -336,8 +340,9 @@ public class JeeRoleRepository implements RoleRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
-        return entity[0];    }
+        return entity[0];
+    }
 
 }

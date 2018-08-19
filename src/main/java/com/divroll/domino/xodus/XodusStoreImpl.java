@@ -42,6 +42,9 @@ public class XodusStoreImpl implements XodusStore {
     @Named("xodusRoot")
     String xodusRoot;
 
+    @Inject
+    XodusManager manager;
+
     /*
     @Override
     public void putIfNotExists(String dir, final String entityType, final String propertyKey, final String propertyValue) {
@@ -117,7 +120,7 @@ public class XodusStoreImpl implements XodusStore {
             return null;
         }
         final EntityId[] entityId = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -133,7 +136,7 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return entityId[0];
     }
@@ -142,7 +145,7 @@ public class XodusStoreImpl implements XodusStore {
     public <T> EntityId put(String dir, final String kind, final String id,
                             final Map<String, Comparable> properties) {
         final EntityId[] result = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -159,14 +162,14 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return result[0];
     }
 
     @Override
     public byte[] getBlob(final String dir, final String kind, final String blobKey) {
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         final List<Comparable<InputStream>> results = new LinkedList<Comparable<InputStream>>();
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -178,7 +181,7 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         try {
             InputStream is = (InputStream) ((LinkedList<Comparable<InputStream>>) results).getFirst();
@@ -194,7 +197,7 @@ public class XodusStoreImpl implements XodusStore {
     public EntityId update(final String dir, final String kind, final String id,
                            final Map<String, Comparable> properties) {
         final EntityId[] entityId = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -210,7 +213,7 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return entityId[0];
     }
@@ -218,7 +221,7 @@ public class XodusStoreImpl implements XodusStore {
     @Override
     public Map<String, Comparable> get(String dir, final String id) {
         final Map<String, Comparable>[] result = new Map[]{null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -233,7 +236,7 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return result[0];
     }
@@ -245,7 +248,7 @@ public class XodusStoreImpl implements XodusStore {
 
     @Override
     public void delete(String dir, final String id) {
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -254,13 +257,13 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
     }
 
     @Override
     public void delete(String dir, final String... ids) {
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -271,7 +274,7 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
     }
 
@@ -280,7 +283,7 @@ public class XodusStoreImpl implements XodusStore {
     public <T> EntityId getFirstEntityId(String dir, final String kind, final String propertyKey, final Comparable<T> propertyVal,
                                          Class<T> clazz) {
         final EntityId[] entityId = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + dir);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -292,7 +295,7 @@ public class XodusStoreImpl implements XodusStore {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return entityId[0];
     }

@@ -25,6 +25,7 @@ import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
+import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
@@ -52,12 +53,15 @@ public class JeeEntityRepository implements EntityRepository {
     @Inject
     RoleRepository roleRepository;
 
+    @Inject
+    XodusManager manager;
+
     @Override
     public String createEntity(final String instance, final String storeName, final Map<String, Comparable> comparableMap,
                                final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
 
         final String[] entityId = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -103,7 +107,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return entityId[0];
     }
@@ -112,7 +116,7 @@ public class JeeEntityRepository implements EntityRepository {
     public boolean updateEntity(String instance, String storeName, final String entityId, final Map<String, Comparable> comparableMap,
                                 final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -159,7 +163,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -167,7 +171,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public Map<String, Object> getEntity(String instance, final String storeName, final String entityId) {
         final Map<String, Object> comparableMap = new LinkedHashMap<>();
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -206,7 +210,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return comparableMap;
     }
@@ -215,7 +219,7 @@ public class JeeEntityRepository implements EntityRepository {
     public List<Map<String, Object>> listEntities(String instance, final String storeName,
                                                   final int skip, final int limit) {
         final List<Map<String, Object>> entities = new LinkedList<>();
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -255,7 +259,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return entities;
     }
@@ -264,7 +268,7 @@ public class JeeEntityRepository implements EntityRepository {
     public Comparable getEntityProperty(String instance, final String storeName, final String entityId,
                                         final String propertyName) {
         final Comparable[] comparable = new Comparable[1];
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -275,7 +279,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return comparable[0];
     }
@@ -283,7 +287,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public InputStream getEntityBlob(String instance, String storeName, final String entityId, final String blobKey) {
         final InputStream[] inputStream = new InputStream[1];
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -294,7 +298,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return inputStream[0];
     }
@@ -313,7 +317,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -321,7 +325,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public boolean linkEntity(String instance, String storeName, final String linkName, final String sourceId, final String targetId) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -334,7 +338,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -342,7 +346,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public boolean unlinkEntity(String instance, String storeName, final String linkName, final String entityId, final String targetId) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -355,7 +359,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -363,7 +367,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public boolean isLinked(String instance, String storeName, final String linkName, final String entityId, final String targetId) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -377,7 +381,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return success[0];
     }
@@ -385,7 +389,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public Map<String, Object> getFirstLinkedEntity(String instance, String storeName, final String entityId, final String linkName) {
         final Map<String, Object> comparableMap = new LinkedHashMap<>();
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -425,7 +429,7 @@ public class JeeEntityRepository implements EntityRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            ////entityStore.close();
         }
         return comparableMap;
     }

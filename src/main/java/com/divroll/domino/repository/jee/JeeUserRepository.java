@@ -26,6 +26,7 @@ import com.divroll.domino.model.Role;
 import com.divroll.domino.model.User;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.repository.UserRepository;
+import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
@@ -46,11 +47,15 @@ public class JeeUserRepository implements UserRepository {
     @Named("xodusRoot")
     String xodusRoot;
 
+    @Inject
+    XodusManager manager;
+
     @Override
     public String createUser(String instance, final String storeName, final String username, final String password,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles) {
         final String[] entityId = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
 
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -101,7 +106,7 @@ public class JeeUserRepository implements UserRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return entityId[0];
     }
@@ -111,7 +116,7 @@ public class JeeUserRepository implements UserRepository {
                               final String newUsername, final String newPassword, final String[] read, final String[] write,
                               final Boolean publicRead, final Boolean publicWrite, String[] roles) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -169,7 +174,7 @@ public class JeeUserRepository implements UserRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return success[0];
     }
@@ -177,7 +182,7 @@ public class JeeUserRepository implements UserRepository {
     @Override
     public User getUser(String instance, String storeName, final String userID) {
         final User[] entity = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -243,7 +248,7 @@ public class JeeUserRepository implements UserRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return entity[0];
     }
@@ -251,7 +256,7 @@ public class JeeUserRepository implements UserRepository {
     @Override
     public User getUserByUsername(String instance, final String storeName, final String username) {
         final User[] entity = {null};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -277,7 +282,7 @@ public class JeeUserRepository implements UserRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return entity[0];
     }
@@ -285,7 +290,7 @@ public class JeeUserRepository implements UserRepository {
     @Override
     public boolean deleteUser(String instance, String storeName, final String userID) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -296,7 +301,7 @@ public class JeeUserRepository implements UserRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return success[0];
     }
@@ -304,7 +309,7 @@ public class JeeUserRepository implements UserRepository {
     @Override
     public List<User> listUsers(String instance, final String storeName, final int skip, final int limit) {
         final List<User> users = new LinkedList<>();
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
@@ -367,7 +372,7 @@ public class JeeUserRepository implements UserRepository {
                 }
             });
         } finally {
-            entityStore.close();
+            //entityStore.close();
         }
         return users;
     }

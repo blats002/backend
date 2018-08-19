@@ -48,6 +48,9 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Named("xodusRoot")
     String xodusRoot;
 
+    @Inject
+    XodusManager manager;
+
     public static byte[] serialize(Object obj) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(out);
@@ -70,7 +73,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
 
     @Override
     public void put(String instance, final String storeName, final String key, final String value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -80,13 +83,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
     }
 
     @Override
     public void put(String instance, final String storeName, final String key, final Boolean value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -96,13 +99,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
     }
 
     @Override
     public void put(String instance, final String storeName, final String key, final Double value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -112,13 +115,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
     }
 
     @Override
     public void put(String instance, final String storeName, final String key, final Float value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -128,13 +131,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
     }
 
     @Override
     public void put(String instance, final String storeName, final String key, final Integer value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -144,13 +147,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
     }
 
     @Override
     public void put(String instance, final String storeName, final String key, final Long value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
             public void execute(@NotNull final Transaction txn) {
@@ -163,7 +166,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
 
     @Override
     public void put(String instance, final String storeName, final String key, final Short value) {
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -173,7 +176,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
 
     }
@@ -181,7 +184,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Override
     public boolean put(String instance, final String storeName, final String key, final ByteValue value) {
         final Boolean[] isSuccess = {false};
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -191,7 +194,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
 
         return isSuccess[0];
@@ -200,7 +203,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Override
     public boolean putIfNotExists(String instance, final String storeName, final String key, final ByteValue value) {
         final Boolean[] isSuccess = {false};
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -218,7 +221,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Override
     public boolean batchPut(String instance, final String storeName, final Map<String, String> properties) {
         final Boolean[] isSuccess = {false};
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -233,7 +236,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
 
         return isSuccess[0];
@@ -242,7 +245,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Override
     public <T> T get(String instance, final String storeName, final String key, final Class<T> clazz) {
         final Object[] result = new Object[]{null};
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -284,7 +287,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
         return (T) result[0];
     }
@@ -292,7 +295,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     @Override
     public boolean delete(String instance, final String storeName, final String key) {
         final Boolean[] isSuccess = {false};
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -302,7 +305,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
 
         return isSuccess[0];
@@ -325,7 +328,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     public boolean delete(String instance, final String storeName, String... keys) {
         final Boolean[] isSuccess = {false};
         final List<String> keyList = Arrays.asList(keys);
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -337,7 +340,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
 
         return isSuccess[0];
@@ -356,7 +359,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     public boolean batchPutDelete(String instance, final String storeName, final Map<String, String> properties, final String... keys) {
         final Boolean[] isSuccess = {false};
         final List<String> keyList = Arrays.asList(keys);
-        final Environment env = Environments.newInstance(xodusRoot + instance);
+        final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
@@ -374,7 +377,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
                 }
             });
         } finally {
-            env.close();
+            //env.close();
         }
         return isSuccess[0];
     }

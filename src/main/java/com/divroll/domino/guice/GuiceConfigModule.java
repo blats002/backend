@@ -34,10 +34,7 @@ import com.divroll.domino.service.WebTokenService;
 import com.divroll.domino.service.jee.JeeApplicationService;
 import com.divroll.domino.service.jee.JeeKeyValueService;
 import com.divroll.domino.service.jee.JeeWebTokenService;
-import com.divroll.domino.xodus.XodusEnvStore;
-import com.divroll.domino.xodus.XodusEnvStoreImpl;
-import com.divroll.domino.xodus.XodusStore;
-import com.divroll.domino.xodus.XodusStoreImpl;
+import com.divroll.domino.xodus.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
@@ -74,6 +71,7 @@ public class GuiceConfigModule extends AbstractModule {
 
         bind(XodusStore.class).to(XodusStoreImpl.class).in(Scopes.SINGLETON);
         bind(XodusEnvStore.class).to(XodusEnvStoreImpl.class).in(Scopes.SINGLETON);
+        bind(XodusManager.class).to(XodusManagerImpl.class).in(Scopes.SINGLETON);
 
         bind(UserRepository.class).to(JeeUserRepository.class).in(Scopes.SINGLETON);
         bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
@@ -82,6 +80,7 @@ public class GuiceConfigModule extends AbstractModule {
         bind(WebTokenService.class).to(JeeWebTokenService.class).in(Scopes.SINGLETON);
         bind(ApplicationService.class).to(JeeApplicationService.class).in(Scopes.SINGLETON);
         bind(KeyValueService.class).to(JeeKeyValueService.class).in(Scopes.SINGLETON);
+
         Names.bindProperties(binder(), readProperties());
     }
 
