@@ -107,9 +107,14 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         // do nothing
                     }
                 }
+
                 ObjectLogger.LOG(comparableMap);
                 ObjectLogger.LOG(jsonObject);
                 if (!comparableMap.isEmpty()) {
+
+                    publicRead = comparableMap.get("publicRead") != null ? Boolean.valueOf((String) comparableMap.get("publicRead")) : null;
+                    publicWrite = comparableMap.get("publicWrite") != null ? Boolean.valueOf((String) comparableMap.get("publicWrite")) : null;
+
                     String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.ENTITY_ID, entityId);

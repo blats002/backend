@@ -22,12 +22,15 @@
 package com.divroll.domino.repository.jee;
 
 import com.divroll.domino.Constants;
-import com.divroll.domino.model.Role;
+import com.divroll.domino.model.UndefinedBinding;
+import com.divroll.domino.model.UndefinedIterable;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.bindings.ByteBinding;
+import jetbrains.exodus.bindings.ComparableBinding;
 import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
@@ -66,13 +69,23 @@ public class JeeEntityRepository implements EntityRepository {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    final Entity entity = txn.newEntity(storeName);
 
+                    try {
+                        entityStore.registerCustomPropertyType(txn, UndefinedIterable.class, UndefinedBinding.BINDING);
+                    } catch (Exception e) {
+
+                    }
+
+                    final Entity entity = txn.newEntity(storeName);
                     Iterator<String> it = comparableMap.keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
                         Comparable value = comparableMap.get(key);
-                        entity.setProperty(key, value);
+                        if(value == null) {
+                            entity.setProperty(key, new UndefinedIterable());
+                        } else {
+                            entity.setProperty(key, value);
+                        }
                     }
 
                     if (read != null) {
@@ -104,8 +117,17 @@ public class JeeEntityRepository implements EntityRepository {
                         }
                     }
 
-                    entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
-                    entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    if(publicRead != null) {
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                    } else {
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, new UndefinedIterable());
+                    }
+
+                    if(publicWrite != null) {
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    } else {
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, new UndefinedIterable());
+                    }
 
 
                     entityId[0] = entity.getId().toString();
@@ -133,7 +155,11 @@ public class JeeEntityRepository implements EntityRepository {
                     while (it.hasNext()) {
                         String key = it.next();
                         Comparable value = comparableMap.get(key);
-                        entity.setProperty(key, value);
+                        if(value == null) {
+                            entity.setProperty(key, new UndefinedIterable());
+                        } else {
+                            entity.setProperty(key, value);
+                        }
                     }
 
                     if (read != null) {
@@ -185,14 +211,34 @@ public class JeeEntityRepository implements EntityRepository {
                     final Entity entity = txn.getEntity(idOfEntity);
 
                     for (String property : entity.getPropertyNames()) {
-                        comparableMap.put(property, entity.getProperty(property));
+                        Comparable value = entity.getProperty(property);
+                        if(value instanceof UndefinedIterable) {
+                            comparableMap.put(property, null);
+                        } else {
+                            comparableMap.put(property, value);
+                        }
                     }
 
                     List<String> aclRead = new LinkedList<>();
                     List<String> aclWrite = new LinkedList<>();
 
-                    Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
-                    Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+                    Comparable comparablePublicRead = entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    Comparable comparablePublicWrite= entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                    Boolean publicRead = null;
+                    Boolean publicWrite = null;
+
+                    if(comparablePublicRead instanceof UndefinedIterable) {
+                        publicRead = null;
+                    } else {
+                        publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    }
+
+                    if(comparablePublicWrite instanceof UndefinedIterable) {
+                        publicWrite = null;
+                    } else {
+                        publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+                    }
 
                     for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
                         aclRead.add(aclReadLink.getId().toString());
@@ -209,6 +255,8 @@ public class JeeEntityRepository implements EntityRepository {
                     comparableMap.put(Constants.ACL_WRITE, aclWrite);
                     comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
                     comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 }
             });
         } finally {
@@ -230,7 +278,12 @@ public class JeeEntityRepository implements EntityRepository {
                     for (Entity entity : allUsers) {
                         final Map<String, Object> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
-                            comparableMap.put(property, entity.getProperty(property));
+                            Comparable value = entity.getProperty(property);
+                            if(value instanceof UndefinedIterable) {
+                                comparableMap.put(property, null);
+                            } else {
+                                comparableMap.put(property, value);
+                            }
                         }
 
                         List<String> aclRead = new LinkedList<>();
@@ -274,7 +327,12 @@ public class JeeEntityRepository implements EntityRepository {
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId idOfEntity = txn.toEntityId(entityId);
                     final Entity entity = txn.getEntity(idOfEntity);
-                    comparable[0] = entity.getProperty(propertyName);
+                    Comparable value = entity.getProperty(propertyName);
+                    if(value instanceof UndefinedIterable) {
+                        comparable[0] = null;
+                    } else {
+                        comparable[0] = entity.getProperty(propertyName);
+                    }
                 }
             });
         } finally {
@@ -399,7 +457,12 @@ public class JeeEntityRepository implements EntityRepository {
                     Entity entity = source.getLink(linkName);
 
                     for (String property : entity.getPropertyNames()) {
-                        comparableMap.put(property, entity.getProperty(property));
+                        Comparable value = entity.getProperty(property);
+                        if(value instanceof UndefinedIterable) {
+                            comparableMap.put(property, null);
+                        } else {
+                            comparableMap.put(property, value);
+                        }
                     }
 
                     List<String> aclRead = new LinkedList<>();

@@ -27,12 +27,15 @@ import com.divroll.domino.Constants;
 import com.divroll.domino.helper.ObjectLogger;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
+import com.divroll.domino.model.User;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
+import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.resource.EntityResource;
 import com.divroll.domino.service.ApplicationService;
 import com.divroll.domino.service.WebTokenService;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
@@ -55,10 +58,17 @@ public class JeeEntityServerResource extends BaseServerResource
     RoleRepository roleRepository;
 
     @Inject
+    UserRepository userRepository;
+
+    @Inject
     ApplicationService applicationService;
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    @Named("defaultUserStore")
+    String storeName;
 
     @Override
     public Representation getEntity() {
@@ -87,10 +97,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 }
             } else {
-//                if(authToken == null) {
-//                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Nissing Auth Token in request");
-//                    return null;
-//                }
+
                 String authUserId = null;
 
                 try {
@@ -104,8 +111,9 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
+                    ObjectLogger.LOG(entityObj);
                     List<String> aclReadList = (List<String>) (entityObj.get("aclRead"));
-                    publicRead = (Boolean) (entityObj).get("publicRead");
+                    publicRead = (Boolean) (entityObj).get(Constants.RESERVED_FIELD_PUBLICREAD);
                     if (authUserId != null && aclReadList.contains(authUserId)) {
                         isAccess = true;
                     } else {

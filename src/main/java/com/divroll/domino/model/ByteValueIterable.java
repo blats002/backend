@@ -91,8 +91,6 @@ public class ByteValueIterable implements ByteIterable {
             e.printStackTrace();
         }
         return null;
-    }
-
-    ;
+    };
 
 }
