@@ -79,11 +79,14 @@ public class JeeEntityRepository implements EntityRepository {
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
                         for (String userOrRoleId : aclRead) {
-                            EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
-                            Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
-                            if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                            if(userOrRoleId != null && !userOrRoleId.isEmpty()) {
+                                EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
+                                Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
+                                if (userOrRoleEntity != null) {
+                                    entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                }
                             }
+
                         }
                     }
 
@@ -91,10 +94,12 @@ public class JeeEntityRepository implements EntityRepository {
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
                         for (String userId : aclWrite) {
-                            EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userEntity);
+                            if(userId != null && !userId.isEmpty()) {
+                                EntityId userEntityId = txn.toEntityId(userId);
+                                Entity userEntity = txn.getEntity(userEntityId);
+                                if (userEntity != null) {
+                                    entity.addLink(Constants.ACL_WRITE, userEntity);
+                                }
                             }
                         }
                     }

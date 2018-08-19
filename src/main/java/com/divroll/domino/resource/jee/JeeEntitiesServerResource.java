@@ -24,6 +24,8 @@ package com.divroll.domino.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
+import com.divroll.domino.helper.JSON;
+import com.divroll.domino.helper.ObjectLogger;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.resource.EntitiesResource;
@@ -66,54 +68,16 @@ public class JeeEntitiesServerResource extends BaseServerResource
             }
             String dir = appId;
             if (dir != null) {
+
                 JSONObject jsonObject = JSONObject.parseObject(entity.getText());
-                Iterator<String> it = jsonObject.keySet().iterator();
-                Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-                while (it.hasNext()) {
-                    String k = it.next();
-                    try {
-                        JSONObject jso = jsonObject.getJSONObject(k);
-                        // TODO
-                        continue;
-                    } catch (Exception e) {
+                JSONObject _entityObject = jsonObject.getJSONObject("entity");
 
-                    }
-                    try {
-                        JSONArray jsa = jsonObject.getJSONArray(k);
-                        // TODO
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        Boolean value = jsonObject.getBoolean(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        Long value = jsonObject.getLong(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        Double value = jsonObject.getDouble(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        String value = jsonObject.getString(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
+                if(_entityObject == null) {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    return null;
                 }
+
+                Map<String, Comparable> comparableMap = JSON.toComparableMap(_entityObject);
 
                 String[] read = new String[]{};
                 String[] write = new String[]{};
@@ -143,14 +107,14 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         // do nothing
                     }
                 }
-
+                ObjectLogger.LOG(comparableMap);
+                ObjectLogger.LOG(jsonObject);
                 if (!comparableMap.isEmpty()) {
                     String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     setStatus(Status.SUCCESS_CREATED);
-
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }
