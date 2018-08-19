@@ -24,6 +24,7 @@ package com.divroll.domino.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
+import com.divroll.domino.helper.ObjectLogger;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.EntityRepository;
@@ -78,7 +79,10 @@ public class JeeEntityServerResource extends BaseServerResource
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
                     setStatus(Status.SUCCESS_OK);
-                    return new JsonRepresentation(entityObj);
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("entity", entityObj);
+                    setStatus(Status.SUCCESS_OK);
+                    return new JsonRepresentation(jsonObject);
                 } else {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 }
@@ -113,8 +117,10 @@ public class JeeEntityServerResource extends BaseServerResource
                         }
                     }
                     if (publicRead || isAccess) {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("entity", entityObj);
                         setStatus(Status.SUCCESS_OK);
-                        return new JsonRepresentation(cleanup(entityObj));
+                        return new JsonRepresentation(jsonObject);
                     } else {
                         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                         return null;
