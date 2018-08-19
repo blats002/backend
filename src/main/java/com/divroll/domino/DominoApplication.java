@@ -73,6 +73,8 @@ public class DominoApplication extends Application {
                 Constants.HEADER_APP_ID,
                 Constants.HEADER_AUTH_TOKEN,
                 Constants.HEADER_ACCEPT,
+                Constants.HEADER_ACL_READ,
+                Constants.HEADER_ACL_WRITE,
                 Constants.HEADER_CONTENT_TYPE));
         corsFilter.setAllowedCredentials(true);
 

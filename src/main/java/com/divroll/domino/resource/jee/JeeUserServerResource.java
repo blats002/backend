@@ -23,6 +23,7 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.domino.Constants;
+import com.divroll.domino.helper.ObjectLogger;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.User;
 import com.divroll.domino.repository.UserRepository;
@@ -74,7 +75,7 @@ public class JeeUserServerResource extends BaseServerResource implements
         if (app == null) {
             return null;
         }
-        if(userId != null) {
+        if(validateId(userId)) {
             if (isMaster(appId, masterKey)) {
                 User userEntity = userRepository.getUser(appId, storeName, userId);
                 if (userEntity == null) {
@@ -156,7 +157,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 //return returnMissingAuthToken();
             }
 
-            if(userId == null || userId.isEmpty()) {
+            if(!validateId(userId)) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
@@ -235,20 +236,19 @@ public class JeeUserServerResource extends BaseServerResource implements
                 Boolean success = userRepository.updateUser(appId, storeName, userId,
                         newUsername, newHashPassword, read, write, publicRead, publicWrite, roleArray);
                 if (success) {
-                    String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                     User resultUser = new User();
-                    resultUser.setEntityId(entityId);
+                    resultUser.setEntityId(userId);
+                    resultUser.setUsername(newUsername);
                     resultUser.setPassword(null);
                     resultUser.setAclRead(Arrays.asList(read));
                     resultUser.setAclWrite(Arrays.asList(write));
                     resultUser.setPublicRead(publicRead);
                     resultUser.setPublicWrite(publicWrite);
-                    resultUser.setWebToken(webToken);
-                    for(Object roleId : scala.actors.threadpool.Arrays.asList(roleArray)) {
-                        user.getRoles().add(new Role((String) roleId));
+                    for(Object roleId : Arrays.asList(roleArray)) {
+                        resultUser.getRoles().add(new Role((String) roleId));
                     }
                     setStatus(Status.SUCCESS_OK);
-                    return resultUser;
+                    return (User) ObjectLogger.LOG(resultUser);
                 } else {
                     setStatus(Status.SERVER_ERROR_INTERNAL);
                 }
@@ -273,14 +273,19 @@ public class JeeUserServerResource extends BaseServerResource implements
                         Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername,
                                 newHashPassword, read, write, publicRead, publicWrite, roleArray);
                         if (success) {
-                            String webToken = webTokenService.createToken(app.getMasterKey(), userId);
-                            user.setPassword(null);
-                            user.setUsername(newUsername);
-                            user.setWebToken(webToken);
-                            user.setPublicRead(publicRead);
-                            user.setPublicWrite(publicWrite);
+                            User resultUser = new User();
+                            resultUser.setEntityId(userId);
+                            resultUser.setUsername(newUsername);
+                            resultUser.setPassword(null);
+                            resultUser.setAclRead(Arrays.asList(read));
+                            resultUser.setAclWrite(Arrays.asList(write));
+                            resultUser.setPublicRead(publicRead);
+                            resultUser.setPublicWrite(publicWrite);
+                            for(Object roleId : Arrays.asList(roleArray)) {
+                                resultUser.getRoles().add(new Role((String) roleId));
+                            }
                             setStatus(Status.SUCCESS_OK);
-                            return user;
+                            return (User) ObjectLogger.LOG(resultUser);
                         } else {
                             setStatus(Status.SERVER_ERROR_INTERNAL);
                         }

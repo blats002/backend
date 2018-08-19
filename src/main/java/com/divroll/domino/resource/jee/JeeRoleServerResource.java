@@ -63,7 +63,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if (roleId == null) {
+            if (!validateId(roleId)) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_ROLE_ID);
                 return null;
             }
@@ -129,7 +129,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
-            if (roleId == null) {
+            if (!validateId(roleId)) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }

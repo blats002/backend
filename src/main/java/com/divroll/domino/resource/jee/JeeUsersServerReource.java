@@ -24,6 +24,7 @@ package com.divroll.domino.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
+import com.divroll.domino.helper.ObjectLogger;
 import com.divroll.domino.model.*;
 import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.resource.UsersReource;
@@ -180,28 +181,24 @@ public class JeeUsersServerReource extends BaseServerResource
                             publicRead, publicWrite, roleArray);
                     if (entityId != null) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
-                        JSONObject result = new JSONObject();
-                        result.put(Constants.WEBTOKEN, webToken);
                         User user = new User();
-                        user.setEntityId(entityId.toString());
+                        user.setEntityId(entityId);
                         user.setUsername(username);
                         user.setWebToken(webToken);
                         user.setPublicRead(publicRead);
                         user.setPublicWrite(publicWrite);
-
+                        user.setAclWrite(Arrays.asList(write));
+                        user.setAclRead(Arrays.asList(read));
                         for(Object roleId : Arrays.asList(roleArray)) {
                             user.getRoles().add(new Role((String) roleId));
                         }
-
                         setStatus(Status.SUCCESS_CREATED);
-                        return user;
+                        return (User) ObjectLogger.LOG(user);
                     } else {
                         setStatus(Status.SERVER_ERROR_INTERNAL);
                     }
                 }
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);

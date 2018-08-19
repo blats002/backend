@@ -229,4 +229,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return result;
     }
 
+    protected boolean validateId(String id) {
+        return (id != null && !id.isEmpty() && !id.equalsIgnoreCase("null"));
+    }
+
 }
