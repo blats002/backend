@@ -363,7 +363,7 @@ public class JeeEntityRepository implements EntityRepository {
     @Override
     public boolean deleteEntity(String instance, String storeName, final String entityId) {
         final boolean[] success = {false};
-        final PersistentEntityStore entityStore = PersistentEntityStores.newInstance(xodusRoot + instance);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override

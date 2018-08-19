@@ -264,7 +264,11 @@ public class JeeEntityServerResource extends BaseServerResource
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                         } else {
                             Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
-                            if ((publicWrite != null && publicWrite) || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                            Boolean authUserIdWriteAllow = false;
+                            if(entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                                authUserIdWriteAllow = true;
+                            }
+                            if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
                                 boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 if (success) {
                                     setStatus(Status.SUCCESS_OK);
@@ -294,7 +298,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
-            if (roleId == null) {
+            if (entityId == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return;
             }
@@ -304,13 +308,41 @@ public class JeeEntityServerResource extends BaseServerResource
                 return;
             }
             if (!isMaster(appId, masterKey)) {
-                Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, roleId);
+                Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (entityMap == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
+
+                    Boolean isAccess = false;
                     Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
-                    if (publicWrite || ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                    Boolean authUserIdWriteAllow = false;
+
+                    if(entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                        authUserIdWriteAllow = true;
+                    }
+
+                    List<String> aclWriteList = new LinkedList<String>();
+                    if(entityMap.get(Constants.ACL_WRITE) != null) {
+                        aclWriteList = (List<String>) (entityMap.get(Constants.ACL_WRITE));
+                    }
+
+                    if (authUserId != null && aclWriteList.contains(authUserId)) {
+                        isAccess = true;
+                    } else if(authUserId != null){
+                        List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                        for(Role role : roles) {
+                            if(aclWriteList.contains(role.getEntityId())) {
+                                isAccess = true;
+                            }
+                        }
+                    }
+
+                    if(publicWrite == null) {
+                        publicWrite = false;
+                    }
+
+                    if (publicWrite || authUserIdWriteAllow || isAccess) {
                         Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
                         if (success) {
                             setStatus(Status.SUCCESS_OK);
