@@ -112,8 +112,24 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 ObjectLogger.LOG(jsonObject);
                 if (!comparableMap.isEmpty()) {
 
-                    publicRead = comparableMap.get("publicRead") != null ? Boolean.valueOf((String) comparableMap.get("publicRead")) : null;
-                    publicWrite = comparableMap.get("publicWrite") != null ? Boolean.valueOf((String) comparableMap.get("publicWrite")) : null;
+                    if(comparableMap.get("publicRead") != null) {
+                        Comparable publicReadComparable = comparableMap.get("publicRead");
+                        if(publicReadComparable instanceof Boolean) {
+                            publicRead = (Boolean) publicReadComparable;
+                        } else if(publicReadComparable instanceof String) {
+                            publicRead = Boolean.valueOf((String) publicReadComparable);
+                        }
+                     }
+
+
+                    if(comparableMap.get("publicWrite") != null) {
+                        Comparable publicWriteComparable = comparableMap.get("publicWrite");
+                        if(publicWriteComparable instanceof Boolean) {
+                            publicWrite = (Boolean) publicWriteComparable;
+                        } else if(publicWriteComparable instanceof String) {
+                            publicWrite = Boolean.valueOf((String) publicWriteComparable);
+                        }
+                    }
 
                     String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                     JSONObject entityObject = new JSONObject();
@@ -142,10 +158,6 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if (entityId == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing entity ID in request");
-                return null;
-            }
             Application app = applicationService.read(appId);
             if (app == null) {
                 return null;
@@ -162,9 +174,15 @@ public class JeeEntitiesServerResource extends BaseServerResource
             if (isMaster(appId, masterKey)) {
                 try {
                     List<Map<String, Object>> entityObjs
-                            = entityRepository.listEntities(appId, entityType, skipValue, limitValue);
-                    Representation representation = new JsonRepresentation(entityObjs);
-                    setStatus(Status.SUCCESS_OK);
+                            = entityRepository.listEntities(appId, entityType, null,
+                            skipValue, limitValue, sort, true);
+                    JSONObject responseBody = new JSONObject();
+                    JSONObject entitiesJSONObject = new JSONObject();
+                    entitiesJSONObject.put("results", entityObjs);
+                    entitiesJSONObject.put("skip", skipValue);
+                    entitiesJSONObject.put("limit", limitValue);
+                    responseBody.put("entities", entitiesJSONObject);
+                    Representation representation = new JsonRepresentation(responseBody.toJSONString());                    setStatus(Status.SUCCESS_OK);
                     return representation;
                 } catch (Exception e) {
                     setStatus(Status.SERVER_ERROR_INTERNAL);
@@ -179,24 +197,16 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     // do nothing
                 }
 
-                Boolean publicRead = false;
-                Boolean isAccess = false;
-
-                List<Map<String, Object>> result = new LinkedList<>();
-
                 try {
-                    List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType, skipValue, limitValue);
-                    for(Map<String, Object> entityObj : entityObjs) {
-                        List<String> aclReadList = (List<String>) entityObj.get("aclRead");
-                        publicRead = (Boolean) (entityObj.get("publicRead"));
-                        if (authUserId != null && aclReadList.contains(authUserId)) {
-                            isAccess = true;
-                        }
-                        if (publicRead || isAccess) {
-                            result.add(entityObj);
-                        }
-                    }
-                    Representation representation = new JsonRepresentation(result);
+                    List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType,
+                            authUserId, skipValue, limitValue, sort, false);
+                    JSONObject responseBody = new JSONObject();
+                    JSONObject entitiesJSONObject = new JSONObject();
+                    entitiesJSONObject.put("results", entityObjs);
+                    entitiesJSONObject.put("skip", skipValue);
+                    entitiesJSONObject.put("limit", limitValue);
+                    responseBody.put("entities", entitiesJSONObject);
+                    Representation representation = new JsonRepresentation(responseBody.toJSONString());
                     setStatus(Status.SUCCESS_OK);
                     return representation;
                 } catch (Exception e) {
@@ -210,5 +220,6 @@ public class JeeEntitiesServerResource extends BaseServerResource
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
         }
-        return null;    }
+        return null;
+    }
 }

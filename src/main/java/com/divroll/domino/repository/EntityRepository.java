@@ -39,8 +39,6 @@ public interface EntityRepository {
 
     Map<String, Object> getEntity(String instance, String storeName, String entityId);
 
-    List<Map<String, Object>> listEntities(String instance, String storeName, int skip, int limit);
-
     Comparable getEntityProperty(String instance, String storeName, String entityId, String propertyName);
 
     InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
@@ -56,4 +54,7 @@ public interface EntityRepository {
     Map<String, Object> getFirstLinkedEntity(String instance, String storeName, String entityId, String linkName);
 
     List<Map<String, Object>> getLinkedEntities(String instance, String storeName, String entityId, String linkName);
+
+    List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
+                         int skip, int limit, String sort, boolean isMasterKey);
 }
