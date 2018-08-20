@@ -27,7 +27,6 @@ import com.divroll.domino.Constants;
 import com.divroll.domino.helper.ObjectLogger;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
-import com.divroll.domino.model.User;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.repository.UserRepository;

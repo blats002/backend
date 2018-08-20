@@ -24,7 +24,6 @@ package com.divroll.domino.repository.jee;
 import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.model.User;
-import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
@@ -70,9 +69,10 @@ public class JeeUserRepository implements UserRepository {
                         // Add User to ACL
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.ACL_READ, userEntity);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -84,9 +84,10 @@ public class JeeUserRepository implements UserRepository {
                         // Add User to ACL
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userEntity);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -135,9 +136,10 @@ public class JeeUserRepository implements UserRepository {
                         // Add User to ACL
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.ACL_READ, userEntity);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -149,9 +151,10 @@ public class JeeUserRepository implements UserRepository {
                         // Add User to ACL
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userEntity);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -380,6 +383,85 @@ public class JeeUserRepository implements UserRepository {
             });
         } finally {
             //entityStore.close();
+        }
+        return users;
+    }
+
+    @Override
+    public List<User> listUsers(String instance, String storeName, String userIdRoleId,
+                                int skip, int limit) {
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        final List<User> users = new LinkedList<>();
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable result;
+                    if (userIdRoleId == null) {
+                        result = txn.find(storeName, "publicRead", true);
+                    } else {
+                        result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
+                            .concat(txn.find(storeName, "publicRead", true));
+                    }
+                    result = result.skip(skip).take(limit);
+                    for (Entity userEntity : result) {
+                        User user = new User();
+                        user.setEntityId((String) userEntity.getId().toString());
+                        user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
+                        for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role = new Role();
+                            role.setEntityId(roleEntity.getId().toString());
+                            role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
+                            role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
+                            role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+
+                            List<String> aclRead = new LinkedList<>();
+                            List<String> aclWrite = new LinkedList<>();
+
+                            for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
+                                aclRead.add(aclReadLink.getId().toString());
+                            }
+
+                            for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
+                                aclWrite.add(aclWriteLink.getId().toString());
+                            }
+
+                            role.setAclRead(aclRead);
+                            role.setAclWrite(aclWrite);
+                            user.getRoles().add(role);
+                        }
+
+                        List<String> aclRead = new LinkedList<>();
+                        List<String> aclWrite = new LinkedList<>();
+
+                        for (Entity aclReadLink : userEntity.getLinks(Constants.ACL_READ)) {
+                            aclRead.add(aclReadLink.getId().toString());
+                        }
+
+                        for (Entity aclWriteLink : userEntity.getLinks(Constants.ACL_WRITE)) {
+                            aclWrite.add(aclWriteLink.getId().toString());
+                        }
+
+                        user.setAclRead(aclRead);
+                        user.setAclWrite(aclWrite);
+                        user.setPublicRead((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
+                        user.setPublicWrite((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+
+                        List<Role> roles = new LinkedList<>();
+                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role  = new Role();
+                            role.setEntityId(roleEntity.getId().toString());
+                            role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
+                            roles.add(role);
+                        }
+                        user.setRoles(roles);
+                        users.add(user);
+                    }
+                }
+            });
+
+        } finally {
+
         }
         return users;
     }

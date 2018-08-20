@@ -22,14 +22,15 @@
 package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
 import com.divroll.domino.helper.ObjectLogger;
-import com.divroll.domino.model.*;
+import com.divroll.domino.model.Application;
+import com.divroll.domino.model.Role;
+import com.divroll.domino.model.User;
+import com.divroll.domino.model.Users;
 import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.resource.UsersReource;
 import com.divroll.domino.service.WebTokenService;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
@@ -83,18 +84,18 @@ public class JeeUsersServerReource extends BaseServerResource
                 // do nothing
             }
             List<User> processedResults = new LinkedList<>();
-            List<User> results = userRepository.listUsers(appId, storeName,
+            List<User> results = userRepository.listUsers(appId, storeName, authUserId,
                     skipValue, limitValue);
             for(User user : results) {
-                if(user.getPublicRead() || (user.getAclRead() != null
+                if( (user.getPublicRead() != null && user.getPublicRead()) || (user.getAclRead() != null
                         && ( authUserId != null && user.getAclRead().contains(authUserId)) )) {
                     processedResults.add(user);
                 }
             }
             Users users = new Users();
             users.setResults(processedResults);
-            users.setLimit(Long.valueOf(limit));
-            users.setSkip(Long.valueOf(skip));
+            users.setLimit(Long.valueOf(limitValue));
+            users.setSkip(Long.valueOf(skipValue));
             setStatus(Status.SUCCESS_OK);
             return users;
         } else {
