@@ -389,19 +389,37 @@ public class JeeUserRepository implements UserRepository {
 
     @Override
     public List<User> listUsers(String instance, String storeName, String userIdRoleId,
-                                int skip, int limit) {
+                                int skip, int limit, final String sort) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         final List<User> users = new LinkedList<>();
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityIterable result;
+                    EntityIterable result = null;
                     if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
+                        if(sort != null) {
+                            if(sort.startsWith("-")) {
+                                String sortDescending = sort.substring(1);
+                                result = txn.sort(storeName, sortDescending, result, false);
+                            } else {
+                                String sortAscending = sort.substring(1);
+                                result = txn.sort(storeName, sortAscending, result, true);
+                            }
+                        }
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
                             .concat(txn.find(storeName, "publicRead", true));
+                        if(sort != null) {
+                            if(sort.startsWith("-")) {
+                                String sortDescending = sort.substring(1);
+                                result = txn.sort(storeName, sortDescending, result, false);
+                            } else {
+                                String sortAscending = sort.substring(1);
+                                result = txn.sort(storeName, sortAscending, result, true);
+                            }
+                        }
                     }
                     result = result.skip(skip).take(limit);
                     for (Entity userEntity : result) {

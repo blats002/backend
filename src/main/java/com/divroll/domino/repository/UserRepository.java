@@ -47,6 +47,8 @@ public interface UserRepository {
     boolean deleteUser(String instance, String storeName, String userID);
 
     @Deprecated
-    List<User> listUsers(String instance, String storeName, int skip, int limit);
-    List<User> listUsers(String instance, String storeName, String userIdRoleId, int skip, int limit);
+    List<User> listUsers(String instance, String storeName,
+                         int skip, int limit);
+    List<User> listUsers(String instance, String storeName, String userIdRoleId,
+                         int skip, int limit, String sort);
 }

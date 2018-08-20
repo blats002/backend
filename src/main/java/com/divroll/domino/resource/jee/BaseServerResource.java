@@ -75,6 +75,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected Integer skip = null;
     protected Integer limit = null;
+    protected String sort;
 
     protected static final Integer DEFAULT_LIMIT = 100;
 
@@ -106,6 +107,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
         roleId = getAttribute(Constants.ROLE_ID);
 
         username = getQueryValue(Constants.QUERY_USERNAME);
+        sort = getQueryValue("sort");
 
         Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
         appId = headers.getFirstValue(Constants.HEADER_APP_ID);

@@ -85,7 +85,7 @@ public class JeeUsersServerReource extends BaseServerResource
             }
             List<User> processedResults = new LinkedList<>();
             List<User> results = userRepository.listUsers(appId, storeName, authUserId,
-                    skipValue, limitValue);
+                    skipValue, limitValue, sort);
             for(User user : results) {
                 if( (user.getPublicRead() != null && user.getPublicRead()) || (user.getAclRead() != null
                         && ( authUserId != null && user.getAclRead().contains(authUserId)) )) {
