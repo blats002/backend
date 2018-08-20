@@ -52,6 +52,7 @@
         <xtend.version>2.9.1</xtend.version>
         <version.restlet>2.3.12</version.restlet>
 
+        <jettyVersion>9.4.12.RC2</jettyVersion>
     </properties>
 
     <build>
@@ -296,7 +297,7 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
+            <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -319,6 +320,11 @@
                                  must be included again -->
                             <argLine>-Darquillian.launch=tomcat-embedded ${jacoco.utAgentConfig}</argLine>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <version>${jettyVersion}</version>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.tomcat.maven</groupId>
