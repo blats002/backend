@@ -47,5 +47,5 @@ public interface UserRepository {
     boolean deleteUser(String instance, String storeName, String userID);
 
     List<User> listUsers(String instance, String storeName, String userIdRoleId,
-                         int skip, int limit, String sort, boolean isMastekey);
+                         int skip, int limit, String sort, boolean isMasterkey);
 }

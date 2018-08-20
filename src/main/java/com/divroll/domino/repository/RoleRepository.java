@@ -45,7 +45,8 @@ public interface RoleRepository {
 
     boolean isLinked(String instance, String storeName, String roleID, String userID);
 
-    List<Role> listRoles(String instance, String storeName, int skip, int limit);
+    List<Role> listRoles(String instance, String storeName, String userIdRoleId,
+                         int skip, int limit, String sort, boolean isMasterKey);
 
     List<Role> getRolesOfEntity(String instance, String entityId);
 

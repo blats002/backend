@@ -67,9 +67,10 @@ public class JeeRoleRepository implements RoleRepository {
                             // Add User to ACL
                             for (String userId : aclRead) {
                                 EntityId userEntityId = txn.toEntityId(userId);
-                                Entity userEntity = txn.getEntity(userEntityId);
-                                if (userEntity != null) {
-                                    entity.addLink(Constants.ACL_READ, userEntity);
+                                Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                                if (userOrRoleEntity != null) {
+                                    entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                    entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
                         }
@@ -83,9 +84,10 @@ public class JeeRoleRepository implements RoleRepository {
                             // Add User to ACL
                             for (String userId : aclWrite) {
                                 EntityId userEntityId = txn.toEntityId(userId);
-                                Entity userEntity = txn.getEntity(userEntityId);
-                                if (userEntity != null) {
-                                    entity.addLink(Constants.ACL_WRITE, userEntity);
+                                Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                                if (userOrRoleEntity != null) {
+                                    entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                    entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
                         }
@@ -121,27 +123,28 @@ public class JeeRoleRepository implements RoleRepository {
                         // Add User to ACL
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.RESERVED_FIELD_PUBLICWRITE, userEntity);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.RESERVED_FIELD_PUBLICWRITE, userOrRoleEntity);
+                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
-                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     }
-
+                    entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
 
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
-                            Entity userEntity = txn.getEntity(userEntityId);
-                            if (userEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userEntity);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
-                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     }
+                    entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
                     success[0] = true;
                 }
@@ -280,15 +283,44 @@ public class JeeRoleRepository implements RoleRepository {
     }
 
     @Override
-    public List<Role> listRoles(String instance, final String storeName, final int skip, final int limit) {
+    public List<Role> listRoles(String instance, String storeName, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey) {
         final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    final EntityIterable allUsers = txn.getAll(storeName).skip(skip).take(limit);
-                    for (Entity roleEntity : allUsers) {
+                    EntityIterable result = null;
+                    if(isMasterKey) {
+                        result = txn.getAll(storeName).skip(skip).take(limit);
+                    } else if (userIdRoleId == null) {
+                        result = txn.find(storeName, "publicRead", true);
+                        if(sort != null) {
+                            if(sort.startsWith("-")) {
+                                String sortDescending = sort.substring(1);
+                                result = txn.sort(storeName, sortDescending, result, false);
+                            } else {
+                                String sortAscending = sort.substring(1);
+                                result = txn.sort(storeName, sortAscending, result, true);
+                            }
+                        }
+                        long count = result.count();
+                        System.out.println(count);
+                    } else {
+                        result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
+                                .concat(txn.find(storeName, "publicRead", true));
+                        if(sort != null) {
+                            if(sort.startsWith("-")) {
+                                String sortDescending = sort.substring(1);
+                                result = txn.sort(storeName, sortDescending, result, false);
+                            } else {
+                                String sortAscending = sort.substring(1);
+                                result = txn.sort(storeName, sortAscending, result, true);
+                            }
+                        }
+                    }
+                    result = result.skip(skip).take(limit);
+                    for (Entity roleEntity : result) {
                         Role role = new Role();
                         role.setEntityId(roleEntity.getId().toString());
                         role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));

@@ -84,23 +84,17 @@ public class JeeRolesServerReource extends BaseServerResource
             } catch (Exception e) {
                 // do nothing
             }
-            List<Role> processedResults = new LinkedList<>();
-            List<Role> results = roleRepository.listRoles(appId, storeName,
-                    skipValue, limitValue);
-            for(Role role : results) {
-                if(role.getPublicRead() || role.getAclRead().contains(authUserId)) {
-                    processedResults.add(role);
-                }
-            }
+            List<Role> results = roleRepository.listRoles(appId, storeName, authUserId,
+                    skipValue, limitValue, sort, false);
             Roles roles = new Roles();
-            roles.setResults(processedResults);
+            roles.setResults(results);
             roles.setLimit(Long.valueOf(limitValue));
             roles.setSkip(Long.valueOf(skipValue));
             setStatus(Status.SUCCESS_OK);
             return roles;
         } else {
-            List<Role> results = roleRepository.listRoles(appId, storeName,
-                    skipValue, limitValue);
+            List<Role> results = roleRepository.listRoles(appId, storeName, null,
+                    skipValue, limitValue, sort, true);
             Roles roles = new Roles();
             roles.setResults(results);
             roles.setLimit(Long.valueOf(limitValue));
