@@ -95,6 +95,8 @@ public class DominoApplication extends Application {
         router.attach(DOMINO_ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
         router.attach(DOMINO_ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
 
+        router.attach(DOMINO_ROOT_URI + "backups", JeeBackupServerResource.class);
+
         router.attachDefault(JeeRootServerResource.class);
 
         attachSwaggerSpecification2(router);
