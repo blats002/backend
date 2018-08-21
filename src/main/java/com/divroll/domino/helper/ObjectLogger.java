@@ -31,6 +31,7 @@ import java.util.logging.Logger;
  * @since 0-SNAPSHOT
  */
 public class ObjectLogger {
+    private ObjectLogger() {}
     private static final Logger LOG
             = Logger.getLogger(ObjectLogger.class.getName());
     public static Object LOG(Object object) {

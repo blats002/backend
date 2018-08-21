@@ -29,8 +29,6 @@ import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import jetbrains.exodus.bindings.ByteBinding;
-import jetbrains.exodus.bindings.ComparableBinding;
 import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
