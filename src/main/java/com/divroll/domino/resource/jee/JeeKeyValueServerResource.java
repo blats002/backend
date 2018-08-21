@@ -23,7 +23,6 @@ package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.exception.ACLException;
 import com.divroll.domino.resource.KeyValueResource;

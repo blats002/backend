@@ -21,7 +21,6 @@
  */
 package com.divroll.domino;
 
-import com.divroll.domino.DominoApplication;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -60,6 +59,7 @@ public class DominoApplicationTest {
         System.out.println("Returning WAR");
         return war;
     }
+
     @Test
     public void callServletToGetApplicationTest() throws Exception {
         //String body = readAllAndClose(new URL("http://localhost:8080/domino/applications").openStream());

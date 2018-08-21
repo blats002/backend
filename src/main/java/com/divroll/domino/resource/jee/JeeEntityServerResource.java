@@ -117,8 +117,8 @@ public class JeeEntityServerResource extends BaseServerResource
                         isAccess = true;
                     } else {
                         List<Role> roles = roleRepository.getRolesOfEntity(appId, entityId);
-                        for(Role role : roles) {
-                            if(aclReadList.contains(role.getEntityId())) {
+                        for (Role role : roles) {
+                            if (aclReadList.contains(role.getEntityId())) {
                                 isAccess = true;
                             }
                         }
@@ -244,7 +244,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 }
 
-                if(isMaster(appId, masterKey)) {
+                if (isMaster(appId, masterKey)) {
                     if (!comparableMap.isEmpty()) {
                         boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                         if (success) {
@@ -264,7 +264,7 @@ public class JeeEntityServerResource extends BaseServerResource
                         } else {
                             Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
                             Boolean authUserIdWriteAllow = false;
-                            if(entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                            if (entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
                                 authUserIdWriteAllow = true;
                             }
                             if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
@@ -317,27 +317,27 @@ public class JeeEntityServerResource extends BaseServerResource
                     Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
                     Boolean authUserIdWriteAllow = false;
 
-                    if(entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                    if (entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
                         authUserIdWriteAllow = true;
                     }
 
                     List<String> aclWriteList = new LinkedList<String>();
-                    if(entityMap.get(Constants.ACL_WRITE) != null) {
+                    if (entityMap.get(Constants.ACL_WRITE) != null) {
                         aclWriteList = (List<String>) (entityMap.get(Constants.ACL_WRITE));
                     }
 
                     if (authUserId != null && aclWriteList.contains(authUserId)) {
                         isAccess = true;
-                    } else if(authUserId != null){
+                    } else if (authUserId != null) {
                         List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
-                        for(Role role : roles) {
-                            if(aclWriteList.contains(role.getEntityId())) {
+                        for (Role role : roles) {
+                            if (aclWriteList.contains(role.getEntityId())) {
                                 isAccess = true;
                             }
                         }
                     }
 
-                    if(publicWrite == null) {
+                    if (publicWrite == null) {
                         publicWrite = false;
                     }
 

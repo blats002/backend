@@ -75,6 +75,7 @@ public final class Constants {
     public static final String ERROR_QUERY_USERNAME_REQUIRED = "Query parameter username is required";
     public static final String ERROR_MASTERKEY_INVALID = "Invalid Application ID and/or Master Key";
     public static final String ERROR_MASTERKEY_MISSING = "Missing Application ID or Master Key";
+
     private Constants() {
     }
 }

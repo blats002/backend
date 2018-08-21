@@ -22,7 +22,6 @@
 package com.divroll.domino.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
-import com.divroll.domino.Constants;
 import com.divroll.domino.model.Application;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.model.Roles;
@@ -65,7 +64,7 @@ public class JeeRolesServerReource extends BaseServerResource
         int skipValue = 0;
         int limitValue = DEFAULT_LIMIT;
 
-        if(skip != null && limit != null) {
+        if (skip != null && limit != null) {
             skipValue = skip;
             limitValue = limit;
         }
@@ -120,15 +119,15 @@ public class JeeRolesServerReource extends BaseServerResource
             List<String> aclReadList = entity.getAclRead();
             List<String> aclWriteList = entity.getAclWrite();
 
-            if(aclReadList == null) {
+            if (aclReadList == null) {
                 aclReadList = new LinkedList<>();
             }
 
-            if(aclWriteList == null) {
+            if (aclWriteList == null) {
                 aclWriteList = new LinkedList<>();
             }
 
-            if(aclReadList.contains("") || aclWriteList.contains("")) {
+            if (aclReadList.contains("") || aclWriteList.contains("")) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Invalid ACL");
                 return null;
             }
@@ -140,7 +139,7 @@ public class JeeRolesServerReource extends BaseServerResource
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(!aclReadList.contains(jsonArray.getString(i))) {
+                        if (!aclReadList.contains(jsonArray.getString(i))) {
                             aclReadList.add(jsonArray.getString(i));
                         }
                     }
@@ -154,7 +153,7 @@ public class JeeRolesServerReource extends BaseServerResource
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(!aclWriteList.contains(jsonArray.getString(i))) {
+                        if (!aclWriteList.contains(jsonArray.getString(i))) {
                             aclWriteList.add(jsonArray.getString(i));
                         }
                     }

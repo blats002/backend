@@ -44,7 +44,7 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class JeeBlobServerResource extends BaseServerResource
-    implements BlobResource {
+        implements BlobResource {
 
     @Inject
     EntityRepository entityRepository;
@@ -85,30 +85,30 @@ public class JeeBlobServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String,Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
             List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
                     ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
 
-            if( map.get(Constants.RESERVED_FIELD_PUBLICWRITE)  != null) {
+            if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
             }
 
-            if(isMaster(appId, masterKey)) {
+            if (isMaster(appId, masterKey)) {
                 isMaster = true;
-            } else if(authUserId != null && aclWriteList.contains(authUserId)) {
+            } else if (authUserId != null && aclWriteList.contains(authUserId)) {
                 isWriteAccess = true;
-            } else if(authUserId != null){
+            } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
-                for(Role role : roles) {
-                    if(aclWriteList.contains(role.getEntityId())) {
+                for (Role role : roles) {
+                    if (aclWriteList.contains(role.getEntityId())) {
                         isWriteAccess = true;
                     }
                 }
             }
 
-            if( isMaster || isWriteAccess || isPublic) {
+            if (isMaster || isWriteAccess || isPublic) {
                 // TODO: Compress stream
-                if(entityRepository.createEntityBlob(appId, entityType, entityId, blobName,  entity.getStream())) {
+                if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, entity.getStream())) {
                     setStatus(Status.SUCCESS_CREATED);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -153,29 +153,29 @@ public class JeeBlobServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String,Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
             List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
                     ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
 
-            if( map.get(Constants.RESERVED_FIELD_PUBLICWRITE)  != null) {
+            if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
             }
 
-            if(isMaster(appId, masterKey)) {
+            if (isMaster(appId, masterKey)) {
                 isMaster = true;
-            } else if(authUserId != null && aclWriteList.contains(authUserId)) {
+            } else if (authUserId != null && aclWriteList.contains(authUserId)) {
                 isWriteAccess = true;
-            } else if(authUserId != null){
+            } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
-                for(Role role : roles) {
-                    if(aclWriteList.contains(role.getEntityId())) {
+                for (Role role : roles) {
+                    if (aclWriteList.contains(role.getEntityId())) {
                         isWriteAccess = true;
                     }
                 }
             }
 
-            if( isMaster || isWriteAccess || isPublic) {
-                if(entityRepository.deleteEntityBlob(appId, entityType, entityId, blobName)) {
+            if (isMaster || isWriteAccess || isPublic) {
+                if (entityRepository.deleteEntityBlob(appId, entityType, entityId, blobName)) {
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -215,30 +215,30 @@ public class JeeBlobServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String,Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
             List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
                     ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
 
-            if( map.get(Constants.RESERVED_FIELD_PUBLICWRITE)  != null) {
+            if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
             }
 
-            if(isMaster(appId, masterKey)) {
+            if (isMaster(appId, masterKey)) {
                 isMaster = true;
-            } else if(authUserId != null && aclWriteList.contains(authUserId)) {
+            } else if (authUserId != null && aclWriteList.contains(authUserId)) {
                 isWriteAccess = true;
-            } else if(authUserId != null){
+            } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
-                for(Role role : roles) {
-                    if(aclWriteList.contains(role.getEntityId())) {
+                for (Role role : roles) {
+                    if (aclWriteList.contains(role.getEntityId())) {
                         isWriteAccess = true;
                     }
                 }
             }
 
-            if( isMaster || isWriteAccess || isPublic) {
+            if (isMaster || isWriteAccess || isPublic) {
                 InputStream is = entityRepository.getEntityBlob(appId, entityType, entityId, blobName);
-                if(is == null) {
+                if (is == null) {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                     return null;
                 } else {

@@ -23,7 +23,6 @@ package com.divroll.domino.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -97,7 +96,7 @@ public class User {
 
     public List<Role> getRoles() {
         if (roles == null) {
-            roles =  new LinkedList<Role>();
+            roles = new LinkedList<Role>();
         }
         return roles;
     }

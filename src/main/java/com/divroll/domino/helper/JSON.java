@@ -34,8 +34,10 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class JSON {
-    private JSON() {}
-    public static Map<String,Comparable> toComparableMap(JSONObject jsonObject) {
+    private JSON() {
+    }
+
+    public static Map<String, Comparable> toComparableMap(JSONObject jsonObject) {
         Iterator<String> it = jsonObject.keySet().iterator();
         Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         while (it.hasNext()) {

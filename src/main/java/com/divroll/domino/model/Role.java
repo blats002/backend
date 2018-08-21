@@ -23,7 +23,6 @@ package com.divroll.domino.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -51,7 +50,8 @@ public class Role {
     @ApiModelProperty(required = false, value = "")
     private Boolean publicWrite;
 
-    public Role() {}
+    public Role() {
+    }
 
     public Role(String entityId) {
         setEntityId(entityId);

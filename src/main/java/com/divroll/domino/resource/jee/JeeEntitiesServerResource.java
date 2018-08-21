@@ -36,7 +36,9 @@ import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -72,7 +74,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 JSONObject jsonObject = JSONObject.parseObject(entity.getText());
                 JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
-                if(entityJSONObject == null) {
+                if (entityJSONObject == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     return null;
                 }
@@ -112,21 +114,21 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 ObjectLogger.log(jsonObject);
                 if (!comparableMap.isEmpty()) {
 
-                    if(comparableMap.get("publicRead") != null) {
+                    if (comparableMap.get("publicRead") != null) {
                         Comparable publicReadComparable = comparableMap.get("publicRead");
-                        if(publicReadComparable instanceof Boolean) {
+                        if (publicReadComparable instanceof Boolean) {
                             publicRead = (Boolean) publicReadComparable;
-                        } else if(publicReadComparable instanceof String) {
+                        } else if (publicReadComparable instanceof String) {
                             publicRead = Boolean.valueOf((String) publicReadComparable);
                         }
-                     }
+                    }
 
 
-                    if(comparableMap.get("publicWrite") != null) {
+                    if (comparableMap.get("publicWrite") != null) {
                         Comparable publicWriteComparable = comparableMap.get("publicWrite");
-                        if(publicWriteComparable instanceof Boolean) {
+                        if (publicWriteComparable instanceof Boolean) {
                             publicWrite = (Boolean) publicWriteComparable;
-                        } else if(publicWriteComparable instanceof String) {
+                        } else if (publicWriteComparable instanceof String) {
                             publicWrite = Boolean.valueOf((String) publicWriteComparable);
                         }
                     }
@@ -166,7 +168,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
             int skipValue = 0;
             int limitValue = DEFAULT_LIMIT;
 
-            if(skip != null && limit != null) {
+            if (skip != null && limit != null) {
                 skipValue = skip;
                 limitValue = limit;
             }
@@ -182,7 +184,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     entitiesJSONObject.put("skip", skipValue);
                     entitiesJSONObject.put("limit", limitValue);
                     responseBody.put("entities", entitiesJSONObject);
-                    Representation representation = new JsonRepresentation(responseBody.toJSONString());                    setStatus(Status.SUCCESS_OK);
+                    Representation representation = new JsonRepresentation(responseBody.toJSONString());
+                    setStatus(Status.SUCCESS_OK);
                     return representation;
                 } catch (Exception e) {
                     setStatus(Status.SERVER_ERROR_INTERNAL);

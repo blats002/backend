@@ -24,7 +24,6 @@ package com.divroll.domino.repository.jee;
 import com.divroll.domino.Constants;
 import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.RoleRepository;
-import com.divroll.domino.repository.UserRepository;
 import com.divroll.domino.xodus.XodusManager;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -67,7 +66,7 @@ public class JeeRoleRepository implements RoleRepository {
 
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
-                        if(aclRead != null) {
+                        if (aclRead != null) {
                             // Add User to ACL
                             for (String userId : aclRead) {
                                 EntityId userEntityId = txn.toEntityId(userId);
@@ -84,7 +83,7 @@ public class JeeRoleRepository implements RoleRepository {
 
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
-                        if(aclWrite != null) {
+                        if (aclWrite != null) {
                             // Add User to ACL
                             for (String userId : aclWrite) {
                                 EntityId userEntityId = txn.toEntityId(userId);
@@ -295,12 +294,12 @@ public class JeeRoleRepository implements RoleRepository {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
-                    if(isMasterKey) {
+                    if (isMasterKey) {
                         result = txn.getAll(storeName).skip(skip).take(limit);
                     } else if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
-                        if(sort != null) {
-                            if(sort.startsWith("-")) {
+                        if (sort != null) {
+                            if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
                                 result = txn.sort(storeName, sortDescending, result, false);
                             } else {
@@ -313,8 +312,8 @@ public class JeeRoleRepository implements RoleRepository {
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
                                 .concat(txn.find(storeName, "publicRead", true));
-                        if(sort != null) {
-                            if(sort.startsWith("-")) {
+                        if (sort != null) {
+                            if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
                                 result = txn.sort(storeName, sortDescending, result, false);
                             } else {

@@ -94,11 +94,11 @@ public class JeeUserRepository implements UserRepository {
 
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
-                    for(Object roleId : Arrays.asList(roles)) {
+                    for (Object roleId : Arrays.asList(roles)) {
                         String id = (String) roleId;
                         EntityId roleEntityId = txn.toEntityId(id);
                         Entity roleEntity = txn.getEntity(roleEntityId);
-                        if(roleEntity != null) {
+                        if (roleEntity != null) {
                             entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
                         }
                     }
@@ -162,16 +162,16 @@ public class JeeUserRepository implements UserRepository {
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
                     List<String> roleList = Arrays.asList(roles);
-                    if(!roleList.isEmpty()) {
+                    if (!roleList.isEmpty()) {
                         entity.deleteLinks(Constants.ROLE_LINKNAME);
-                }
-                    for(String roleId : roleList) {
-                    EntityId roleEntityId = txn.toEntityId(roleId);
-                    Entity roleEntity = txn.getEntity(roleEntityId);
-                    if(roleEntity != null) {
-                        entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
                     }
-                }
+                    for (String roleId : roleList) {
+                        EntityId roleEntityId = txn.toEntityId(roleId);
+                        Entity roleEntity = txn.getEntity(roleEntityId);
+                        if (roleEntity != null) {
+                            entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                        }
+                    }
 
                     success[0] = true;
                 }
@@ -191,7 +191,7 @@ public class JeeUserRepository implements UserRepository {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId userEntityId = txn.toEntityId(userID);
-                    if(userEntityId != null) {
+                    if (userEntityId != null) {
                         final Entity userEntity = txn.getEntity(userEntityId);
                         User user = new User();
                         user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
@@ -237,8 +237,8 @@ public class JeeUserRepository implements UserRepository {
                         user.setAclRead(aclRead);
                         user.setAclWrite(aclWrite);
 
-                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
-                            Role role  = new Role();
+                        for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role = new Role();
                             role.setEntityId(roleEntity.getId().toString());
                             role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
                             roles.add(role);
@@ -279,8 +279,8 @@ public class JeeUserRepository implements UserRepository {
                         user.setEntityId(userEntity.getId().toString());
 
                         List<Role> roles = new LinkedList<>();
-                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
-                            Role role  = new Role();
+                        for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role = new Role();
                             role.setEntityId(roleEntity.getId().toString());
                             role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
                             roles.add(role);
@@ -326,12 +326,12 @@ public class JeeUserRepository implements UserRepository {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
-                    if(isMastekey) {
+                    if (isMastekey) {
                         result = txn.getAll(storeName);
                     } else if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
-                        if(sort != null) {
-                            if(sort.startsWith("-")) {
+                        if (sort != null) {
+                            if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
                                 result = txn.sort(storeName, sortDescending, result, false);
                             } else {
@@ -341,9 +341,9 @@ public class JeeUserRepository implements UserRepository {
                         }
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
-                            .concat(txn.find(storeName, "publicRead", true));
-                        if(sort != null) {
-                            if(sort.startsWith("-")) {
+                                .concat(txn.find(storeName, "publicRead", true));
+                        if (sort != null) {
+                            if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
                                 result = txn.sort(storeName, sortDescending, result, false);
                             } else {
@@ -397,8 +397,8 @@ public class JeeUserRepository implements UserRepository {
                         user.setPublicWrite((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
 
                         List<Role> roles = new LinkedList<>();
-                        for(Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
-                            Role role  = new Role();
+                        for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                            Role role = new Role();
                             role.setEntityId(roleEntity.getId().toString());
                             role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
                             roles.add(role);

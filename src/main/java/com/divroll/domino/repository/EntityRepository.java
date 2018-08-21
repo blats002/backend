@@ -54,7 +54,7 @@ public interface EntityRepository {
     List<Map<String, Object>> getLinkedEntities(String instance, String storeName, String entityId, String linkName);
 
     List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
-                         int skip, int limit, String sort, boolean isMasterKey);
+                                           int skip, int limit, String sort, boolean isMasterKey);
 
     InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
 

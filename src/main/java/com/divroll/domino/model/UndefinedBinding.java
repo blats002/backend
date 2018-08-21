@@ -37,24 +37,6 @@ public class UndefinedBinding extends ComparableBinding {
 
     public static final UndefinedBinding BINDING = new UndefinedBinding();
 
-    @Override
-    public Comparable readObject(@NotNull ByteArrayInputStream stream) {
-        try {
-            byte[] serialized = ByteStreams.toByteArray(stream);
-            Comparable deserialized = deserialize(serialized, Comparable.class);
-            return deserialized;
-        } catch (Exception e) {
-
-        }
-        return null;
-    }
-
-    @Override
-    public void writeObject(@NotNull LightOutputStream output, @NotNull Comparable object) {
-        byte[] serialized = serialize(object);
-        output.write(serialized);
-    }
-
     public static byte[] serialize(Object obj) {
         try {
             try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -79,6 +61,24 @@ public class UndefinedBinding extends ComparableBinding {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public Comparable readObject(@NotNull ByteArrayInputStream stream) {
+        try {
+            byte[] serialized = ByteStreams.toByteArray(stream);
+            Comparable deserialized = deserialize(serialized, Comparable.class);
+            return deserialized;
+        } catch (Exception e) {
+
+        }
+        return null;
+    }
+
+    @Override
+    public void writeObject(@NotNull LightOutputStream output, @NotNull Comparable object) {
+        byte[] serialized = serialize(object);
+        output.write(serialized);
     }
 
 }

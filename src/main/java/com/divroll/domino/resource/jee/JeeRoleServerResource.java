@@ -28,7 +28,6 @@ import com.divroll.domino.model.Role;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.resource.RoleResource;
 import com.divroll.domino.service.WebTokenService;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
@@ -82,7 +81,7 @@ public class JeeRoleServerResource extends BaseServerResource
             } else {
 
                 String authUserId = null;
-                if(authToken != null) {
+                if (authToken != null) {
                     authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 }
 
@@ -91,7 +90,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 try {
                     Role role = roleRepository.getRole(appId, storeName, roleId);
                     Boolean publicRead = role.getPublicRead();
-                    if(authUserId != null && role.getAclRead().contains(authUserId)) {
+                    if (authUserId != null && role.getAclRead().contains(authUserId)) {
                         isAccess = true;
                     }
                     if (!publicRead && !isAccess) {

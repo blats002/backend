@@ -33,6 +33,7 @@ import org.restlet.resource.Post;
 public interface BackupResource {
     @Post
     void restore(Representation entity);
+
     @Get
     Representation backup(Representation entity);
 }

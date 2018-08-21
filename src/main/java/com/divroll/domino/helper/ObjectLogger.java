@@ -31,9 +31,12 @@ import java.util.logging.Logger;
  * @since 0-SNAPSHOT
  */
 public class ObjectLogger {
-    private ObjectLogger() {}
     private static final Logger LOG
             = Logger.getLogger(ObjectLogger.class.getName());
+
+    private ObjectLogger() {
+    }
+
     public static Object log(Object object) {
         String json = new Gson().toJson(object);
         LOG.info(json);

@@ -49,7 +49,6 @@ public class JeeUsersServerResource extends BaseServerResource
         implements UsersResource {
 
 
-
     @Inject
     @Named("defaultUserStore")
     String storeName;
@@ -66,7 +65,7 @@ public class JeeUsersServerResource extends BaseServerResource
         int skipValue = 0;
         int limitValue = DEFAULT_LIMIT;
 
-        if(skip != null && limit != null) {
+        if (skip != null && limit != null) {
             skipValue = skip;
             limitValue = limit;
         }
@@ -86,9 +85,9 @@ public class JeeUsersServerResource extends BaseServerResource
             List<User> processedResults = new LinkedList<>();
             List<User> results = userRepository.listUsers(appId, storeName, authUserId,
                     skipValue, limitValue, sort, false);
-            for(User user : results) {
-                if( (user.getPublicRead() != null && user.getPublicRead()) || (user.getAclRead() != null
-                        && ( authUserId != null && user.getAclRead().contains(authUserId)) )) {
+            for (User user : results) {
+                if ((user.getPublicRead() != null && user.getPublicRead()) || (user.getAclRead() != null
+                        && (authUserId != null && user.getAclRead().contains(authUserId)))) {
                     processedResults.add(user);
                 }
             }
@@ -130,7 +129,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     List<String> aclReadList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(jsonArray.getString(i).isEmpty()){
+                        if (jsonArray.getString(i).isEmpty()) {
                             continue;
                         }
                         aclReadList.add(jsonArray.getString(i));
@@ -146,7 +145,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     List<String> aclWriteList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(jsonArray.getString(i).isEmpty()) {
+                        if (jsonArray.getString(i).isEmpty()) {
                             continue;
                         }
                         aclWriteList.add(jsonArray.getString(i));
@@ -164,8 +163,8 @@ public class JeeUsersServerResource extends BaseServerResource
 
             List<Role> roles = entity.getRoles();
             List<String> idsOfRoles = new LinkedList<String>();
-            if(roles != null) {
-                for(Role role : roles) {
+            if (roles != null) {
+                for (Role role : roles) {
                     idsOfRoles.add(role.getEntityId());
                 }
             }
@@ -192,7 +191,7 @@ public class JeeUsersServerResource extends BaseServerResource
                         user.setPublicWrite(publicWrite);
                         user.setAclWrite(Arrays.asList(write));
                         user.setAclRead(Arrays.asList(read));
-                        for(Object roleId : Arrays.asList(roleArray)) {
+                        for (Object roleId : Arrays.asList(roleArray)) {
                             user.getRoles().add(new Role((String) roleId));
                         }
                         setStatus(Status.SUCCESS_CREATED);

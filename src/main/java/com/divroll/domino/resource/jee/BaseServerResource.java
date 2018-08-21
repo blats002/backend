@@ -49,37 +49,28 @@ import java.util.logging.Logger;
  */
 public class BaseServerResource extends SelfInjectingServerResource {
 
+    protected static final Integer DEFAULT_LIMIT = 100;
     private static final Logger LOG
             = Logger.getLogger(BaseServerResource.class.getName());
-
     protected Map<String, Object> queryMap = new LinkedHashMap<>();
     protected Map<String, String> propsMap = new LinkedHashMap<>();
     protected String entityId;
     protected String entityType;
     protected String blobName;
-
     protected String appId;
     protected String apiKey;
     protected String masterKey;
     protected String authToken;
-
     protected String aclRead;
     protected String aclWrite;
-
     protected String accept;
     protected String contentType;
-
     protected String userId;
     protected String username;
-
     protected String roleId;
-
     protected Integer skip = null;
     protected Integer limit = null;
     protected String sort;
-
-    protected static final Integer DEFAULT_LIMIT = 100;
-
     protected Boolean publicRead;
     protected Boolean publicWrite;
 

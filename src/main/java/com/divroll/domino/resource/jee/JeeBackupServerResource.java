@@ -46,7 +46,7 @@ import java.io.File;
  */
 public class JeeBackupServerResource extends BaseServerResource
         implements BackupResource {
-    
+
     private static final String FILE_TO_UPLOAD = "file";
 
     @Inject
@@ -59,7 +59,7 @@ public class JeeBackupServerResource extends BaseServerResource
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return;
         }
-        if(entity == null) {
+        if (entity == null) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             return;
         }
@@ -68,8 +68,8 @@ public class JeeBackupServerResource extends BaseServerResource
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return;
         }
-        if(isMaster(appId, masterKey)) {
-            if(MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+        if (isMaster(appId, masterKey)) {
+            if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
                 try {
                     DiskFileItemFactory factory = new DiskFileItemFactory();
                     factory.setSizeThreshold(1000240);
@@ -93,6 +93,7 @@ public class JeeBackupServerResource extends BaseServerResource
         }
         return;
     }
+
     @Override
     public Representation backup(Representation entity) {
         if (!isAuthorized(appId, apiKey, masterKey)) {
@@ -105,7 +106,7 @@ public class JeeBackupServerResource extends BaseServerResource
             return null;
         }
 
-        if(isMaster(appId, masterKey)) {
+        if (isMaster(appId, masterKey)) {
             try {
                 String folderPath = xodusRoot + appId;
                 String zipPath = xodusRoot + appId + ".zip";
