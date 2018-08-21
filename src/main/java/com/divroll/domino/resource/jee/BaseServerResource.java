@@ -56,6 +56,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected Map<String, String> propsMap = new LinkedHashMap<>();
     protected String entityId;
     protected String entityType;
+    protected String blobName;
 
     protected String appId;
     protected String apiKey;
@@ -103,6 +104,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
         propsMap = appProperties();
         entityId = getAttribute(Constants.ENTITY_ID);
         entityType = getAttribute(Constants.ENTITY_TYPE);
+        blobName = getAttribute("blobName");
         userId = getAttribute(Constants.USER_ID);
         roleId = getAttribute(Constants.ROLE_ID);
 

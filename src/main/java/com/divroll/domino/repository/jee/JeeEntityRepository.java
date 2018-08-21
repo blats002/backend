@@ -330,6 +330,83 @@ public class JeeEntityRepository implements EntityRepository {
     }
 
     @Override
+    public boolean createEntityBlob(String instance, String storeName, String entityId, String blobKey, InputStream is) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    entity.setBlob(blobKey, is);
+                    success[0] = true;
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return success[0];
+    }
+
+    @Override
+    public boolean deleteEntityBlob(String instance, String storeName, String entityId, String blobKey) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    entity.deleteBlob(blobKey);
+                    success[0] = true;
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return success[0];
+    }
+
+    @Override
+    public List<String> getLinkNames(String instance, String storeName, String entityId) {
+        final List<String>[] result = new List[]{new LinkedList<>()};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    result[0] = entity.getLinkNames();
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return result[0];
+    }
+
+    @Override
+    public List<String> getBlobKeys(String instance, String storeName, String entityId) {
+        final List<String>[] result = new List[]{new LinkedList<>()};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    result[0] = entity.getBlobNames();
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return result[0];    }
+
+    @Override
     public boolean deleteEntity(String instance, String storeName, final String entityId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);

@@ -41,8 +41,6 @@ public interface EntityRepository {
 
     Comparable getEntityProperty(String instance, String storeName, String entityId, String propertyName);
 
-    InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
-
     boolean deleteEntity(String instance, String storeName, String entityId);
 
     boolean linkEntity(String instance, String storeName, String linkName, String sourceId, String targetId);
@@ -57,4 +55,14 @@ public interface EntityRepository {
 
     List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
                          int skip, int limit, String sort, boolean isMasterKey);
+
+    InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
+
+    boolean createEntityBlob(String instance, String storeName, String entityId, String blobKey, InputStream is);
+
+    boolean deleteEntityBlob(String instance, String storeName, String entityId, String blobKey);
+
+    List<String> getLinkNames(String instance, String storeName, String entityId);
+
+    List<String> getBlobKeys(String instance, String storeName, String entityId);
 }

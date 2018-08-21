@@ -90,6 +90,7 @@ public class DominoApplication extends Application {
         router.attach(DOMINO_ROOT_URI + "entities", JeeEntitiesServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
 
         router.attach(DOMINO_ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
         router.attach(DOMINO_ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
