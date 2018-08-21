@@ -33,7 +33,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
-import org.restlet.representation.Representation;
 import com.divroll.domino.model.Role;
 
 import java.util.Arrays;
@@ -126,15 +125,13 @@ public class JeeUserServerResource extends BaseServerResource implements
             String existingPassword = userEntity.getPassword();
 
             if (BCrypt.checkpw(password, existingPassword)) {
-                if (app != null) {
-                    String webToken = webTokenService.createToken(app.getMasterKey(), userId);
-                    User user = new User();
-                    user.setEntityId(userId);
-                    user.setWebToken(webToken);
-                    userEntity.setPassword(null);
-                    setStatus(Status.SUCCESS_OK);
-                    return user;
-                }
+                String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                User user = new User();
+                user.setEntityId(userId);
+                user.setWebToken(webToken);
+                userEntity.setPassword(null);
+                setStatus(Status.SUCCESS_OK);
+                return user;
             } else {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
@@ -147,7 +144,6 @@ public class JeeUserServerResource extends BaseServerResource implements
 
     @Override
     public User updateUser(User entity) {
-        Representation representation = returnNull();
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -188,8 +184,9 @@ public class JeeUserServerResource extends BaseServerResource implements
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     List<String> aclReadList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(jsonArray.getString(i).isEmpty())
+                        if(jsonArray.getString(i).isEmpty()) {
                             continue;
+                        }
                         aclReadList.add(jsonArray.getString(i));
                     }
                     read = aclReadList.toArray(new String[aclReadList.size()]);
@@ -203,8 +200,9 @@ public class JeeUserServerResource extends BaseServerResource implements
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     List<String> aclWriteList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(jsonArray.getString(i).isEmpty())
+                        if(jsonArray.getString(i).isEmpty()) {
                             continue;
+                        }
                         aclWriteList.add(jsonArray.getString(i));
                     }
                     write = aclWriteList.toArray(new String[aclWriteList.size()]);
@@ -247,12 +245,12 @@ public class JeeUserServerResource extends BaseServerResource implements
                         resultUser.getRoles().add(new Role((String) roleId));
                     }
                     setStatus(Status.SUCCESS_OK);
-                    return (User) ObjectLogger.LOG(resultUser);
+                    return (User) ObjectLogger.log(resultUser);
                 } else {
                     setStatus(Status.SERVER_ERROR_INTERNAL);
                 }
             } else {
-                System.out.println(authToken);
+                LOG.info("AUTH TOKEN: " + authToken);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 boolean isAccess = false;
                 if(authUserId != null) {
@@ -266,10 +264,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                                 isAccess = true;
                             }
                         }
-                        if(!isAccess && user.getAclWrite() != null) {
-                            if(user.getAclWrite().contains(authUserId)) {
-                                isAccess = true;
-                            }
+                        if(!isAccess && user.getAclWrite() != null && (user.getAclWrite().contains(authUserId))) {
+                            isAccess = true;
                         }
                     }
                     if(isAccess) {
@@ -289,7 +285,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                                 resultUser.getRoles().add(new Role((String) roleId));
                             }
                             setStatus(Status.SUCCESS_OK);
-                            return (User) ObjectLogger.LOG(resultUser);
+                            return (User) ObjectLogger.log(resultUser);
                         } else {
                             setStatus(Status.SERVER_ERROR_INTERNAL);
                         }

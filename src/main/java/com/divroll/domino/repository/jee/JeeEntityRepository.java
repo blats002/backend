@@ -35,6 +35,7 @@ import scala.actors.threadpool.Arrays;
 
 import java.io.InputStream;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -42,6 +43,9 @@ import java.util.*;
  * @since 0-SNAPSHOT
  */
 public class JeeEntityRepository implements EntityRepository {
+
+    private static final Logger LOG
+            = Logger.getLogger(JeeEntityRepository.class.getName());
 
     @Inject
     @Named("xodusRoot")
@@ -80,25 +84,16 @@ public class JeeEntityRepository implements EntityRepository {
                         String key = it.next();
                         Comparable value = comparableMap.get(key);
                         if(value == null) {
-                            if(key.equals(Constants.RESERVED_FIELD_PUBLICREAD)) {
-
-                            } else if(key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
-
-                            } else {
+                            if(!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
+                                    && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
                                 entity.setProperty(key, new UndefinedIterable());
                             }
                         } else {
-                            if(key.equals(Constants.RESERVED_FIELD_PUBLICREAD)) {
-
-                            } else if(key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
-
-                            } else {
-                                System.out.println("KEY: " + key);
-                                System.out.println("VAL: " + value);
+                            if(!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
+                                    && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
                                 // TODO: If value is JSONObject create a new Entity and link it to this entity
                                 entity.setProperty(key, value);
                             }
-
                         }
                     }
 
@@ -265,9 +260,6 @@ public class JeeEntityRepository implements EntityRepository {
                     for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
                         aclWrite.add(aclWriteLink.getId().toString());
                     }
-
-                    Map<String, Object> metadata = new TreeMap<String, Object>();
-
                     comparableMap.put(Constants.ENTITY_ID, idOfEntity.toString());
                     comparableMap.put(Constants.ACL_READ, aclRead);
                     comparableMap.put(Constants.ACL_WRITE, aclWrite);
@@ -528,6 +520,9 @@ public class JeeEntityRepository implements EntityRepository {
                     comparableMap.put(Constants.ACL_WRITE, aclWrite);
                     comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
                     comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
                 }
             });
         } finally {
@@ -556,7 +551,7 @@ public class JeeEntityRepository implements EntityRepository {
                     } else if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
                         long count = result.count();
-                        System.out.println(count);
+                        LOG.info("COUNT: " + count);
                         if(sort != null) {
                             if(sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -579,8 +574,6 @@ public class JeeEntityRepository implements EntityRepository {
                                 result = txn.sort(storeName, sortAscending, result, true);
                             }
                         }
-                        long count = result.count();
-                        System.out.println(count);
                     }
                     result = result.skip(skip).take(limit);
                     for (Entity entity : result) {

@@ -69,7 +69,7 @@ public class JeeBackupServerResource extends BaseServerResource
             return;
         }
         if(isMaster(appId, masterKey)) {
-            if(entity != null && MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+            if(MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
                 try {
                     DiskFileItemFactory factory = new DiskFileItemFactory();
                     factory.setSizeThreshold(1000240);

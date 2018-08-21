@@ -34,7 +34,7 @@ import org.restlet.resource.Post;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface UsersReource {
+public interface UsersResource {
     @ApiOperation(value = "create a new user", tags = "user")
     @ApiResponses({
             @ApiResponse(code = 201, message = "user created"),

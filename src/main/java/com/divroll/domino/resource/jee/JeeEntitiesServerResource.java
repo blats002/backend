@@ -70,14 +70,14 @@ public class JeeEntitiesServerResource extends BaseServerResource
             if (dir != null) {
 
                 JSONObject jsonObject = JSONObject.parseObject(entity.getText());
-                JSONObject _entityObject = jsonObject.getJSONObject("entity");
+                JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
-                if(_entityObject == null) {
+                if(entityJSONObject == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     return null;
                 }
 
-                Map<String, Comparable> comparableMap = JSON.toComparableMap(_entityObject);
+                Map<String, Comparable> comparableMap = JSON.toComparableMap(entityJSONObject);
 
                 String[] read = new String[]{};
                 String[] write = new String[]{};
@@ -108,8 +108,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     }
                 }
 
-                ObjectLogger.LOG(comparableMap);
-                ObjectLogger.LOG(jsonObject);
+                ObjectLogger.log(comparableMap);
+                ObjectLogger.log(jsonObject);
                 if (!comparableMap.isEmpty()) {
 
                     if(comparableMap.get("publicRead") != null) {

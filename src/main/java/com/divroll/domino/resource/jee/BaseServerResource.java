@@ -89,7 +89,6 @@ public class BaseServerResource extends SelfInjectingServerResource {
     @Override
     protected void doInit() {
         super.doInit();
-        getHeaders();
         Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
         if (responseHeaders == null) {
             responseHeaders = new Series(Header.class);
@@ -144,10 +143,6 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     }
 
-    protected void getHeaders() {
-        Series<Header> headers = (Series<Header>) getRequestAttributes().get("org.restlet.http.headers");
-    }
-
     protected Map<String, String> appProperties() {
         Map<String, String> map = new LinkedHashMap<String, String>();
         InputStream is = getContext().getClass().getResourceAsStream("/app.properties");
@@ -194,10 +189,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected boolean isMaster(String appId, String masterKey) {
         if (appId != null) {
             Application app = applicationService.read(appId);
-            if (app != null) {
-                if (BCrypt.checkpw(masterKey, app.getMasterKey())) {
-                    return true;
-                }
+            if (app != null && (BCrypt.checkpw(masterKey, app.getMasterKey()))) {
+                return true;
             }
         }
         return false;

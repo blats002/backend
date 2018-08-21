@@ -29,7 +29,7 @@ import com.divroll.domino.model.Role;
 import com.divroll.domino.model.User;
 import com.divroll.domino.model.Users;
 import com.divroll.domino.repository.UserRepository;
-import com.divroll.domino.resource.UsersReource;
+import com.divroll.domino.resource.UsersResource;
 import com.divroll.domino.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -45,8 +45,8 @@ import java.util.List;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeUsersServerReource extends BaseServerResource
-        implements UsersReource {
+public class JeeUsersServerResource extends BaseServerResource
+        implements UsersResource {
 
 
 
@@ -130,8 +130,9 @@ public class JeeUsersServerReource extends BaseServerResource
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
                     List<String> aclReadList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(jsonArray.getString(i).isEmpty())
+                        if(jsonArray.getString(i).isEmpty()){
                             continue;
+                        }
                         aclReadList.add(jsonArray.getString(i));
                     }
                     read = aclReadList.toArray(new String[aclReadList.size()]);
@@ -145,8 +146,9 @@ public class JeeUsersServerReource extends BaseServerResource
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
                     List<String> aclWriteList = new LinkedList<>();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        if(jsonArray.getString(i).isEmpty())
+                        if(jsonArray.getString(i).isEmpty()) {
                             continue;
+                        }
                         aclWriteList.add(jsonArray.getString(i));
                     }
                     write = aclWriteList.toArray(new String[aclWriteList.size()]);
@@ -194,7 +196,7 @@ public class JeeUsersServerReource extends BaseServerResource
                             user.getRoles().add(new Role((String) roleId));
                         }
                         setStatus(Status.SUCCESS_CREATED);
-                        return (User) ObjectLogger.LOG(user);
+                        return (User) ObjectLogger.log(user);
                     } else {
                         setStatus(Status.SERVER_ERROR_INTERNAL);
                     }

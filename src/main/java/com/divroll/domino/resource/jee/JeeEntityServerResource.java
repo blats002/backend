@@ -110,7 +110,7 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
-                    ObjectLogger.LOG(entityObj);
+                    ObjectLogger.log(entityObj);
                     List<String> aclReadList = (List<String>) (entityObj.get("aclRead"));
                     publicRead = (Boolean) (entityObj).get(Constants.RESERVED_FIELD_PUBLICREAD);
                     if (authUserId != null && aclReadList.contains(authUserId)) {

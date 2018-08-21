@@ -34,7 +34,7 @@ public class ObjectLogger {
     private ObjectLogger() {}
     private static final Logger LOG
             = Logger.getLogger(ObjectLogger.class.getName());
-    public static Object LOG(Object object) {
+    public static Object log(Object object) {
         String json = new Gson().toJson(object);
         LOG.info(json);
         return object;

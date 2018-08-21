@@ -91,14 +91,10 @@ public class JeeKeyValueServerResource extends BaseServerResource
                         if (value != null) {
                             byte[] arr = new byte[value.remaining()];
                             value.get(arr);
-                            if (value != null) {
-                                Representation representation = new ByteArrayRepresentation(arr);
-                                representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
-                                setStatus(Status.SUCCESS_OK);
-                                return representation;
-                            } else {
-                                return null;
-                            }
+                            Representation representation = new ByteArrayRepresentation(arr);
+                            representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+                            setStatus(Status.SUCCESS_OK);
+                            return representation;
                         }
                     } else if (accept.equals(MediaType.APPLICATION_JSON)) {
                         String value = keyValueService.get(appId, entityType, entityId, authUUID, String.class);

@@ -217,7 +217,7 @@ public class JeeKeyValueService implements KeyValueService {
             ByteValue byteValue = new ByteValue();
             try {
                 byteValue.setValue(((String) value).getBytes(Constants.DEFAULT_CHARSET));
-                byteValue.setRead(read);
+                byteValue.setRead(aclRead);
                 byteValue.setWrite(aclWrite);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -231,7 +231,7 @@ public class JeeKeyValueService implements KeyValueService {
 
             ByteValue byteValue = new ByteValue();
             byteValue.setValue(arr);
-            byteValue.setRead(read);
+            byteValue.setRead(aclRead);
             byteValue.setWrite(aclWrite);
             return store.put(instance, storeName, key, byteValue);
         }

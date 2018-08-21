@@ -33,12 +33,11 @@ import org.restlet.engine.application.CorsFilter;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
-import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
 import org.restlet.routing.Router;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -79,7 +78,7 @@ public class DominoApplication extends Application {
         corsFilter.setAllowedCredentials(true);
 
         router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationServerResource.class); // TODO: Rename to directories
-        router.attach(DOMINO_ROOT_URI + "entities/users", JeeUsersServerReource.class);
+        router.attach(DOMINO_ROOT_URI + "entities/users", JeeUsersServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/users/login", JeeUserServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/roles", JeeRolesServerReource.class);
@@ -107,25 +106,11 @@ public class DominoApplication extends Application {
 
     }
 
-    private Map<String, String> appProperties() {
-        Map<String, String> map = new LinkedHashMap<String, String>();
-        InputStream is = getContext().getClass().getResourceAsStream("/app.properties");
-        Properties props = new Properties();
-        try {
-            props.load(is);
-            map = new LinkedHashMap<String, String>((Map) props);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return map;
-    }
-
     private void configureConverters() {
         List<ConverterHelper> converters = Engine.getInstance()
                 .getRegisteredConverters();
         JacksonConverter jacksonConverter = null;
         for (ConverterHelper converterHelper : converters) {
-            System.err.println(converterHelper.getClass());
             if (converterHelper instanceof JacksonConverter) {
                 jacksonConverter = (JacksonConverter) converterHelper;
                 break;
@@ -135,20 +120,6 @@ public class DominoApplication extends Application {
             Engine.getInstance()
                     .getRegisteredConverters().remove(jacksonConverter);
         }
-    }
-
-    /**
-     * Adds the "/api-docs" path to the given router and attaches the
-     * {@link Restlet} that computes the Swagger documentation in the format
-     * defined by the swagger-spec project v1.2.
-     *
-     * @param router The router to update.
-     */
-    private void attachSwaggerSpecification1(Router router) {
-        SwaggerSpecificationRestlet swaggerSpecificationRestlet = new SwaggerSpecificationRestlet(
-                this);
-        swaggerSpecificationRestlet.setBasePath("http://localhost:8080/");
-        swaggerSpecificationRestlet.attach(router, "/docs");
     }
 
     /**

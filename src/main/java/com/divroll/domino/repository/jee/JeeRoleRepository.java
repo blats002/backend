@@ -34,6 +34,7 @@ import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -41,6 +42,9 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public class JeeRoleRepository implements RoleRepository {
+
+    private static final Logger LOG
+            = Logger.getLogger(JeeRoleRepository.class.getName());
 
     @Inject
     @Named("xodusRoot")
@@ -305,7 +309,7 @@ public class JeeRoleRepository implements RoleRepository {
                             }
                         }
                         long count = result.count();
-                        System.out.println(count);
+                        LOG.info("COUNT: " + count);
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
                                 .concat(txn.find(storeName, "publicRead", true));

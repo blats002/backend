@@ -53,11 +53,10 @@ public class JeeWebTokenService implements WebTokenService {
     @Override
     public String createToken(String secret, String userId) {
         JWTSigner signer = new JWTSigner(secret);
-        JWTVerifier verifier = new JWTVerifier(secret);
         HashMap<String, Object> claims = new HashMap<String, Object>();
         claims.put(Constants.JWT_ID_KEY, String.valueOf(userId));
         String token = signer.sign(claims);
-        //LOG.info("Generated token: " + token);
+        //log.info("Generated token: " + token);
         return token;
     }
 
@@ -70,7 +69,6 @@ public class JeeWebTokenService implements WebTokenService {
     public String readUserIdFromToken(String secret, String token) {
         String id = null;
         try {
-            JWTSigner signer = new JWTSigner(secret);
             JWTVerifier verifier = new JWTVerifier(secret);
             Map<String, Object> parsed = verifier.verify(token);
             Object objectId = parsed.get(Constants.JWT_ID_KEY);

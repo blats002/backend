@@ -48,8 +48,6 @@ public class JeeApplicationService implements ApplicationService {
 
     @Override
     public EntityId create(Application application) {
-//        Key entityId = applicationRepository.save(application, Application.class);
-//        return entityId;
         Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
         comparableMap.put(Constants.API_KEY, application.getApiKey());
