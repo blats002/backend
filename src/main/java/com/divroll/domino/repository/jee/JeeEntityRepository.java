@@ -22,8 +22,6 @@
 package com.divroll.domino.repository.jee;
 
 import com.divroll.domino.Constants;
-import com.divroll.domino.model.UndefinedBinding;
-import com.divroll.domino.model.UndefinedIterable;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.xodus.XodusManager;
@@ -71,13 +69,6 @@ public class JeeEntityRepository implements EntityRepository {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-
-                    try {
-                        entityStore.registerCustomPropertyType(txn, UndefinedIterable.class, UndefinedBinding.BINDING);
-                    } catch (Exception e) {
-
-                    }
-
                     final Entity entity = txn.newEntity(storeName);
                     Iterator<String> it = comparableMap.keySet().iterator();
                     while (it.hasNext()) {
@@ -86,7 +77,7 @@ public class JeeEntityRepository implements EntityRepository {
                         if (value == null) {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
                                     && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
-                                entity.setProperty(key, new UndefinedIterable());
+                               entity.deleteProperty(key);
                             }
                         } else {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
@@ -131,13 +122,13 @@ public class JeeEntityRepository implements EntityRepository {
                     if (publicRead != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     } else {
-                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, new UndefinedIterable());
+                        entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     }
 
                     if (publicWrite != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     } else {
-                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, new UndefinedIterable());
+                        entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
                     }
 
 
@@ -167,7 +158,7 @@ public class JeeEntityRepository implements EntityRepository {
                         String key = it.next();
                         Comparable value = comparableMap.get(key);
                         if (value == null) {
-                            entity.setProperty(key, new UndefinedIterable());
+                            entity.deleteProperty(key);
                         } else {
                             entity.setProperty(key, value);
                         }
@@ -225,9 +216,7 @@ public class JeeEntityRepository implements EntityRepository {
 
                     for (String property : entity.getPropertyNames()) {
                         Comparable value = entity.getProperty(property);
-                        if (value instanceof UndefinedIterable) {
-                            comparableMap.put(property, null);
-                        } else {
+                        if(value != null) {
                             comparableMap.put(property, value);
                         }
                     }
@@ -241,15 +230,11 @@ public class JeeEntityRepository implements EntityRepository {
                     Boolean publicRead = null;
                     Boolean publicWrite = null;
 
-                    if (comparablePublicRead instanceof UndefinedIterable) {
-                        publicRead = null;
-                    } else {
+                    if(comparablePublicRead != null) {
                         publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     }
 
-                    if (comparablePublicWrite instanceof UndefinedIterable) {
-                        publicWrite = null;
-                    } else {
+                    if (comparablePublicWrite != null) {
                         publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
                     }
 
@@ -286,12 +271,7 @@ public class JeeEntityRepository implements EntityRepository {
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId idOfEntity = txn.toEntityId(entityId);
                     final Entity entity = txn.getEntity(idOfEntity);
-                    Comparable value = entity.getProperty(propertyName);
-                    if (value instanceof UndefinedIterable) {
-                        comparable[0] = null;
-                    } else {
-                        comparable[0] = entity.getProperty(propertyName);
-                    }
+                    comparable[0] = entity.getProperty(propertyName);
                 }
             });
         } finally {
@@ -495,9 +475,7 @@ public class JeeEntityRepository implements EntityRepository {
 
                     for (String property : entity.getPropertyNames()) {
                         Comparable value = entity.getProperty(property);
-                        if (value instanceof UndefinedIterable) {
-                            comparableMap.put(property, null);
-                        } else {
+                        if(value != null) {
                             comparableMap.put(property, value);
                         }
                     }
@@ -581,9 +559,7 @@ public class JeeEntityRepository implements EntityRepository {
                         final Map<String, Object> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
                             Comparable value = entity.getProperty(property);
-                            if (value instanceof UndefinedIterable) {
-                                comparableMap.put(property, null);
-                            } else {
+                            if(value != null) {
                                 comparableMap.put(property, value);
                             }
                         }

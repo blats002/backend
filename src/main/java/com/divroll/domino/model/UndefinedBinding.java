@@ -33,6 +33,7 @@ import java.io.*;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Deprecated
 public class UndefinedBinding extends ComparableBinding {
 
     public static final UndefinedBinding BINDING = new UndefinedBinding();

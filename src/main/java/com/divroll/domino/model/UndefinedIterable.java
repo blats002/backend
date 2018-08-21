@@ -33,6 +33,7 @@ import java.io.Serializable;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Deprecated
 public class UndefinedIterable implements Serializable, ByteIterable {
 
     private byte[] bytes;
