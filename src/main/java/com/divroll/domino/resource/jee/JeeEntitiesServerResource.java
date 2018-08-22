@@ -21,8 +21,6 @@
  */
 package com.divroll.domino.resource.jee;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.divroll.domino.Constants;
 import com.divroll.domino.helper.JSON;
 import com.divroll.domino.helper.ObjectLogger;
@@ -32,6 +30,8 @@ import com.divroll.domino.resource.EntitiesResource;
 import com.divroll.domino.service.WebTokenService;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
@@ -71,7 +71,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
             String dir = appId;
             if (dir != null) {
 
-                JSONObject jsonObject = JSONObject.parseObject(entity.getText());
+                JSONObject jsonObject = new JSONObject(entity.getText());
                 JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
                 if (entityJSONObject == null) {
@@ -86,9 +86,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
                 if (aclRead != null) {
                     try {
-                        JSONArray jsonArray = JSONArray.parseArray(aclRead);
+                        JSONArray jsonArray = new JSONArray(aclRead);
                         List<String> aclReadList = new LinkedList<>();
-                        for (int i = 0; i < jsonArray.size(); i++) {
+                        for (int i = 0; i < jsonArray.length(); i++) {
                             aclReadList.add(jsonArray.getString(i));
                         }
                         read = aclReadList.toArray(new String[aclReadList.size()]);
@@ -99,9 +99,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
                 if (aclWrite != null) {
                     try {
-                        JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+                        JSONArray jsonArray = new JSONArray(aclWrite);
                         List<String> aclWriteList = new LinkedList<>();
-                        for (int i = 0; i < jsonArray.size(); i++) {
+                        for (int i = 0; i < jsonArray.length(); i++) {
                             aclWriteList.add(jsonArray.getString(i));
                         }
                         write = aclWriteList.toArray(new String[aclWriteList.size()]);
@@ -148,7 +148,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
         }
         Representation representation = null;
         if (result != null) {
-            representation = new JsonRepresentation(result.toJSONString());
+            representation = new JsonRepresentation(result.toString());
         }
         return representation;
     }
@@ -184,7 +184,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     entitiesJSONObject.put("skip", skipValue);
                     entitiesJSONObject.put("limit", limitValue);
                     responseBody.put("entities", entitiesJSONObject);
-                    Representation representation = new JsonRepresentation(responseBody.toJSONString());
+                    Representation representation = new JsonRepresentation(responseBody.toString());
                     setStatus(Status.SUCCESS_OK);
                     return representation;
                 } catch (Exception e) {
@@ -209,7 +209,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     entitiesJSONObject.put("skip", skipValue);
                     entitiesJSONObject.put("limit", limitValue);
                     responseBody.put("entities", entitiesJSONObject);
-                    Representation representation = new JsonRepresentation(responseBody.toJSONString());
+                    Representation representation = new JsonRepresentation(responseBody.toString());
                     setStatus(Status.SUCCESS_OK);
                     return representation;
                 } catch (Exception e) {

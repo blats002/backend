@@ -22,6 +22,9 @@
 package com.divroll.domino.repository.jee;
 
 import com.divroll.domino.Constants;
+import com.divroll.domino.model.EmbeddedArrayIterable;
+import com.divroll.domino.model.EmbeddedEntityBinding;
+import com.divroll.domino.model.EmbeddedEntityIterable;
 import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.xodus.XodusManager;
@@ -76,13 +79,21 @@ public class JeeEntityRepository implements EntityRepository {
                         Comparable value = comparableMap.get(key);
                         if (value == null) {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
-                                    && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
+                                    && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
+                                    && !key.equals(Constants.ACL_WRITE)
+                                    && !key.equals(Constants.ACL_READ)) {
                                entity.deleteProperty(key);
                             }
                         } else {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
-                                    && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
-                                // TODO: If value is JSONObject create a new Entity and link it to this entity
+                                    && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
+                                    && !key.equals(Constants.ACL_WRITE)
+                                    && !key.equals(Constants.ACL_READ)
+                                    && !key.equals(Constants.BLOBNAMES)
+                                    && !key.equals(Constants.LINKS)) {
+//                                if(value instanceof EmbeddedEntityIterable) {
+//                                    LOG.info(value.toString());
+//                                }
                                 entity.setProperty(key, value);
                             }
                         }
@@ -217,7 +228,13 @@ public class JeeEntityRepository implements EntityRepository {
                     for (String property : entity.getPropertyNames()) {
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
-                            comparableMap.put(property, value);
+                            if(value instanceof EmbeddedEntityIterable) {
+                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                            } else if(value instanceof EmbeddedArrayIterable) {
+                                comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                            } else {
+                                comparableMap.put(property, value);
+                            }
                         }
                     }
 
@@ -560,8 +577,15 @@ public class JeeEntityRepository implements EntityRepository {
                         for (String property : entity.getPropertyNames()) {
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
-                                comparableMap.put(property, value);
-                            }
+                                if(value != null) {
+                                    if(value instanceof EmbeddedEntityIterable) {
+                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                    } else if(value instanceof EmbeddedArrayIterable) {
+                                        comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                    } else {
+                                        comparableMap.put(property, value);
+                                    }
+                                }                            }
                         }
 
                         List<String> aclRead = new LinkedList<>();

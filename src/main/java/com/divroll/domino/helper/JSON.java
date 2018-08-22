@@ -21,8 +21,10 @@
  */
 package com.divroll.domino.helper;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.divroll.domino.model.EmbeddedArrayIterable;
+import com.divroll.domino.model.EmbeddedEntityIterable;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -44,13 +46,13 @@ public class JSON {
             String k = it.next();
             try {
                 JSONObject jso = jsonObject.getJSONObject(k);
-                // TODO
+                comparableMap.put(k, new EmbeddedEntityIterable(jso));
             } catch (Exception e) {
 
             }
             try {
                 JSONArray jsa = jsonObject.getJSONArray(k);
-                // TODO
+                comparableMap.put(k, new EmbeddedArrayIterable(jsa));
             } catch (Exception e) {
 
             }

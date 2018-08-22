@@ -1,9 +1,15 @@
 package com.divroll.domino.xodus;
 
+import com.divroll.domino.model.EmbeddedArrayIterable;
+import com.divroll.domino.model.EmbeddedEntityBinding;
+import com.divroll.domino.model.EmbeddedEntityIterable;
 import jetbrains.exodus.entitystore.PersistentEntityStore;
 import jetbrains.exodus.entitystore.PersistentEntityStores;
+import jetbrains.exodus.entitystore.StoreTransaction;
+import jetbrains.exodus.entitystore.StoreTransactionalExecutable;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,7 +33,14 @@ public class XodusManagerImpl implements XodusManager {
     public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir) {
         PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
         if (entityStore == null) {
-            PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
+            final PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
+            store.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull StoreTransaction txn) {
+                    store.registerCustomPropertyType(txn, EmbeddedEntityIterable.class, EmbeddedEntityBinding.BINDING);
+                    store.registerCustomPropertyType(txn, EmbeddedArrayIterable.class, EmbeddedEntityBinding.BINDING);
+                }
+            });
             entityStoreMap.put(xodusRoot + dir, store);
         }
         PersistentEntityStore p = entityStoreMap.get(xodusRoot + dir);
