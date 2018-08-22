@@ -74,6 +74,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected Boolean publicRead;
     protected Boolean publicWrite;
 
+    protected String linkName;
+    protected String targetEntityId;
+
     @Inject
     ApplicationService applicationService;
 
@@ -97,6 +100,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
         blobName = getAttribute("blobName");
         userId = getAttribute(Constants.USER_ID);
         roleId = getAttribute(Constants.ROLE_ID);
+
+        linkName = getAttribute("linkName");
+        targetEntityId = getAttribute("targetEntityId");
 
         username = getQueryValue(Constants.QUERY_USERNAME);
         sort = getQueryValue("sort");
