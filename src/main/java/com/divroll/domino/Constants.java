@@ -39,6 +39,7 @@ public final class Constants {
     public static final String MASTER_KEY = "masterKey";
     public static final String API_KEY = "apiKey";
     public static final String APP_ID = "appId";
+    public static final String APP_NAME = "appName";
     public static final String ENTITY_ID = "entityId";
     public static final String ENTITY_TYPE = "entityType";
     public static final String USER_ID = "userId";

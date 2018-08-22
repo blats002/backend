@@ -80,6 +80,9 @@ public class JeeApplicationServerResource extends BaseServerResource
 
     @Override
     public Application getApp() {
+
+        String appName = getQueryValue("appName");
+
         Application application = new Application();
 
         String appId = UUID.randomUUID().toString().replace("-", "");
@@ -89,6 +92,9 @@ public class JeeApplicationServerResource extends BaseServerResource
         application.setAppId(appId);
         application.setApiKey(BCrypt.hashpw(apiKey, BCrypt.gensalt()));
         application.setMasterKey(BCrypt.hashpw(masterKey, BCrypt.gensalt()));
+        if(appName != null && !appName.isEmpty()) {
+            application.setAppName(appName);
+        }
 
         final EntityId id = applicationService.create(application);
         if (id != null) {

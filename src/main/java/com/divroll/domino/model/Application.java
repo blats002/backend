@@ -33,14 +33,13 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @XStreamAlias("application")
 @ApiModel
 public class Application {
-
     @ApiModelProperty(position = 0, required = false, value = "Auto-generated id")
     private String appId;
     @ApiModelProperty(required = true, value = "Generated Application Key")
     private String apiKey;
     @ApiModelProperty(required = true, value = "Generated Master Key")
     private String masterKey;
-
+    private String appName;
     public String getId() {
         return appId;
     }
@@ -73,4 +72,11 @@ public class Application {
         this.masterKey = masterKey;
     }
 
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
 }

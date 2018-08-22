@@ -52,6 +52,9 @@ public class JeeApplicationService implements ApplicationService {
         comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
         comparableMap.put(Constants.API_KEY, application.getApiKey());
         comparableMap.put(Constants.APP_ID, application.getAppId());
+        if(application.getAppName() != null) {
+            comparableMap.put(Constants.APP_NAME, application.getAppName());
+        }
         EntityId entityId = store.put(masterStore, Constants.ENTITYSTORE_APPLICATION, comparableMap);
         return entityId;
     }
@@ -67,6 +70,7 @@ public class JeeApplicationService implements ApplicationService {
                 application.setAppId((String) entityMap.get(Constants.APP_ID));
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
+                application.setAppName((String) entityMap.get(Constants.APP_NAME));
                 return application;
             }
         }
