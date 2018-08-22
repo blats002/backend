@@ -34,10 +34,6 @@ public class JeeLinkServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return;
-            }
 
             Application app = applicationService.read(appId);
             if (app == null) {
@@ -99,10 +95,6 @@ public class JeeLinkServerResource extends BaseServerResource
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return;
             }
 

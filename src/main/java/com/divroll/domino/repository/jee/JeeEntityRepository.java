@@ -57,6 +57,10 @@ public class JeeEntityRepository implements EntityRepository {
     String defaultRoleStore;
 
     @Inject
+    @Named("defaultUserStore")
+    String defaultUserStore;
+
+    @Inject
     RoleRepository roleRepository;
 
     @Inject
@@ -528,8 +532,68 @@ public class JeeEntityRepository implements EntityRepository {
     }
 
     @Override
-    public List<Map<String, Object>> getLinkedEntities(String instance, String storeName, String entityId, String linkName) {
-        return null;
+    public List<Map<String, Object>> getLinkedEntities(String instance, String storeName,
+                                                       final String entityId, final String linkName) {
+        final List<Map<String, Object>> entities = new LinkedList<Map<String, Object>>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    Entity txnEntity = txn.getEntity(idOfEntity);
+                    EntityIterable result = txnEntity.getLinks(Arrays.asList(new String[]{linkName}));
+                    for (Entity entity : result) {
+                        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+                        for (String property : entity.getPropertyNames()) {
+                            Comparable value = entity.getProperty(property);
+                            if(value != null) {
+                                if(value != null) {
+                                    if(value instanceof EmbeddedEntityIterable) {
+                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                    } else if(value instanceof EmbeddedArrayIterable) {
+                                        comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                    } else {
+                                        comparableMap.put(property, value);
+                                    }
+                                }                            }
+                        }
+
+                        List<String> aclRead = new LinkedList<>();
+                        List<String> aclWrite = new LinkedList<>();
+
+                        Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                        Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                        for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
+                            aclRead.add(aclReadLink.getId().toString());
+                        }
+
+                        for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
+                            aclWrite.add(aclWriteLink.getId().toString());
+                        }
+
+
+                        comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
+                        comparableMap.put(Constants.ACL_READ, aclRead);
+                        comparableMap.put(Constants.ACL_WRITE, aclWrite);
+                        comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
+                        comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                        comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
+                        if(entity.getType().equals(defaultUserStore)) {
+                            comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
+                        }
+                        comparableMap.put("entityType", entity.getType());
+                        entities.add(comparableMap);
+                    }
+                }
+            });
+        } finally {
+
+        }
+        return entities;
     }
 
     @Override
@@ -609,7 +673,9 @@ public class JeeEntityRepository implements EntityRepository {
                         comparableMap.put(Constants.LINKS, entity.getLinkNames());
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
-
+                        if(entity.getType().equals(defaultUserStore)) {
+                            comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
+                        }
                         entities.add(comparableMap);
                     }
                 }

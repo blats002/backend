@@ -37,10 +37,6 @@ public class JeeLinksServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
 
             Application app = applicationService.read(appId);
             if (app == null) {
@@ -62,9 +58,8 @@ public class JeeLinksServerResource extends BaseServerResource
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
 
-            if(map != null) {
+            if(map == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-
             } else {
                 List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
                         ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
