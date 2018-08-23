@@ -28,10 +28,14 @@ import com.divroll.domino.repository.EntityRepository;
 import com.divroll.domino.repository.RoleRepository;
 import com.divroll.domino.resource.BlobResource;
 import com.divroll.domino.service.WebTokenService;
+import com.google.common.io.BaseEncoding;
+import com.google.common.io.ByteSource;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import org.restlet.data.Status;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -73,6 +77,8 @@ public class JeeBlobServerResource extends BaseServerResource
                 return;
             }
 
+            String encoding = getQueryValue("encoding");
+
             String authUserId = null;
 
             boolean isWriteAccess = false;
@@ -108,11 +114,23 @@ public class JeeBlobServerResource extends BaseServerResource
 
             if (isMaster || isWriteAccess || isPublic) {
                 // TODO: Compress stream
-                if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, entity.getStream())) {
-                    setStatus(Status.SUCCESS_CREATED);
+                if(encoding != null && encoding.equals("base64")) {
+                    String base64 = entity.getText();
+                    byte[] bytes = BaseEncoding.base64().decode(base64);
+                    InputStream inputStream = ByteSource.wrap(bytes).openStream();
+                    if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, inputStream)) {
+                        setStatus(Status.SUCCESS_CREATED);
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
                 } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, entity.getStream())) {
+                        setStatus(Status.SUCCESS_CREATED);
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
                 }
+
             } else {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             }
@@ -236,16 +254,33 @@ public class JeeBlobServerResource extends BaseServerResource
                 }
             }
 
+            String encoding = getQueryValue("encoding");
+
             if (isMaster || isWriteAccess || isPublic) {
                 InputStream is = entityRepository.getEntityBlob(appId, entityType, entityId, blobName);
-                if (is == null) {
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    return null;
+
+                if(encoding != null && encoding.equals("base64")) {
+                    if (is == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    } else {
+                        String base64 = BaseEncoding.base64().encode(ByteStreams.toByteArray(is));
+                        Representation representation = new StringRepresentation(base64);
+                        setStatus(Status.SUCCESS_OK);
+                        return representation;
+                    }
                 } else {
-                    Representation representation = new InputRepresentation(is);
-                    setStatus(Status.SUCCESS_OK);
-                    return representation;
+                    if (is == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    } else {
+                        Representation representation = new InputRepresentation(is);
+                        setStatus(Status.SUCCESS_OK);
+                        return representation;
+                    }
                 }
+
+
             } else {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             }
