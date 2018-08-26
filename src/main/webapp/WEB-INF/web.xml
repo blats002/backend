@@ -11,7 +11,7 @@
         <servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
         <init-param>
             <param-name>org.restlet.application</param-name>
-            <param-value>com.divroll.domino.DominoApplication</param-value>
+            <param-value>com.divroll.domino.DivrollApplication</param-value>
         </init-param>
     </servlet>
 

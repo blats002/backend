@@ -38,7 +38,7 @@ import java.net.URL;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DominoApplicationTest {
+public class DivrollApplicationTest {
     @Deployment
     public static WebArchive createDeployment() {
 
@@ -51,7 +51,7 @@ public class DominoApplicationTest {
                 .asFile();
         // Create deploy file
         WebArchive war = ShrinkWrap.create(WebArchive.class)
-                .addClass(DominoApplication.class)
+                .addClass(DivrollApplication.class)
                 .addAsLibraries(files);
 
         // Show the deploy structure

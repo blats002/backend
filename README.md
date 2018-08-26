@@ -1,6 +1,6 @@
-## Domino - a Key-Value BaaS (Backend as a Service) Server
+## Divroll Backend - run your own BaaS
 
-Domino is a Key-Value "Backend-as-a-Service" Server  
+Divroll Backend Server is
 built on top of [Jetbrains Xodus](https://github.com/JetBrains/xodus). 
 
 It is still in a very early stage but basic features are available. 
@@ -9,7 +9,7 @@ The usage is very simple and requires no configuration.
 
 ### Deploy 
 
-To run your own Domino Server, simply execute these commands:
+To run your own Divroll Backend Server, simply execute these commands:
 
 ```$xslt
 mvn jetty:run
@@ -22,11 +22,11 @@ If you are deploying to a Jetty server or Tomcat server, please refer to their w
 
 #### Create a new Application
 
-In order to store key/values to Domino, create a application:
+In order to store key/values or entities to Divroll, create a application:
 
 ```$xslt
 curl -X GET \
-  http://localhost:8080/domino/applications
+  http://localhost:8080/divroll/applications
 ```
 
 Take note of the response as it cannot be retrieved again, response
@@ -51,11 +51,11 @@ be changed (by design for performance.)
 
 ```$xslt
 curl -X POST \
-  http://localhost:8080/domino/entities/messages/hello \
-  -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -H 'X-Domino-ACL-Read: ['\''*'\'']' \
-  -H 'X-Domino-ACL-Write: ['\''*'\'']' \
+  http://localhost:8080/divroll/entities/messages/hello \
+  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
+  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
+  -H 'X-Divroll-ACL-Read: ['\''*'\'']' \
+  -H 'X-Divroll-ACL-Write: ['\''*'\'']' \
   -d world
 ```
 
@@ -63,20 +63,20 @@ curl -X POST \
 
 ```$xslt
 curl -X PUT \
-  http://localhost:8080/domino/entities/messages/hello \
-  -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -H 'X-Domino-ACL-Read: ['\''*'\'']' \
-  -H 'X-Domino-ACL-Write: ['\''*'\'']' \
+  http://localhost:8080/divroll/entities/messages/hello \
+  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
+  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
+  -H 'X-Divroll-ACL-Read: ['\''*'\'']' \
+  -H 'X-Divroll-ACL-Write: ['\''*'\'']' \
   -d world again
 ```
 
 #### Get an Entity
 ```$xslt
 curl -X GET \
-  http://localhost:8080/domino/entities/messages/hello \
-  -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b'
+  http://localhost:8080/divroll/entities/messages/hello \
+  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
+  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b'
 ```
 
 #### Changing the masterKey and apiKey
@@ -85,8 +85,8 @@ curl -X GET \
 curl -X PUT \
   https://domino-server.appspot.com/domino/applications \
   -H 'Content-Type: application/json' \
-  -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -H 'X-Domino-Master-Key: cb95cc6105844b5e1237f3a8cd1f4caa' \
+  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
+  -H 'X-Divroll-Master-Key: cb95cc6105844b5e1237f3a8cd1f4caa' \
   -d '{
     "application": {
         "apiKey": "NEW_API_KEY",
@@ -101,10 +101,10 @@ curl -X PUT \
 
 ```$xslt
 curl -X POST \
-  http://localhost:8080/domino/entities/users \
+  http://localhost:8080/divroll/entities/users \
   -H 'Content-Type: application/json' \
-  -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
+  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
+  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -d '{
       	"user": {
       		"username": "user",
@@ -114,7 +114,7 @@ curl -X POST \
       }'
 ```
 
-Example response will be a token that can be used as `X-Domino-Auth-Token` for future
+Example response will be a token that can be used as `X-Divroll-Auth-Token` for future
 HTTP request:
 
 ```
@@ -129,11 +129,11 @@ HTTP request:
 #### Update a User
 ```$xslt
 curl -X POST \
-  http://localhost:8080/domino/entities/users \
+  http://localhost:8080/divroll/entities/users \
   -H 'Content-Type: application/json' \
-  -H 'X-Domino-Auth-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9' \
-  -H 'X-Domino-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Domino-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
+  -H 'X-Divroll-Auth-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9' \
+  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
+  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -d '{
       	"user": {
       		"username": "newuser",
@@ -155,10 +155,11 @@ Example reponse will be like this:
 ```
 #### Delete a User
 
+##### TODO
 
 ### Features
 
-Any type of entity can be stored to Domino, texts, images or anything
+Any type of entity can be stored to Divroll, texts, images or anything
 that can be saved. 
 
 Each entity stored contains a ACL (Access-Control-List) to control which 

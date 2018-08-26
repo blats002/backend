@@ -27,13 +27,13 @@ package com.divroll.domino;
  * @since 0-SNAPSHOT
  */
 public final class Constants {
-    public static final String SERVER_NAME = "Domino";
-    public static final String HEADER_MASTER_KEY = "X-Domino-Master-Key";
-    public static final String HEADER_API_KEY = "X-Domino-Api-Key";
-    public static final String HEADER_APP_ID = "X-Domino-App-Id";
-    public static final String HEADER_AUTH_TOKEN = "X-Domino-Auth-Token";
-    public static final String HEADER_ACL_READ = "X-Domino-ACL-Read";
-    public static final String HEADER_ACL_WRITE = "X-Domino-ACL-Write";
+    public static final String SERVER_NAME = "Divroll";
+    public static final String HEADER_MASTER_KEY = "X-Divroll-Master-Key";
+    public static final String HEADER_API_KEY = "X-Divroll-Api-Key";
+    public static final String HEADER_APP_ID = "X-Divroll-App-Id";
+    public static final String HEADER_AUTH_TOKEN = "X-Divroll-Auth-Token";
+    public static final String HEADER_ACL_READ = "X-Divroll-ACL-Read";
+    public static final String HEADER_ACL_WRITE = "X-Divroll-ACL-Write";
     public static final String HEADER_ACCEPT = "Accept";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String MASTER_KEY = "masterKey";

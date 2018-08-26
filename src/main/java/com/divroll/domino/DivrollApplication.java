@@ -45,12 +45,12 @@ import java.util.logging.Logger;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class DominoApplication extends Application {
+public class DivrollApplication extends Application {
 
     private static final Logger LOG
-            = Logger.getLogger(DominoApplication.class.getName());
+            = Logger.getLogger(DivrollApplication.class.getName());
     private static final String ROOT_URI = "/";
-    private static final String DOMINO_ROOT_URI = "/domino/";
+    private static final String DOMINO_ROOT_URI = "/divroll/";
 
     /**
      * Creates a root Restlet that will receive all incoming calls.
