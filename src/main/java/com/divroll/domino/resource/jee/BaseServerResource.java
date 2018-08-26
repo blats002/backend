@@ -54,6 +54,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
             = Logger.getLogger(BaseServerResource.class.getName());
     protected Map<String, Object> queryMap = new LinkedHashMap<>();
     protected Map<String, String> propsMap = new LinkedHashMap<>();
+    protected String appName;
     protected String entityId;
     protected String entityType;
     protected String blobName;
@@ -118,6 +119,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         accept = headers.getFirstValue(Constants.HEADER_ACCEPT);
         contentType = headers.getFirstValue(Constants.HEADER_CONTENT_TYPE);
+
+        appName = getAttribute("appName");
 
         try {
             skip = Integer.valueOf(getQueryValue(Constants.QUERY_SKIP));

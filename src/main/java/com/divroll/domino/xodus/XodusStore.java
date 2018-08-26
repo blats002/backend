@@ -23,6 +23,7 @@ package com.divroll.domino.xodus;
 
 import jetbrains.exodus.entitystore.EntityId;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,4 +56,7 @@ public interface XodusStore {
 
     public <T> EntityId getFirstEntityId(String dir, final String kind, final String propertyKey,
                                          Comparable<T> propertyVal, Class<T> clazz);
+
+    public List<Map<String, Comparable>> list(String dir, final String entityType);
+
 }

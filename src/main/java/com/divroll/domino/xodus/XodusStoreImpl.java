@@ -300,5 +300,30 @@ public class XodusStoreImpl implements XodusStore {
         return entityId[0];
     }
 
+    @Override
+    public List<Map<String, Comparable>> list(String dir, final String entityType) {
+        List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable result = txn.getAll(entityType);
+                    for(Entity entity : result) {
+                        Map<String, Comparable> map = new LinkedHashMap<>();
+                        List<String> props = entity.getPropertyNames();
+                        for (String prop : props) {
+                            map.put(prop, entity.getProperty(prop));
+                        }
+                        list.add(map);
+                    }
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return list;
+    }
+
 
 }

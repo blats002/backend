@@ -30,6 +30,8 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,6 +93,23 @@ public class JeeApplicationService implements ApplicationService {
     @Override
     public void delete(String entityId) {
         store.delete(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId);
+    }
+
+    @Override
+    public List<Application> list() {
+        List<Application> apps = new LinkedList<>();
+        List<Map<String,Comparable>> list = store.list(masterStore, Constants.ENTITYSTORE_APPLICATION);
+        for(Map entityMap : list) {
+            if (entityMap != null) {
+                Application application = new Application();
+                application.setAppId((String) entityMap.get(Constants.APP_ID));
+                application.setApiKey((String) entityMap.get(Constants.API_KEY));
+                application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
+                application.setAppName((String) entityMap.get(Constants.APP_NAME));
+                apps.add(application);
+            }
+        }
+        return apps;
     }
 
 }

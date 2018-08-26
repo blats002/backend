@@ -81,7 +81,14 @@ public class JeeApplicationServerResource extends BaseServerResource
     @Override
     public Application getApp() {
 
-        String appName = getQueryValue("appName");
+        if(appName == null) {
+            appName = getQueryValue("appName");
+        }
+
+        if(appName == null) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return null;
+        }
 
         Application application = new Application();
 
@@ -103,6 +110,7 @@ public class JeeApplicationServerResource extends BaseServerResource
                 application.setAppId(appId);
                 application.setApiKey(apiKey);
                 application.setMasterKey(masterKey);
+                application.setAppName(appName);
                 setStatus(Status.SUCCESS_OK);
                 return application;
             }

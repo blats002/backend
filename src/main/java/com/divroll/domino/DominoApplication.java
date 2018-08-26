@@ -77,7 +77,8 @@ public class DominoApplication extends Application {
                 Constants.HEADER_CONTENT_TYPE));
         corsFilter.setAllowedCredentials(true);
 
-        router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationServerResource.class); // TODO: Rename to directories
+        router.attach(DOMINO_ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
+        router.attach(DOMINO_ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
         router.attach(DOMINO_ROOT_URI + "entities/users", JeeUsersServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/users/login", JeeUserServerResource.class);
         router.attach(DOMINO_ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);

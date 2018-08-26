@@ -19,10 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.domino.service;
+package com.divroll.domino.model;
 
-import com.divroll.domino.model.Application;
-import jetbrains.exodus.entitystore.EntityId;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import com.wordnik.swagger.annotations.ApiModel;
 
 import java.util.List;
 
@@ -31,15 +32,35 @@ import java.util.List;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface ApplicationService {
-    EntityId create(Application user);
+@XStreamAlias("applications")
+@ApiModel
+public class Applications {
+  @XStreamImplicit(itemFieldName = "results")
+  private List<Application> results;
+  private long skip;
+  private long limit;
 
-    Application read(String appId);
+  public List<Application> getResults() {
+    return results;
+  }
 
-    void update(Application user, String masterKey);
+  public void setResults(List<Application> results) {
+    this.results = results;
+  }
 
-    void delete(String id);
+  public long getSkip() {
+    return skip;
+  }
 
-    List<Application> list();
+  public void setSkip(long skip) {
+    this.skip = skip;
+  }
 
+  public long getLimit() {
+    return limit;
+  }
+
+  public void setLimit(long limit) {
+    this.limit = limit;
+  }
 }
