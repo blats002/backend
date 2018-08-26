@@ -4,7 +4,7 @@
 
     <servlet>
         <servlet-name>TestServlet</servlet-name>
-        <servlet-class>com.divroll.domino.TestServlet</servlet-class>
+        <servlet-class>com.divroll.roll.TestServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>

@@ -26,7 +26,7 @@ In order to store key/values or entities to Divroll, create a application:
 
 ```$xslt
 curl -X GET \
-  http://localhost:8080/divroll/applications
+  http://localhost:8080/thing/applications
 ```
 
 Take note of the response as it cannot be retrieved again, response
@@ -51,7 +51,7 @@ be changed (by design for performance.)
 
 ```$xslt
 curl -X POST \
-  http://localhost:8080/divroll/entities/messages/hello \
+  http://localhost:8080/thing/entities/messages/hello \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
   -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -H 'X-Divroll-ACL-Read: ['\''*'\'']' \
@@ -63,7 +63,7 @@ curl -X POST \
 
 ```$xslt
 curl -X PUT \
-  http://localhost:8080/divroll/entities/messages/hello \
+  http://localhost:8080/thing/entities/messages/hello \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
   -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -H 'X-Divroll-ACL-Read: ['\''*'\'']' \
@@ -74,7 +74,7 @@ curl -X PUT \
 #### Get an Entity
 ```$xslt
 curl -X GET \
-  http://localhost:8080/divroll/entities/messages/hello \
+  http://localhost:8080/thing/entities/messages/hello \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
   -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b'
 ```
@@ -83,7 +83,7 @@ curl -X GET \
 
 ```$xslt
 curl -X PUT \
-  https://domino-server.appspot.com/domino/applications \
+  https://localhost:8080/thing/applications \
   -H 'Content-Type: application/json' \
   -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
   -H 'X-Divroll-Master-Key: cb95cc6105844b5e1237f3a8cd1f4caa' \
@@ -101,7 +101,7 @@ curl -X PUT \
 
 ```$xslt
 curl -X POST \
-  http://localhost:8080/divroll/entities/users \
+  http://localhost:8080/thing/entities/users \
   -H 'Content-Type: application/json' \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
   -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
@@ -129,7 +129,7 @@ HTTP request:
 #### Update a User
 ```$xslt
 curl -X POST \
-  http://localhost:8080/divroll/entities/users \
+  http://localhost:8080/thing/entities/users \
   -H 'Content-Type: application/json' \
   -H 'X-Divroll-Auth-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9' \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
