@@ -22,7 +22,10 @@
 package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
+import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.model.Application;
+import com.divroll.roll.model.EntityStub;
 import com.divroll.roll.model.Role;
 import com.divroll.roll.model.Roles;
 import com.divroll.roll.repository.RoleRepository;
@@ -116,8 +119,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 return null;
             }
 
-            List<String> aclReadList = entity.getAclRead();
-            List<String> aclWriteList = entity.getAclWrite();
+            List<EntityStub> aclReadList = entity.getAclRead();
+            List<EntityStub> aclWriteList = entity.getAclWrite();
 
             if (aclReadList == null) {
                 aclReadList = new LinkedList<>();
@@ -127,7 +130,7 @@ public class JeeRolesServerReource extends BaseServerResource
                 aclWriteList = new LinkedList<>();
             }
 
-            if (aclReadList.contains("") || aclWriteList.contains("")) {
+            if (ACLHelper.contains("", aclReadList) || ACLHelper.contains("", aclWriteList)) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Invalid ACL");
                 return null;
             }
@@ -138,12 +141,11 @@ public class JeeRolesServerReource extends BaseServerResource
             if (aclRead != null && !(aclRead.length() == 0)) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (!aclReadList.contains(jsonArray.getString(i))) {
-                            aclReadList.add(jsonArray.getString(i));
-                        }
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                    read = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -152,12 +154,11 @@ public class JeeRolesServerReource extends BaseServerResource
             if (aclWrite != null && !(aclWrite.length() == 0)) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (!aclWriteList.contains(jsonArray.getString(i))) {
-                            aclWriteList.add(jsonArray.getString(i));
-                        }
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                    write = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -175,8 +176,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 Role role = new Role();
                 role.setName(roleName);
                 role.setEntityId(roleId);
-                role.setAclRead(Arrays.asList(read));
-                role.setAclWrite(Arrays.asList(write));
+                role.setAclWrite(ACLHelper.convert(write));
+                role.setAclRead(ACLHelper.convert(read));
                 role.setPublicRead(publicRead);
                 role.setPublicWrite(publicWrite);
                 return role;

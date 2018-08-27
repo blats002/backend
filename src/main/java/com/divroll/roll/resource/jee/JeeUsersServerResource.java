@@ -23,6 +23,7 @@ package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.helper.DTOHelper;
 import com.divroll.roll.helper.ObjectLogger;
 import com.divroll.roll.model.*;
@@ -119,14 +120,11 @@ public class JeeUsersServerResource extends BaseServerResource
             if (aclRead != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    List<String> aclReadList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (jsonArray.getString(i).isEmpty()) {
-                            continue;
-                        }
-                        aclReadList.add(jsonArray.getString(i));
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                    read = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -135,14 +133,11 @@ public class JeeUsersServerResource extends BaseServerResource
             if (aclWrite != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    List<String> aclWriteList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (jsonArray.getString(i).isEmpty()) {
-                            continue;
-                        }
-                        aclWriteList.add(jsonArray.getString(i));
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                    write = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -175,8 +170,8 @@ public class JeeUsersServerResource extends BaseServerResource
                         user.setWebToken(webToken);
                         user.setPublicRead(publicRead);
                         user.setPublicWrite(publicWrite);
-                        user.setAclWrite(Arrays.asList(write));
-                        user.setAclRead(Arrays.asList(read));
+                        user.setAclWrite(ACLHelper.convert(write));
+                        user.setAclRead(ACLHelper.convert(read));
                         for (Object roleId : Arrays.asList(roleArray)) {
                             user.getRoles().add(new Role((String) roleId));
                         }

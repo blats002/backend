@@ -23,6 +23,7 @@ package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.model.Application;
 import com.divroll.roll.model.Role;
 import com.divroll.roll.repository.RoleRepository;
@@ -144,11 +145,11 @@ public class JeeRoleServerResource extends BaseServerResource
             if (aclRead != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    List<String> aclReadList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        aclReadList.add(jsonArray.getString(i));
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                    read = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -157,11 +158,11 @@ public class JeeRoleServerResource extends BaseServerResource
             if (aclWrite != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    List<String> aclWriteList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        aclWriteList.add(jsonArray.getString(i));
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                    write = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -198,8 +199,8 @@ public class JeeRoleServerResource extends BaseServerResource
                     Role role = new Role();
                     role.setName(newRoleName);
                     role.setEntityId(roleId);
-                    role.setAclWrite(Arrays.asList(write));
-                    role.setAclRead(Arrays.asList(read));
+                    role.setAclWrite(ACLHelper.convert(write));
+                    role.setAclRead(ACLHelper.convert(read));
                     role.setPublicRead(publicRead);
                     role.setPublicWrite(publicWrite);
                     return role;

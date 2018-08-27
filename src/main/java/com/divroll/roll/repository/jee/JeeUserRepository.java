@@ -22,6 +22,7 @@
 package com.divroll.roll.repository.jee;
 
 import com.divroll.roll.Constants;
+import com.divroll.roll.model.EntityStub;
 import com.divroll.roll.model.Role;
 import com.divroll.roll.model.User;
 import com.divroll.roll.repository.UserRepository;
@@ -205,15 +206,15 @@ public class JeeUserRepository implements UserRepository {
                             role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
                             role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
 
-                            List<String> aclRead = new LinkedList<>();
-                            List<String> aclWrite = new LinkedList<>();
+                            List<EntityStub> aclRead = new LinkedList<>();
+                            List<EntityStub> aclWrite = new LinkedList<>();
 
                             for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
-                                aclRead.add(aclReadLink.getId().toString());
+                                aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                             }
 
                             for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
-                                aclWrite.add(aclWriteLink.getId().toString());
+                                aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                             }
 
                             role.setAclRead(aclRead);
@@ -222,18 +223,18 @@ public class JeeUserRepository implements UserRepository {
                         }
 
 
-                        List<String> aclRead = new LinkedList<>();
-                        List<String> aclWrite = new LinkedList<>();
                         List<Role> roles = new LinkedList<>();
 
+                        List<EntityStub> aclRead = new LinkedList<>();
+                        List<EntityStub> aclWrite = new LinkedList<>();
+
                         for (Entity aclReadLink : userEntity.getLinks(Constants.ACL_READ)) {
-                            aclRead.add(aclReadLink.getId().toString());
+                            aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
                         for (Entity aclWriteLink : userEntity.getLinks(Constants.ACL_WRITE)) {
-                            aclWrite.add(aclWriteLink.getId().toString());
+                            aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
-
                         user.setAclRead(aclRead);
                         user.setAclWrite(aclWrite);
 
@@ -364,15 +365,15 @@ public class JeeUserRepository implements UserRepository {
                             role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
                             role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
 
-                            List<String> aclRead = new LinkedList<>();
-                            List<String> aclWrite = new LinkedList<>();
+                            List<EntityStub> aclRead = new LinkedList<>();
+                            List<EntityStub> aclWrite = new LinkedList<>();
 
                             for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
-                                aclRead.add(aclReadLink.getId().toString());
+                                aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                             }
 
                             for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
-                                aclWrite.add(aclWriteLink.getId().toString());
+                                aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                             }
 
                             role.setAclRead(aclRead);
@@ -380,15 +381,15 @@ public class JeeUserRepository implements UserRepository {
                             user.getRoles().add(role);
                         }
 
-                        List<String> aclRead = new LinkedList<>();
-                        List<String> aclWrite = new LinkedList<>();
+                        List<EntityStub> aclRead = new LinkedList<>();
+                        List<EntityStub> aclWrite = new LinkedList<>();
 
                         for (Entity aclReadLink : userEntity.getLinks(Constants.ACL_READ)) {
-                            aclRead.add(aclReadLink.getId().toString());
+                            aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
                         for (Entity aclWriteLink : userEntity.getLinks(Constants.ACL_WRITE)) {
-                            aclWrite.add(aclWriteLink.getId().toString());
+                            aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 
                         user.setAclRead(aclRead);

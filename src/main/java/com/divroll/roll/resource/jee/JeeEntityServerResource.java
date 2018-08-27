@@ -24,8 +24,10 @@ package com.divroll.roll.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.helper.ObjectLogger;
 import com.divroll.roll.model.Application;
+import com.divroll.roll.model.EntityStub;
 import com.divroll.roll.model.Role;
 import com.divroll.roll.repository.EntityRepository;
 import com.divroll.roll.repository.RoleRepository;
@@ -111,14 +113,14 @@ public class JeeEntityServerResource extends BaseServerResource
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
                     ObjectLogger.log(entityObj);
-                    List<String> aclReadList = (List<String>) (entityObj.get("aclRead"));
+                    List<EntityStub> aclReadList = (List<EntityStub>) (entityObj.get("aclRead"));
                     publicRead = (Boolean) (entityObj).get(Constants.RESERVED_FIELD_PUBLICREAD);
-                    if (authUserId != null && aclReadList.contains(authUserId)) {
+                    if (authUserId != null && ACLHelper.contains(authUserId, aclReadList)) {
                         isAccess = true;
                     } else if(authUserId != null){
                         List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
                         for (Role role : roles) {
-                            if (aclReadList.contains(role.getEntityId())) {
+                            if (ACLHelper.contains(role.getEntityId(), aclReadList)) {
                                 isAccess = true;
                             }
                         }
@@ -220,12 +222,12 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if (aclRead != null) {
                     try {
-                        List<String> aclReadList = new LinkedList<>();
                         JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            aclReadList.add(jsonArray.getString(i));
+                        if(!ACLHelper.validate(jsonArray)) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                            return null;
                         }
-                        read = aclReadList.toArray(new String[aclReadList.size()]);
+                        read = ACLHelper.onlyIds(jsonArray);
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -233,18 +235,20 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if (aclWrite != null) {
                     try {
-                        List<String> aclWriteList = new LinkedList<>();
                         JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                        for (int i = 0; i < jsonArray.size(); i++) {
-                            aclWriteList.add(jsonArray.getString(i));
+                        if(!ACLHelper.validate(jsonArray)) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                            return null;
                         }
-                        write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                        write = ACLHelper.onlyIds(jsonArray);
                     } catch (Exception e) {
                         // do nothing
                     }
                 }
 
-                if (isMaster(appId, masterKey)) {
+                boolean isMaster = isMaster(appId, masterKey);
+
+                if (isMaster) {
                     if (!comparableMap.isEmpty()) {
                         boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                         if (success) {
@@ -256,7 +260,7 @@ public class JeeEntityServerResource extends BaseServerResource
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     }
                 } else {
-                    if (!isMaster(appId, masterKey)) {
+                    if (!isMaster) {
                         Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
                         String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                         if (entityMap == null) {
@@ -264,20 +268,21 @@ public class JeeEntityServerResource extends BaseServerResource
                         } else {
                             Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
                             Boolean authUserIdWriteAllow = false;
-                            if (entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+
+                            List<EntityStub> aclWriteList = new LinkedList<EntityStub>();
+                            if (entityMap.get(Constants.ACL_WRITE) != null) {
+                                aclWriteList = (List<EntityStub>) (entityMap.get(Constants.ACL_WRITE));
+                            }
+                            if (entityMap.get(Constants.ACL_WRITE) != null
+                                    && ACLHelper.contains(authUserId, aclWriteList)) {
                                 authUserIdWriteAllow = true;
                             }
-                            List<String> aclWriteList = new LinkedList<String>();
-                            if (entityMap.get(Constants.ACL_WRITE) != null) {
-                                aclWriteList = (List<String>) (entityMap.get(Constants.ACL_WRITE));
-                            }
-
-                            if (authUserId != null && aclWriteList.contains(authUserId)) {
+                            if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                                 authUserIdWriteAllow = true;
                             } else if (authUserId != null) {
                                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
                                 for (Role role : roles) {
-                                    if (aclWriteList.contains(role.getEntityId())) {
+                                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                                         authUserIdWriteAllow = true;
                                     }
                                 }
@@ -333,21 +338,22 @@ public class JeeEntityServerResource extends BaseServerResource
                     Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
                     Boolean authUserIdWriteAllow = false;
 
-                    if (entityMap.get(Constants.ACL_WRITE) != null && ((List<String>) entityMap.get(Constants.ACL_WRITE)).contains(authUserId)) {
+                    List<EntityStub> aclWriteList = new LinkedList<EntityStub>();
+                    if (entityMap.get(Constants.ACL_WRITE) != null) {
+                        aclWriteList = (List<EntityStub>) (entityMap.get(Constants.ACL_WRITE));
+                    }
+
+                    if (entityMap.get(Constants.ACL_WRITE) != null
+                            && ACLHelper.contains(authUserId, aclWriteList)) {
                         authUserIdWriteAllow = true;
                     }
 
-                    List<String> aclWriteList = new LinkedList<String>();
-                    if (entityMap.get(Constants.ACL_WRITE) != null) {
-                        aclWriteList = (List<String>) (entityMap.get(Constants.ACL_WRITE));
-                    }
-
-                    if (authUserId != null && aclWriteList.contains(authUserId)) {
+                    if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                         isAccess = true;
                     } else if (authUserId != null) {
                         List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
                         for (Role role : roles) {
-                            if (aclWriteList.contains(role.getEntityId())) {
+                            if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                                 isAccess = true;
                             }
                         }

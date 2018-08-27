@@ -52,10 +52,10 @@ public class User {
 
     @XStreamImplicit(itemFieldName = "aclRead")
     @ApiModelProperty(required = false, value = "")
-    private List<String> aclRead;
+    private List<EntityStub> aclRead;
     @XStreamImplicit(itemFieldName = "aclWrite")
     @ApiModelProperty(required = false, value = "")
-    private List<String> aclWrite;
+    private List<EntityStub> aclWrite;
     @ApiModelProperty(required = false, value = "")
     private Boolean publicRead;
     @ApiModelProperty(required = false, value = "")
@@ -105,19 +105,19 @@ public class User {
         this.roles = roles;
     }
 
-    public List<String> getAclRead() {
+    public List<EntityStub> getAclRead() {
         return aclRead;
     }
 
-    public void setAclRead(List<String> aclRead) {
+    public void setAclRead(List<EntityStub> aclRead) {
         this.aclRead = aclRead;
     }
 
-    public List<String> getAclWrite() {
+    public List<EntityStub> getAclWrite() {
         return aclWrite;
     }
 
-    public void setAclWrite(List<String> aclWrite) {
+    public void setAclWrite(List<EntityStub> aclWrite) {
         this.aclWrite = aclWrite;
     }
 

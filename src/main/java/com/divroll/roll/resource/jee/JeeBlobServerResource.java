@@ -22,7 +22,9 @@
 package com.divroll.roll.resource.jee;
 
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.model.Application;
+import com.divroll.roll.model.EntityStub;
 import com.divroll.roll.model.Role;
 import com.divroll.roll.repository.EntityRepository;
 import com.divroll.roll.repository.RoleRepository;
@@ -92,8 +94,8 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
-            List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
-                    ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
+            List<EntityStub> aclWriteList = map.get(Constants.ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
 
             if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
@@ -101,12 +103,12 @@ public class JeeBlobServerResource extends BaseServerResource
 
             if (isMaster(appId, masterKey)) {
                 isMaster = true;
-            } else if (authUserId != null && aclWriteList.contains(authUserId)) {
+            } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
             } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
                 for (Role role : roles) {
-                    if (aclWriteList.contains(role.getEntityId())) {
+                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                         isWriteAccess = true;
                     }
                 }
@@ -172,8 +174,8 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
-            List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
-                    ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
+            List<EntityStub> aclWriteList = map.get(Constants.ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
 
             if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
@@ -181,12 +183,12 @@ public class JeeBlobServerResource extends BaseServerResource
 
             if (isMaster(appId, masterKey)) {
                 isMaster = true;
-            } else if (authUserId != null && aclWriteList.contains(authUserId)) {
+            } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
             } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
                 for (Role role : roles) {
-                    if (aclWriteList.contains(role.getEntityId())) {
+                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                         isWriteAccess = true;
                     }
                 }
@@ -234,8 +236,8 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
-            List<String> aclWriteList = map.get(Constants.ACL_WRITE) != null
-                    ? (List<String>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
+            List<EntityStub> aclWriteList = map.get(Constants.ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
 
             if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
@@ -243,12 +245,12 @@ public class JeeBlobServerResource extends BaseServerResource
 
             if (isMaster(appId, masterKey)) {
                 isMaster = true;
-            } else if (authUserId != null && aclWriteList.contains(authUserId)) {
+            } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
             } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
                 for (Role role : roles) {
-                    if (aclWriteList.contains(role.getEntityId())) {
+                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                         isWriteAccess = true;
                     }
                 }

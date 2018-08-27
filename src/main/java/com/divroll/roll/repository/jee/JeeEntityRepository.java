@@ -24,6 +24,7 @@ package com.divroll.roll.repository.jee;
 import com.divroll.roll.Constants;
 import com.divroll.roll.model.EmbeddedArrayIterable;
 import com.divroll.roll.model.EmbeddedEntityIterable;
+import com.divroll.roll.model.EntityStub;
 import com.divroll.roll.repository.EntityRepository;
 import com.divroll.roll.repository.RoleRepository;
 import com.divroll.roll.xodus.XodusManager;
@@ -241,8 +242,8 @@ public class JeeEntityRepository implements EntityRepository {
                         }
                     }
 
-                    List<String> aclRead = new LinkedList<>();
-                    List<String> aclWrite = new LinkedList<>();
+                    List<EntityStub> aclRead = new LinkedList<>();
+                    List<EntityStub> aclWrite = new LinkedList<>();
 
                     Comparable comparablePublicRead = entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     Comparable comparablePublicWrite = entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
@@ -259,11 +260,11 @@ public class JeeEntityRepository implements EntityRepository {
                     }
 
                     for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
-                        aclRead.add(aclReadLink.getId().toString());
+                        aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                     }
 
                     for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
-                        aclWrite.add(aclWriteLink.getId().toString());
+                        aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
                     comparableMap.put(Constants.ENTITY_ID, idOfEntity.toString());
                     comparableMap.put(Constants.ACL_READ, aclRead);

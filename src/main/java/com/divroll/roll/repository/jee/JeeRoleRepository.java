@@ -22,6 +22,7 @@
 package com.divroll.roll.repository.jee;
 
 import com.divroll.roll.Constants;
+import com.divroll.roll.model.EntityStub;
 import com.divroll.roll.model.Role;
 import com.divroll.roll.repository.RoleRepository;
 import com.divroll.roll.xodus.XodusManager;
@@ -178,15 +179,15 @@ public class JeeRoleRepository implements RoleRepository {
                     role.setPublicRead(publicRead);
                     role.setPublicWrite(publicWrite);
 
-                    List<String> aclRead = new LinkedList<>();
-                    List<String> aclWrite = new LinkedList<>();
+                    List<EntityStub> aclRead = new LinkedList<>();
+                    List<EntityStub> aclWrite = new LinkedList<>();
 
                     for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
-                        aclRead.add(aclReadLink.getId().toString());
+                        aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                     }
 
                     for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
-                        aclWrite.add(aclWriteLink.getId().toString());
+                        aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
 
                     role.setAclRead(aclRead);
@@ -330,15 +331,15 @@ public class JeeRoleRepository implements RoleRepository {
                         role.setPublicRead((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
                         role.setPublicWrite((Boolean) roleEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
 
-                        List<String> aclRead = new LinkedList<>();
-                        List<String> aclWrite = new LinkedList<>();
+                        List<EntityStub> aclRead = new LinkedList<>();
+                        List<EntityStub> aclWrite = new LinkedList<>();
 
                         for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
-                            aclRead.add(aclReadLink.getId().toString());
+                            aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
                         for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
-                            aclWrite.add(aclWriteLink.getId().toString());
+                            aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 
                         role.setAclRead(aclRead);

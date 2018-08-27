@@ -23,6 +23,7 @@ package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.model.Application;
 import com.divroll.roll.model.exception.ACLException;
 import com.divroll.roll.resource.KeyValueResource;
@@ -156,11 +157,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
             if (aclRead != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    List<String> aclReadList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        aclReadList.add(jsonArray.getString(i));
-                    }
-                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                    read = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -240,11 +237,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
             if (aclRead != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    List<String> aclReadList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        aclReadList.add(jsonArray.getString(i));
-                    }
-                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                    read = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }

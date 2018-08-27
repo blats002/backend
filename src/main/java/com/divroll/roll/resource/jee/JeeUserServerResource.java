@@ -23,6 +23,7 @@ package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.helper.DTOHelper;
 import com.divroll.roll.helper.ObjectLogger;
 import com.divroll.roll.model.*;
@@ -181,14 +182,11 @@ public class JeeUserServerResource extends BaseServerResource implements
             if (aclRead != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    List<String> aclReadList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (jsonArray.getString(i).isEmpty()) {
-                            continue;
-                        }
-                        aclReadList.add(jsonArray.getString(i));
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    read = aclReadList.toArray(new String[aclReadList.size()]);
+                    read = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -197,14 +195,11 @@ public class JeeUserServerResource extends BaseServerResource implements
             if (aclWrite != null) {
                 try {
                     JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    List<String> aclWriteList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (jsonArray.getString(i).isEmpty()) {
-                            continue;
-                        }
-                        aclWriteList.add(jsonArray.getString(i));
+                    if(!ACLHelper.validate(jsonArray)) {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                        return null;
                     }
-                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                    write = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -230,8 +225,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                     resultUser.setEntityId(userId);
                     resultUser.setUsername(newUsername);
                     resultUser.setPassword(null);
-                    resultUser.setAclRead(Arrays.asList(read));
-                    resultUser.setAclWrite(Arrays.asList(write));
+                    resultUser.setAclRead(ACLHelper.convert(read));
+                    resultUser.setAclWrite(ACLHelper.convert(write));
                     resultUser.setPublicRead(publicRead);
                     resultUser.setPublicWrite(publicWrite);
                     for (Object roleId : Arrays.asList(roleArray)) {
@@ -253,11 +248,11 @@ public class JeeUserServerResource extends BaseServerResource implements
                         final User authUser = userRepository.getUser(appId, storeName, authUserId);
                         for (Role role : authUser.getRoles()) {
                             String roleId = role.getEntityId();
-                            if (user.getAclWrite().contains(roleId)) {
+                            if (ACLHelper.contains(roleId, user.getAclWrite())) {
                                 isAccess = true;
                             }
                         }
-                        if (!isAccess && user.getAclWrite() != null && (user.getAclWrite().contains(authUserId))) {
+                        if (!isAccess && user.getAclWrite() != null && ACLHelper.contains(authUserId, user.getAclWrite())) {
                             isAccess = true;
                         }
                     }
@@ -270,8 +265,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                             resultUser.setEntityId(userId);
                             resultUser.setUsername(newUsername);
                             resultUser.setPassword(null);
-                            resultUser.setAclRead(Arrays.asList(read));
-                            resultUser.setAclWrite(Arrays.asList(write));
+                            resultUser.setAclRead(ACLHelper.convert(read));
+                            resultUser.setAclWrite(ACLHelper.convert(write));
                             resultUser.setPublicRead(publicRead);
                             resultUser.setPublicWrite(publicWrite);
                             for (Object roleId : Arrays.asList(roleArray)) {
@@ -341,20 +336,20 @@ public class JeeUserServerResource extends BaseServerResource implements
             String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
             boolean isAccess = false;
 
-            if (authUserId != null && userEntity.getAclWrite().contains(authUserId)) {
+            if (authUserId != null && ACLHelper.contains(authUserId, userEntity.getAclWrite())) {
                 isAccess = true;
             } else if (authUserId != null) {
                 final User authUser = userRepository.getUser(appId, storeName, authUserId);
                 for (Role role : authUser.getRoles()) {
                     String roleId = role.getEntityId();
-                    if (userEntity.getAclWrite().contains(roleId)) {
+                    if (ACLHelper.contains(roleId, userEntity.getAclWrite())) {
                         isAccess = true;
                     }
                 }
             }
 
             if (isMaster || isAccess || publicWrite) {
-                if (userRepository.deleteUser(appId, storeName, id.toString())) {
+                if (userRepository.deleteUser(appId, storeName, id)) {
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);

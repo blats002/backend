@@ -66,6 +66,7 @@ public final class Constants {
     public static final String RESERVED_FIELD_PASSWORD = "password";
     public static final String ERROR_MISSING_AUTH_TOKEN = "Missing auth token";
     public static final String ERROR_INVALID_AUTH_TOKEN = "Invalid auth token";
+    public static final String ERROR_INVALID_ACL = "Invalid ACL";
     public static final String ERROR_MISSING_USERNAME_PASSWORD = "Missing username/password pair";
     public static final String ERROR_USERNAME_EXISTS = "Username already exists";
     public static final String ERROR_MISSING_ROLE_ID = "Missing Role ID in request";

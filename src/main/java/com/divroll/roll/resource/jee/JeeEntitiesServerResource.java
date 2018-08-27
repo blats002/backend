@@ -22,9 +22,11 @@
 package com.divroll.roll.resource.jee;
 
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.ACLHelper;
 import com.divroll.roll.helper.JSON;
 import com.divroll.roll.helper.ObjectLogger;
 import com.divroll.roll.model.Application;
+import com.divroll.roll.model.EmbeddedArrayIterable;
 import com.divroll.roll.repository.EntityRepository;
 import com.divroll.roll.resource.EntitiesResource;
 import com.divroll.roll.service.WebTokenService;
@@ -87,11 +89,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 if (aclRead != null) {
                     try {
                         JSONArray jsonArray = new JSONArray(aclRead);
-                        List<String> aclReadList = new LinkedList<>();
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            aclReadList.add(jsonArray.getString(i));
-                        }
-                        read = aclReadList.toArray(new String[aclReadList.size()]);
+                        read = ACLHelper.onlyIds(jsonArray);
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -100,11 +98,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 if (aclWrite != null) {
                     try {
                         JSONArray jsonArray = new JSONArray(aclWrite);
-                        List<String> aclWriteList = new LinkedList<>();
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            aclWriteList.add(jsonArray.getString(i));
-                        }
-                        write = aclWriteList.toArray(new String[aclWriteList.size()]);
+                        write = ACLHelper.onlyIds(jsonArray);
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -131,6 +125,21 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         } else if (publicWriteComparable instanceof String) {
                             publicWrite = Boolean.valueOf((String) publicWriteComparable);
                         }
+                    }
+
+                    //System.out.println("READ: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.ACL_READ)).asJSONArray());
+                    //System.out.println("WRITE: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.ACL_WRITE)).asJSONArray());
+
+                    if(comparableMap.get(Constants.ACL_READ) != null) {
+                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.ACL_READ);
+                        JSONArray jsonArray = iterable.asJSONArray();
+                        read = ACLHelper.onlyIds(jsonArray);
+                    }
+
+                    if(comparableMap.get(Constants.ACL_WRITE) != null) {
+                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.ACL_WRITE);
+                        JSONArray jsonArray = iterable.asJSONArray();
+                        write = ACLHelper.onlyIds(jsonArray);
                     }
 
                     String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
