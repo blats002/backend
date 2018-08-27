@@ -19,31 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.roll.resource;
+package com.divroll.roll.model;
 
-import com.divroll.roll.model.User;
-import com.divroll.roll.model.UserDTO;
-import com.divroll.roll.model.Users;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
-import org.restlet.resource.Get;
-import org.restlet.resource.Post;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface UsersResource {
-    @ApiOperation(value = "create a new user", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "user created"),
-            @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair")})
-    @Post
-    UserDTO createUser(UserDTO entity);
+@XStreamAlias("role")
+@ApiModel
+public class RoleDTO {
 
-    @Get
-    Users listUsers();
+    private String entityId;
+
+    public RoleDTO() {
+    }
+
+    public RoleDTO(String entityId) {
+        setEntityId(entityId);
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
+
 }

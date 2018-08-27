@@ -23,11 +23,9 @@ package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.DTOHelper;
 import com.divroll.roll.helper.ObjectLogger;
-import com.divroll.roll.model.Application;
-import com.divroll.roll.model.Role;
-import com.divroll.roll.model.User;
-import com.divroll.roll.model.Users;
+import com.divroll.roll.model.*;
 import com.divroll.roll.repository.UserRepository;
 import com.divroll.roll.resource.UsersResource;
 import com.divroll.roll.service.WebTokenService;
@@ -85,14 +83,8 @@ public class JeeUsersServerResource extends BaseServerResource
             List<User> processedResults = new LinkedList<>();
             List<User> results = userRepository.listUsers(appId, storeName, authUserId,
                     skipValue, limitValue, sort, false);
-            for (User user : results) {
-                if ((user.getPublicRead() != null && user.getPublicRead()) || (user.getAclRead() != null
-                        && (authUserId != null && user.getAclRead().contains(authUserId)))) {
-                    processedResults.add(user);
-                }
-            }
             Users users = new Users();
-            users.setResults(processedResults);
+            users.setResults(DTOHelper.convert(results));
             users.setLimit(Long.valueOf(limitValue));
             users.setSkip(Long.valueOf(skipValue));
             setStatus(Status.SUCCESS_OK);
@@ -101,7 +93,7 @@ public class JeeUsersServerResource extends BaseServerResource
             List<User> results = userRepository
                     .listUsers(appId, storeName, null, skipValue, limitValue, null, true);
             Users users = new Users();
-            users.setResults(results);
+            users.setResults(DTOHelper.convert(results));
             users.setLimit(Long.valueOf(skipValue));
             users.setSkip(Long.valueOf(limitValue));
             setStatus(Status.SUCCESS_OK);
@@ -110,7 +102,7 @@ public class JeeUsersServerResource extends BaseServerResource
     }
 
     @Override
-    public User createUser(User entity) {
+    public UserDTO createUser(UserDTO entity) {
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -161,14 +153,8 @@ public class JeeUsersServerResource extends BaseServerResource
             publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
             publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
-            List<Role> roles = entity.getRoles();
-            List<String> idsOfRoles = new LinkedList<String>();
-            if (roles != null) {
-                for (Role role : roles) {
-                    idsOfRoles.add(role.getEntityId());
-                }
-            }
-            String[] roleArray = idsOfRoles.toArray(new String[idsOfRoles.size()]);
+            List<RoleDTO> roles = entity.getRoles();
+            String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
 
@@ -195,7 +181,7 @@ public class JeeUsersServerResource extends BaseServerResource
                             user.getRoles().add(new Role((String) roleId));
                         }
                         setStatus(Status.SUCCESS_CREATED);
-                        return (User) ObjectLogger.log(user);
+                        return UserDTO.convert((User) ObjectLogger.log(user));
                     } else {
                         setStatus(Status.SERVER_ERROR_INTERNAL);
                     }

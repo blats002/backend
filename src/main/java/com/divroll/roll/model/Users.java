@@ -36,15 +36,15 @@ import java.util.List;
 @ApiModel
 public class Users {
     @XStreamImplicit(itemFieldName = "results")
-    private List<User> results;
+    private List<UserDTO> results;
     private long skip;
     private long limit;
 
-    public List<User> getResults() {
+    public List<UserDTO> getResults() {
         return results;
     }
 
-    public void setResults(List<User> results) {
+    public void setResults(List<UserDTO> results) {
         this.results = results;
     }
 

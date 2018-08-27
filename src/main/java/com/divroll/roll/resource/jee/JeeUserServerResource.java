@@ -23,10 +23,9 @@ package com.divroll.roll.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.roll.Constants;
+import com.divroll.roll.helper.DTOHelper;
 import com.divroll.roll.helper.ObjectLogger;
-import com.divroll.roll.model.Application;
-import com.divroll.roll.model.Role;
-import com.divroll.roll.model.User;
+import com.divroll.roll.model.*;
 import com.divroll.roll.repository.UserRepository;
 import com.divroll.roll.resource.UserResource;
 import com.divroll.roll.service.WebTokenService;
@@ -63,7 +62,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     WebTokenService webTokenService;
 
     @Override
-    public User getUser() { // login
+    public UserDTO getUser() { // login
         if (!isAuthorized(appId, apiKey, masterKey)) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
@@ -83,7 +82,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 }
                 userEntity.setPassword(null);
                 setStatus(Status.SUCCESS_OK);
-                return userEntity;
+                return UserDTO.convert(userEntity);
             } else {
                 String authUserId = null;
                 if (authToken != null) {
@@ -102,7 +101,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 }
                 if (userEntity != null) {
                     setStatus(Status.SUCCESS_OK);
-                    return userEntity;
+                    return UserDTO.convert(userEntity);
                 } else {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 }
@@ -131,7 +130,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 user.setWebToken(webToken);
                 userEntity.setPassword(null);
                 setStatus(Status.SUCCESS_OK);
-                return user;
+                return UserDTO.convert(user);
             } else {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
@@ -143,7 +142,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     }
 
     @Override
-    public User updateUser(User entity) {
+    public UserDTO updateUser(UserDTO entity) {
         try {
             if (!isAuthorized(appId, apiKey, masterKey)) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -217,14 +216,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                 return null;
             }
 
-            List<Role> roles = entity.getRoles();
-            List<String> idsOfRoles = new LinkedList<String>();
-            if (roles != null) {
-                for (Role role : roles) {
-                    idsOfRoles.add(role.getEntityId());
-                }
-            }
-            String[] roleArray = idsOfRoles.toArray(new String[idsOfRoles.size()]);
+            List<RoleDTO> roles = entity.getRoles();
+            String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
             Boolean isMaster = isMaster(appId, masterKey);
 
@@ -245,7 +238,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                         resultUser.getRoles().add(new Role((String) roleId));
                     }
                     setStatus(Status.SUCCESS_OK);
-                    return (User) ObjectLogger.log(resultUser);
+                    return UserDTO.convert((User) ObjectLogger.log(resultUser));
                 } else {
                     setStatus(Status.SERVER_ERROR_INTERNAL);
                 }
@@ -285,7 +278,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                                 resultUser.getRoles().add(new Role((String) roleId));
                             }
                             setStatus(Status.SUCCESS_OK);
-                            return (User) ObjectLogger.log(resultUser);
+                            return UserDTO.convert((User) ObjectLogger.log(resultUser));
                         } else {
                             setStatus(Status.SERVER_ERROR_INTERNAL);
                         }
@@ -305,7 +298,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     }
 
     @Override
-    public void deleteUser(User entity) {
+    public void deleteUser(UserDTO entity) {
         try {
 
             Application app = applicationService.read(appId);
