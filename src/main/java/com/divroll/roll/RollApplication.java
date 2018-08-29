@@ -100,6 +100,7 @@ public class RollApplication extends Application {
         router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
 
         router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
+        router.attach(ROOT_URI + "setup", JeeBackupServerResource.class);
 
         router.attachDefault(JeeRootServerResource.class);
 

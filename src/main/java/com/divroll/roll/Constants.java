@@ -36,6 +36,7 @@ public final class Constants {
     public static final String HEADER_ACL_WRITE = "X-Divroll-ACL-Write";
     public static final String HEADER_ACCEPT = "Accept";
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
     public static final String MASTER_KEY = "masterKey";
     public static final String API_KEY = "apiKey";
     public static final String APP_ID = "appId";
