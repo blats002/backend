@@ -89,24 +89,24 @@ public class JeeRoleServerResource extends BaseServerResource
 
                 Boolean isAccess = false;
 
-                try {
-                    Role role = roleRepository.getRole(appId, storeName, roleId);
-                    Boolean publicRead = role.getPublicRead();
-                    if (authUserId != null && role.getAclRead().contains(authUserId)) {
-                        isAccess = true;
-                    }
-                    if (!publicRead && !isAccess) {
-                        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                        return null;
-                    }
-                    if (role != null) {
-                        setStatus(Status.SUCCESS_OK);
-                        return role;
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    }
-                } catch (Exception e) {
-                    // do nothing
+                Role role = roleRepository.getRole(appId, storeName, roleId);
+                if(role == null) {
+                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                    return null;
+                }
+                Boolean publicRead = role.getPublicRead();
+                if (authUserId != null && role.getAclRead().contains(authUserId)) {
+                    isAccess = true;
+                }
+                if (!publicRead && !isAccess) {
+                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                    return null;
+                }
+                if (role != null) {
+                    setStatus(Status.SUCCESS_OK);
+                    return role;
+                } else {
+                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 }
             }
 
@@ -255,7 +255,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 if (role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
-                    if (role.getPublicWrite() || role.getAclWrite().contains(authUserId)) {
+                    if (role.getPublicWrite() || ACLHelper.contains(authUserId, role.getAclWrite())) {
                         Boolean success = roleRepository.deleteRole(appId, storeName, roleId);
                         if (success) {
                             setStatus(Status.SUCCESS_OK);
