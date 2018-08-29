@@ -30,6 +30,7 @@ import com.divroll.roll.model.*;
 import com.divroll.roll.repository.UserRepository;
 import com.divroll.roll.resource.UsersResource;
 import com.divroll.roll.service.WebTokenService;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
@@ -114,33 +115,54 @@ public class JeeUsersServerResource extends BaseServerResource
                 return null;
             }
 
+            System.out.println("---------->" + new Gson().toJson(entity));
+
             String[] read = new String[]{};
             String[] write = new String[]{};
 
-            if (aclRead != null) {
-                try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    if(!ACLHelper.validate(jsonArray)) {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
-                        return null;
-                    }
-                    read = ACLHelper.onlyIds(jsonArray);
-                } catch (Exception e) {
-                    // do nothing
-                }
+            List<EntityStub> aclReadList = entity.getAclRead();
+            List<EntityStub> aclWriteList = entity.getAclWrite();
+
+            if (aclReadList == null) {
+                aclReadList = new LinkedList<>();
             }
 
-            if (aclWrite != null) {
+            if (aclWriteList == null) {
+                aclWriteList = new LinkedList<>();
+            }
+
+            if ( (aclReadList == null || aclReadList.isEmpty()) && aclRead != null) {
                 try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    if(!ACLHelper.validate(jsonArray)) {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
-                        return null;
+                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
+                    if(jsonArray != null) {
+                        if(!ACLHelper.validate(jsonArray)) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                            return null;
+                        }
+                        read = ACLHelper.onlyIds(jsonArray);
                     }
-                    write = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
+            } else {
+                read = ACLHelper.onlyIds(aclReadList);
+            }
+
+            if ((aclWriteList == null || aclWriteList.isEmpty()) && aclWrite != null) {
+                try {
+                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+                    if(jsonArray != null) {
+                        if(!ACLHelper.validate(jsonArray)) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                            return null;
+                        }
+                        write = ACLHelper.onlyIds(jsonArray);
+                    }
+                } catch (Exception e) {
+                    // do nothing
+                }
+            } else {
+                write = ACLHelper.onlyIds(aclWriteList);
             }
 
             String username = entity.getUsername();
@@ -160,6 +182,7 @@ public class JeeUsersServerResource extends BaseServerResource
                 Application app = applicationService.read(appId);
                 if (app != null) {
                     String hashPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
+                    validateIds(read, write);
                     String entityId = userRepository.createUser(appId, storeName, username, hashPassword, read, write,
                             publicRead, publicWrite, roleArray);
                     if (entityId != null) {
@@ -182,6 +205,9 @@ public class JeeUsersServerResource extends BaseServerResource
                     }
                 }
             }
+        } catch (IllegalArgumentException e) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);

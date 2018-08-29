@@ -35,9 +35,11 @@ import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.util.Series;
+import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -228,6 +230,31 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected boolean validateId(String id) {
         return (id != null && !id.isEmpty() && !id.equalsIgnoreCase("null"));
+    }
+
+    protected void validateIds(String[] read, String[] write) throws IllegalArgumentException {
+        if(read != null) {
+            List<String> idList =  Arrays.asList(read);
+            for(String id : idList) {
+                if(id == null) {
+                    throw new IllegalArgumentException();
+                }
+                if(id.isEmpty()) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
+        if(write != null) {
+            List<String> idList =  Arrays.asList(write);
+            for(String id : idList) {
+                if(id == null) {
+                    throw new IllegalArgumentException();
+                }
+                if(id.isEmpty()) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
     }
 
 }

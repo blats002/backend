@@ -26,6 +26,8 @@ import com.divroll.roll.guice.SelfInjectingServerResourceModule;
 import com.divroll.roll.resource.jee.*;
 import com.google.common.collect.Sets;
 import com.google.inject.Guice;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.engine.Engine;
@@ -113,15 +115,20 @@ public class RollApplication extends Application {
         List<ConverterHelper> converters = Engine.getInstance()
                 .getRegisteredConverters();
         JacksonConverter jacksonConverter = null;
+        XStreamConverter xStreamConverter = null;
         for (ConverterHelper converterHelper : converters) {
             if (converterHelper instanceof JacksonConverter) {
                 jacksonConverter = (JacksonConverter) converterHelper;
                 break;
+            } else if(converterHelper instanceof XStreamConverter) {
+                xStreamConverter = (XStreamConverter) converterHelper;
             }
         }
         if (jacksonConverter != null) {
             Engine.getInstance()
                     .getRegisteredConverters().remove(jacksonConverter);
+        }
+        if(xStreamConverter != null) {
         }
     }
 

@@ -167,11 +167,14 @@ public class JeeUserRepository implements UserRepository {
                         entity.deleteLinks(Constants.ROLE_LINKNAME);
                     }
                     for (String roleId : roleList) {
-                        EntityId roleEntityId = txn.toEntityId(roleId);
-                        Entity roleEntity = txn.getEntity(roleEntityId);
-                        if (roleEntity != null) {
-                            entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                        if(roleId != null && !roleId.isEmpty()) {
+                            EntityId roleEntityId = txn.toEntityId(roleId);
+                            Entity roleEntity = txn.getEntity(roleEntityId);
+                            if (roleEntity != null) {
+                                entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                            }
                         }
+
                     }
 
                     success[0] = true;

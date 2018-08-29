@@ -32,6 +32,7 @@ import com.divroll.roll.resource.UserResource;
 import com.divroll.roll.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 
@@ -64,82 +65,97 @@ public class JeeUserServerResource extends BaseServerResource implements
 
     @Override
     public UserDTO getUser() { // login
-        if (!isAuthorized(appId, apiKey, masterKey)) {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return null;
-        }
-        String username = getQueryValue(Constants.QUERY_USERNAME);
-        String password = getQueryValue(Constants.QUERY_PASSWORD);
-        Application app = applicationService.read(appId);
-        if (app == null) {
-            return null;
-        }
-        if (validateId(userId)) {
-            if (isMaster(appId, masterKey)) {
-                User userEntity = userRepository.getUser(appId, storeName, userId);
+        try {
+            if (!isAuthorized(appId, apiKey, masterKey)) {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
+            }
+            String username = getQueryValue(Constants.QUERY_USERNAME);
+            String password = getQueryValue(Constants.QUERY_PASSWORD);
+            Application app = applicationService.read(appId);
+            if (app == null) {
+                return null;
+            }
+            if (validateId(userId)) {
+                if (isMaster(appId, masterKey)) {
+                    User userEntity = userRepository.getUser(appId, storeName, userId);
+                    if (userEntity == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    }
+                    userEntity.setPassword(null);
+                    setStatus(Status.SUCCESS_OK);
+                    return UserDTO.convert(userEntity);
+                } else {
+                    String authUserId = null;
+                    if (authToken != null) {
+                        authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                    }
+                    Boolean isAccess = false;
+
+                    User userEntity = userRepository.getUser(appId, storeName, userId);
+
+                    if (userEntity == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    }
+
+                    Boolean publicRead
+                            = userEntity.getPublicRead() != null ? userEntity.getPublicRead() : false;
+                    if (authUserId != null && userEntity.getAclRead().contains(authUserId)) {
+                        isAccess = true;
+                    }
+                    if (!publicRead && !isAccess) {
+                        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                        return null;
+                    }
+                    if (userEntity != null) {
+                        setStatus(Status.SUCCESS_OK);
+                        return UserDTO.convert(userEntity);
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                    }
+                }
+            } else { // login
+
+                if (username == null) {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USERNAME_PASSWORD);
+                    return null;
+                }
+
+                User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+
                 if (userEntity == null) {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                     return null;
                 }
-                userEntity.setPassword(null);
-                setStatus(Status.SUCCESS_OK);
-                return UserDTO.convert(userEntity);
-            } else {
-                String authUserId = null;
-                if (authToken != null) {
-                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                }
-                Boolean isAccess = false;
-                User userEntity = userRepository.getUser(appId, storeName, userId);
-                Boolean publicRead
-                        = userEntity.getPublicRead() != null ? userEntity.getPublicRead() : false;
-                if (authUserId != null && userEntity.getAclRead().contains(authUserId)) {
-                    isAccess = true;
-                }
-                if (!publicRead && !isAccess) {
+
+                String userId = userEntity.getEntityId();
+                String existingPassword = userEntity.getPassword();
+
+                if (BCrypt.checkpw(password, existingPassword)) {
+                    String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                    User user = new User();
+                    user.setEntityId(userId);
+                    user.setWebToken(webToken);
+                    userEntity.setPassword(null);
+                    setStatus(Status.SUCCESS_OK);
+                    return UserDTO.convert(user);
+                } else {
                     setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                     return null;
                 }
-                if (userEntity != null) {
-                    setStatus(Status.SUCCESS_OK);
-                    return UserDTO.convert(userEntity);
-                } else {
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                }
-            }
-        } else { // login
-
-            if (username == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USERNAME_PASSWORD);
-                return null;
             }
 
-            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
-
-            if (userEntity == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return null;
-            }
-
-            String userId = userEntity.getEntityId();
-            String existingPassword = userEntity.getPassword();
-
-            if (BCrypt.checkpw(password, existingPassword)) {
-                String webToken = webTokenService.createToken(app.getMasterKey(), userId);
-                User user = new User();
-                user.setEntityId(userId);
-                user.setWebToken(webToken);
-                userEntity.setPassword(null);
-                setStatus(Status.SUCCESS_OK);
-                return UserDTO.convert(user);
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            return null;
+        } catch (EntityRemovedInDatabaseException e) {
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            return null;
+        } catch (Exception e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return null;
         }
-
-        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-        return null;
     }
 
     @Override
@@ -179,30 +195,49 @@ public class JeeUserServerResource extends BaseServerResource implements
             String[] read = new String[]{};
             String[] write = new String[]{};
 
-            if (aclRead != null) {
-                try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    if(!ACLHelper.validate(jsonArray)) {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
-                        return null;
-                    }
-                    read = ACLHelper.onlyIds(jsonArray);
-                } catch (Exception e) {
-                    // do nothing
-                }
+            List<EntityStub> aclReadList = entity.getAclRead();
+            List<EntityStub> aclWriteList = entity.getAclWrite();
+
+            if (aclReadList == null) {
+                aclReadList = new LinkedList<>();
             }
 
-            if (aclWrite != null) {
+            if (aclWriteList == null) {
+                aclWriteList = new LinkedList<>();
+            }
+
+            if ( (aclReadList == null || aclReadList.isEmpty()) && aclRead != null) {
                 try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    if(!ACLHelper.validate(jsonArray)) {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
-                        return null;
+                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
+                    if(jsonArray != null) {
+                        if(!ACLHelper.validate(jsonArray)) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                            return null;
+                        }
+                        read = ACLHelper.onlyIds(jsonArray);
                     }
-                    write = ACLHelper.onlyIds(jsonArray);
                 } catch (Exception e) {
                     // do nothing
                 }
+            } else {
+                read = ACLHelper.onlyIds(aclReadList);
+            }
+
+            if ((aclWriteList == null || aclWriteList.isEmpty()) && aclWrite != null) {
+                try {
+                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+                    if(jsonArray != null) {
+                        if(!ACLHelper.validate(jsonArray)) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                            return null;
+                        }
+                        write = ACLHelper.onlyIds(jsonArray);
+                    }
+                } catch (Exception e) {
+                    // do nothing
+                }
+            } else {
+                write = ACLHelper.onlyIds(aclWriteList);
             }
 
             final User user = userRepository.getUser(appId, storeName, userId);
@@ -218,6 +253,7 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             if (isMaster || (user.getPublicWrite() != null && user.getPublicWrite())) {
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
+                validateIds(read, write);
                 Boolean success = userRepository.updateUser(appId, storeName, userId,
                         newUsername, newHashPassword, read, write, publicRead, publicWrite, roleArray);
                 if (success) {
@@ -248,6 +284,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                         final User authUser = userRepository.getUser(appId, storeName, authUserId);
                         for (Role role : authUser.getRoles()) {
                             String roleId = role.getEntityId();
+                            System.out.println("ACL WRITE: " + user.getAclWrite());
                             if (ACLHelper.contains(roleId, user.getAclWrite())) {
                                 isAccess = true;
                             }
@@ -285,6 +322,8 @@ public class JeeUserServerResource extends BaseServerResource implements
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_AUTH_TOKEN);
                 }
             }
+        } catch (IllegalArgumentException e) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
