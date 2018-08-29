@@ -80,6 +80,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String linkName;
     protected String targetEntityId;
 
+    protected String masterToken;
+
     @Inject
     ApplicationService applicationService;
 
@@ -123,6 +125,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
         contentType = headers.getFirstValue(Constants.HEADER_CONTENT_TYPE);
 
         appName = getAttribute("appName");
+
+        masterToken = headers.getFirstValue(Constants.HEADER_MASTER_TOKEN);
 
         try {
             skip = Integer.valueOf(getQueryValue(Constants.QUERY_SKIP));
