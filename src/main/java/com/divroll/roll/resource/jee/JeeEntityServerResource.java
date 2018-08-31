@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.roll.Constants;
 import com.divroll.roll.helper.ACLHelper;
+import com.divroll.roll.helper.JSON;
 import com.divroll.roll.helper.ObjectLogger;
 import com.divroll.roll.model.Application;
 import com.divroll.roll.model.EntityStub;
@@ -162,54 +163,13 @@ public class JeeEntityServerResource extends BaseServerResource
             }
             String dir = appId;
             if (dir != null) {
-                JSONObject jsonObject = JSONObject.parseObject(entity.getText());
-                Iterator<String> it = jsonObject.keySet().iterator();
-                Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-                while (it.hasNext()) {
-                    String k = it.next();
-                    try {
-                        JSONObject jso = jsonObject.getJSONObject(k);
-                        // TODO
-                        continue;
-                    } catch (Exception e) {
+//                JSONObject jsonObject = JSONObject.parseObject(entity.getText());
+//                Iterator<String> it = jsonObject.keySet().iterator();
 
-                    }
-                    try {
-                        JSONArray jsa = jsonObject.getJSONArray(k);
-                        // TODO
-                        continue;
-                    } catch (Exception e) {
+                org.json.JSONObject jsonObject = new org.json.JSONObject(entity.getText());
+                org.json.JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
-                    }
-                    try {
-                        Boolean value = jsonObject.getBoolean(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        Long value = jsonObject.getLong(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        Double value = jsonObject.getDouble(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                    try {
-                        String value = jsonObject.getString(k);
-                        comparableMap.put(k, value);
-                        continue;
-                    } catch (Exception e) {
-
-                    }
-                }
+                Map<String, Comparable> comparableMap = JSON.toComparableMap(entityJSONObject);
 
                 Application app = applicationService.read(appId);
                 if (app == null) {

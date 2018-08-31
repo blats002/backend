@@ -91,18 +91,21 @@ public class ACLHelper {
             if(entityStubs == null) {
                 entityStubs = new LinkedList<EntityStub>();
             }
-            JSONObject aclObject = aclObjects.getJSONObject(i);
-            String entityId = null;
-            String entityType = null;
             try {
-                entityId = aclObject.getString("entityId");
-            } catch (JSONException e) {}
-            try {
-                entityType = aclObject.getString("entityType");
-            } catch (JSONException e) {}
-            EntityStub entityStub = new EntityStub(entityId, entityType);
-            entityStubs.add(entityStub);
-
+                JSONObject aclObject = aclObjects.getJSONObject(i);
+                String entityId = null;
+                String entityType = null;
+                try {
+                    entityId = aclObject.getString("entityId");
+                } catch (JSONException e) {}
+                try {
+                    entityType = aclObject.getString("entityType");
+                } catch (JSONException e) {}
+                EntityStub entityStub = new EntityStub(entityId, entityType);
+                entityStubs.add(entityStub);
+            } catch (Exception e) {
+                return null;
+            }
         }
         return entityStubs;
     }
