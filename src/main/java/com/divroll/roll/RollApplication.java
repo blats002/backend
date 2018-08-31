@@ -79,6 +79,7 @@ public class RollApplication extends Application {
         corsFilter.setAllowedCredentials(true);
 
         router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
+        router.attach(ROOT_URI + "applications/", JeeApplicationsServerResource.class); // TODO: Rename to directories
         router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
         router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
         router.attach(ROOT_URI + "entities/users/login", JeeUserServerResource.class);
@@ -87,17 +88,26 @@ public class RollApplication extends Application {
         router.attach(ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
 
         router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
+        router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}/", JeeRoleServerResource.class);
 
-        router.attach(ROOT_URI + "entities", JeeEntitiesServerResource.class);
+//        router.attach(ROOT_URI + "entities", JeeEntitiesServerResource.class);
+//        router.attach(ROOT_URI + "entities/", JeeEntitiesServerResource.class);
         router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
+        router.attach(ROOT_URI + "entities/{entityType}/", JeeEntitiesServerResource.class);
         router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
+        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/", JeeEntityServerResource.class);
         router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
+        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}/", JeeBlobServerResource.class);
 
         router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}", JeeLinkServerResource.class);
+        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}/", JeeLinkServerResource.class);
         router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
+        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/", JeeLinksServerResource.class);
 
         router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
+        router.attach(ROOT_URI + "kv/{entityType}/", JeeKeyValueServerResource.class);
         router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
+        router.attach(ROOT_URI + "kv/{entityType}/{entityId}/", JeeKeyValueServerResource.class);
 
         router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
         router.attach(ROOT_URI + "setup", JeeBackupServerResource.class);
