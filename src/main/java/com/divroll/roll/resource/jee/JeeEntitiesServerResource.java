@@ -212,13 +212,15 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 try {
                     List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType,
                             authUserId, skipValue, limitValue, sort, false);
+
                     JSONObject responseBody = new JSONObject();
                     JSONObject entitiesJSONObject = new JSONObject();
                     entitiesJSONObject.put("results", entityObjs);
                     entitiesJSONObject.put("skip", skipValue);
                     entitiesJSONObject.put("limit", limitValue);
                     responseBody.put("entities", entitiesJSONObject);
-                    Representation representation = new JsonRepresentation(responseBody.toString());
+
+                    Representation representation = new JsonRepresentation(responseBody);
                     setStatus(Status.SUCCESS_OK);
                     return representation;
                 } catch (Exception e) {

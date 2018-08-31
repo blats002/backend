@@ -501,18 +501,18 @@ public class JeeEntityRepository implements EntityRepository {
                         }
                     }
 
-                    List<String> aclRead = new LinkedList<>();
-                    List<String> aclWrite = new LinkedList<>();
+                    List<EntityStub> aclRead = new LinkedList<>();
+                    List<EntityStub> aclWrite = new LinkedList<>();
 
                     Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
                     for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
-                        aclRead.add(aclReadLink.getId().toString());
+                        aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                     }
 
                     for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
-                        aclWrite.add(aclWriteLink.getId().toString());
+                        aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
 
                     comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
@@ -559,18 +559,18 @@ public class JeeEntityRepository implements EntityRepository {
                                 }                            }
                         }
 
-                        List<String> aclRead = new LinkedList<>();
-                        List<String> aclWrite = new LinkedList<>();
+                        List<EntityStub> aclRead = new LinkedList<>();
+                        List<EntityStub> aclWrite = new LinkedList<>();
 
                         Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                         Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
                         for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
-                            aclRead.add(aclReadLink.getId().toString());
+                            aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
                         for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
-                            aclWrite.add(aclWriteLink.getId().toString());
+                            aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 
 
@@ -652,18 +652,18 @@ public class JeeEntityRepository implements EntityRepository {
                                 }                            }
                         }
 
-                        List<String> aclRead = new LinkedList<>();
-                        List<String> aclWrite = new LinkedList<>();
+                        List<EntityStub> aclRead = new LinkedList<>();
+                        List<EntityStub> aclWrite = new LinkedList<>();
 
                         Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                         Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
                         for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
-                            aclRead.add(aclReadLink.getId().toString());
+                            aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
                         for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
-                            aclWrite.add(aclWriteLink.getId().toString());
+                            aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 
                         comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
