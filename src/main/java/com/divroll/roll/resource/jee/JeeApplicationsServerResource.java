@@ -31,10 +31,10 @@ public class JeeApplicationsServerResource extends BaseServerResource
         if(theMasterToken != null
                 && masterToken != null
                 && BCrypt.checkpw(masterToken, theMasterToken)) {
-            List<Application> results = applicationService.list();
+            List<Application> results = applicationService.list(skip, limit);
             Applications applications = new Applications();
-            applications.setSkip(0);
-            applications.setLimit(0);
+            applications.setSkip(skip);
+            applications.setLimit(limit);
             applications.setResults(results);
             return applications;
         } else {
