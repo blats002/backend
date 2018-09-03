@@ -301,7 +301,7 @@ public class XodusStoreImpl implements XodusStore {
     }
 
     @Override
-    public List<Map<String, Comparable>> list(String dir, final String entityType) {
+    public List<Map<String, Comparable>> list(String dir, final String entityType, int skip, int limit) {
         List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
@@ -309,6 +309,7 @@ public class XodusStoreImpl implements XodusStore {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = txn.getAll(entityType);
+                    result = result.skip(skip).take(limit);
                     for(Entity entity : result) {
                         Map<String, Comparable> map = new LinkedHashMap<>();
                         List<String> props = entity.getPropertyNames();

@@ -57,6 +57,6 @@ public interface XodusStore {
     public <T> EntityId getFirstEntityId(String dir, final String kind, final String propertyKey,
                                          Comparable<T> propertyVal, Class<T> clazz);
 
-    public List<Map<String, Comparable>> list(String dir, final String entityType);
+    List<Map<String, Comparable>> list(String dir, final String entityType, int skip, int limit);
 
 }

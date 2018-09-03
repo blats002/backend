@@ -40,6 +40,6 @@ public interface ApplicationService {
 
     void delete(String id);
 
-    List<Application> list();
+    List<Application> list(int skip, int limit);
 
 }

@@ -96,9 +96,9 @@ public class JeeApplicationService implements ApplicationService {
     }
 
     @Override
-    public List<Application> list() {
+    public List<Application> list(int skip, int limit) {
         List<Application> apps = new LinkedList<>();
-        List<Map<String,Comparable>> list = store.list(masterStore, Constants.ENTITYSTORE_APPLICATION);
+        List<Map<String,Comparable>> list = store.list(masterStore, Constants.ENTITYSTORE_APPLICATION, skip, limit);
         for(Map entityMap : list) {
             if (entityMap != null) {
                 Application application = new Application();
