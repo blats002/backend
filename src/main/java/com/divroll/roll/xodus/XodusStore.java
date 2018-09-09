@@ -59,4 +59,6 @@ public interface XodusStore {
 
     List<Map<String, Comparable>> list(String dir, final String entityType, int skip, int limit);
 
+    List<String> listEntityTypes(String dir);
+
 }

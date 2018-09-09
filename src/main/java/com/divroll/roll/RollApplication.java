@@ -26,7 +26,6 @@ import com.divroll.roll.guice.SelfInjectingServerResourceModule;
 import com.divroll.roll.resource.jee.*;
 import com.google.common.collect.Sets;
 import com.google.inject.Guice;
-import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.restlet.Application;
 import org.restlet.Restlet;
@@ -81,6 +80,10 @@ public class RollApplication extends Application {
         router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
         router.attach(ROOT_URI + "applications/", JeeApplicationsServerResource.class); // TODO: Rename to directories
         router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
+
+        router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
+        router.attach(ROOT_URI + "entities/", JeeEntityTypesServerResource.class);
+
         router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
         router.attach(ROOT_URI + "entities/users/login", JeeUserServerResource.class);
         router.attach(ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
@@ -90,8 +93,7 @@ public class RollApplication extends Application {
         router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
         router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}/", JeeRoleServerResource.class);
 
-//        router.attach(ROOT_URI + "entities", JeeEntitiesServerResource.class);
-//        router.attach(ROOT_URI + "entities/", JeeEntitiesServerResource.class);
+
         router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
         router.attach(ROOT_URI + "entities/{entityType}/", JeeEntitiesServerResource.class);
         router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
