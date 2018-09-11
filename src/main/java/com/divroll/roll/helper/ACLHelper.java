@@ -31,12 +31,17 @@ public class ACLHelper {
         if(entityStubs == null) {
             return null;
         }
-        String[] arr = new String[entityStubs.size()];
+        String[] arr = null;
         int idx = 0;
         for(EntityStub entityStub : entityStubs) {
             String entityId = entityStub.getEntityId();
             assert entityId != null;
-            arr[idx] = entityId;
+            if(entityId != null) {
+                if(arr == null) {
+                    arr = new String[entityStubs.size()];
+                }
+                arr[idx] = entityId;
+            }
             idx++;
         }
         return arr;

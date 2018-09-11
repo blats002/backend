@@ -36,6 +36,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
             applications.setSkip(skip);
             applications.setLimit(limit);
             applications.setResults(results);
+            setStatus(Status.SUCCESS_OK);
             return applications;
         } else {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
