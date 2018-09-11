@@ -136,8 +136,8 @@ public class JeeRolesServerReource extends BaseServerResource
                 return null;
             }
 
-            String[] read = new String[]{};
-            String[] write = new String[]{};
+            String[] read = null;
+            String[] write = null;
 
             if ( (aclReadList == null || aclReadList.isEmpty()) && aclRead != null) {
                 try {
