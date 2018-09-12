@@ -50,7 +50,7 @@ public class RollApplication extends Application {
 
     private static final Logger LOG
             = Logger.getLogger(RollApplication.class.getName());
-    private static final String ROOT_URI = "/roll/";
+    private static final String ROOT_URI = "/factory/";
 
     /**
      * Creates a root Restlet that will receive all incoming calls.
