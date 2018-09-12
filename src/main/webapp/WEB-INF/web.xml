@@ -11,7 +11,7 @@
         <servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
         <init-param>
             <param-name>org.restlet.application</param-name>
-            <param-value>com.divroll.roll.RollApplication</param-value>
+            <param-value>com.divroll.backend.DivrollBackendApplication</param-value>
         </init-param>
     </servlet>
 
