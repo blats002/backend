@@ -135,6 +135,14 @@ public class BaseServerResource extends SelfInjectingServerResource {
             // do nothing
         }
 
+        if(skip == null) {
+            skip = 0;
+        }
+
+        if(limit == null) {
+            limit = DEFAULT_LIMIT;
+        }
+
         try {
             publicRead = Boolean.valueOf(getQueryValue("publicRead"));
         } catch (Exception e) {

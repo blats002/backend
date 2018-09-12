@@ -27,19 +27,23 @@ public class JeeApplicationsServerResource extends BaseServerResource
 
     @Override
     public Applications list() {
-        // TODO: Add auth
-        if(theMasterToken != null
-                && masterToken != null
-                && BCrypt.checkpw(masterToken, theMasterToken)) {
-            List<Application> results = applicationService.list(skip, limit);
-            Applications applications = new Applications();
-            applications.setSkip(skip);
-            applications.setLimit(limit);
-            applications.setResults(results);
-            setStatus(Status.SUCCESS_OK);
-            return applications;
-        } else {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        try {
+            // TODO: Add auth
+            if(theMasterToken != null
+                    && masterToken != null
+                    && BCrypt.checkpw(masterToken, theMasterToken)) {
+                List<Application> results = applicationService.list(skip, limit);
+                Applications applications = new Applications();
+                applications.setSkip(skip);
+                applications.setLimit(limit);
+                applications.setResults(results);
+                setStatus(Status.SUCCESS_OK);
+                return applications;
+            } else {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+            }
+        } catch (Exception e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
         }
         return null;
     }
