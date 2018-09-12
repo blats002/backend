@@ -111,7 +111,7 @@ public class JeeApplicationServerResource extends BaseServerResource
                 application.setApiKey(apiKey);
                 application.setMasterKey(masterKey);
                 application.setAppName(appName);
-                setStatus(Status.SUCCESS_OK);
+                setStatus(Status.SUCCESS_CREATED);
                 return application;
             }
         } else {

@@ -210,7 +210,7 @@ public class JeeRoleServerResource extends BaseServerResource
             } else {
                 Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
                 if (success) {
-                    setStatus(Status.SUCCESS_CREATED);
+                    setStatus(Status.SUCCESS_OK);
                     Role role = new Role();
                     role.setName(newRoleName);
                     role.setEntityId(roleId);
