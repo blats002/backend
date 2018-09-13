@@ -107,11 +107,6 @@ public class JeeApplicationServerResource extends BaseServerResource
             return null;
         }
 
-        if(rootDTO == null) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return null;
-        }
-
         Application application = new Application();
 
         String appId = UUID.randomUUID().toString().replace("-", "");
@@ -129,11 +124,14 @@ public class JeeApplicationServerResource extends BaseServerResource
         if (id != null) {
             //Application app =  applicationService.read(id.toString());
 
-            String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
-            String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(), null, null, false, false,
-                    new String[]{roleId});
+            if(rootDTO != null) {
+                String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
+                String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(), null, null, false, false,
+                        new String[]{roleId});
+            }
 
-            if (application != null && roleId != null && userId != null) {
+
+            if (application != null) {
                 application.setAppId(appId);
                 application.setApiKey(apiKey);
                 application.setMasterKey(masterKey);
