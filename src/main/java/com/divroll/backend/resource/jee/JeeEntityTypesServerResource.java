@@ -14,19 +14,25 @@ public class JeeEntityTypesServerResource extends BaseServerResource
 
     @Override
     public EntityTypes getEntityTypes() {
-        EntityTypes entityTypes = new EntityTypes();
-        if(appId == null || appId.isEmpty()) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing App ID");
-            return null;
+        try {
+            EntityTypes entityTypes = new EntityTypes();
+            if(appId == null || appId.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing App ID");
+                return null;
+            }
+            if(isMaster(appId, masterKey)) {
+                entityTypes.setLimit(0);
+                entityTypes.setSkip(0);
+                entityTypes.setResults(store.listEntityTypes(appId));
+                setStatus(Status.SUCCESS_OK);
+                return entityTypes;
+            } else {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
+            }
+        } catch (Exception e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
         }
-        if(isMaster(appId, masterKey)) {
-            entityTypes.setLimit(0);
-            entityTypes.setSkip(0);
-            entityTypes.setResults(store.listEntityTypes(appId));
-        } else {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return null;
-        }
-        return entityTypes;
+        return null;
     }
 }
