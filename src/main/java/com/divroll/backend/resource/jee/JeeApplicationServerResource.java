@@ -22,6 +22,9 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.UserRootDTO;
+import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.ApplicationResource;
 import com.divroll.backend.xodus.XodusStore;
 import com.google.inject.Inject;
@@ -30,6 +33,7 @@ import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -45,8 +49,21 @@ public class JeeApplicationServerResource extends BaseServerResource
     String xodusRoot;
 
     @Inject
+    @Named("defaultRoleStore")
+    String roleStoreName;
+
+    @Inject
+    @Named("defaultUserStore")
+    String userStoreName;
+
+    @Inject
     XodusStore store;
 
+    @Inject
+    UserRepository userRepository;
+
+    @Inject
+    RoleRepository roleRepository;
 
     @Override
     public Application updateApp(Application entity) {
@@ -79,13 +96,18 @@ public class JeeApplicationServerResource extends BaseServerResource
     }
 
     @Override
-    public Application getApp() {
+    public Application createApp(UserRootDTO rootDTO) {
 
         if(appName == null) {
             appName = getQueryValue("appName");
         }
 
         if(appName == null) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return null;
+        }
+
+        if(rootDTO == null) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             return null;
         }
@@ -106,7 +128,12 @@ public class JeeApplicationServerResource extends BaseServerResource
         final EntityId id = applicationService.create(application);
         if (id != null) {
             //Application app =  applicationService.read(id.toString());
-            if (application != null) {
+
+            String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
+            String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(), null, null, false, false,
+                    (String[]) Arrays.asList(roleId).toArray());
+
+            if (application != null && roleId != null && userId != null) {
                 application.setAppId(appId);
                 application.setApiKey(apiKey);
                 application.setMasterKey(masterKey);
