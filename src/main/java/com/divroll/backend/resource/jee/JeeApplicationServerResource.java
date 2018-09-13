@@ -131,7 +131,7 @@ public class JeeApplicationServerResource extends BaseServerResource
 
             String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
             String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(), null, null, false, false,
-                    (String[]) Arrays.asList(roleId).toArray());
+                    new String[]{roleId});
 
             if (application != null && roleId != null && userId != null) {
                 application.setAppId(appId);
