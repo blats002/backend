@@ -25,11 +25,11 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
 import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
-import com.divroll.backend.model.Application;
-import com.divroll.backend.model.EmbeddedArrayIterable;
+import com.divroll.backend.model.*;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntitiesResource;
 import com.divroll.backend.service.WebTokenService;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONArray;
@@ -38,8 +38,8 @@ import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -49,6 +49,8 @@ import java.util.Map;
 public class JeeEntitiesServerResource extends BaseServerResource
         implements EntitiesResource {
 
+    private static final Logger LOG
+            = Logger.getLogger(JeeEntitiesServerResource.class.getName());
     private static final Integer DEFAULT_LIMIT = 100;
 
     @Inject
@@ -61,7 +63,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
     public Representation createEntity(Representation entity) {
         JSONObject result = new JSONObject();
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -126,24 +128,24 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         }
                     }
 
-                    //System.out.println("READ: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.ACL_READ)).asJSONArray());
-                    //System.out.println("WRITE: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.ACL_WRITE)).asJSONArray());
+                    //System.out.println("READ: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_READ)).asJSONArray());
+                    //System.out.println("WRITE: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE)).asJSONArray());
 
-                    if(comparableMap.get(Constants.ACL_READ) != null) {
-                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.ACL_READ);
+                    if(comparableMap.get(Constants.RESERVED_FIELD_ACL_READ) != null) {
+                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_READ);
                         JSONArray jsonArray = iterable.asJSONArray();
                         read = ACLHelper.onlyIds(jsonArray);
                     }
 
-                    if(comparableMap.get(Constants.ACL_WRITE) != null) {
-                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.ACL_WRITE);
+                    if(comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
+                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE);
                         JSONArray jsonArray = iterable.asJSONArray();
                         write = ACLHelper.onlyIds(jsonArray);
                     }
-
+                    validateSchema(entityType, comparableMap);
                     String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                     JSONObject entityObject = new JSONObject();
-                    entityObject.put(Constants.ENTITY_ID, entityId);
+                    entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     setStatus(Status.SUCCESS_CREATED);
                 } else {
@@ -164,7 +166,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
     @Override
     public Representation getEntities() {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -181,7 +183,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 limitValue = limit;
             }
 
-            if (isMaster(appId, masterKey)) {
+            if (isMaster()) {
                 try {
                     List<Map<String, Object>> entityObjs
                             = entityRepository.listEntities(appId, entityType, null,
@@ -235,4 +237,121 @@ public class JeeEntitiesServerResource extends BaseServerResource
         }
         return null;
     }
+
+    private void validateSchema(String entityType, Map<String,Comparable> comparableMap)
+            throws IllegalArgumentException {
+        final boolean[] isCreate = {true};
+        System.out.println("APP->" + new Gson().toJson(getApp()));
+        getApp().getSchemas().forEach(schema -> {
+            LOG.info("Schema Entity Type: " + schema.getEntityType());
+            if(schema.getEntityType() != null && schema.getEntityType().equals(entityType)) {
+                isCreate[0] = false;
+            }
+        });
+        if(isCreate[0]) {
+            Application application = getApp();
+            Schema schema = new Schema();
+            schema.setEntityType(entityType);
+            SchemaPropertyList schemaProperties = new SchemaPropertyList();
+
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_ENTITY_ID, SchemaProperty.TYPE.STRING));
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_ACL_READ, SchemaProperty.TYPE.ARRAY));
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_ACL_WRITE, SchemaProperty.TYPE.ARRAY));
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_PUBLICREAD, SchemaProperty.TYPE.BOOLEAN));
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_PUBLICWRITE, SchemaProperty.TYPE.BOOLEAN));
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_LINKS, SchemaProperty.TYPE.ARRAY));
+            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_BLOBNAMES, SchemaProperty.TYPE.ARRAY));
+
+            comparableMap.forEach((key,value) -> {
+                LOG.info("---->KEY---->" + key);
+                SchemaProperty schemaProperty = new SchemaProperty();
+                if(!Keys.isReservedPropertyKey(key)) {
+                    LOG.info(value.getClass().getName());
+                    if(value instanceof EmbeddedEntityIterable) {
+                        schemaProperty.setPropertyName(key);
+                        schemaProperty.setPropertyType(SchemaProperty.TYPE.OBJECT);
+                    } else if(value instanceof EmbeddedArrayIterable) {
+                        schemaProperty.setPropertyName(key);
+                        schemaProperty.setPropertyType(SchemaProperty.TYPE.ARRAY);
+                    } else if(value instanceof Boolean) {
+                        schemaProperty.setPropertyName(key);
+                        schemaProperty.setPropertyType(SchemaProperty.TYPE.BOOLEAN);
+                    } else if(value instanceof String) {
+                        schemaProperty.setPropertyName(key);
+                        schemaProperty.setPropertyType(SchemaProperty.TYPE.STRING);
+                    } else if(value instanceof Number) {
+                        schemaProperty.setPropertyName(key);
+                        schemaProperty.setPropertyType(SchemaProperty.TYPE.NUMBER);
+                    }
+                    schemaProperties.add(schemaProperty);
+                }
+            });
+            schema.setSchemaProperties(schemaProperties);
+            application.getSchemas().add(schema);
+            applicationService.forceUpdate(application);
+        } else {
+            comparableMap.forEach((key,value)-> {
+                LOG.info("---->KEY---->>" + key);
+                getApp().getSchemas().forEach(schema -> {
+                    LOG.info("---->SCHEMA TYPE---->>" + schema.getEntityType());
+                    int index = getApp().getSchemas().indexOf(schema);
+                    if(!Keys.isReservedPropertyKey(key) && schema.getSchemaProperties().contains(key)) {
+                        // Check if value type is correct
+                        SchemaProperty schemaProperty = schema.get(key);
+                        SchemaProperty.TYPE type = schemaProperty.getPropertyType();
+                        if(type == SchemaProperty.TYPE.OBJECT) {
+                            if(!(value instanceof EmbeddedEntityIterable)) {
+                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                            }
+                        } else if(type == SchemaProperty.TYPE.ARRAY) {
+                            if(!(value instanceof EmbeddedArrayIterable)) {
+                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                            }
+                        } else if(type == SchemaProperty.TYPE.BOOLEAN) {
+                            if(!(value instanceof Boolean)) {
+                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                            }
+                        } else if(type == SchemaProperty.TYPE.STRING) {
+                            if(!(value instanceof String)) {
+                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                            }
+                        } else if(type == SchemaProperty.TYPE.NUMBER) {
+                            if(!(value instanceof Number)) {
+                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                            }
+                        }
+                    } else {
+                        LOG.info("UPDATE =======================================");
+                        // Update scheme with new property
+                        SchemaProperty schemaProperty = new SchemaProperty();
+                        if(!Keys.isReservedPropertyKey(key)) {
+                            LOG.info(value.getClass().getName());
+                            if(value instanceof EmbeddedEntityIterable) {
+                                schemaProperty.setPropertyName(key);
+                                schemaProperty.setPropertyType(SchemaProperty.TYPE.OBJECT);
+                            } else if(value instanceof EmbeddedArrayIterable) {
+                                schemaProperty.setPropertyName(key);
+                                schemaProperty.setPropertyType(SchemaProperty.TYPE.ARRAY);
+                            } else if(value instanceof Boolean) {
+                                schemaProperty.setPropertyName(key);
+                                schemaProperty.setPropertyType(SchemaProperty.TYPE.BOOLEAN);
+                            } else if(value instanceof String) {
+                                schemaProperty.setPropertyName(key);
+                                schemaProperty.setPropertyType(SchemaProperty.TYPE.STRING);
+                            } else if(value instanceof Number) {
+                                schemaProperty.setPropertyName(key);
+                                schemaProperty.setPropertyType(SchemaProperty.TYPE.NUMBER);
+                            }
+                            schema.getSchemaProperties().addAll(Arrays.asList(schemaProperty));
+                            getApp().getSchemas().set(index, schema);
+                            applicationService.forceUpdate(getApp());
+                        }
+                    }
+                });
+            });
+        }
+        LOG.info(new Gson().toJson(getApp()));
+
+    }
+
 }

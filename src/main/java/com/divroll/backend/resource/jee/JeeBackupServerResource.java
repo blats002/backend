@@ -55,7 +55,7 @@ public class JeeBackupServerResource extends BaseServerResource
 
     @Override
     public void restore(Representation entity) {
-        if (!isAuthorized(appId, apiKey, masterKey)) {
+        if (!isAuthorized()) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return;
         }
@@ -68,7 +68,7 @@ public class JeeBackupServerResource extends BaseServerResource
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return;
         }
-        if (isMaster(appId, masterKey)) {
+        if (isMaster()) {
             if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
                 try {
                     DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -96,7 +96,7 @@ public class JeeBackupServerResource extends BaseServerResource
 
     @Override
     public Representation backup(Representation entity) {
-        if (!isAuthorized(appId, apiKey, masterKey)) {
+        if (!isAuthorized()) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
         }
@@ -106,7 +106,7 @@ public class JeeBackupServerResource extends BaseServerResource
             return null;
         }
 
-        if (isMaster(appId, masterKey)) {
+        if (isMaster()) {
             try {
                 String folderPath = xodusRoot + appId;
                 String zipPath = xodusRoot + appId + ".zip";

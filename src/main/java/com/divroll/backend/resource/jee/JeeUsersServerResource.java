@@ -75,7 +75,7 @@ public class JeeUsersServerResource extends BaseServerResource
             return null;
         }
 
-        if (!isMaster(appId, masterKey)) {
+        if (!isMaster()) {
             String authUserId = null;
             try {
                 authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
@@ -106,7 +106,7 @@ public class JeeUsersServerResource extends BaseServerResource
     @Override
     public UserDTO createUser(UserDTO entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -114,8 +114,6 @@ public class JeeUsersServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
-
-            System.out.println("---------->" + new Gson().toJson(entity));
 
             String[] read = new String[]{};
             String[] write = new String[]{};

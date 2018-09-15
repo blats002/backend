@@ -64,7 +64,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
     @Override
     public void createUserRoleLink(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
@@ -107,7 +107,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
     @Override
     public void deleteUserRoleLink(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }

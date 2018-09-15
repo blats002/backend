@@ -56,6 +56,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
             = Logger.getLogger(BaseServerResource.class.getName());
     protected Map<String, Object> queryMap = new LinkedHashMap<>();
     protected Map<String, String> propsMap = new LinkedHashMap<>();
+
     protected String appName;
     protected String entityId;
     protected String entityType;
@@ -82,6 +83,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected String masterToken;
 
+    private Application application;
+
     @Inject
     ApplicationService applicationService;
 
@@ -100,7 +103,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
                 Method.DELETE,
                 Method.OPTIONS));
         propsMap = appProperties();
-        entityId = getAttribute(Constants.ENTITY_ID);
+        entityId = getAttribute(Constants.RESERVED_FIELD_ENTITY_ID);
         entityType = getAttribute(Constants.ENTITY_TYPE);
         blobName = getAttribute("blobName");
         userId = getAttribute(Constants.USER_ID);
@@ -155,6 +158,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         }
 
+        if(appId != null) {
+            application = applicationService.read(appId);
+        }
+
     }
 
     protected Map<String, String> appProperties() {
@@ -185,27 +192,21 @@ public class BaseServerResource extends SelfInjectingServerResource {
         }
     }
 
-    protected boolean isAuthorized(String appId, String apiKey, String masterKey) {
-        if (appId != null) {
-            Application app = applicationService.read(appId);
-            if (app != null) {
-                if (BCrypt.checkpw(masterKey, app.getMasterKey())) {
-                    return true;
-                }
-                if (BCrypt.checkpw(apiKey, app.getApiKey())) {
-                    return true;
-                }
+    protected boolean isAuthorized() {
+        if (application != null) {
+            if (BCrypt.checkpw(masterKey, application.getMasterKey())) {
+                return true;
+            }
+            if (BCrypt.checkpw(apiKey, application.getApiKey())) {
+                return true;
             }
         }
         return false;
     }
 
-    protected boolean isMaster(String appId, String masterKey) {
-        if (appId != null) {
-            Application app = applicationService.read(appId);
-            if (app != null && (BCrypt.checkpw(masterKey, app.getMasterKey()))) {
-                return true;
-            }
+    protected boolean isMaster() {
+        if (application != null && (BCrypt.checkpw(masterKey, application.getMasterKey()))) {
+            return true;
         }
         return false;
     }
@@ -268,5 +269,11 @@ public class BaseServerResource extends SelfInjectingServerResource {
             }
         }
     }
+
+    protected Application getApp() {
+        return application;
+    }
+
+
 
 }

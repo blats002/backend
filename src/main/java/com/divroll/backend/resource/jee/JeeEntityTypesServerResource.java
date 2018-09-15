@@ -20,7 +20,7 @@ public class JeeEntityTypesServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing App ID");
                 return null;
             }
-            if(isMaster(appId, masterKey)) {
+            if(isMaster()) {
                 entityTypes.setLimit(0);
                 entityTypes.setSkip(0);
                 entityTypes.setResults(store.listEntityTypes(appId));

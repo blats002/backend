@@ -84,17 +84,17 @@ public class JeeEntityRepository implements EntityRepository {
                         if (value == null) {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
                                     && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
-                                    && !key.equals(Constants.ACL_WRITE)
-                                    && !key.equals(Constants.ACL_READ)) {
+                                    && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                                    && !key.equals(Constants.RESERVED_FIELD_ACL_READ)) {
                                entity.deleteProperty(key);
                             }
                         } else {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
                                     && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
-                                    && !key.equals(Constants.ACL_WRITE)
-                                    && !key.equals(Constants.ACL_READ)
-                                    && !key.equals(Constants.BLOBNAMES)
-                                    && !key.equals(Constants.LINKS)) {
+                                    && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                                    && !key.equals(Constants.RESERVED_FIELD_ACL_READ)
+                                    && !key.equals(Constants.RESERVED_FIELD_BLOBNAMES)
+                                    && !key.equals(Constants.RESERVED_FIELD_LINKS)) {
 //                                if(value instanceof EmbeddedEntityIterable) {
 //                                    LOG.info(value.toString());
 //                                }
@@ -111,7 +111,7 @@ public class JeeEntityRepository implements EntityRepository {
                                 EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
                                 Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
                                 if (userOrRoleEntity != null) {
-                                    entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                    entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                                     entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
@@ -127,7 +127,7 @@ public class JeeEntityRepository implements EntityRepository {
                                 EntityId userEntityId = txn.toEntityId(userId);
                                 Entity userOrRoleEntity = txn.getEntity(userEntityId);
                                 if (userOrRoleEntity != null) {
-                                    entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                    entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                                     entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
@@ -187,7 +187,7 @@ public class JeeEntityRepository implements EntityRepository {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                                 entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -202,7 +202,7 @@ public class JeeEntityRepository implements EntityRepository {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                                 entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -259,18 +259,18 @@ public class JeeEntityRepository implements EntityRepository {
                         publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
                     }
 
-                    for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
+                    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                         aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                     }
 
-                    for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
+                    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                         aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
-                    comparableMap.put(Constants.ENTITY_ID, idOfEntity.toString());
-                    comparableMap.put(Constants.ACL_READ, aclRead);
-                    comparableMap.put(Constants.ACL_WRITE, aclWrite);
-                    comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
-                    comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, idOfEntity.toString());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
+                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 }
@@ -507,19 +507,19 @@ public class JeeEntityRepository implements EntityRepository {
                     Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
-                    for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
+                    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                         aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                     }
 
-                    for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
+                    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                         aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
 
-                    comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
-                    comparableMap.put(Constants.ACL_READ, aclRead);
-                    comparableMap.put(Constants.ACL_WRITE, aclWrite);
-                    comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
-                    comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
+                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -565,20 +565,20 @@ public class JeeEntityRepository implements EntityRepository {
                         Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                         Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
-                        for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
+                        for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                             aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
-                        for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
+                        for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                             aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 
 
-                        comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
-                        comparableMap.put(Constants.ACL_READ, aclRead);
-                        comparableMap.put(Constants.ACL_WRITE, aclWrite);
-                        comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
-                        comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
+                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -658,19 +658,19 @@ public class JeeEntityRepository implements EntityRepository {
                         Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                         Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
-                        for (Entity aclReadLink : entity.getLinks(Constants.ACL_READ)) {
+                        for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                             aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
-                        for (Entity aclWriteLink : entity.getLinks(Constants.ACL_WRITE)) {
+                        for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                             aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 
-                        comparableMap.put(Constants.ENTITY_ID, entity.getId().toString());
-                        comparableMap.put(Constants.ACL_READ, aclRead);
-                        comparableMap.put(Constants.ACL_WRITE, aclWrite);
-                        comparableMap.put(Constants.BLOBNAMES, entity.getBlobNames());
-                        comparableMap.put(Constants.LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
+                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                         if(entity.getType().equals(defaultUserStore)) {

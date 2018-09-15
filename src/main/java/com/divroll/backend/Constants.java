@@ -41,7 +41,6 @@ public final class Constants {
     public static final String API_KEY = "apiKey";
     public static final String APP_ID = "appId";
     public static final String APP_NAME = "appName";
-    public static final String ENTITY_ID = "entityId";
     public static final String ENTITY_TYPE = "entityType";
     public static final String USER_ID = "userId";
     public static final String ROLE_ID = "roleId";
@@ -56,15 +55,17 @@ public final class Constants {
     public static final String DEFAULT_CHARSET = "utf-8";
     public static final String ACL_ASTERISK = "*";
     public static final String ENTITYSTORE_APPLICATION = "Application";
-    //public static final String METADATA_KEY = "_md";
-    public static final String BLOBNAMES = "blobnames";
-    public static final String LINKS = "links";
-    public static final String ACL_READ = "aclRead";
-    public static final String ACL_WRITE = "aclWrite";
+
+    public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
+    public static final String RESERVED_FIELD_BLOBNAMES = "blobnames";
+    public static final String RESERVED_FIELD_LINKS = "links";
+    public static final String RESERVED_FIELD_ACL_READ = "aclRead";
+    public static final String RESERVED_FIELD_ACL_WRITE = "aclWrite";
     public static final String RESERVED_FIELD_PUBLICWRITE = "publicWrite";
     public static final String RESERVED_FIELD_PUBLICREAD = "publicRead";
     public static final String RESERVED_FIELD_USERNAME = "username";
     public static final String RESERVED_FIELD_PASSWORD = "password";
+
     public static final String ERROR_MISSING_AUTH_TOKEN = "Missing auth token";
     public static final String ERROR_INVALID_AUTH_TOKEN = "Invalid auth token";
     public static final String ERROR_INVALID_ACL = "Invalid ACL";

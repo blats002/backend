@@ -22,12 +22,15 @@
 package com.divroll.backend.service.jee;
 
 import com.divroll.backend.Constants;
-import com.divroll.backend.model.Application;
+import com.divroll.backend.model.*;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.xodus.XodusStore;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -73,6 +76,33 @@ public class JeeApplicationService implements ApplicationService {
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 application.setAppName((String) entityMap.get(Constants.APP_NAME));
+                EmbeddedArrayIterable schemas = (EmbeddedArrayIterable) entityMap.get("schemas");
+                JSONArray schemasArray = schemas != null ? schemas.asJSONArray() : null;
+                if(schemasArray != null) {
+                    List<Schema> schemaList = new LinkedList<>();
+                    for(int i=0;i<schemasArray.length();i++) {
+                        JSONObject schemaObj = schemasArray.getJSONObject(i);
+                        String entityType = schemaObj.getString("entityType");
+                        JSONArray propertyTypes = schemaObj.getJSONArray("propertyTypes");
+                        SchemaPropertyList schemaPropertyList = new SchemaPropertyList();
+                        for(int j=0;j<propertyTypes.length();j++) {
+                            JSONObject propertyTypeObj = propertyTypes.getJSONObject(j);
+                            String pName = propertyTypeObj.getString("propertyName");
+                            String pType = propertyTypeObj.getString("propertyType");
+                            SchemaProperty schemaProperty = new SchemaProperty(pName, pType);
+                            schemaPropertyList.add(schemaProperty);
+                        }
+                        Schema schema = new Schema();
+                        schema.setEntityType(entityType);
+                        schema.setSchemaProperties(schemaPropertyList);
+                        schemaList.add(schema);
+                    }
+                    application.setSchemas(schemaList);
+                } else {
+                    // TODO:
+                }
+
+                System.out.println("--->" + new Gson().toJson(application));
                 return application;
             }
         }
@@ -85,6 +115,9 @@ public class JeeApplicationService implements ApplicationService {
         comparableMap.put(Constants.APP_ID, application.getAppId());
         comparableMap.put(Constants.API_KEY, application.getApiKey());
         comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
+        if(application.getAppName() != null) {
+            comparableMap.put(Constants.APP_NAME, application.getAppName());
+        }
         EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
                 Constants.MASTER_KEY, theMasterKey, String.class);
         store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
@@ -110,6 +143,45 @@ public class JeeApplicationService implements ApplicationService {
             }
         }
         return apps;
+    }
+
+    @Override
+    public void forceUpdate(Application application) {
+        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+        comparableMap.put(Constants.APP_ID, application.getAppId());
+        comparableMap.put(Constants.API_KEY, application.getApiKey());
+        comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
+        if(application.getAppName() != null) {
+            comparableMap.put(Constants.APP_NAME, application.getAppName());
+        }
+        List<Schema> schemas = application.getSchemas();
+        if(schemas != null && !schemas.isEmpty()) {
+            JSONArray schemaJsa = new JSONArray();
+            schemas.forEach(schema -> {
+                JSONObject schemaObj = new JSONObject();
+                String entityType = schema.getEntityType();
+                JSONArray propArray = new JSONArray();
+                schema.getSchemaProperties().forEach(schemaProperty -> {
+                    String pName = schemaProperty.getPropertyName();
+                    SchemaProperty.TYPE pType = schemaProperty.getPropertyType();
+                    JSONObject propObj = new JSONObject();
+                    propObj.put("propertyName", pName);
+                    propObj.put("propertyType", pType);
+                    propArray.put(propObj);
+                });
+                schemaObj.put("entityType", entityType);
+                schemaObj.put("propertyTypes", propArray);
+                schemaJsa.put(schemaObj);
+            });
+            System.out.println("--------------------->" + schemaJsa);
+            comparableMap.put("schemas", new EmbeddedArrayIterable(schemaJsa));
+        }
+        EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
+                Constants.APP_ID, application.getAppId(), String.class);
+        EntityId id = store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
+        System.out.println("Updated: " + id);
+//        Map<String,Comparable> resultMap = store.get(Constants.ENTITYSTORE_APPLICATION, id.toString());
+//        System.out.println("->" + resultMap);
     }
 
 }

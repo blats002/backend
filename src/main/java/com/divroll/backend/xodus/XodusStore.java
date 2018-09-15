@@ -44,6 +44,8 @@ public interface XodusStore {
 
     public Map<String, Comparable> get(String dir, String id);
 
+    public Map<String, Comparable> get(String dir, EntityId id);
+
     public <T> T get(String dir, String kind, String id, String key);
 
     public byte[] getBlob(String dir, final String kind, final String blobKey);

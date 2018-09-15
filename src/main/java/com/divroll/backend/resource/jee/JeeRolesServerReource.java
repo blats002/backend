@@ -77,7 +77,7 @@ public class JeeRolesServerReource extends BaseServerResource
             return null;
         }
 
-        if (!isMaster(appId, masterKey)) {
+        if (!isMaster()) {
 
             String authUserId = null;
 
@@ -110,7 +110,7 @@ public class JeeRolesServerReource extends BaseServerResource
     @Override
     public Role createRole(Role entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
