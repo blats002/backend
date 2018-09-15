@@ -72,7 +72,7 @@ public class JeeUserRepository implements UserRepository {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                                 entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -87,7 +87,7 @@ public class JeeUserRepository implements UserRepository {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                                 entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -139,7 +139,7 @@ public class JeeUserRepository implements UserRepository {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_READ, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                                 entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -154,7 +154,7 @@ public class JeeUserRepository implements UserRepository {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.ACL_WRITE, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                                 entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -212,11 +212,11 @@ public class JeeUserRepository implements UserRepository {
                             List<EntityStub> aclRead = new LinkedList<>();
                             List<EntityStub> aclWrite = new LinkedList<>();
 
-                            for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
+                            for (Entity aclReadLink : roleEntity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                                 aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                             }
 
-                            for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
+                            for (Entity aclWriteLink : roleEntity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                                 aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                             }
 
@@ -231,11 +231,11 @@ public class JeeUserRepository implements UserRepository {
                         List<EntityStub> aclRead = new LinkedList<>();
                         List<EntityStub> aclWrite = new LinkedList<>();
 
-                        for (Entity aclReadLink : userEntity.getLinks(Constants.ACL_READ)) {
+                        for (Entity aclReadLink : userEntity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                             aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
-                        for (Entity aclWriteLink : userEntity.getLinks(Constants.ACL_WRITE)) {
+                        for (Entity aclWriteLink : userEntity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                             aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
                         user.setAclRead(aclRead);
@@ -371,11 +371,11 @@ public class JeeUserRepository implements UserRepository {
                             List<EntityStub> aclRead = new LinkedList<>();
                             List<EntityStub> aclWrite = new LinkedList<>();
 
-                            for (Entity aclReadLink : roleEntity.getLinks(Constants.ACL_READ)) {
+                            for (Entity aclReadLink : roleEntity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                                 aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                             }
 
-                            for (Entity aclWriteLink : roleEntity.getLinks(Constants.ACL_WRITE)) {
+                            for (Entity aclWriteLink : roleEntity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                                 aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                             }
 
@@ -387,11 +387,11 @@ public class JeeUserRepository implements UserRepository {
                         List<EntityStub> aclRead = new LinkedList<>();
                         List<EntityStub> aclWrite = new LinkedList<>();
 
-                        for (Entity aclReadLink : userEntity.getLinks(Constants.ACL_READ)) {
+                        for (Entity aclReadLink : userEntity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
                             aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
                         }
 
-                        for (Entity aclWriteLink : userEntity.getLinks(Constants.ACL_WRITE)) {
+                        for (Entity aclWriteLink : userEntity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
                             aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                         }
 

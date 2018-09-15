@@ -66,7 +66,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     @Override
     public UserDTO getUser() { // login
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -77,7 +77,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 return null;
             }
             if (validateId(userId)) {
-                if (isMaster(appId, masterKey)) {
+                if (isMaster()) {
                     User userEntity = userRepository.getUser(appId, storeName, userId);
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -161,7 +161,7 @@ public class JeeUserServerResource extends BaseServerResource implements
     @Override
     public UserDTO updateUser(UserDTO entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -249,7 +249,7 @@ public class JeeUserServerResource extends BaseServerResource implements
             List<RoleDTO> roles = entity.getRoles();
             String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
-            Boolean isMaster = isMaster(appId, masterKey);
+            Boolean isMaster = isMaster();
 
             if (isMaster || (user.getPublicWrite() != null && user.getPublicWrite())) {
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
@@ -341,7 +341,7 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             }
 
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }

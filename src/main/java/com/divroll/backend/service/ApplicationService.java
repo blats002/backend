@@ -36,10 +36,12 @@ public interface ApplicationService {
 
     Application read(String appId);
 
-    void update(Application user, String masterKey);
+    void update(Application application, String masterKey);
 
     void delete(String id);
 
     List<Application> list(int skip, int limit);
+
+    void forceUpdate(Application application);
 
 }

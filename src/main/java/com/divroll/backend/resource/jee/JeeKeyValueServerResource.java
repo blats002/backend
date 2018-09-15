@@ -63,7 +63,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
     @Override
     public Representation getValue() {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -143,7 +143,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
     public Representation createValue(Representation entity) {
         JSONObject result = new JSONObject();
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -213,7 +213,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
     @Override
     public Representation updateValue(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -306,7 +306,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
     @Override
     public void deleteValue(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }

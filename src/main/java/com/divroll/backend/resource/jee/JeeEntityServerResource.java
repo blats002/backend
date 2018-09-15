@@ -29,6 +29,7 @@ import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.EntityStub;
+import com.divroll.backend.model.SchemaProperty;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
@@ -75,7 +76,7 @@ public class JeeEntityServerResource extends BaseServerResource
     @Override
     public Representation getEntity() {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -87,7 +88,7 @@ public class JeeEntityServerResource extends BaseServerResource
             if (app == null) {
                 return null;
             }
-            if (isMaster(appId, masterKey)) {
+            if (isMaster()) {
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
                     setStatus(Status.SUCCESS_OK);
@@ -154,7 +155,7 @@ public class JeeEntityServerResource extends BaseServerResource
     public Representation updateEntity(Representation entity) {
         JSONObject result = new JSONObject();
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -206,10 +207,11 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 }
 
-                boolean isMaster = isMaster(appId, masterKey);
+                boolean isMaster = isMaster();
 
                 if (isMaster) {
                     if (!comparableMap.isEmpty()) {
+                        validateSchema(entityType, comparableMap);
                         boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                         if (success) {
                             setStatus(Status.SUCCESS_OK);
@@ -230,10 +232,10 @@ public class JeeEntityServerResource extends BaseServerResource
                             Boolean authUserIdWriteAllow = false;
 
                             List<EntityStub> aclWriteList = new LinkedList<EntityStub>();
-                            if (entityMap.get(Constants.ACL_WRITE) != null) {
-                                aclWriteList = (List<EntityStub>) (entityMap.get(Constants.ACL_WRITE));
+                            if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
+                                aclWriteList = (List<EntityStub>) (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE));
                             }
-                            if (entityMap.get(Constants.ACL_WRITE) != null
+                            if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                                     && ACLHelper.contains(authUserId, aclWriteList)) {
                                 authUserIdWriteAllow = true;
                             }
@@ -249,6 +251,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
 
                             if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
+                                validateSchema(entityType, comparableMap);
                                 boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 if (success) {
                                     setStatus(Status.SUCCESS_OK);
@@ -274,7 +277,7 @@ public class JeeEntityServerResource extends BaseServerResource
     @Override
     public void deleteEntity(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
@@ -287,7 +290,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 return;
             }
-            if (!isMaster(appId, masterKey)) {
+            if (!isMaster()) {
                 Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (entityMap == null) {
@@ -299,11 +302,11 @@ public class JeeEntityServerResource extends BaseServerResource
                     Boolean authUserIdWriteAllow = false;
 
                     List<EntityStub> aclWriteList = new LinkedList<EntityStub>();
-                    if (entityMap.get(Constants.ACL_WRITE) != null) {
-                        aclWriteList = (List<EntityStub>) (entityMap.get(Constants.ACL_WRITE));
+                    if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
+                        aclWriteList = (List<EntityStub>) (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE));
                     }
 
-                    if (entityMap.get(Constants.ACL_WRITE) != null
+                    if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                             && ACLHelper.contains(authUserId, aclWriteList)) {
                         authUserIdWriteAllow = true;
                     }
@@ -349,5 +352,24 @@ public class JeeEntityServerResource extends BaseServerResource
         }
         return;
     }
+
+    private void validateSchema(String entityType, Map<String,Comparable> comparableMap)
+            throws IllegalArgumentException {
+        Application application = getApp();
+        comparableMap.forEach((key,value)-> {
+            application.getSchemas().forEach(schema -> {
+                if(schema.getEntityType() != null && schema.getEntityType().equals(entityType)) {
+                    schema.getSchemaProperties().forEach(schemaProperty -> {
+                        if(schemaProperty.getPropertyName().equals(key)) {
+                            SchemaProperty.TYPE type = schemaProperty.getPropertyType();
+                            System.out.println("PROPERTY TYPE:  " + type);
+                            System.out.println("PROPERTY VALUE: " + value);
+                        }
+                    });
+                }
+            });
+        });
+    }
+
 
 }

@@ -64,7 +64,7 @@ public class JeeBlobServerResource extends BaseServerResource
     @Override
     public void setBlob(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
@@ -94,14 +94,14 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
-            List<EntityStub> aclWriteList = map.get(Constants.ACL_WRITE) != null
-                    ? (List<EntityStub>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
+            List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
             if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
             }
 
-            if (isMaster(appId, masterKey)) {
+            if (isMaster()) {
                 isMaster = true;
             } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
@@ -151,7 +151,7 @@ public class JeeBlobServerResource extends BaseServerResource
     @Override
     public void deleteBlob(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
@@ -174,14 +174,14 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
-            List<EntityStub> aclWriteList = map.get(Constants.ACL_WRITE) != null
-                    ? (List<EntityStub>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
+            List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
             if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
             }
 
-            if (isMaster(appId, masterKey)) {
+            if (isMaster()) {
                 isMaster = true;
             } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
@@ -212,7 +212,7 @@ public class JeeBlobServerResource extends BaseServerResource
     @Override
     public Representation getBlob(Representation entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -236,14 +236,14 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
-            List<EntityStub> aclWriteList = map.get(Constants.ACL_WRITE) != null
-                    ? (List<EntityStub>) map.get(Constants.ACL_WRITE) : new LinkedList<>();
+            List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
             if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
                 isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
             }
 
-            if (isMaster(appId, masterKey)) {
+            if (isMaster()) {
                 isMaster = true;
             } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;

@@ -58,7 +58,7 @@ public class JeeRoleServerResource extends BaseServerResource
     @Override
     public Role getRole() {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -70,7 +70,7 @@ public class JeeRoleServerResource extends BaseServerResource
             if (app == null) {
                 return null;
             }
-            if (isMaster(appId, masterKey)) {
+            if (isMaster()) {
                 Role role = roleRepository.getRole(appId, storeName, roleId);
                 if (role != null) {
                     setStatus(Status.SUCCESS_OK);
@@ -120,7 +120,7 @@ public class JeeRoleServerResource extends BaseServerResource
     @Override
     public Role updateRole(Role entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
@@ -184,7 +184,7 @@ public class JeeRoleServerResource extends BaseServerResource
             publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
             publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
-            if (!isMaster(appId, masterKey)) {
+            if (!isMaster()) {
                 Role role = roleRepository.getRole(appId, storeName, roleId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (role == null) {
@@ -234,7 +234,7 @@ public class JeeRoleServerResource extends BaseServerResource
     @Override
     public void deleteRole(Role entity) {
         try {
-            if (!isAuthorized(appId, apiKey, masterKey)) {
+            if (!isAuthorized()) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
@@ -247,7 +247,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 return;
             }
-            if (!isMaster(appId, masterKey)) {
+            if (!isMaster()) {
                 Role role = roleRepository.getRole(appId, storeName, roleId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (role == null) {
