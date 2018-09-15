@@ -61,9 +61,6 @@ public class JeeEntityRepository implements EntityRepository {
     String defaultUserStore;
 
     @Inject
-    RoleRepository roleRepository;
-
-    @Inject
     XodusManager manager;
 
     @Override
@@ -165,9 +162,9 @@ public class JeeEntityRepository implements EntityRepository {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityId roleEntityId = txn.toEntityId(entityId);
+                    EntityId idOfEntity = txn.toEntityId(entityId);
 
-                    final Entity entity = txn.getEntity(roleEntityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
                     Iterator<String> it = comparableMap.keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
@@ -406,8 +403,8 @@ public class JeeEntityRepository implements EntityRepository {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityId roleEntityId = txn.toEntityId(entityId);
-                    Entity entity = txn.getEntity(roleEntityId);
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    Entity entity = txn.getEntity(idOfEntity);
                     success[0] = entity.delete();
                 }
             });
@@ -425,10 +422,10 @@ public class JeeEntityRepository implements EntityRepository {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityId userEntityId = txn.toEntityId(sourceId);
-                    EntityId roleEntityId = txn.toEntityId(targetId);
-                    Entity sourceEntity = txn.getEntity(userEntityId);
-                    Entity targetEntity = txn.getEntity(roleEntityId);
+                    EntityId idOfSource = txn.toEntityId(sourceId);
+                    EntityId idOfTarget = txn.toEntityId(targetId);
+                    Entity sourceEntity = txn.getEntity(idOfSource);
+                    Entity targetEntity = txn.getEntity(idOfTarget);
                     success[0] = sourceEntity.addLink(linkName, targetEntity);
                 }
             });
