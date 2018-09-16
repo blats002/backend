@@ -101,8 +101,6 @@ public class JeeApplicationService implements ApplicationService {
                 } else {
                     // TODO:
                 }
-
-                System.out.println("--->" + new Gson().toJson(application));
                 return application;
             }
         }
@@ -173,15 +171,11 @@ public class JeeApplicationService implements ApplicationService {
                 schemaObj.put("propertyTypes", propArray);
                 schemaJsa.put(schemaObj);
             });
-            System.out.println("--------------------->" + schemaJsa);
             comparableMap.put("schemas", new EmbeddedArrayIterable(schemaJsa));
         }
         EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
                 Constants.APP_ID, application.getAppId(), String.class);
         EntityId id = store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
-        System.out.println("Updated: " + id);
-//        Map<String,Comparable> resultMap = store.get(Constants.ENTITYSTORE_APPLICATION, id.toString());
-//        System.out.println("->" + resultMap);
     }
 
 }

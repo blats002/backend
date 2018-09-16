@@ -353,23 +353,4 @@ public class JeeEntityServerResource extends BaseServerResource
         return;
     }
 
-    private void validateSchema(String entityType, Map<String,Comparable> comparableMap)
-            throws IllegalArgumentException {
-        Application application = getApp();
-        comparableMap.forEach((key,value)-> {
-            application.getSchemas().forEach(schema -> {
-                if(schema.getEntityType() != null && schema.getEntityType().equals(entityType)) {
-                    schema.getSchemaProperties().forEach(schemaProperty -> {
-                        if(schemaProperty.getPropertyName().equals(key)) {
-                            SchemaProperty.TYPE type = schemaProperty.getPropertyType();
-                            System.out.println("PROPERTY TYPE:  " + type);
-                            System.out.println("PROPERTY VALUE: " + value);
-                        }
-                    });
-                }
-            });
-        });
-    }
-
-
 }
