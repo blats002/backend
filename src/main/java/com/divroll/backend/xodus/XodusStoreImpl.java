@@ -208,7 +208,6 @@ public class XodusStoreImpl implements XodusStore {
                     while (it.hasNext()) {
                         String key = it.next();
                         Comparable comparable = properties.get(key);
-                        System.out.println("Set property: " + key);
                         entity.setProperty(key, comparable);
                     }
                 }

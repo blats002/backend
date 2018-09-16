@@ -274,7 +274,6 @@ public class JeeUserServerResource extends BaseServerResource implements
                     setStatus(Status.SERVER_ERROR_INTERNAL);
                 }
             } else {
-                LOG.info("AUTH TOKEN: " + authToken);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 boolean isAccess = false;
                 if (authUserId != null) {
@@ -284,7 +283,6 @@ public class JeeUserServerResource extends BaseServerResource implements
                         final User authUser = userRepository.getUser(appId, storeName, authUserId);
                         for (Role role : authUser.getRoles()) {
                             String roleId = role.getEntityId();
-                            System.out.println("ACL WRITE: " + user.getAclWrite());
                             if (ACLHelper.contains(roleId, user.getAclWrite())) {
                                 isAccess = true;
                             }
