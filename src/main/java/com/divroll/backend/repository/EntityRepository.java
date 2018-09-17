@@ -65,4 +65,6 @@ public interface EntityRepository {
     List<String> getLinkNames(String instance, String storeName, String entityId);
 
     List<String> getBlobKeys(String instance, String storeName, String entityId);
+
+    boolean deleteProperty(String instance, String storeName, String propertyNamne);
 }

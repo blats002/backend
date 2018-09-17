@@ -396,6 +396,30 @@ public class JeeEntityRepository implements EntityRepository {
     }
 
     @Override
+    public boolean deleteProperty(String instance, String storeName, String propertyName) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable entities = txn.findWithProp(storeName, propertyName);
+                    final boolean[] hasError = {false};
+                    entities.forEach(entity -> {
+                        if(!entity.deleteProperty(propertyName)) {
+                            hasError[0] = true;
+                        }
+                    });
+                    success[0] = !hasError[0];
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return success[0];
+    }
+
+    @Override
     public boolean deleteEntity(String instance, String storeName, final String entityId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
