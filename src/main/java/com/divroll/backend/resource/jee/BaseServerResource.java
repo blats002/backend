@@ -79,6 +79,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected Boolean publicRead;
     protected Boolean publicWrite;
 
+    protected String propertyName;
+
     protected String linkName;
     protected String targetEntityId;
 
@@ -109,7 +111,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
         blobName = getAttribute("blobName");
         userId = getAttribute(Constants.USER_ID);
         roleId = getAttribute(Constants.ROLE_ID);
-
+        propertyName = getAttribute("propertyName");
         linkName = getAttribute("linkName");
         targetEntityId = getAttribute("targetEntityId");
 
