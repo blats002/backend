@@ -459,6 +459,21 @@ public class JeeEntityRepository implements EntityRepository {
         } finally {
             ////entityStore.close();
         }
+
+        return success[0];
+    }
+
+    @Override
+    public boolean deleteEntityType(String instance, String entityType) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            PersistentEntityStoreImpl storeImp = (PersistentEntityStoreImpl) entityStore;
+            storeImp.deleteEntityType(entityType);
+            success[0] = true;
+        } finally {
+            ////entityStore.close();
+        }
         return success[0];
     }
 

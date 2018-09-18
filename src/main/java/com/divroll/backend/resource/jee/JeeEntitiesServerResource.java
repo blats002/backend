@@ -29,7 +29,6 @@ import com.divroll.backend.model.*;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntitiesResource;
 import com.divroll.backend.service.WebTokenService;
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONArray;
@@ -170,10 +169,6 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                return null;
-            }
 
             int skipValue = 0;
             int limitValue = DEFAULT_LIMIT;
@@ -205,7 +200,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 String authUserId = null;
 
                 try {
-                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                    authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
                 } catch (Exception e) {
                     // do nothing
                 }
