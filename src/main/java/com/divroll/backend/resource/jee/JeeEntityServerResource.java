@@ -29,13 +29,10 @@ import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.EntityStub;
-import com.divroll.backend.model.SchemaProperty;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
-import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.EntityResource;
-import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -44,7 +41,9 @@ import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -59,12 +58,6 @@ public class JeeEntityServerResource extends BaseServerResource
 
     @Inject
     RoleRepository roleRepository;
-
-    @Inject
-    UserRepository userRepository;
-
-    @Inject
-    ApplicationService applicationService;
 
     @Inject
     WebTokenService webTokenService;
@@ -84,10 +77,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing entity ID in request");
                 return null;
             }
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                return null;
-            }
+
             if (isMaster()) {
                 Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
@@ -104,7 +94,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 String authUserId = null;
 
                 try {
-                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                    authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -172,11 +162,11 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 Map<String, Comparable> comparableMap = JSON.toComparableMap(entityJSONObject);
 
-                Application app = applicationService.read(appId);
-                if (app == null) {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Application does not exists");
-                    return null;
-                }
+//                Application app = applicationService.read(appId);
+//                if (app == null) {
+//                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Application does not exists");
+//                    return null;
+//                }
 
                 String[] read = new String[]{};
                 String[] write = new String[]{};
@@ -224,7 +214,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 } else {
                     if (!isMaster) {
                         Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
-                        String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                        String authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
                         if (entityMap == null) {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                         } else {

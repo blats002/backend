@@ -45,6 +45,8 @@ public interface EntityRepository {
 
     boolean deleteEntities(String instance, String storeName);
 
+    boolean deleteEntityType(String instance, String entityType);
+
     boolean linkEntity(String instance, String storeName, String linkName, String sourceId, String targetId);
 
     boolean unlinkEntity(String instance, String storeName, String linkName, String sourceId, String targetId);
