@@ -1,5 +1,6 @@
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.model.Keys;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.PropertyResource;
 import com.google.inject.Inject;
@@ -15,6 +16,10 @@ public class JeePropertyServerResource extends BaseServerResource
     @Override
     public void deleteProperty(Representation representation) {
         if(propertyName == null) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return;
+        }
+        if(Keys.isReservedPropertyKey(propertyName)) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             return;
         }

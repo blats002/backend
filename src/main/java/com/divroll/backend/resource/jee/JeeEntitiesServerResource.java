@@ -238,4 +238,24 @@ public class JeeEntitiesServerResource extends BaseServerResource
         return null;
     }
 
+    @Override
+    public Representation deleteEntities() {
+        try {
+            if(isMaster()) {
+                boolean status = entityRepository.deleteEntities(appId, entityType);
+                if(status) {
+                    setStatus(Status.SUCCESS_OK);
+                } else {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                }
+            } else {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+        }
+        return null;
+    }
+
 }

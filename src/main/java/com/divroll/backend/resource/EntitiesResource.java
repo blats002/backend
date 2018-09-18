@@ -22,6 +22,7 @@
 package com.divroll.backend.resource;
 
 import org.restlet.representation.Representation;
+import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
@@ -36,4 +37,8 @@ public interface EntitiesResource {
 
     @Get
     Representation getEntities();
+
+    @Delete
+    Representation deleteEntities();
+
 }
