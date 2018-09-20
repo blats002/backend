@@ -57,8 +57,8 @@ public final class Constants {
     public static final String ENTITYSTORE_APPLICATION = "Application";
 
     public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
-    public static final String RESERVED_FIELD_BLOBNAMES = "blobnames";
-    public static final String RESERVED_FIELD_LINKS = "links";
+    public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";
+    public static final String RESERVED_FIELD_LINKS = "linkNames";
     public static final String RESERVED_FIELD_ACL_READ = "aclRead";
     public static final String RESERVED_FIELD_ACL_WRITE = "aclWrite";
     public static final String RESERVED_FIELD_PUBLICWRITE = "publicWrite";

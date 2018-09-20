@@ -88,7 +88,7 @@ public class JeeLinkServerResource extends BaseServerResource
             }
 
         } catch (Exception e) {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
         }
     }
 
