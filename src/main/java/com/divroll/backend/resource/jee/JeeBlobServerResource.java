@@ -33,12 +33,20 @@ import com.divroll.backend.service.WebTokenService;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.CountingInputStream;
 import com.google.inject.Inject;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.restlet.Request;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -126,11 +134,28 @@ public class JeeBlobServerResource extends BaseServerResource
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     }
                 } else {
-                    if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, entity.getStream())) {
-                        setStatus(Status.SUCCESS_CREATED);
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(
+                            entity.getMediaType(), true)) {
+                        Request restletRequest = getRequest();
+                        HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
+                        ServletFileUpload upload = new ServletFileUpload();
+                        FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+                        while (fileIterator.hasNext()) {
+                            FileItemStream item = fileIterator.next();
+                            String fieldName = item.getFieldName();
+                            String name = item.getName();
+                            if(item.isFormField()) {
+                            } else {
+                                CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
+                                if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, countingInputStream)) {
+                                    setStatus(Status.SUCCESS_CREATED);
+                                } else {
+                                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                                }
+                            }
+                        }
                     }
+
                 }
 
             } else {
