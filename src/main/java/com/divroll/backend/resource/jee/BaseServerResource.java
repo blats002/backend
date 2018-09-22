@@ -124,6 +124,18 @@ public class BaseServerResource extends SelfInjectingServerResource {
         masterKey = headers.getFirstValue(Constants.HEADER_MASTER_KEY);
         authToken = headers.getFirstValue(Constants.HEADER_AUTH_TOKEN);
 
+        if(appId == null) {
+            appId = getQueryValue(Constants.APP_ID);
+        }
+
+        if(apiKey == null) {
+            apiKey= getQueryValue(Constants.API_KEY);
+        }
+
+        if(masterKey == null) {
+            masterKey= getQueryValue(Constants.MASTER_KEY);
+        }
+
         aclRead = headers.getFirstValue(Constants.HEADER_ACL_READ);
         aclWrite = headers.getFirstValue(Constants.HEADER_ACL_WRITE);
 

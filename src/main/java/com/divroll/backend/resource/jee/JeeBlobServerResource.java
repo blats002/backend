@@ -39,6 +39,7 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.restlet.Request;
+import org.restlet.data.Disposition;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
@@ -302,6 +303,8 @@ public class JeeBlobServerResource extends BaseServerResource
                         return null;
                     } else {
                         Representation representation = new InputRepresentation(is);
+                        representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+                        //representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
                         setStatus(Status.SUCCESS_OK);
                         return representation;
                     }
