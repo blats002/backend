@@ -28,6 +28,7 @@ import com.divroll.backend.model.User;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserRoleResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -61,6 +62,9 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
     @Inject
     WebTokenService webTokenService;
 
+    @Inject
+    PubSubService pubSubService;
+
     @Override
     public void createUserRoleLink(Representation entity) {
         try {
@@ -86,6 +90,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
                 if (isUserAuthForRole(user, role)) {
                     boolean success = roleRepository.linkRole(appId, storeName, role.getEntityId(), user.getEntityId());
                     if (success) {
+                        pubSubService.linked(appId, storeName, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -129,6 +134,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
                 if (isUserAuthForRole(user, role)) {
                     boolean success = roleRepository.unlinkRole(appId, storeName, role.getEntityId(), user.getEntityId());
                     if (success) {
+                        pubSubService.unlinked(appId, storeName, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

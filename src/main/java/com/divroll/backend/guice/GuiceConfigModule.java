@@ -30,9 +30,11 @@ import com.divroll.backend.repository.jee.JeeRoleRepository;
 import com.divroll.backend.repository.jee.JeeUserRepository;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.KeyValueService;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.divroll.backend.service.jee.JeeApplicationService;
 import com.divroll.backend.service.jee.JeeKeyValueService;
+import com.divroll.backend.service.jee.JeePubSubService;
 import com.divroll.backend.service.jee.JeeWebTokenService;
 import com.divroll.backend.xodus.*;
 import com.google.inject.AbstractModule;
@@ -80,6 +82,7 @@ public class GuiceConfigModule extends AbstractModule {
         bind(WebTokenService.class).to(JeeWebTokenService.class).in(Scopes.SINGLETON);
         bind(ApplicationService.class).to(JeeApplicationService.class).in(Scopes.SINGLETON);
         bind(KeyValueService.class).to(JeeKeyValueService.class).in(Scopes.SINGLETON);
+        bind(PubSubService.class).to(JeePubSubService.class).in(Scopes.SINGLETON);
 
         Names.bindProperties(binder(), readProperties());
     }

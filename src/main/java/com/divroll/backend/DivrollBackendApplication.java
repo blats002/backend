@@ -50,7 +50,7 @@ public class DivrollBackendApplication extends Application {
 
     private static final Logger LOG
             = Logger.getLogger(DivrollBackendApplication.class.getName());
-    private static final String ROOT_URI = "/divroll/";
+    private static final String ROOT_URI = "/";
 
     /**
      * Creates a root Restlet that will receive all incoming calls.

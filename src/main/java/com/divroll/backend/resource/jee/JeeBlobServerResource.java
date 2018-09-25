@@ -29,6 +29,7 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.BlobResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteSource;
@@ -69,6 +70,9 @@ public class JeeBlobServerResource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public void setBlob(Representation entity) {
@@ -130,6 +134,7 @@ public class JeeBlobServerResource extends BaseServerResource
                     byte[] bytes = BaseEncoding.base64().decode(base64);
                     InputStream inputStream = ByteSource.wrap(bytes).openStream();
                     if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, inputStream)) {
+                        pubSubService.updated(appId, entityType, entityId);
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -149,6 +154,7 @@ public class JeeBlobServerResource extends BaseServerResource
                             } else {
                                 CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
                                 if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, countingInputStream)) {
+                                    pubSubService.updated(appId, entityType, entityId);
                                     setStatus(Status.SUCCESS_CREATED);
                                 } else {
                                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -222,6 +228,7 @@ public class JeeBlobServerResource extends BaseServerResource
 
             if (isMaster || isWriteAccess || isPublic) {
                 if (entityRepository.deleteEntityBlob(appId, entityType, entityId, blobName)) {
+                    pubSubService.updated(appId, entityType, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

@@ -29,6 +29,7 @@ import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UsersResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -58,6 +59,9 @@ public class JeeUsersServerResource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public Users listUsers() {
@@ -196,6 +200,7 @@ public class JeeUsersServerResource extends BaseServerResource
                         for (Object roleId : Arrays.asList(roleArray)) {
                             user.getRoles().add(new Role((String) roleId));
                         }
+                        pubSubService.created(appId, storeName, entityId);
                         setStatus(Status.SUCCESS_CREATED);
                         return UserDTO.convert((User) ObjectLogger.log(user));
                     } else {

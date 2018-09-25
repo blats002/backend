@@ -29,6 +29,7 @@ import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -62,6 +63,9 @@ public class JeeUserServerResource extends BaseServerResource implements
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public UserDTO getUser() { // login
@@ -268,6 +272,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                     for (Object roleId : Arrays.asList(roleArray)) {
                         resultUser.getRoles().add(new Role((String) roleId));
                     }
+                    pubSubService.updated(appId, storeName, userId);
                     setStatus(Status.SUCCESS_OK);
                     return UserDTO.convert((User) ObjectLogger.log(resultUser));
                 } else {
@@ -307,6 +312,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                             for (Object roleId : Arrays.asList(roleArray)) {
                                 resultUser.getRoles().add(new Role((String) roleId));
                             }
+                            pubSubService.updated(appId, storeName, userId);
                             setStatus(Status.SUCCESS_OK);
                             return UserDTO.convert((User) ObjectLogger.log(resultUser));
                         } else {
@@ -387,6 +393,7 @@ public class JeeUserServerResource extends BaseServerResource implements
 
             if (isMaster || isAccess || publicWrite) {
                 if (userRepository.deleteUser(appId, storeName, id)) {
+                    pubSubService.deleted(appId, storeName, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);
