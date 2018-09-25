@@ -32,6 +32,7 @@ import com.divroll.backend.model.Roles;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.RolesResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -60,6 +61,9 @@ public class JeeRolesServerReource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public Roles getRoles() {
@@ -181,6 +185,7 @@ public class JeeRolesServerReource extends BaseServerResource
             roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite);
 
             if (roleId != null) {
+                pubSubService.created(appId, storeName, entityId);
                 setStatus(Status.SUCCESS_CREATED);
                 Role role = new Role();
                 role.setName(roleName);

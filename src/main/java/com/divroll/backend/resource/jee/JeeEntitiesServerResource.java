@@ -28,6 +28,7 @@ import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntitiesResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
@@ -57,6 +58,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public Representation createEntity(Representation entity) {
@@ -146,6 +150,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
+                    pubSubService.created(appId, entityType, entityId);
                     setStatus(Status.SUCCESS_CREATED);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -239,6 +244,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
             if(isMaster()) {
                 boolean status = entityRepository.deleteEntities(appId, entityType);
                 if(status) {
+                    pubSubService.deletedAll(appId, entityType);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

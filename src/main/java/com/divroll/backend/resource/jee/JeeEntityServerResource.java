@@ -33,6 +33,7 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.EntityResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -61,6 +62,9 @@ public class JeeEntityServerResource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Inject
     @Named("defaultUserStore")
@@ -204,6 +208,7 @@ public class JeeEntityServerResource extends BaseServerResource
                         validateSchema(entityType, comparableMap);
                         boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                         if (success) {
+                            pubSubService.updated(appId, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -244,6 +249,7 @@ public class JeeEntityServerResource extends BaseServerResource
                                 validateSchema(entityType, comparableMap);
                                 boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 if (success) {
+                                    pubSubService.updated(appId, entityType, entityId);
                                     setStatus(Status.SUCCESS_OK);
                                 } else {
                                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -319,6 +325,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     if (publicWrite || authUserIdWriteAllow || isAccess) {
                         Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
                         if (success) {
+                            pubSubService.deleted(appId, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -331,6 +338,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 // Master key bypasses all checks
                 Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
                 if (success) {
+                    pubSubService.deleted(appId, entityType, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

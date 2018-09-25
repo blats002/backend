@@ -29,6 +29,7 @@ import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.RoleResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -54,6 +55,9 @@ public class JeeRoleServerResource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public Role getRole() {
@@ -193,7 +197,8 @@ public class JeeRoleServerResource extends BaseServerResource
                     if (role.getPublicWrite() || role.getAclWrite().contains(authUserId)) {
                         Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
                         if (success) {
-                            setStatus(Status.SUCCESS_CREATED);
+                            pubSubService.updated(appId, storeName, roleId);
+                            setStatus(Status.SUCCESS_OK);
                             role.setPublicWrite(publicWrite);
                             role.setPublicRead(publicRead);
                             role.setName(newRoleName);
@@ -208,6 +213,7 @@ public class JeeRoleServerResource extends BaseServerResource
             } else {
                 Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
                 if (success) {
+                    pubSubService.updated(appId, storeName, roleId);
                     setStatus(Status.SUCCESS_OK);
                     Role role = new Role();
                     role.setName(newRoleName);
@@ -256,6 +262,7 @@ public class JeeRoleServerResource extends BaseServerResource
                     if (role.getPublicWrite() || ACLHelper.contains(authUserId, role.getAclWrite())) {
                         Boolean success = roleRepository.deleteRole(appId, storeName, roleId);
                         if (success) {
+                            pubSubService.deleted(appId, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -268,6 +275,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 // Master key bypasses all checks
                 Boolean success = roleRepository.deleteRole(appId, storeName, roleId);
                 if (success) {
+                    pubSubService.deleted(appId, entityType, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

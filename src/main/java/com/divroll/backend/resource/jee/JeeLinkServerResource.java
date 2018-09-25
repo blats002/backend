@@ -8,6 +8,7 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.LinkResource;
+import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import org.restlet.data.Status;
@@ -28,6 +29,9 @@ public class JeeLinkServerResource extends BaseServerResource
 
     @Inject
     WebTokenService webTokenService;
+
+    @Inject
+    PubSubService pubSubService;
 
     @Override
     public void createLink(Representation entity) {
@@ -79,6 +83,7 @@ public class JeeLinkServerResource extends BaseServerResource
             if (isMaster || isWriteAccess || isPublic) {
                 if(entityRepository.linkEntity(appId, entityType, linkName,
                         entityId, targetEntityId)) {
+                    pubSubService.linked(appId, entityType, linkName, entityId, targetEntityId);
                     setStatus(Status.SUCCESS_CREATED);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -146,6 +151,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 if (isMaster || isWriteAccess || isPublic) {
                     if(entityRepository.unlinkEntity(appId, entityType, linkName,
                             entityId, targetEntityId)) {
+                        pubSubService.unlinked(appId, entityType, linkName, entityId, targetEntityId);
                         setStatus(Status.SUCCESS_OK);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
