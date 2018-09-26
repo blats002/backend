@@ -177,12 +177,17 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if (aclRead != null) {
                     try {
-                        JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                        if(!ACLHelper.validate(jsonArray)) {
-                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
-                            return null;
+                        if(aclRead.isEmpty()) {
+                            read = new String[]{};
+                        } else {
+                            JSONArray jsonArray = JSONArray.parseArray(aclRead);
+                            if(!ACLHelper.validate(jsonArray)) {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                                return null;
+                            }
+                            read = ACLHelper.onlyIds(jsonArray);
                         }
-                        read = ACLHelper.onlyIds(jsonArray);
+
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -190,12 +195,17 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if (aclWrite != null) {
                     try {
-                        JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                        if(!ACLHelper.validate(jsonArray)) {
-                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
-                            return null;
+                        if(aclWrite.isEmpty()) {
+                            write = new String[]{};
+                        } else {
+                            JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+                            if(!ACLHelper.validate(jsonArray)) {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_INVALID_ACL);
+                                return null;
+                            }
+                            write = ACLHelper.onlyIds(jsonArray);
                         }
-                        write = ACLHelper.onlyIds(jsonArray);
+
                     } catch (Exception e) {
                         // do nothing
                     }
@@ -262,9 +272,12 @@ public class JeeEntityServerResource extends BaseServerResource
                 }
 
             }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            setStatus(Status.SERVER_ERROR_INTERNAL, e.getMessage());
         }
         Representation representation = new JsonRepresentation(result.toJSONString());
         return representation;
