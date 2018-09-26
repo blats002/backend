@@ -199,6 +199,27 @@ public class JeeUserRepository implements UserRepository {
     }
 
     @Override
+    public boolean updateUserPassword(String instance, String storeName, String entityId, String newPassword) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    if (newPassword != null) {
+                        entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, newPassword);
+                    }
+                    success[0] = true;
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return success[0];    }
+
+    @Override
     public User getUser(String instance, String storeName, final String userID) {
         final User[] entity = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);

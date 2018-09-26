@@ -40,6 +40,8 @@ public interface UserRepository {
                        String[] read, String[] write,
                        final Boolean publicRead, final Boolean publicWrite, String[] roles);
 
+    boolean updateUserPassword(String instance, String storeName, String entityId, String newPassword);
+
     User getUser(String instance, String storeName, String userID);
 
     User getUserByUsername(String instance, String storeName, String username);
