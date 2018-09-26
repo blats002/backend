@@ -36,10 +36,11 @@ import java.io.IOException;
 @Singleton
 @AtmosphereHandlerService(path = "/{topic}",
         interceptors = {
-            AtmosphereResourceLifecycleInterceptor.class,
-            TrackMessageSizeInterceptor.class,
-            BroadcastOnPostAtmosphereInterceptor.class,
-            SuspendTrackerInterceptor.class},
+                AtmosphereResourceLifecycleInterceptor.class,
+                AuthenticationInterceptor.class,
+                TrackMessageSizeInterceptor.class,
+                BroadcastOnPostAtmosphereInterceptor.class,
+                SuspendTrackerInterceptor.class},
         broadcaster = SimpleBroadcaster.class)
 public class AtmosphereHandlerPubSub extends AtmosphereHandlerAdapter {
 
