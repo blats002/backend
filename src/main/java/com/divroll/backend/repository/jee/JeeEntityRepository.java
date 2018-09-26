@@ -239,6 +239,10 @@ public class JeeEntityRepository implements EntityRepository {
                     final Entity entity = txn.getEntity(idOfEntity);
 
                     for (String property : entity.getPropertyNames()) {
+                        if( (property.startsWith("read(") && property.endsWith(")"))
+                            || (property.startsWith("write(") && property.endsWith(")")) ) {
+                            continue;
+                        }
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
                             if(value instanceof EmbeddedEntityIterable) {
@@ -567,6 +571,10 @@ public class JeeEntityRepository implements EntityRepository {
                     Entity entity = source.getLink(linkName);
 
                     for (String property : entity.getPropertyNames()) {
+                        if( (property.startsWith("read(") && property.endsWith(")"))
+                                || (property.startsWith("write(") && property.endsWith(")")) ) {
+                            continue;
+                        }
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
                             comparableMap.put(property, value);
@@ -618,6 +626,10 @@ public class JeeEntityRepository implements EntityRepository {
                     for (Entity entity : result) {
                         final Map<String, Object> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
+                            if( (property.startsWith("read(") && property.endsWith(")"))
+                                    || (property.startsWith("write(") && property.endsWith(")")) ) {
+                                continue;
+                            }
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {
@@ -711,6 +723,10 @@ public class JeeEntityRepository implements EntityRepository {
                     for (Entity entity : result) {
                         final Map<String, Object> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
+                            if( (property.startsWith("read(") && property.endsWith(")"))
+                                    || (property.startsWith("write(") && property.endsWith(")")) ) {
+                                continue;
+                            }
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {
