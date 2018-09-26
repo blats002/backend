@@ -34,10 +34,10 @@ import org.atmosphere.util.SimpleBroadcaster;
 import java.io.IOException;
 
 @Singleton
-@AtmosphereHandlerService(path = "/{topic}",
+@AtmosphereHandlerService(path = "/{applicationId}/{topic}",
         interceptors = {
                 AtmosphereResourceLifecycleInterceptor.class,
-                AuthenticationInterceptor.class,
+                //AuthenticationInterceptor.class,
                 TrackMessageSizeInterceptor.class,
                 BroadcastOnPostAtmosphereInterceptor.class,
                 SuspendTrackerInterceptor.class},
