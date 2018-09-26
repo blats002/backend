@@ -125,11 +125,17 @@ public class JeeRoleRepository implements RoleRepository {
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
+                        entity.deleteLinks(Constants.RESERVED_FIELD_ACL_READ);
+                        entity.getPropertyNames().forEach(propertyName -> {
+                            if(propertyName.startsWith("read(") && propertyName.endsWith(")")) {
+                                entity.deleteProperty(propertyName);
+                            }
+                        });
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
-                                entity.addLink(Constants.RESERVED_FIELD_PUBLICWRITE, userOrRoleEntity);
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                                 entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
@@ -139,6 +145,12 @@ public class JeeRoleRepository implements RoleRepository {
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
+                        entity.deleteLinks(Constants.RESERVED_FIELD_ACL_WRITE);
+                        entity.getPropertyNames().forEach(propertyName -> {
+                            if(propertyName.startsWith("write(") && propertyName.endsWith(")")) {
+                                entity.deleteProperty(propertyName);
+                            }
+                        });
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);

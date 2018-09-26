@@ -135,6 +135,12 @@ public class JeeUserRepository implements UserRepository {
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
+                        entity.deleteLinks(Constants.RESERVED_FIELD_ACL_READ);
+                        entity.getPropertyNames().forEach(propertyName -> {
+                            if(propertyName.startsWith("read(") && propertyName.endsWith(")")) {
+                                entity.deleteProperty(propertyName);
+                            }
+                        });
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
@@ -150,6 +156,12 @@ public class JeeUserRepository implements UserRepository {
                     if (write != null) {
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
+                        entity.deleteLinks(Constants.RESERVED_FIELD_ACL_WRITE);
+                        entity.getPropertyNames().forEach(propertyName -> {
+                            if(propertyName.startsWith("write(") && propertyName.endsWith(")")) {
+                                entity.deleteProperty(propertyName);
+                            }
+                        });
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
