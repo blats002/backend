@@ -101,6 +101,7 @@ public class JeeUserRepository implements UserRepository {
                         Entity roleEntity = txn.getEntity(roleEntityId);
                         if (roleEntity != null) {
                             entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                            entity.setProperty("role(" + roleId + ")", true);
                         }
                     }
 
@@ -178,12 +179,18 @@ public class JeeUserRepository implements UserRepository {
                     if (!roleList.isEmpty()) {
                         entity.deleteLinks(Constants.ROLE_LINKNAME);
                     }
+                    entity.getPropertyNames().forEach(propertyName -> {
+                        if(propertyName.startsWith("role(") && propertyName.endsWith(")")) {
+                            entity.deleteProperty(propertyName);
+                        }
+                    });
                     for (String roleId : roleList) {
                         if(roleId != null && !roleId.isEmpty()) {
                             EntityId roleEntityId = txn.toEntityId(roleId);
                             Entity roleEntity = txn.getEntity(roleEntityId);
                             if (roleEntity != null) {
                                 entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                                entity.setProperty("role(" + roleId + ")", true);
                             }
                         }
 
