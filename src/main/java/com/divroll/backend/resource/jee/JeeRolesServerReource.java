@@ -91,7 +91,7 @@ public class JeeRolesServerReource extends BaseServerResource
                 // do nothing
             }
             List<Role> results = roleRepository.listRoles(appId, storeName, authUserId,
-                    skipValue, limitValue, sort, false);
+                    skipValue, limitValue, sort, false, filters);
             Roles roles = new Roles();
             roles.setResults(results);
             roles.setLimit(Long.valueOf(limitValue));
@@ -100,7 +100,7 @@ public class JeeRolesServerReource extends BaseServerResource
             return roles;
         } else {
             List<Role> results = roleRepository.listRoles(appId, storeName, null,
-                    skipValue, limitValue, sort, true);
+                    skipValue, limitValue, sort, true, filters);
             Roles roles = new Roles();
             roles.setResults(results);
             roles.setLimit(Long.valueOf(limitValue));

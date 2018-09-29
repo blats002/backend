@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.model.User;
+import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;
 import com.google.inject.Inject;
@@ -41,7 +42,12 @@ import java.util.List;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeUserRepository implements UserRepository {
+public class JeeUserRepository extends JeeBaseRespository
+        implements UserRepository {
+
+    @Inject
+    @Named("defaultRoleStore")
+    String roleStoreName;
 
     @Inject
     @Named("xodusRoot")
@@ -355,7 +361,7 @@ public class JeeUserRepository implements UserRepository {
 
     @Override
     public List<User> listUsers(String instance, String storeName, String userIdRoleId,
-                                int skip, int limit, final String sort, boolean isMastekey) {
+                                int skip, int limit, final String sort, boolean isMastekey, List<TransactionFilter> filters) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         final List<User> users = new LinkedList<>();
         try {
@@ -365,8 +371,14 @@ public class JeeUserRepository implements UserRepository {
                     EntityIterable result = null;
                     if (isMastekey) {
                         result = txn.getAll(storeName);
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                     } else if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -379,6 +391,9 @@ public class JeeUserRepository implements UserRepository {
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
                                 .concat(txn.find(storeName, "publicRead", true));
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -452,4 +467,8 @@ public class JeeUserRepository implements UserRepository {
         return users;
     }
 
+    @Override
+    protected String getRoleStoreName() {
+        return roleStoreName;
+    }
 }

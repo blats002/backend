@@ -88,7 +88,7 @@ public class JeeUsersServerResource extends BaseServerResource
             }
             List<User> processedResults = new LinkedList<>();
             List<User> results = userRepository.listUsers(appId, storeName, authUserId,
-                    skipValue, limitValue, sort, false);
+                    skipValue, limitValue, sort, false, filters);
             Users users = new Users();
             users.setResults(DTOHelper.convert(results));
             users.setLimit(Long.valueOf(limitValue));
@@ -97,7 +97,7 @@ public class JeeUsersServerResource extends BaseServerResource
             return users;
         } else {
             List<User> results = userRepository
-                    .listUsers(appId, storeName, null, skipValue, limitValue, null, true);
+                    .listUsers(appId, storeName, null, skipValue, limitValue, null, true, filters);
             Users users = new Users();
             users.setResults(DTOHelper.convert(results));
             users.setLimit(Long.valueOf(skipValue));
