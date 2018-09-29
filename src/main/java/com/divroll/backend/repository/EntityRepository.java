@@ -21,6 +21,8 @@
  */
 package com.divroll.backend.repository;
 
+import com.divroll.backend.model.filter.TransactionFilter;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +60,7 @@ public interface EntityRepository {
     List<Map<String, Object>> getLinkedEntities(String instance, String storeName, String entityId, String linkName);
 
     List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
-                                           int skip, int limit, String sort, boolean isMasterKey);
+                                           int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters);
 
     InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
 

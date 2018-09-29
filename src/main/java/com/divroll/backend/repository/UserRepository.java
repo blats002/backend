@@ -22,6 +22,7 @@
 package com.divroll.backend.repository;
 
 import com.divroll.backend.model.User;
+import com.divroll.backend.model.filter.TransactionFilter;
 
 import java.util.List;
 
@@ -49,5 +50,5 @@ public interface UserRepository {
     boolean deleteUser(String instance, String storeName, String userID);
 
     List<User> listUsers(String instance, String storeName, String userIdRoleId,
-                         int skip, int limit, String sort, boolean isMasterkey);
+                         int skip, int limit, String sort, boolean isMasterkey, List<TransactionFilter> filters);
 }

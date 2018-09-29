@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.EmbeddedArrayIterable;
 import com.divroll.backend.model.EmbeddedEntityIterable;
 import com.divroll.backend.model.EntityStub;
+import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -43,7 +44,7 @@ import java.util.logging.Logger;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeEntityRepository implements EntityRepository {
+public class JeeEntityRepository extends JeeBaseRespository implements EntityRepository {
 
     private static final Logger LOG
             = Logger.getLogger(JeeEntityRepository.class.getName());
@@ -682,7 +683,7 @@ public class JeeEntityRepository implements EntityRepository {
 
     @Override
     public List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
-                                                  int skip, int limit, String sort, boolean isMasterKey) {
+                                                  int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final List<Map<String, Object>> entities = new LinkedList<Map<String, Object>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -692,10 +693,16 @@ public class JeeEntityRepository implements EntityRepository {
                     EntityIterable result = null;
                     if (isMasterKey) {
                         result = txn.getAll(storeName).skip(skip).take(limit);
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                     } else if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
                         long count = result.count();
                         LOG.info("COUNT: " + count);
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -709,6 +716,9 @@ public class JeeEntityRepository implements EntityRepository {
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
                                 .concat(txn.find(storeName, "publicRead", true));
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -772,5 +782,10 @@ public class JeeEntityRepository implements EntityRepository {
             ////entityStore.close();
         }
         return entities;
+    }
+
+    @Override
+    protected String getRoleStoreName() {
+        return defaultRoleStore;
     }
 }

@@ -25,6 +25,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
 import com.divroll.backend.guice.SelfInjectingServerResource;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.filter.TransactionFilter;
+import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.service.ApplicationService;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -39,10 +41,7 @@ import org.restlet.util.Series;
 import scala.actors.threadpool.Arrays;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -86,6 +85,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected String masterToken;
 
+    protected List<TransactionFilter> filters;
+
     private Application application;
 
     @Inject
@@ -94,6 +95,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     @Override
     protected void doInit() {
         super.doInit();
+        filters = new LinkedList<>();
         Series<Header> responseHeaders = (Series<Header>) getResponse().getAttributes().get("org.restlet.http.headers");
         if (responseHeaders == null) {
             responseHeaders = new Series(Header.class);
@@ -175,6 +177,15 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         if(appId != null) {
             application = applicationService.read(appId);
+        }
+
+        String queries = getQueryValue("queries");
+        if(queries != null) {
+            try {
+                filters = new TransactionFilterParser().parseQuery(queries);
+            } catch (Exception e) {
+
+            }
         }
 
     }

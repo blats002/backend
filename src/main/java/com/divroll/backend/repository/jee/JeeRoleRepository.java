@@ -24,6 +24,7 @@ package com.divroll.backend.repository.jee;
 import com.divroll.backend.Constants;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
+import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.xodus.XodusManager;
 import com.google.inject.Inject;
@@ -41,10 +42,14 @@ import java.util.logging.Logger;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeRoleRepository implements RoleRepository {
+public class JeeRoleRepository  extends JeeBaseRespository implements RoleRepository {
 
     private static final Logger LOG
             = Logger.getLogger(JeeRoleRepository.class.getName());
+
+    @Inject
+    @Named("defaultRoleStore")
+    String roleStoreName;
 
     @Inject
     @Named("xodusRoot")
@@ -299,7 +304,7 @@ public class JeeRoleRepository implements RoleRepository {
     }
 
     @Override
-    public List<Role> listRoles(String instance, String storeName, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey) {
+    public List<Role> listRoles(String instance, String storeName, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -309,8 +314,14 @@ public class JeeRoleRepository implements RoleRepository {
                     EntityIterable result = null;
                     if (isMasterKey) {
                         result = txn.getAll(storeName).skip(skip).take(limit);
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                     } else if (userIdRoleId == null) {
                         result = txn.find(storeName, "publicRead", true);
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -325,6 +336,9 @@ public class JeeRoleRepository implements RoleRepository {
                     } else {
                         result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
                                 .concat(txn.find(storeName, "publicRead", true));
+                        if(filters != null && !filters.isEmpty()) {
+                            result = filter(storeName, result, filters, txn);
+                        }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
@@ -391,4 +405,8 @@ public class JeeRoleRepository implements RoleRepository {
         return roles;
     }
 
+    @Override
+    protected String getRoleStoreName() {
+        return roleStoreName;
+    }
 }

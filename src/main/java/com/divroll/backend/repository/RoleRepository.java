@@ -22,6 +22,7 @@
 package com.divroll.backend.repository;
 
 import com.divroll.backend.model.Role;
+import com.divroll.backend.model.filter.TransactionFilter;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ public interface RoleRepository {
     boolean isLinked(String instance, String storeName, String roleID, String userID);
 
     List<Role> listRoles(String instance, String storeName, String userIdRoleId,
-                         int skip, int limit, String sort, boolean isMasterKey);
+                         int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters);
 
     List<Role> getRolesOfEntity(String instance, String entityId);
 

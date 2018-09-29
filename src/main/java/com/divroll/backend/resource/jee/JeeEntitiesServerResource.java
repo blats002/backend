@@ -187,7 +187,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 try {
                     List<Map<String, Object>> entityObjs
                             = entityRepository.listEntities(appId, entityType, null,
-                            skipValue, limitValue, sort, true);
+                            skipValue, limitValue, sort, true, filters);
                     JSONObject responseBody = new JSONObject();
                     JSONObject entitiesJSONObject = new JSONObject();
                     entitiesJSONObject.put("results", entityObjs);
@@ -212,7 +212,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
                 try {
                     List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType,
-                            authUserId, skipValue, limitValue, sort, false);
+                            authUserId, skipValue, limitValue, sort, false, filters);
 
                     JSONObject responseBody = new JSONObject();
                     JSONObject entitiesJSONObject = new JSONObject();
