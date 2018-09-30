@@ -21,6 +21,12 @@
  */
 package com.divroll.backend.xodus;
 
+import com.divroll.backend.model.EmbeddedArrayIterable;
+import com.divroll.backend.model.EmbeddedEntityIterable;
+import com.divroll.backend.model.EntityPropertyType;
+import com.divroll.backend.model.EntityType;
+import com.divroll.backend.model.filter.TransactionFilter;
+import com.divroll.backend.repository.jee.JeeBaseRespository;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -36,7 +42,7 @@ import java.util.*;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class XodusStoreImpl implements XodusStore {
+public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
 
     @Inject
     @Named("xodusRoot")
@@ -44,6 +50,11 @@ public class XodusStoreImpl implements XodusStore {
 
     @Inject
     XodusManager manager;
+
+    @Inject
+    @Named("defaultRoleStore")
+    String roleStoreName;
+
 
     /*
     @Override
@@ -349,6 +360,86 @@ public class XodusStoreImpl implements XodusStore {
     }
 
     @Override
+    public List<Map<String, Comparable>> list(String dir, String entityType, List<TransactionFilter> filters, int skip, int limit) {
+        List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable result = txn.getAll(entityType);
+                    if(filters != null && !filters.isEmpty()){
+                        result = filter(entityType, result, filters, txn);
+                    }
+                    result = result.skip(skip).take(limit);
+                    for(Entity entity : result) {
+                        Map<String, Comparable> map = new LinkedHashMap<>();
+                        List<String> props = entity.getPropertyNames();
+                        for (String prop : props) {
+                            map.put(prop, entity.getProperty(prop));
+                        }
+                        list.add(map);
+                    }
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return list;
+    }
+
+    @Override
+    public List<EntityPropertyType> listPropertyTypes(String dir, String entityType) {
+        List<EntityPropertyType> propertyTypes = new LinkedList<>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable result = txn.getAll(entityType);
+                    if(result != null && result.iterator().hasNext()) {
+                        Entity entity = result.getFirst();
+                        if(entity != null) {
+                            List<String> propertyNames = entity.getPropertyNames();
+                            propertyNames.forEach(propertyName -> {
+                                if( (propertyName.startsWith("write(") && propertyName.endsWith(")"))
+                                        || (propertyName.startsWith("read(") && propertyName.endsWith(")"))
+                                        || (propertyName.startsWith("role(") && propertyName.endsWith(")")) ) {
+                                    // do not include
+                                } else {
+                                    Comparable comparable = entity.getProperty(propertyName);
+                                    if(comparable instanceof String) {
+                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.STRING);
+                                        propertyTypes.add(propertyType);
+                                    } else if(comparable instanceof Number) {
+                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.NUMBER);
+                                        propertyTypes.add(propertyType);
+                                    } else if(comparable instanceof Boolean) {
+                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.BOOLEAN);
+                                        propertyTypes.add(propertyType);
+                                    } else if(comparable instanceof EmbeddedArrayIterable) {
+                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.ARRAY);
+                                        propertyTypes.add(propertyType);
+                                    } else if(comparable instanceof EmbeddedEntityIterable) {
+                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.OBJECT);
+                                        propertyTypes.add(propertyType);
+                                    }
+                                }
+
+                            });
+                        }
+                    }
+
+
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return propertyTypes;
+    }
+
+    @Override
     public List<String> listEntityTypes(String dir) {
         List<String> list = new LinkedList<String>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
@@ -371,4 +462,8 @@ public class XodusStoreImpl implements XodusStore {
     }
 
 
+    @Override
+    protected String getRoleStoreName() {
+        return roleStoreName;
+    }
 }

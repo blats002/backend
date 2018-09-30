@@ -23,6 +23,6 @@ public class TransactionFilterParserTest extends TestCase{
     @Test
     public void test() {
         System.out.println(TEST_DATA);
-        List<TransactionFilter> filterList = TransactionFilterParser.parseFilter(TEST_DATA);
+        List<TransactionFilter> filterList = new TransactionFilterParser().parseQuery(TEST_DATA);
     }
 }

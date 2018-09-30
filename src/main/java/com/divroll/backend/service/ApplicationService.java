@@ -22,6 +22,7 @@
 package com.divroll.backend.service;
 
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.filter.TransactionFilter;
 import jetbrains.exodus.entitystore.EntityId;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public interface ApplicationService {
 
     void delete(String id);
 
-    List<Application> list(int skip, int limit);
+    List<Application> list(List<TransactionFilter> filters, int skip, int limit);
 
     void forceUpdate(Application application);
 

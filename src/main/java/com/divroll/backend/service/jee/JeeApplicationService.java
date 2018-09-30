@@ -23,6 +23,7 @@ package com.divroll.backend.service.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.xodus.XodusStore;
 import com.google.gson.Gson;
@@ -42,7 +43,8 @@ import java.util.Map;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeApplicationService implements ApplicationService {
+public class JeeApplicationService
+        implements ApplicationService {
 
     @Inject
     @Named("masterStore")
@@ -76,31 +78,6 @@ public class JeeApplicationService implements ApplicationService {
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 application.setAppName((String) entityMap.get(Constants.APP_NAME));
-                EmbeddedArrayIterable schemas = (EmbeddedArrayIterable) entityMap.get("schemas");
-                JSONArray schemasArray = schemas != null ? schemas.asJSONArray() : null;
-                if(schemasArray != null) {
-                    List<Schema> schemaList = new LinkedList<>();
-                    for(int i=0;i<schemasArray.length();i++) {
-                        JSONObject schemaObj = schemasArray.getJSONObject(i);
-                        String entityType = schemaObj.getString("entityType");
-                        JSONArray propertyTypes = schemaObj.getJSONArray("propertyTypes");
-                        SchemaPropertyList schemaPropertyList = new SchemaPropertyList();
-                        for(int j=0;j<propertyTypes.length();j++) {
-                            JSONObject propertyTypeObj = propertyTypes.getJSONObject(j);
-                            String pName = propertyTypeObj.getString("propertyName");
-                            String pType = propertyTypeObj.getString("propertyType");
-                            SchemaProperty schemaProperty = new SchemaProperty(pName, pType);
-                            schemaPropertyList.add(schemaProperty);
-                        }
-                        Schema schema = new Schema();
-                        schema.setEntityType(entityType);
-                        schema.setSchemaProperties(schemaPropertyList);
-                        schemaList.add(schema);
-                    }
-                    application.setSchemas(schemaList);
-                } else {
-                    // TODO:
-                }
                 return application;
             }
         }
@@ -127,9 +104,9 @@ public class JeeApplicationService implements ApplicationService {
     }
 
     @Override
-    public List<Application> list(int skip, int limit) {
+    public List<Application> list(List<TransactionFilter> filters, int skip, int limit) {
         List<Application> apps = new LinkedList<>();
-        List<Map<String,Comparable>> list = store.list(masterStore, Constants.ENTITYSTORE_APPLICATION, skip, limit);
+        List<Map<String,Comparable>> list = store.list(masterStore, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit);
         for(Map entityMap : list) {
             if (entityMap != null) {
                 Application application = new Application();
@@ -143,39 +120,10 @@ public class JeeApplicationService implements ApplicationService {
         return apps;
     }
 
+    @Deprecated
     @Override
     public void forceUpdate(Application application) {
-        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        comparableMap.put(Constants.APP_ID, application.getAppId());
-        comparableMap.put(Constants.API_KEY, application.getApiKey());
-        comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
-        if(application.getAppName() != null) {
-            comparableMap.put(Constants.APP_NAME, application.getAppName());
-        }
-        List<Schema> schemas = application.getSchemas();
-        if(schemas != null && !schemas.isEmpty()) {
-            JSONArray schemaJsa = new JSONArray();
-            schemas.forEach(schema -> {
-                JSONObject schemaObj = new JSONObject();
-                String entityType = schema.getEntityType();
-                JSONArray propArray = new JSONArray();
-                schema.getSchemaProperties().forEach(schemaProperty -> {
-                    String pName = schemaProperty.getPropertyName();
-                    SchemaProperty.TYPE pType = schemaProperty.getPropertyType();
-                    JSONObject propObj = new JSONObject();
-                    propObj.put("propertyName", pName);
-                    propObj.put("propertyType", pType);
-                    propArray.put(propObj);
-                });
-                schemaObj.put("entityType", entityType);
-                schemaObj.put("propertyTypes", propArray);
-                schemaJsa.put(schemaObj);
-            });
-            comparableMap.put("schemas", new EmbeddedArrayIterable(schemaJsa));
-        }
-        EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
-                Constants.APP_ID, application.getAppId(), String.class);
-        EntityId id = store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
+       throw new IllegalArgumentException("Not implemented");
     }
 
 }

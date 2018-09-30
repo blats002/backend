@@ -28,6 +28,7 @@ import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.service.ApplicationService;
+import com.divroll.backend.service.SchemaService;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -91,6 +92,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     @Inject
     ApplicationService applicationService;
+
+    @Inject
+    SchemaService schemaService;
 
     @Override
     protected void doInit() {
@@ -302,112 +306,52 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected void validateSchema(String entityType, Map<String,Comparable> comparableMap)
             throws IllegalArgumentException {
-        final boolean[] isCreate = {true};
-        getApp().getSchemas().forEach(schema -> {
-            if(schema.getEntityType() != null && schema.getEntityType().equals(entityType)) {
-                isCreate[0] = false;
+        List<EntityType> entityTypes = schemaService.listSchemas(appId);
+        entityTypes.forEach(type -> {
+            if(type.getEntityType().equalsIgnoreCase("users")) {
+                List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
+                propertyTypes.forEach(propertyType -> {
+                    propertyType.getPropertyName();
+                });
+
+            } else if(type.getEntityType().equalsIgnoreCase("roles")) {
+                List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
+
+            } else if(type.getEntityType().equalsIgnoreCase(entityType)) {
+                List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
+
             }
         });
-        if(isCreate[0]) {
-            Application application = getApp();
-            Schema schema = new Schema();
-            schema.setEntityType(entityType);
-            SchemaPropertyList schemaProperties = new SchemaPropertyList();
-
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_ENTITY_ID, SchemaProperty.TYPE.STRING));
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_ACL_READ, SchemaProperty.TYPE.ARRAY));
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_ACL_WRITE, SchemaProperty.TYPE.ARRAY));
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_PUBLICREAD, SchemaProperty.TYPE.BOOLEAN));
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_PUBLICWRITE, SchemaProperty.TYPE.BOOLEAN));
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_LINKS, SchemaProperty.TYPE.ARRAY));
-            schemaProperties.add(new SchemaProperty(Constants.RESERVED_FIELD_BLOBNAMES, SchemaProperty.TYPE.ARRAY));
-
-            comparableMap.forEach((key,value) -> {
-                SchemaProperty schemaProperty = new SchemaProperty();
-                if(!Keys.isReservedPropertyKey(key)) {
-                    LOG.info(value.getClass().getName());
+        comparableMap.forEach((key,value) -> {
+            List<EntityPropertyType> types = schemaService.listPropertyTypes(appId, entityType);
+            types.forEach(type -> {
+                if(type.equals(key)) {
+                    EntityPropertyType.TYPE expectedPropertyType = type.getPropertyType();
                     if(value instanceof EmbeddedEntityIterable) {
-                        schemaProperty.setPropertyName(key);
-                        schemaProperty.setPropertyType(SchemaProperty.TYPE.OBJECT);
+                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.OBJECT)) {
+                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                        }
                     } else if(value instanceof EmbeddedArrayIterable) {
-                        schemaProperty.setPropertyName(key);
-                        schemaProperty.setPropertyType(SchemaProperty.TYPE.ARRAY);
+                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.ARRAY)) {
+                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                        }
                     } else if(value instanceof Boolean) {
-                        schemaProperty.setPropertyName(key);
-                        schemaProperty.setPropertyType(SchemaProperty.TYPE.BOOLEAN);
+                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.BOOLEAN)) {
+                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                        }
                     } else if(value instanceof String) {
-                        schemaProperty.setPropertyName(key);
-                        schemaProperty.setPropertyType(SchemaProperty.TYPE.STRING);
+                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.STRING)) {
+                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                        }
                     } else if(value instanceof Number) {
-                        schemaProperty.setPropertyName(key);
-                        schemaProperty.setPropertyType(SchemaProperty.TYPE.NUMBER);
+                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.NUMBER)) {
+                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
+                        }
                     }
-                    schemaProperties.add(schemaProperty);
                 }
             });
-            schema.setSchemaProperties(schemaProperties);
-            application.getSchemas().add(schema);
-            applicationService.forceUpdate(application);
-        } else {
-            comparableMap.forEach((key,value)-> {
-                getApp().getSchemas().forEach(schema -> {
-                    int index = getApp().getSchemas().indexOf(schema);
-                    if(!Keys.isReservedPropertyKey(key) && schema.getSchemaProperties().contains(key)) {
-                        // Check if value type is correct
-                        SchemaProperty schemaProperty = schema.get(key);
-                        SchemaProperty.TYPE type = schemaProperty.getPropertyType();
-                        if(type == SchemaProperty.TYPE.OBJECT) {
-                            if(!(value instanceof EmbeddedEntityIterable)) {
-                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                            }
-                        } else if(type == SchemaProperty.TYPE.ARRAY) {
-                            if(!(value instanceof EmbeddedArrayIterable)) {
-                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                            }
-                        } else if(type == SchemaProperty.TYPE.BOOLEAN) {
-                            if(!(value instanceof Boolean)) {
-                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                            }
-                        } else if(type == SchemaProperty.TYPE.STRING) {
-                            if(!(value instanceof String)) {
-                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                            }
-                        } else if(type == SchemaProperty.TYPE.NUMBER) {
-                            if(!(value instanceof Number)) {
-                                throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                            }
-                        }
-                    } else {
-                        // Update scheme with new property
-                        SchemaProperty schemaProperty = new SchemaProperty();
-                        if(!Keys.isReservedPropertyKey(key)) {
-                            LOG.info(value.getClass().getName());
-                            if(value instanceof EmbeddedEntityIterable) {
-                                schemaProperty.setPropertyName(key);
-                                schemaProperty.setPropertyType(SchemaProperty.TYPE.OBJECT);
-                            } else if(value instanceof EmbeddedArrayIterable) {
-                                schemaProperty.setPropertyName(key);
-                                schemaProperty.setPropertyType(SchemaProperty.TYPE.ARRAY);
-                            } else if(value instanceof Boolean) {
-                                schemaProperty.setPropertyName(key);
-                                schemaProperty.setPropertyType(SchemaProperty.TYPE.BOOLEAN);
-                            } else if(value instanceof String) {
-                                schemaProperty.setPropertyName(key);
-                                schemaProperty.setPropertyType(SchemaProperty.TYPE.STRING);
-                            } else if(value instanceof Number) {
-                                schemaProperty.setPropertyName(key);
-                                schemaProperty.setPropertyType(SchemaProperty.TYPE.NUMBER);
-                            }
-                            schema.getSchemaProperties().addAll(java.util.Arrays.asList(schemaProperty));
-                            getApp().getSchemas().set(index, schema);
-                            applicationService.forceUpdate(getApp());
-                        }
-                    }
-                });
-            });
-        }
-        LOG.info(new Gson().toJson(getApp()));
 
+        });
     }
 
 
