@@ -24,6 +24,8 @@ package com.divroll.backend.resource.jee;
 import com.divroll.backend.guice.SelfInjectingServerResource;
 import com.divroll.backend.model.Server;
 import com.divroll.backend.resource.RootResource;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.restlet.data.Status;
@@ -36,6 +38,9 @@ import org.restlet.resource.Get;
  */
 public class JeeRootServerResource extends SelfInjectingServerResource
         implements RootResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeRootServerResource.class);
 
     @Inject
     @Named("app")

@@ -10,6 +10,8 @@ import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.LinkResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
@@ -20,6 +22,9 @@ import java.util.Map;
 
 public class JeeLinkServerResource extends BaseServerResource
     implements LinkResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeLinkServerResource.class);
 
     @Inject
     EntityRepository entityRepository;

@@ -1,6 +1,8 @@
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.model.filter.TransactionFilter;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import jetbrains.exodus.entitystore.Entity;
 import jetbrains.exodus.entitystore.EntityIterable;
 import jetbrains.exodus.entitystore.StoreTransaction;
@@ -8,6 +10,9 @@ import jetbrains.exodus.entitystore.StoreTransaction;
 import java.util.List;
 
 public abstract class JeeBaseRespository {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeBaseRespository.class);
 
     protected abstract String getRoleStoreName();
 

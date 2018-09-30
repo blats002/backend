@@ -31,6 +31,8 @@ import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.RoleResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
@@ -45,6 +47,9 @@ import java.util.List;
  */
 public class JeeRoleServerResource extends BaseServerResource
         implements RoleResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeRoleServerResource.class);
 
     @Inject
     @Named("defaultRoleStore")

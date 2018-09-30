@@ -7,6 +7,8 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.PasswordResetResource;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.BaseEncoding;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -15,13 +17,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 
-import java.util.logging.Logger;
-
 public class JeePasswordResetServerResource extends BaseServerResource
     implements PasswordResetResource {
 
     private static final Logger LOG
-            = Logger.getLogger(JeePasswordResetServerResource.class.getName());
+            = LoggerFactory.getLogger(JeePasswordResetServerResource.class);
 
 
     @Inject

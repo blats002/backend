@@ -31,6 +31,11 @@ import com.divroll.backend.repository.jee.JeeUserRepository;
 import com.divroll.backend.service.*;
 import com.divroll.backend.service.jee.*;
 import com.divroll.backend.xodus.*;
+import com.divroll.backend.xodus.impl.XodusEnvStoreImpl;
+import com.divroll.backend.xodus.impl.XodusManagerImpl;
+import com.divroll.backend.xodus.impl.XodusStoreImpl;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
@@ -39,8 +44,6 @@ import org.restlet.Context;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -49,7 +52,7 @@ import java.util.logging.Logger;
  */
 public class GuiceConfigModule extends AbstractModule {
 
-    private static final Logger LOG = Logger.getLogger(GuiceConfigModule.class.getName());
+    private static final Logger LOG = LoggerFactory.getLogger(GuiceConfigModule.class);
     private Context context;
 
     public GuiceConfigModule() {
@@ -62,7 +65,7 @@ public class GuiceConfigModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
+        //Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
         bind(String.class).annotatedWith(Names.named("app")).toInstance(Constants.SERVER_NAME);
 
         bind(XodusStore.class).to(XodusStoreImpl.class).in(Scopes.SINGLETON);

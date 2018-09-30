@@ -27,6 +27,8 @@ import com.divroll.backend.model.ByteValue;
 import com.divroll.backend.model.exception.ACLException;
 import com.divroll.backend.service.KeyValueService;
 import com.divroll.backend.xodus.XodusEnvStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 
 import java.io.UnsupportedEncodingException;
@@ -40,6 +42,9 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public class JeeKeyValueService implements KeyValueService {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeKeyValueService.class);
 
     @Inject
     XodusEnvStore store;

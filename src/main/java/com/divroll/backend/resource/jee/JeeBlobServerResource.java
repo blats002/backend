@@ -31,6 +31,8 @@ import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.BlobResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
@@ -61,6 +63,9 @@ import java.util.Map;
  */
 public class JeeBlobServerResource extends BaseServerResource
         implements BlobResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeBlobServerResource.class);
 
     @Inject
     EntityRepository entityRepository;

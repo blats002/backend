@@ -36,6 +36,8 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.EntityResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
@@ -55,6 +57,9 @@ import java.util.Map;
  */
 public class JeeEntityServerResource extends BaseServerResource
         implements EntityResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeEntityServerResource.class);
 
     @Inject
     EntityRepository entityRepository;

@@ -30,6 +30,8 @@ import com.divroll.backend.resource.KeyValueResource;
 import com.divroll.backend.service.KeyValueService;
 import com.divroll.backend.service.WebTokenService;
 import com.divroll.backend.xodus.XodusEnvStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import org.restlet.data.MediaType;
@@ -50,6 +52,9 @@ import java.util.List;
  */
 public class JeeKeyValueServerResource extends BaseServerResource
         implements KeyValueResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeKeyValueServerResource.class);
 
     @Inject
     KeyValueService keyValueService;

@@ -30,6 +30,8 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntitiesResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONArray;
@@ -39,7 +41,6 @@ import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -50,7 +51,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
         implements EntitiesResource {
 
     private static final Logger LOG
-            = Logger.getLogger(JeeEntitiesServerResource.class.getName());
+            = LoggerFactory.getLogger(JeeEntitiesServerResource.class);
     private static final Integer DEFAULT_LIMIT = 100;
 
     @Inject

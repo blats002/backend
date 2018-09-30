@@ -24,6 +24,9 @@ package com.divroll.backend;
 import com.divroll.backend.guice.GuiceConfigModule;
 import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
+import com.divroll.backend.xodus.impl.XodusEnvStoreImpl;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
@@ -39,7 +42,6 @@ import org.restlet.routing.Router;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -49,7 +51,8 @@ import java.util.logging.Logger;
 public class DivrollBackendApplication extends Application {
 
     private static final Logger LOG
-            = Logger.getLogger(DivrollBackendApplication.class.getName());
+            = LoggerFactory.getLogger(DivrollBackendApplication.class);
+
     private static final String ROOT_URI = "/";
 
     /**

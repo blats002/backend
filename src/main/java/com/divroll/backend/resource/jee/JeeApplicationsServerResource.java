@@ -4,6 +4,8 @@ import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Applications;
 import com.divroll.backend.resource.ApplicationsResource;
 import com.divroll.backend.service.ApplicationService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
@@ -13,6 +15,9 @@ import java.util.List;
 
 public class JeeApplicationsServerResource extends BaseServerResource
         implements ApplicationsResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeApplicationsServerResource.class);
 
     @Inject
     @Named("xodusRoot")
