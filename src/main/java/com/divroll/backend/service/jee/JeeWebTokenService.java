@@ -26,6 +26,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.JWTVerifyException;
 import com.divroll.backend.Constants;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+import com.godaddy.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -44,7 +45,7 @@ import java.util.logging.Logger;
 public class JeeWebTokenService implements WebTokenService {
 
     private static final Logger LOG
-            = Logger.getLogger(JeeWebTokenService.class.getName());
+            = LoggerFactory.getLogger(JeeWebTokenService.class);
 
     @Inject
     public JeeWebTokenService() {

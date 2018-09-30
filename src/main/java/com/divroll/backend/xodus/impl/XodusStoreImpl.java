@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.xodus;
+package com.divroll.backend.xodus.impl;
 
 import com.divroll.backend.model.EmbeddedArrayIterable;
 import com.divroll.backend.model.EmbeddedEntityIterable;
@@ -27,6 +27,10 @@ import com.divroll.backend.model.EntityPropertyType;
 import com.divroll.backend.model.EntityType;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.jee.JeeBaseRespository;
+import com.divroll.backend.xodus.XodusManager;
+import com.divroll.backend.xodus.XodusStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -43,6 +47,9 @@ import java.util.*;
  * @since 0-SNAPSHOT
  */
 public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(XodusStoreImpl.class);
 
     @Inject
     @Named("xodusRoot")

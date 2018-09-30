@@ -2,6 +2,8 @@ package com.divroll.backend.service.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.service.PubSubService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -12,6 +14,9 @@ import rx.apache.http.ObservableHttp;
 import rx.apache.http.ObservableHttpResponse;
 
 public class JeePubSubService implements PubSubService {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeePubSubService.class);
 
     // TODO: URI must be based on Restlet server context
 

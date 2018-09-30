@@ -28,6 +28,8 @@ import com.divroll.backend.model.User;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
@@ -46,6 +48,9 @@ import java.util.Map;
  */
 public class JeeUserRepository extends JeeBaseRespository
         implements UserRepository {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeUserRepository.class);
 
     @Inject
     @Named("defaultRoleStore")

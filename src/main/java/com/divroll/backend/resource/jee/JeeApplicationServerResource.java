@@ -27,6 +27,8 @@ import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.ApplicationResource;
 import com.divroll.backend.xodus.XodusStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
@@ -43,6 +45,9 @@ import java.util.UUID;
  */
 public class JeeApplicationServerResource extends BaseServerResource
         implements ApplicationResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeApplicationServerResource.class);
 
     @Inject
     @Named("xodusRoot")

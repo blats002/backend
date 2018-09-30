@@ -4,12 +4,17 @@ import com.divroll.backend.model.EntityPropertyType;
 import com.divroll.backend.model.EntityType;
 import com.divroll.backend.service.SchemaService;
 import com.divroll.backend.xodus.XodusStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class JeeSchemaService implements SchemaService {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeSchemaService.class);
 
     @Inject
     XodusStore store;

@@ -27,6 +27,8 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.xodus.XodusManager;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
@@ -36,7 +38,6 @@ import scala.actors.threadpool.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -46,7 +47,7 @@ import java.util.logging.Logger;
 public class JeeRoleRepository  extends JeeBaseRespository implements RoleRepository {
 
     private static final Logger LOG
-            = Logger.getLogger(JeeRoleRepository.class.getName());
+            = LoggerFactory.getLogger(JeeRoleRepository.class);
 
     @Inject
     @Named("defaultRoleStore")

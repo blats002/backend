@@ -29,6 +29,8 @@ import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.SchemaService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -43,7 +45,6 @@ import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -54,7 +55,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected static final Integer DEFAULT_LIMIT = 100;
     private static final Logger LOG
-            = Logger.getLogger(BaseServerResource.class.getName());
+            = LoggerFactory.getLogger(BaseServerResource.class);
     protected Map<String, Object> queryMap = new LinkedHashMap<>();
     protected Map<String, String> propsMap = new LinkedHashMap<>();
 

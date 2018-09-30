@@ -23,6 +23,8 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.model.Application;
 import com.divroll.backend.resource.BackupResource;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -47,6 +49,8 @@ import java.io.File;
 public class JeeBackupServerResource extends BaseServerResource
         implements BackupResource {
 
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeBackupServerResource.class);
     private static final String FILE_TO_UPLOAD = "file";
 
     @Inject

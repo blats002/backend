@@ -31,6 +31,7 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
@@ -40,7 +41,7 @@ import org.restlet.data.Status;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
+import com.godaddy.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -51,7 +52,7 @@ public class JeeUserServerResource extends BaseServerResource implements
         UserResource {
 
     private static final Logger LOG
-            = Logger.getLogger(JeeUserServerResource.class.getName());
+            = LoggerFactory.getLogger(JeeUserServerResource.class);
 
 
     @Inject

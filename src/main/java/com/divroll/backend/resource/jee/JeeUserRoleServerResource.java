@@ -30,12 +30,13 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserRoleResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 
-import java.util.logging.Logger;
+import com.godaddy.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -46,7 +47,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
         UserRoleResource {
 
     private static final Logger LOG
-            = Logger.getLogger(JeeUserRoleServerResource.class.getName());
+            = LoggerFactory.getLogger(JeeUserRoleServerResource.class);
 
 
     @Inject

@@ -1,8 +1,11 @@
-package com.divroll.backend.xodus;
+package com.divroll.backend.xodus.impl;
 
 import com.divroll.backend.model.EmbeddedArrayIterable;
 import com.divroll.backend.model.EmbeddedEntityBinding;
 import com.divroll.backend.model.EmbeddedEntityIterable;
+import com.divroll.backend.xodus.XodusManager;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import jetbrains.exodus.entitystore.PersistentEntityStore;
 import jetbrains.exodus.entitystore.PersistentEntityStores;
 import jetbrains.exodus.entitystore.StoreTransaction;
@@ -15,6 +18,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class XodusManagerImpl implements XodusManager {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(XodusManagerImpl.class);
+
     Map<String, Environment> environmentMap = new LinkedHashMap<>();
     Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
 

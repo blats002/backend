@@ -21,9 +21,9 @@
  */
 package com.divroll.backend.helper;
 
-import com.google.gson.Gson;
 
-import java.util.logging.Logger;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -32,14 +32,13 @@ import java.util.logging.Logger;
  */
 public class ObjectLogger {
     private static final Logger LOG
-            = Logger.getLogger(ObjectLogger.class.getName());
+            = LoggerFactory.getLogger(ObjectLogger.class);
 
     private ObjectLogger() {
     }
 
     public static Object log(Object object) {
-        String json = new Gson().toJson(object);
-        LOG.info(json);
+        LOG.with(object).info("Logging object");
         return object;
     }
 }

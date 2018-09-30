@@ -31,6 +31,8 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UsersResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -49,6 +51,8 @@ import java.util.List;
 public class JeeUsersServerResource extends BaseServerResource
         implements UsersResource {
 
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeUsersServerResource.class);
 
     @Inject
     @Named("defaultUserStore")

@@ -57,6 +57,8 @@
         <jaxb-version>2.1</jaxb-version>
 
         <jettyVersion>9.4.12.RC2</jettyVersion>
+
+        <godaddy.logging.version>1.2.5</godaddy.logging.version>
     </properties>
 
     <build>
@@ -363,6 +365,12 @@
             <groupId>com.netflix.rxjava</groupId>
             <artifactId>rxjava-apache-http</artifactId>
             <version>0.20.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.godaddy</groupId>
+            <artifactId>logging</artifactId>
+            <version>${godaddy.logging.version}</version>
         </dependency>
 
     </dependencies>

@@ -23,6 +23,8 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntityTypeResource;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
@@ -34,6 +36,9 @@ import org.restlet.representation.Representation;
  */
 public class JeeEntityTypeServerResource extends BaseServerResource
     implements EntityTypeResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeEntityTypeServerResource.class);
 
     @Inject
     EntityRepository entityRepository;

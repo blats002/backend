@@ -4,6 +4,8 @@ import com.divroll.backend.model.EntityType;
 import com.divroll.backend.model.EntityTypes;
 import com.divroll.backend.resource.EntityTypesResource;
 import com.divroll.backend.xodus.XodusStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import org.restlet.data.Status;
 
@@ -12,6 +14,9 @@ import java.util.List;
 
 public class JeeEntityTypesServerResource extends BaseServerResource
     implements EntityTypesResource {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeEntityTypesServerResource.class);
 
     @Inject
     XodusStore store;

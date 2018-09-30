@@ -19,11 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.xodus;
+package com.divroll.backend.xodus.impl;
 
 import com.divroll.backend.model.ACL;
 import com.divroll.backend.model.ByteValue;
 import com.divroll.backend.model.ByteValueIterable;
+import com.divroll.backend.service.jee.JeeSchemaService;
+import com.divroll.backend.xodus.XodusEnvStore;
+import com.divroll.backend.xodus.XodusManager;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.ByteIterable;
@@ -43,6 +48,9 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class XodusEnvStoreImpl implements XodusEnvStore {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(XodusEnvStoreImpl.class);
 
     @Inject
     @Named("xodusRoot")

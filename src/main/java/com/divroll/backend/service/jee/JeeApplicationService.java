@@ -24,8 +24,11 @@ package com.divroll.backend.service.jee;
 import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
+import com.divroll.backend.resource.jee.JeeUsersServerResource;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.xodus.XodusStore;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -45,6 +48,9 @@ import java.util.Map;
  */
 public class JeeApplicationService
         implements ApplicationService {
+
+    private static final Logger LOG
+            = LoggerFactory.getLogger(JeeApplicationService.class);
 
     @Inject
     @Named("masterStore")
