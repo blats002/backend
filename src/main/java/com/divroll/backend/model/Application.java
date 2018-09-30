@@ -22,6 +22,7 @@
 package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -43,8 +44,6 @@ public class Application {
     @ApiModelProperty(required = true, value = "Generated Master Key")
     private String masterKey;
     private String appName;
-
-    private List<Schema> schemas;
 
     public String getId() {
         return appId;
@@ -84,17 +83,6 @@ public class Application {
 
     public void setAppName(String appName) {
         this.appName = appName;
-    }
-
-    public List<Schema> getSchemas() {
-        if(schemas == null) {
-            schemas = new LinkedList<>();
-        }
-        return schemas;
-    }
-
-    public void setSchemas(List<Schema> schemas) {
-        this.schemas = schemas;
     }
 
 }

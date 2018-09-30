@@ -8,17 +8,17 @@ import java.util.List;
 @XStreamAlias("entityTypes")
 public class EntityTypes {
     @XStreamImplicit(itemFieldName = "results")
-    private List<String> results;
+    private List<EntityType> results;
     private long skip;
     private long limit;
 
     public EntityTypes() {}
 
-    public List<String> getResults() {
+    public List<EntityType> getResults() {
         return results;
     }
 
-    public void setResults(List<String> results) {
+    public void setResults(List<EntityType> results) {
         this.results = results;
     }
 

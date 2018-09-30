@@ -28,14 +28,8 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.repository.jee.JeeEntityRepository;
 import com.divroll.backend.repository.jee.JeeRoleRepository;
 import com.divroll.backend.repository.jee.JeeUserRepository;
-import com.divroll.backend.service.ApplicationService;
-import com.divroll.backend.service.KeyValueService;
-import com.divroll.backend.service.PubSubService;
-import com.divroll.backend.service.WebTokenService;
-import com.divroll.backend.service.jee.JeeApplicationService;
-import com.divroll.backend.service.jee.JeeKeyValueService;
-import com.divroll.backend.service.jee.JeePubSubService;
-import com.divroll.backend.service.jee.JeeWebTokenService;
+import com.divroll.backend.service.*;
+import com.divroll.backend.service.jee.*;
 import com.divroll.backend.xodus.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
@@ -79,6 +73,7 @@ public class GuiceConfigModule extends AbstractModule {
         bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
         bind(EntityRepository.class).to(JeeEntityRepository.class).in(Scopes.SINGLETON);
 
+        bind(SchemaService.class).to(JeeSchemaService.class).in(Scopes.SINGLETON);
         bind(WebTokenService.class).to(JeeWebTokenService.class).in(Scopes.SINGLETON);
         bind(ApplicationService.class).to(JeeApplicationService.class).in(Scopes.SINGLETON);
         bind(KeyValueService.class).to(JeeKeyValueService.class).in(Scopes.SINGLETON);

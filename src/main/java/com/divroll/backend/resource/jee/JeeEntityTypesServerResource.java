@@ -1,10 +1,14 @@
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.model.EntityType;
 import com.divroll.backend.model.EntityTypes;
 import com.divroll.backend.resource.EntityTypesResource;
 import com.divroll.backend.xodus.XodusStore;
 import com.google.inject.Inject;
 import org.restlet.data.Status;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class JeeEntityTypesServerResource extends BaseServerResource
     implements EntityTypesResource {
@@ -23,7 +27,16 @@ public class JeeEntityTypesServerResource extends BaseServerResource
             if(isMaster()) {
                 entityTypes.setLimit(0);
                 entityTypes.setSkip(0);
-                entityTypes.setResults(store.listEntityTypes(appId));
+
+                List<EntityType> entityTypeList = new LinkedList<>();
+                store.listEntityTypes(appId).forEach(s -> {
+                    EntityType entityType = new EntityType();
+                    entityType.setEntityType(s);
+                    entityType.setPropertyTypes(store.listPropertyTypes(appId, s));
+                    entityTypeList.add(entityType);
+                });
+
+                entityTypes.setResults(entityTypeList);
                 setStatus(Status.SUCCESS_OK);
                 return entityTypes;
             } else {
@@ -31,6 +44,7 @@ public class JeeEntityTypesServerResource extends BaseServerResource
                 return null;
             }
         } catch (Exception e) {
+            e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
         }
         return null;

@@ -21,6 +21,8 @@
  */
 package com.divroll.backend.xodus;
 
+import com.divroll.backend.model.EntityPropertyType;
+import com.divroll.backend.model.filter.TransactionFilter;
 import jetbrains.exodus.entitystore.EntityId;
 
 import java.util.List;
@@ -46,6 +48,7 @@ public interface XodusStore {
 
     public Map<String, Comparable> get(String dir, EntityId id);
 
+
     public <T> T get(String dir, String kind, String id, String key);
 
     public byte[] getBlob(String dir, final String kind, final String blobKey);
@@ -60,6 +63,10 @@ public interface XodusStore {
                                          Comparable<T> propertyVal, Class<T> clazz);
 
     List<Map<String, Comparable>> list(String dir, final String entityType, int skip, int limit);
+
+    List<Map<String, Comparable>> list(String dir, final String entityType, List<TransactionFilter> filters, int skip, int limit);
+
+    public List<EntityPropertyType>  listPropertyTypes(final String dir, final String entityType);
 
     List<String> listEntityTypes(String dir);
 
