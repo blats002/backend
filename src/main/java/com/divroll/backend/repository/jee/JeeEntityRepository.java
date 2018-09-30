@@ -110,7 +110,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                 Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
                                 if (userOrRoleEntity != null) {
                                     entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
-                                    entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
 
@@ -126,7 +125,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                 Entity userOrRoleEntity = txn.getEntity(userEntityId);
                                 if (userOrRoleEntity != null) {
                                     entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
-                                    entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
                         }
@@ -178,42 +176,28 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
 
                     if (read != null) {
-                        boolean publicRead = true;
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
                         entity.deleteLinks(Constants.RESERVED_FIELD_ACL_READ);
-                        entity.getPropertyNames().forEach(propertyName -> {
-                            if(propertyName.startsWith("read(") && propertyName.endsWith(")")) {
-                                entity.deleteProperty(propertyName);
-                            }
-                        });
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
-                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                         entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     }
 
                     if (write != null) {
-                        boolean publicWrite = true;
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
                         entity.deleteLinks(Constants.RESERVED_FIELD_ACL_WRITE);
-                        entity.getPropertyNames().forEach(propertyName -> {
-                            if(propertyName.startsWith("write(") && propertyName.endsWith(")")) {
-                                entity.deleteProperty(propertyName);
-                            }
-                        });
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
-                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                         entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
@@ -240,10 +224,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     final Entity entity = txn.getEntity(idOfEntity);
 
                     for (String property : entity.getPropertyNames()) {
-                        if( (property.startsWith("read(") && property.endsWith(")"))
-                            || (property.startsWith("write(") && property.endsWith(")")) ) {
-                            continue;
-                        }
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
                             if(value instanceof EmbeddedEntityIterable) {
@@ -572,10 +552,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     Entity entity = source.getLink(linkName);
 
                     for (String property : entity.getPropertyNames()) {
-                        if( (property.startsWith("read(") && property.endsWith(")"))
-                                || (property.startsWith("write(") && property.endsWith(")")) ) {
-                            continue;
-                        }
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
                             comparableMap.put(property, value);
@@ -627,10 +603,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     for (Entity entity : result) {
                         final Map<String, Object> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
-                            if( (property.startsWith("read(") && property.endsWith(")"))
-                                    || (property.startsWith("write(") && property.endsWith(")")) ) {
-                                continue;
-                            }
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {
@@ -714,7 +686,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
 
                     } else {
-                        result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
+                        Entity targetEntity = txn.getEntity(txn.toEntityId(userIdRoleId));
+                        result = txn.findLinks(storeName, targetEntity, "aclRead")
                                 .concat(txn.find(storeName, "publicRead", true));
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
@@ -733,10 +706,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     for (Entity entity : result) {
                         final Map<String, Object> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
-                            if( (property.startsWith("read(") && property.endsWith(")"))
-                                    || (property.startsWith("write(") && property.endsWith(")")) ) {
-                                continue;
-                            }
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {

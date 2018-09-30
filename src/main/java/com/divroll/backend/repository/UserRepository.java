@@ -25,6 +25,7 @@ import com.divroll.backend.model.User;
 import com.divroll.backend.model.filter.TransactionFilter;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -42,6 +43,10 @@ public interface UserRepository {
                        final Boolean publicRead, final Boolean publicWrite, String[] roles);
 
     boolean updateUserPassword(String instance, String storeName, String entityId, String newPassword);
+
+    boolean updateUser(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
+                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+
 
     User getUser(String instance, String storeName, String userID);
 

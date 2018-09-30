@@ -154,9 +154,11 @@ public class JeeUserServerResource extends BaseServerResource implements
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
         } catch (EntityRemovedInDatabaseException e) {
+            e.printStackTrace();
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
         } catch (Exception e) {
+            e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
             return null;
         }

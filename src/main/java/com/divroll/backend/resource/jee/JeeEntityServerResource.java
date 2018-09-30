@@ -32,12 +32,14 @@ import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.EntityResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
+import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
@@ -58,6 +60,9 @@ public class JeeEntityServerResource extends BaseServerResource
     EntityRepository entityRepository;
 
     @Inject
+    UserRepository userRepository;
+
+    @Inject
     RoleRepository roleRepository;
 
     @Inject
@@ -68,7 +73,11 @@ public class JeeEntityServerResource extends BaseServerResource
 
     @Inject
     @Named("defaultUserStore")
-    String storeName;
+    String defaultUserStore;
+
+    @Inject
+    @Named("defaultRoleStore")
+    String defaultRoleStore;
 
     @Override
     public Representation getEntity() {
@@ -216,7 +225,23 @@ public class JeeEntityServerResource extends BaseServerResource
                 if (isMaster) {
                     if (!comparableMap.isEmpty()) {
                         validateSchema(entityType, comparableMap);
-                        boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                        boolean success = false;
+                        if(entityType.equalsIgnoreCase(defaultRoleStore)) {
+                            success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                        } else if(entityType.equalsIgnoreCase(defaultUserStore)) {
+                            comparableMap.forEach((key,value) -> {
+                                if(key.equalsIgnoreCase("password")) {
+                                    if(!(value instanceof String)) {
+                                        throw new IllegalArgumentException("Password should be a string literal");
+                                    }
+                                    String hashPassword = BCrypt.hashpw((String) value, BCrypt.gensalt());
+                                    comparableMap.put(key, hashPassword);
+                                }
+                            });
+                            success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                        } else {
+                            success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                        }
                         if (success) {
                             pubSubService.updated(appId, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
@@ -257,7 +282,23 @@ public class JeeEntityServerResource extends BaseServerResource
 
                             if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
                                 validateSchema(entityType, comparableMap);
-                                boolean success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                boolean success = false;
+                                if(entityType.equalsIgnoreCase(defaultRoleStore)) {
+                                    success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                } else if(entityType.equalsIgnoreCase(defaultUserStore)) {
+                                    comparableMap.forEach((key,value) -> {
+                                        if(key.equalsIgnoreCase("password")) {
+                                            if(!(value instanceof String)) {
+                                                throw new IllegalArgumentException("Password should be a string literal");
+                                            }
+                                            String hashPassword = BCrypt.hashpw((String) value, BCrypt.gensalt());
+                                            comparableMap.put(key, hashPassword);
+                                        }
+                                    });
+                                    success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                } else {
+                                    success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                }
                                 if (success) {
                                     pubSubService.updated(appId, entityType, entityId);
                                     setStatus(Status.SUCCESS_OK);

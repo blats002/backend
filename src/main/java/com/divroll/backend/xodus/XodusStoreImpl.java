@@ -402,30 +402,23 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                         if(entity != null) {
                             List<String> propertyNames = entity.getPropertyNames();
                             propertyNames.forEach(propertyName -> {
-                                if( (propertyName.startsWith("write(") && propertyName.endsWith(")"))
-                                        || (propertyName.startsWith("read(") && propertyName.endsWith(")"))
-                                        || (propertyName.startsWith("role(") && propertyName.endsWith(")")) ) {
-                                    // do not include
-                                } else {
-                                    Comparable comparable = entity.getProperty(propertyName);
-                                    if(comparable instanceof String) {
-                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.STRING);
-                                        propertyTypes.add(propertyType);
-                                    } else if(comparable instanceof Number) {
-                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.NUMBER);
-                                        propertyTypes.add(propertyType);
-                                    } else if(comparable instanceof Boolean) {
-                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.BOOLEAN);
-                                        propertyTypes.add(propertyType);
-                                    } else if(comparable instanceof EmbeddedArrayIterable) {
-                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.ARRAY);
-                                        propertyTypes.add(propertyType);
-                                    } else if(comparable instanceof EmbeddedEntityIterable) {
-                                        EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.OBJECT);
-                                        propertyTypes.add(propertyType);
-                                    }
+                                Comparable comparable = entity.getProperty(propertyName);
+                                if(comparable instanceof String) {
+                                    EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.STRING);
+                                    propertyTypes.add(propertyType);
+                                } else if(comparable instanceof Number) {
+                                    EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.NUMBER);
+                                    propertyTypes.add(propertyType);
+                                } else if(comparable instanceof Boolean) {
+                                    EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.BOOLEAN);
+                                    propertyTypes.add(propertyType);
+                                } else if(comparable instanceof EmbeddedArrayIterable) {
+                                    EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.ARRAY);
+                                    propertyTypes.add(propertyType);
+                                } else if(comparable instanceof EmbeddedEntityIterable) {
+                                    EntityPropertyType propertyType = new EntityPropertyType(propertyName, EntityPropertyType.TYPE.OBJECT);
+                                    propertyTypes.add(propertyType);
                                 }
-
                             });
                         }
                     }

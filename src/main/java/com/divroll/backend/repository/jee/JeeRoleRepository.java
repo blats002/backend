@@ -35,6 +35,7 @@ import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -79,7 +80,6 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                                 Entity userOrRoleEntity = txn.getEntity(userEntityId);
                                 if (userOrRoleEntity != null) {
                                     entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
-                                    entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
                         }
@@ -96,7 +96,6 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                                 Entity userOrRoleEntity = txn.getEntity(userEntityId);
                                 if (userOrRoleEntity != null) {
                                     entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
-                                    entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                                 }
                             }
                         }
@@ -131,17 +130,11 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
                         entity.deleteLinks(Constants.RESERVED_FIELD_ACL_READ);
-                        entity.getPropertyNames().forEach(propertyName -> {
-                            if(propertyName.startsWith("read(") && propertyName.endsWith(")")) {
-                                entity.deleteProperty(propertyName);
-                            }
-                        });
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
-                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -151,17 +144,11 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
                         entity.deleteLinks(Constants.RESERVED_FIELD_ACL_WRITE);
-                        entity.getPropertyNames().forEach(propertyName -> {
-                            if(propertyName.startsWith("write(") && propertyName.endsWith(")")) {
-                                entity.deleteProperty(propertyName);
-                            }
-                        });
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
-                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -174,6 +161,11 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
             ////entityStore.close();
         }
         return success[0];
+    }
+
+    @Override
+    public boolean updateRole(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap, String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
+        return false;
     }
 
     @Override
@@ -332,9 +324,9 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                             }
                         }
                         long count = result.count();
-                        LOG.info("COUNT: " + count);
                     } else {
-                        result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
+                        Entity targetEntity = txn.getEntity(txn.toEntityId(userIdRoleId));
+                        result = txn.findLinks(storeName, targetEntity, "aclRead")
                                 .concat(txn.find(storeName, "publicRead", true));
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);

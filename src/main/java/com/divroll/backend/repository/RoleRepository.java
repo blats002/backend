@@ -25,6 +25,7 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.model.filter.TransactionFilter;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -35,6 +36,10 @@ public interface RoleRepository {
     String createRole(String instance, String storeName, String roleName, String[] read, String[] write, final Boolean publicRead, final Boolean publicWrite);
 
     boolean updateRole(String instance, String storeName, String entityId, String newRoleName, final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+
+    boolean updateRole(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
+                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+
 
     Role getRole(String instance, String storeName, String entityId);
 
