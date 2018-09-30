@@ -32,7 +32,6 @@ import com.divroll.backend.service.SchemaService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Header;
@@ -126,10 +125,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
         sort = getQueryValue("sort");
 
         Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
-        appId = headers.getFirstValue(Constants.HEADER_APP_ID);
-        apiKey = headers.getFirstValue(Constants.HEADER_API_KEY);
-        masterKey = headers.getFirstValue(Constants.HEADER_MASTER_KEY);
-        authToken = headers.getFirstValue(Constants.HEADER_AUTH_TOKEN);
+
+        LOG.with(headers).info("Logging headers");
+
+        appId = headers.getFirstValue(Constants.HEADER_APP_ID) != null
+                ? headers.getFirstValue(Constants.HEADER_APP_ID) : headers.getFirstValue(Constants.HEADER_APP_ID.toLowerCase());
+        apiKey = headers.getFirstValue(Constants.HEADER_API_KEY) != null
+                ? headers.getFirstValue(Constants.HEADER_API_KEY) : headers.getFirstValue(Constants.HEADER_API_KEY.toLowerCase());
+        masterKey = headers.getFirstValue(Constants.HEADER_MASTER_KEY) != null
+                ? headers.getFirstValue(Constants.HEADER_MASTER_KEY) : headers.getFirstValue(Constants.HEADER_MASTER_KEY.toLowerCase());
+        authToken = headers.getFirstValue(Constants.HEADER_AUTH_TOKEN) != null
+                ? headers.getFirstValue(Constants.HEADER_AUTH_TOKEN) : headers.getFirstValue(Constants.HEADER_AUTH_TOKEN.toLowerCase());
+        masterToken = headers.getFirstValue(Constants.HEADER_MASTER_TOKEN) != null
+                ? headers.getFirstValue(Constants.HEADER_MASTER_TOKEN) : headers.getFirstValue(Constants.HEADER_MASTER_TOKEN.toLowerCase());
 
         if(appId == null) {
             appId = getQueryValue(Constants.APP_ID);
@@ -143,15 +151,16 @@ public class BaseServerResource extends SelfInjectingServerResource {
             masterKey= getQueryValue(Constants.MASTER_KEY);
         }
 
-        aclRead = headers.getFirstValue(Constants.HEADER_ACL_READ);
-        aclWrite = headers.getFirstValue(Constants.HEADER_ACL_WRITE);
-
-        accept = headers.getFirstValue(Constants.HEADER_ACCEPT);
-        contentType = headers.getFirstValue(Constants.HEADER_CONTENT_TYPE);
+        aclRead = headers.getFirstValue(Constants.HEADER_ACL_READ) != null
+                ? headers.getFirstValue(Constants.HEADER_ACL_READ) : headers.getFirstValue(Constants.HEADER_ACL_READ.toLowerCase());
+        aclWrite = headers.getFirstValue(Constants.HEADER_ACL_WRITE) != null
+                ? headers.getFirstValue(Constants.HEADER_ACL_WRITE) : headers.getFirstValue(Constants.HEADER_ACL_WRITE.toLowerCase());
+        accept = headers.getFirstValue(Constants.HEADER_ACCEPT) != null
+                ? headers.getFirstValue(Constants.HEADER_ACCEPT) : headers.getFirstValue(Constants.HEADER_ACCEPT.toLowerCase());
+        contentType = headers.getFirstValue(Constants.HEADER_CONTENT_TYPE) != null
+                ? headers.getFirstValue(Constants.HEADER_CONTENT_TYPE) : headers.getFirstValue(Constants.HEADER_CONTENT_TYPE.toLowerCase());
 
         appName = getAttribute("appName");
-
-        masterToken = headers.getFirstValue(Constants.HEADER_MASTER_TOKEN);
 
         try {
             skip = Integer.valueOf(getQueryValue(Constants.QUERY_SKIP));
