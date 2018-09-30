@@ -34,8 +34,10 @@ import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -79,7 +81,6 @@ public class JeeUserRepository extends JeeBaseRespository
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
-                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -94,7 +95,6 @@ public class JeeUserRepository extends JeeBaseRespository
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
-                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -143,17 +143,11 @@ public class JeeUserRepository extends JeeBaseRespository
                         List<String> aclRead = Arrays.asList(read);
                         // Add User to ACL
                         entity.deleteLinks(Constants.RESERVED_FIELD_ACL_READ);
-                        entity.getPropertyNames().forEach(propertyName -> {
-                            if(propertyName.startsWith("read(") && propertyName.endsWith(")")) {
-                                entity.deleteProperty(propertyName);
-                            }
-                        });
                         for (String userId : aclRead) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
-                                entity.setProperty("read(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -164,17 +158,11 @@ public class JeeUserRepository extends JeeBaseRespository
                         List<String> aclWrite = Arrays.asList(write);
                         // Add User to ACL
                         entity.deleteLinks(Constants.RESERVED_FIELD_ACL_WRITE);
-                        entity.getPropertyNames().forEach(propertyName -> {
-                            if(propertyName.startsWith("write(") && propertyName.endsWith(")")) {
-                                entity.deleteProperty(propertyName);
-                            }
-                        });
                         for (String userId : aclWrite) {
                             EntityId userEntityId = txn.toEntityId(userId);
                             Entity userOrRoleEntity = txn.getEntity(userEntityId);
                             if (userOrRoleEntity != null) {
                                 entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
-                                entity.setProperty("write(" + userOrRoleEntity.getId().toString() + ")", true);
                             }
                         }
                     }
@@ -229,6 +217,65 @@ public class JeeUserRepository extends JeeBaseRespository
             });
         } finally {
             //entityStore.close();
+        }
+        return success[0];    }
+
+    @Override
+    public boolean updateUser(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
+                              String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    Iterator<String> it = comparableMap.keySet().iterator();
+                    while (it.hasNext()) {
+                        String key = it.next();
+                        Comparable value = comparableMap.get(key);
+                        if (value == null) {
+                            entity.deleteProperty(key);
+                        } else {
+                            entity.setProperty(key, value);
+                        }
+                    }
+
+                    if (read != null) {
+                        List<String> aclRead = Arrays.asList(read);
+                        // Add User to ACL
+                        entity.deleteLinks(Constants.RESERVED_FIELD_ACL_READ);
+                        for (String userId : aclRead) {
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
+                            }
+                        }
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                    }
+
+                    if (write != null) {
+                        List<String> aclWrite = Arrays.asList(write);
+                        // Add User to ACL
+                        entity.deleteLinks(Constants.RESERVED_FIELD_ACL_WRITE);
+                        for (String userId : aclWrite) {
+                            EntityId userEntityId = txn.toEntityId(userId);
+                            Entity userOrRoleEntity = txn.getEntity(userEntityId);
+                            if (userOrRoleEntity != null) {
+                                entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
+                            }
+                        }
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    }
+
+                    success[0] = true;
+                }
+            });
+        } finally {
+            ////entityStore.close();
         }
         return success[0];    }
 
@@ -396,7 +443,8 @@ public class JeeUserRepository extends JeeBaseRespository
                             }
                         }
                     } else {
-                        result = txn.find(storeName, "read(" + userIdRoleId + ")", true)
+                        Entity targetEntity = txn.getEntity(txn.toEntityId(userIdRoleId));
+                        result = txn.findLinks(storeName, targetEntity, "aclRead")
                                 .concat(txn.find(storeName, "publicRead", true));
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);

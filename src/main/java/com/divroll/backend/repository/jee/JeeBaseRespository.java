@@ -1,6 +1,7 @@
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.model.filter.TransactionFilter;
+import jetbrains.exodus.entitystore.Entity;
 import jetbrains.exodus.entitystore.EntityIterable;
 import jetbrains.exodus.entitystore.StoreTransaction;
 
@@ -18,11 +19,14 @@ public abstract class JeeBaseRespository {
                 if(filter.getEqualityOp().equals(TransactionFilter.EQUALITY_OP.EQUAL)) {
                     if(filter.getPropertyValue() != null) { // equal
                         if(filter.getPropertyName().equals("aclRead")) {
-                            entityIterableResult[0] = txn.find(entityType, "read(" + filter.getPropertyValue() + ")", true);
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = txn.findLinks(entityType, targetEntity, "aclRead");
                         } else if(filter.getPropertyName().equals("aclWrite")) {
-                            entityIterableResult[0] = txn.find(entityType, "write(" + filter.getPropertyValue() + ")", true);
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = txn.findLinks(entityType, targetEntity, "aclWrite");
                         } else if(filter.getPropertyName().equals("roles")) {
-                            entityIterableResult[0] = txn.find(entityType, "role(" + filter.getPropertyValue() + ")", true);
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = txn.findLinks(entityType, targetEntity, "roles");
                         } else {
                             entityIterableResult[0] = txn.find(entityType, filter.getPropertyName(), filter.getPropertyValue());
                         }
@@ -46,11 +50,14 @@ public abstract class JeeBaseRespository {
                 if(filter.getEqualityOp().equals(TransactionFilter.EQUALITY_OP.EQUAL)) {
                     if(filter.getPropertyValue() != null) {
                         if(filter.getPropertyName().equals("aclRead")) {
-                            entityIterableResult[0] = entityIterableResult[0].intersect(txn.find(entityType, "read(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].intersect(txn.findLinks(entityType, targetEntity, "aclRead"));
                         } else if(filter.getPropertyName().equals("aclWrite")) {
-                            entityIterableResult[0] = entityIterableResult[0].intersect(txn.find(entityType, "write(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].intersect(txn.findLinks(entityType, targetEntity, "aclWrite"));
                         } else if(filter.getPropertyName().equals("roles")) {
-                            entityIterableResult[0] = entityIterableResult[0].intersect(txn.find(entityType, "role(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].intersect(txn.findLinks(entityType, targetEntity, "roles"));
                         } else {
                             entityIterableResult[0] = entityIterableResult[0].intersect(txn.find(entityType, filter.getPropertyName(), filter.getPropertyValue()));
                         }
@@ -74,11 +81,14 @@ public abstract class JeeBaseRespository {
                 if(filter.getEqualityOp().equals(TransactionFilter.EQUALITY_OP.EQUAL)) {
                     if(filter.getPropertyValue() != null) {
                         if(filter.getPropertyName().equals("aclRead")) {
-                            entityIterableResult[0] = entityIterableResult[0].union(txn.find(entityType, "read(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].union(txn.findLinks(entityType, targetEntity, "aclRead"));
                         } else if(filter.getPropertyName().equals("aclWrite")) {
-                            entityIterableResult[0] = entityIterableResult[0].union(txn.find(entityType, "write(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].union(txn.findLinks(entityType, targetEntity, "aclWrite"));
                         } else if(filter.getPropertyName().equals("roles")) {
-                            entityIterableResult[0] = entityIterableResult[0].union(txn.find(entityType, "role(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].union(txn.findLinks(entityType, targetEntity, "roles"));
                         } else {
                             entityIterableResult[0] = entityIterableResult[0].union(txn.find(entityType, filter.getPropertyName(), filter.getPropertyValue()));
                         }
@@ -105,11 +115,14 @@ public abstract class JeeBaseRespository {
                 if(filter.getEqualityOp().equals(TransactionFilter.EQUALITY_OP.EQUAL)) {
                     if(filter.getPropertyValue() != null) {
                         if(filter.getPropertyName().equals("aclRead")) {
-                            entityIterableResult[0] = entityIterableResult[0].minus(txn.find(entityType, "read(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].minus(txn.findLinks(entityType, targetEntity, "aclRead"));
                         } else if(filter.getPropertyName().equals("aclWrite")) {
-                            entityIterableResult[0] = entityIterableResult[0].minus(txn.find(entityType, "write(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].minus(txn.findLinks(entityType, targetEntity, "aclWrite"));
                         } else if(filter.getPropertyName().equals("roles")) {
-                            entityIterableResult[0] = entityIterableResult[0].minus(txn.find(entityType, "role(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].minus(txn.findLinks(entityType, targetEntity, "roles"));
                         } else {
                             entityIterableResult[0] = entityIterableResult[0].minus(txn.find(entityType, filter.getPropertyName(), filter.getPropertyValue()));
                         }
@@ -133,11 +146,14 @@ public abstract class JeeBaseRespository {
                 if(filter.getEqualityOp().equals(TransactionFilter.EQUALITY_OP.EQUAL)) {
                     if(filter.getPropertyValue() != null) {
                         if(filter.getPropertyName().equals("aclRead")) {
-                            entityIterableResult[0] = entityIterableResult[0].concat(txn.find(entityType, "read(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].concat(txn.findLinks(entityType, targetEntity, "aclRead"));
                         } else if(filter.getPropertyName().equals("aclWrite")) {
-                            entityIterableResult[0] = entityIterableResult[0].concat(txn.find(entityType, "write(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].concat(txn.findLinks(entityType, targetEntity, "aclWrite"));
                         } else if(filter.getPropertyName().equals("roles")) {
-                            entityIterableResult[0] = entityIterableResult[0].concat(txn.find(entityType, "role(" + filter.getPropertyValue() + ")", true));
+                            Entity targetEntity = txn.getEntity(txn.toEntityId((String) filter.getPropertyValue()));
+                            entityIterableResult[0] = entityIterableResult[0].concat(txn.findLinks(entityType, targetEntity, "roles"));
                         } else {
                             entityIterableResult[0] = entityIterableResult[0].concat(txn.find(entityType, filter.getPropertyName(), filter.getPropertyValue()));
                         }
