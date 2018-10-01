@@ -90,6 +90,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     private Application application;
 
+    protected String fileName;
+
     @Inject
     ApplicationService applicationService;
 
@@ -201,6 +203,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
             }
         }
+
+        fileName = getAttribute("fileName");
 
     }
 
