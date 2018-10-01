@@ -23,11 +23,13 @@ package com.divroll.backend.guice;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.repository.EntityRepository;
+import com.divroll.backend.repository.FileStore;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.repository.jee.JeeEntityRepository;
 import com.divroll.backend.repository.jee.JeeRoleRepository;
 import com.divroll.backend.repository.jee.JeeUserRepository;
+import com.divroll.backend.repository.jee.JeeXodusVFSRepository;
 import com.divroll.backend.service.*;
 import com.divroll.backend.service.jee.*;
 import com.divroll.backend.xodus.*;
@@ -75,6 +77,7 @@ public class GuiceConfigModule extends AbstractModule {
         bind(UserRepository.class).to(JeeUserRepository.class).in(Scopes.SINGLETON);
         bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
         bind(EntityRepository.class).to(JeeEntityRepository.class).in(Scopes.SINGLETON);
+        bind(FileStore.class).to(JeeXodusVFSRepository.class).in(Scopes.SINGLETON);
 
         bind(SchemaService.class).to(JeeSchemaService.class).in(Scopes.SINGLETON);
         bind(WebTokenService.class).to(JeeWebTokenService.class).in(Scopes.SINGLETON);

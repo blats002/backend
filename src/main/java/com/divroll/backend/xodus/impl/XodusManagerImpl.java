@@ -12,6 +12,7 @@ import jetbrains.exodus.entitystore.StoreTransaction;
 import jetbrains.exodus.entitystore.StoreTransactionalExecutable;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+import jetbrains.exodus.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedHashMap;
@@ -24,6 +25,7 @@ public class XodusManagerImpl implements XodusManager {
 
     Map<String, Environment> environmentMap = new LinkedHashMap<>();
     Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
+    VirtualFileSystem virtualFileSystem = null;
 
     @Override
     public Environment getEnvironment(String xodusRoot, String instance) {
@@ -52,5 +54,13 @@ public class XodusManagerImpl implements XodusManager {
         }
         PersistentEntityStore p = entityStoreMap.get(xodusRoot + dir);
         return p;
+    }
+
+    @Override
+    public VirtualFileSystem getVirtualFileSystem(Environment env) {
+        if(virtualFileSystem == null) {
+            virtualFileSystem = new VirtualFileSystem(env);
+        }
+        return virtualFileSystem;
     }
 }
