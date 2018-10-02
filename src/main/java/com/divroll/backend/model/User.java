@@ -43,6 +43,8 @@ public class User {
     private String username;
     @ApiModelProperty(required = true, value = "Password")
     private String password;
+    @ApiModelProperty(required = true, value = "Email")
+    private String email;
     @ApiModelProperty(required = false, value = "Generated Authentication Token")
     private String webToken;
     @ApiModelProperty(required = false)
@@ -135,5 +137,13 @@ public class User {
 
     public void setPublicWrite(Boolean publicWrite) {
         this.publicWrite = publicWrite;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getEmail() {
+        return email;
     }
 }

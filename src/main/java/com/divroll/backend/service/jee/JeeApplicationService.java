@@ -84,6 +84,14 @@ public class JeeApplicationService
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 application.setAppName((String) entityMap.get(Constants.APP_NAME));
+                EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
+                        ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
+                if(embeddedEntityIterable != null) {
+                    JSONObject jsonObject = embeddedEntityIterable.asJSONObject();
+                    Email emailConfg = new Email();
+                    emailConfg.fromJSONObject(jsonObject);
+                    application.setEmailConfig(emailConfg);
+                }
                 return application;
             }
         }
@@ -98,6 +106,10 @@ public class JeeApplicationService
         comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
         if(application.getAppName() != null) {
             comparableMap.put(Constants.APP_NAME, application.getAppName());
+        }
+        if(application.getEmailConfig() != null) {
+            EmbeddedEntityIterable embeddedEntityIterable = new EmbeddedEntityIterable(application.getEmailConfig().toJSONObject());
+            comparableMap.put("emailConfig", embeddedEntityIterable);
         }
         EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
                 Constants.MASTER_KEY, theMasterKey, String.class);
@@ -120,6 +132,14 @@ public class JeeApplicationService
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 application.setAppName((String) entityMap.get(Constants.APP_NAME));
+                EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
+                        ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
+                if(embeddedEntityIterable != null) {
+                    JSONObject jsonObject = embeddedEntityIterable.asJSONObject();
+                    Email emailConfg = new Email();
+                    emailConfg.fromJSONObject(jsonObject);
+                    application.setEmailConfig(emailConfg);
+                }
                 apps.add(application);
             }
         }

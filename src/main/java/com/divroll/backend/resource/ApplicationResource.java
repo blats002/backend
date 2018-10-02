@@ -27,6 +27,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
@@ -42,7 +43,7 @@ public interface ApplicationResource {
     @ApiOperation(value = "getEnvironment a new application", tags = "application")
     @ApiResponses({@ApiResponse(code = 200, message = "the application", response = Application.class),})
     @Post
-    Application createApp(UserRootDTO rootDTO);
+    Application createApp(Application rootDTO);
 
     @ApiOperation(value = "update a existing application", tags = "application")
     @ApiResponses({
@@ -50,5 +51,5 @@ public interface ApplicationResource {
             @ApiResponse(code = 404, message = "application not found"),
             @ApiResponse(code = 401, message = "unauthorized access")})
     @Put
-    Application updateApp(Application application);
+    Application updateApp(Application entity);
 }

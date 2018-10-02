@@ -44,6 +44,10 @@ public class Application {
     @ApiModelProperty(required = true, value = "Generated Master Key")
     private String masterKey;
     private String appName;
+    @ApiModelProperty(required = false, value = "Email configuration")
+    private Email emailConfig;
+
+    private UserRootDTO user;
 
     public String getId() {
         return appId;
@@ -85,4 +89,19 @@ public class Application {
         this.appName = appName;
     }
 
+    public void setEmailConfig(Email emailConfig) {
+        this.emailConfig = emailConfig;
+    }
+
+    public Email getEmailConfig() {
+        return emailConfig;
+    }
+
+    public UserRootDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserRootDTO user) {
+        this.user = user;
+    }
 }

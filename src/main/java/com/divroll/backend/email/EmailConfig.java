@@ -19,52 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model;
+package com.divroll.backend.email;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-import com.wordnik.swagger.annotations.ApiModel;
+public class EmailConfig {
 
-import java.util.LinkedList;
-import java.util.List;
+    private String smtpHost;
+    private String tlsPort;
+    private String sslPort;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-@XStreamAlias("applications")
-@ApiModel
-public class Applications {
-  @XStreamImplicit(itemFieldName = "results")
-  private List<Application> results;
-  private long skip;
-  private long limit;
-
-  public List<Application> getResults() {
-    if(results == null) {
-      results = new LinkedList<>();
+    public String getSmtpHost() {
+        return smtpHost;
     }
-    return results;
-  }
 
-  public void setResults(List<Application> results) {
-    this.results = results;
-  }
+    public void setSmtpHost(String smtpHost) {
+        this.smtpHost = smtpHost;
+    }
 
-  public long getSkip() {
-    return skip;
-  }
+    public String getTlsPort() {
+        return tlsPort;
+    }
 
-  public void setSkip(long skip) {
-    this.skip = skip;
-  }
+    public void setTlsPort(String tlsPort) {
+        this.tlsPort = tlsPort;
+    }
 
-  public long getLimit() {
-    return limit;
-  }
+    public String getSslPort() {
+        return sslPort;
+    }
 
-  public void setLimit(long limit) {
-    this.limit = limit;
-  }
+    public void setSslPort(String sslPort) {
+        this.sslPort = sslPort;
+    }
 }

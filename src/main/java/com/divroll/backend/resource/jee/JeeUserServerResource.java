@@ -262,7 +262,9 @@ public class JeeUserServerResource extends BaseServerResource implements
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
                 validateIds(read, write);
                 Boolean success = userRepository.updateUser(appId, storeName, userId,
-                        newUsername, newHashPassword, read, write, publicRead, publicWrite, roleArray);
+                        newUsername, newHashPassword,
+                        null,
+                        read, write, publicRead, publicWrite, roleArray);
                 if (success) {
                     User resultUser = new User();
                     resultUser.setEntityId(userId);
@@ -301,8 +303,10 @@ public class JeeUserServerResource extends BaseServerResource implements
                     }
                     if (isAccess) {
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                        Boolean success = userRepository.updateUser(appId, storeName, userId, newUsername,
-                                newHashPassword, read, write, publicRead, publicWrite, roleArray);
+                        Boolean success = userRepository.updateUser(appId, storeName, userId,
+                                newUsername, newHashPassword,
+                                null,
+                                read, write, publicRead, publicWrite, roleArray);
                         if (success) {
                             User resultUser = new User();
                             resultUser.setEntityId(userId);

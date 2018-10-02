@@ -43,6 +43,7 @@ public class UserDTO {
     private String username;
     @ApiModelProperty(required = true, value = "Password")
     private String password;
+    private String email;
     @ApiModelProperty(required = false, value = "Generated Authentication Token")
     private String webToken;
     @ApiModelProperty(required = false)
@@ -148,6 +149,7 @@ public class UserDTO {
 
         userDTO.setPassword(user.getPassword());
         userDTO.setUsername(user.getUsername());
+        userDTO.setEmail(user.getEmail());
         userDTO.setWebToken(user.getWebToken());
 
         userDTO.setPublicRead(user.getPublicRead());
@@ -164,5 +166,13 @@ public class UserDTO {
             userDTO.setRoles(roles);
         }
         return userDTO;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
