@@ -30,6 +30,9 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.engine.Engine;
@@ -60,11 +63,14 @@ public class DivrollBackendApplication extends Application {
      */
     @Override
     public Restlet createInboundRoot() {
-        Guice.createInjector(new GuiceConfigModule(this.getContext()),
-                new SelfInjectingServerResourceModule());
+
         LOG.info("Starting application");
 
+        Guice.createInjector(new GuiceConfigModule(this.getContext()),
+                new SelfInjectingServerResourceModule());
+
         configureConverters();
+        configureJobScheduler();
 
         Router router = new Router(getContext());
 
@@ -178,6 +184,16 @@ public class DivrollBackendApplication extends Application {
                 this);
         restlet.setBasePath("http://localhost:8080/");
         restlet.attach(router, "/docs");
+    }
+
+    private void configureJobScheduler() {
+        try {
+            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+            scheduler.start();
+            scheduler.resumeAll();
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
     }
 
 }

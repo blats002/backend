@@ -37,6 +37,7 @@ public class DTOHelper {
 
             userDTO.setPassword(user.getPassword());
             userDTO.setUsername(user.getUsername());
+            userDTO.setEmail(user.getEmail());
             userDTO.setWebToken(user.getWebToken());
 
             userDTO.setPublicRead(user.getPublicRead());

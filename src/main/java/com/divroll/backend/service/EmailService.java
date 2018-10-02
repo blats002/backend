@@ -19,52 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model;
+package com.divroll.backend.service;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamImplicit;
-import com.wordnik.swagger.annotations.ApiModel;
+import com.divroll.backend.email.EmailConfig;
 
-import java.util.LinkedList;
-import java.util.List;
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-@XStreamAlias("applications")
-@ApiModel
-public class Applications {
-  @XStreamImplicit(itemFieldName = "results")
-  private List<Application> results;
-  private long skip;
-  private long limit;
-
-  public List<Application> getResults() {
-    if(results == null) {
-      results = new LinkedList<>();
-    }
-    return results;
-  }
-
-  public void setResults(List<Application> results) {
-    this.results = results;
-  }
-
-  public long getSkip() {
-    return skip;
-  }
-
-  public void setSkip(long skip) {
-    this.skip = skip;
-  }
-
-  public long getLimit() {
-    return limit;
-  }
-
-  public void setLimit(long limit) {
-    this.limit = limit;
-  }
+public interface EmailService {
+    void sendEmail(EmailConfig smtpConfig, String from, String password, String to, String subject, String htmlBody)
+            throws UnsupportedEncodingException, MessagingException;
 }

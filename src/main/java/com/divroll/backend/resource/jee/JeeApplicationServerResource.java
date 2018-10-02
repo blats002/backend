@@ -22,6 +22,7 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Email;
 import com.divroll.backend.model.UserRootDTO;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
@@ -34,7 +35,9 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -72,36 +75,57 @@ public class JeeApplicationServerResource extends BaseServerResource
 
     @Override
     public Application updateApp(Application entity) {
-        if ((masterKey == null || masterKey.isEmpty()) || (appId == null || appId.isEmpty())) {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return null;
-        }
-        String newApiKey = entity.getApiKey();
-        String newMasterKey = entity.getMasterKey();
-        Application app = applicationService.read(appId);
-        if (app != null) {
-            String encryptedMasterKey = app.getMasterKey();
-            if (BCrypt.checkpw(masterKey, encryptedMasterKey)) {
-                String hashApiKey = BCrypt.hashpw(newApiKey, BCrypt.gensalt());
-                String hashMasterkEy = BCrypt.hashpw(newMasterKey, BCrypt.gensalt());
-                app.setApiKey(hashApiKey);
-                app.setMasterKey(hashMasterkEy);
-                applicationService.update(app, encryptedMasterKey);
-                setStatus(Status.SUCCESS_OK);
-                app.setApiKey(newApiKey);
-                app.setMasterKey(newMasterKey);
-                return app;
-            } else {
+        try {
+            if ((masterKey == null || masterKey.isEmpty()) || (appId == null || appId.isEmpty())) {
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
             }
-        } else {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            if(entity == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return null;
+            }
+            String newApiKey = entity.getApiKey();
+            String newMasterKey = entity.getMasterKey();
+            Email email = entity.getEmailConfig();
+            Application app = applicationService.read(appId);
+            if (app != null) {
+                String encryptedMasterKey = app.getMasterKey();
+                if (BCrypt.checkpw(masterKey, encryptedMasterKey)) {
+
+                    if(newApiKey != null && !newApiKey.isEmpty()) {
+                        String hashApiKey = BCrypt.hashpw(newApiKey, BCrypt.gensalt());
+                        app.setApiKey(hashApiKey);
+                    }
+
+                    if(newMasterKey != null && !newMasterKey.isEmpty()) {
+                        String hashMasterkEy = BCrypt.hashpw(newMasterKey, BCrypt.gensalt());
+                        app.setMasterKey(hashMasterkEy);
+                    }
+
+                    if(email != null) {
+                        app.setEmailConfig(email);
+                    }
+
+                    applicationService.update(app, encryptedMasterKey);
+
+                    setStatus(Status.SUCCESS_OK);
+                    return app;
+                } else {
+                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                }
+            } else {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+
         return null;
     }
 
     @Override
-    public Application createApp(UserRootDTO rootDTO) {
+    public Application createApp(Application application) {
 
         if(appName == null) {
             appName = getQueryValue("appName");
@@ -112,7 +136,7 @@ public class JeeApplicationServerResource extends BaseServerResource
             return null;
         }
 
-        Application application = new Application();
+        UserRootDTO rootDTO = application.getUser();
 
         String appId = UUID.randomUUID().toString().replace("-", "");
         String apiKey = UUID.randomUUID().toString().replace("-", "");
@@ -131,7 +155,8 @@ public class JeeApplicationServerResource extends BaseServerResource
 
             if(rootDTO != null) {
                 String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
-                String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(), null, null, false, false,
+                String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(),
+                        null, null, null, false, false,
                         new String[]{roleId});
             }
 

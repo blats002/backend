@@ -65,6 +65,7 @@ public class JeeUserRepository extends JeeBaseRespository
 
     @Override
     public String createUser(String instance, final String storeName, final String username, final String password,
+                             final Map<String,Comparable> comparableMap,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles) {
         final String[] entityId = {null};
 
@@ -127,7 +128,9 @@ public class JeeUserRepository extends JeeBaseRespository
 
     @Override
     public boolean updateUser(String instance, String storeName, final String userId,
-                              final String newUsername, final String newPassword, final String[] read, final String[] write,
+                              final String newUsername, final String newPassword,
+                              final Map<String,Comparable> comparableMap,
+                              final String[] read, final String[] write,
                               final Boolean publicRead, final Boolean publicWrite, String[] roles) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -299,6 +302,7 @@ public class JeeUserRepository extends JeeBaseRespository
                         user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
                         user.setPassword((String) userEntity.getProperty(Constants.QUERY_PASSWORD));
                         user.setEntityId(userEntity.getId().toString());
+                        user.setEmail(userEntity.getProperty("email") != null ? (String) userEntity.getProperty("email") : null);
 
                         for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                             Role role = new Role();
@@ -376,10 +380,10 @@ public class JeeUserRepository extends JeeBaseRespository
                     final Entity userEntity = txn.find(storeName, Constants.QUERY_USERNAME, username).getFirst();
                     if (userEntity != null) {
                         User user = new User();
-                        user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
-                        user.setPassword((String) userEntity.getProperty(Constants.QUERY_PASSWORD));
+                        user.setUsername((String) userEntity.getProperty(Constants.RESERVED_FIELD_USERNAME));
+                        user.setPassword((String) userEntity.getProperty(Constants.RESERVED_FIELD_PASSWORD));
                         user.setEntityId(userEntity.getId().toString());
-
+                        user.setEmail(userEntity.getProperty("email") != null ? (String) userEntity.getProperty("email") : null);
                         List<Role> roles = new LinkedList<>();
                         for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                             Role role = new Role();
@@ -468,7 +472,8 @@ public class JeeUserRepository extends JeeBaseRespository
                     for (Entity userEntity : result) {
                         User user = new User();
                         user.setEntityId((String) userEntity.getId().toString());
-                        user.setUsername((String) userEntity.getProperty(Constants.QUERY_USERNAME));
+                        user.setUsername((String) userEntity.getProperty(Constants.RESERVED_FIELD_USERNAME));
+                        user.setEmail((String) userEntity.getProperty("email"));
                         for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                             Role role = new Role();
                             role.setEntityId(roleEntity.getId().toString());

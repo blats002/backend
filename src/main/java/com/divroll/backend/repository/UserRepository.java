@@ -34,11 +34,13 @@ import java.util.Map;
  */
 public interface UserRepository {
     String createUser(String instance, String storeName, String username, String password,
+                      final Map<String,Comparable> comparableMap,
                       String[] read, String[] write,
                       final Boolean publicRead, final Boolean publicWrite, String[] roles);
 
     boolean updateUser(String instance, String storeName, String entityId,
                        String newUsername, String newPassword,
+                       final Map<String,Comparable> comparableMap,
                        String[] read, String[] write,
                        final Boolean publicRead, final Boolean publicWrite, String[] roles);
 

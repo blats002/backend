@@ -1,6 +1,9 @@
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.job.EmailJob;
+import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Email;
 import com.divroll.backend.model.PasswordResetDTO;
 import com.divroll.backend.model.User;
 import com.divroll.backend.repository.UserRepository;
@@ -14,8 +17,19 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
+import scala.App;
+
+import java.util.UUID;
+
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 public class JeePasswordResetServerResource extends BaseServerResource
     implements PasswordResetResource {
@@ -128,6 +142,12 @@ public class JeePasswordResetServerResource extends BaseServerResource
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                     } else {
+
+                        if(userEntity.getEmail() == null || userEntity.getEmail().isEmpty()) {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "User does not have associated email");
+                            return;
+                        }
+
                         String username = entity.getUsername();
                         String newPassword = entity.getNewPassword(); // plain password
                         String currentPassword = userEntity.getPassword(); // encrypted password
@@ -143,7 +163,40 @@ public class JeePasswordResetServerResource extends BaseServerResource
 
                         LOG.info("Generated Password Reset Token - " + encoded); // TODO: Do not log in production
 
-                        // TODO: Send token to user associated email address
+                        String htmlBody = "<p>Reset password link: http://localhost:8080/divroll/entities/users/resetPassword?" + encoded + "</p>";
+
+                        Application application = getApp();
+                        if(application != null && application.getEmailConfig() != null) {
+                            Email emailConfig = application.getEmailConfig();
+                            JobDetail job = newJob(RetryJobWrapper.class)
+                                    .storeDurably()
+                                    .requestRecovery(true)
+                                    .withIdentity(UUID.randomUUID().toString(), "emailJobs")
+                                    .withDescription("An important job that fails with an exception and is retried.")
+                                    .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, EmailJob.class.getName())
+                                    // Set defaults - can be overridden in trigger definition in schedule file
+                                    .usingJobData(RetryJobWrapper.MAX_RETRIES_KEY, "5")
+                                    .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
+                                    .usingJobData("smtpHost", emailConfig.getEmailHost())
+                                    .usingJobData("tlsPort", emailConfig.getEmailPort())
+                                    .usingJobData("fromEmail", emailConfig.getEmailAddress())
+                                    .usingJobData("password", emailConfig.getPassword())
+                                    .usingJobData("toEmail", userEntity.getEmail())
+                                    .usingJobData("subject", "Password Reset")
+                                    .usingJobData("htmlBody", htmlBody)
+                                    .build();
+
+                            Trigger trigger = newTrigger()
+                                    .withIdentity(UUID.randomUUID().toString(), "emailJobs")
+                                    .startNow()
+                                    .withSchedule(simpleSchedule())
+                                    .build();
+
+                            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+                            scheduler.scheduleJob(job, trigger);
+                        }
+
+
                     }
                 }
 
