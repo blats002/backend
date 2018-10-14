@@ -32,9 +32,9 @@ public class JeeXodusVFSRepository implements FileStore {
     XodusManager manager;
 
     @Override
-    public com.divroll.backend.model.File put(String name, byte[] array) {
+    public com.divroll.backend.model.File put(String appId, String name, byte[] array) {
         final com.divroll.backend.model.File[] createdFile = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, fileStore);
+        final Environment env = manager.getEnvironment(xodusRoot, appId);
         final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
@@ -58,9 +58,9 @@ public class JeeXodusVFSRepository implements FileStore {
     }
 
     @Override
-    public com.divroll.backend.model.File put(String name, InputStream is) {
+    public com.divroll.backend.model.File put(String appId, String name, InputStream is) {
         final com.divroll.backend.model.File[] createdFile = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, fileStore);
+        final Environment env = manager.getEnvironment(xodusRoot, appId);
         final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
@@ -83,18 +83,18 @@ public class JeeXodusVFSRepository implements FileStore {
         return createdFile[0];    }
 
     @Override
-    public com.divroll.backend.model.File unmodifiedPut(String name, InputStream is) {
+    public com.divroll.backend.model.File unmodifiedPut(String appId, String name, InputStream is) {
         throw new IllegalArgumentException("Not yet implemented");
     }
 
     @Override
-    public com.divroll.backend.model.File unmodifiedPut(String name, byte[] array) {
+    public com.divroll.backend.model.File unmodifiedPut(String appId, String name, byte[] array) {
         throw new IllegalArgumentException("Not yet implemented");
     }
 
     @Override
-    public void get(String name, OutputStream os) {
-        final Environment env = manager.getEnvironment(xodusRoot, fileStore);
+    public void get(String appId, String name, OutputStream os) {
+        final Environment env = manager.getEnvironment(xodusRoot, appId);
         final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
@@ -113,9 +113,9 @@ public class JeeXodusVFSRepository implements FileStore {
     }
 
     @Override
-    public InputStream getStream(String name) {
+    public InputStream getStream(String appId, String name) {
         final InputStream[] input = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, fileStore);
+        final Environment env = manager.getEnvironment(xodusRoot, appId);
         final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
@@ -130,9 +130,9 @@ public class JeeXodusVFSRepository implements FileStore {
     }
 
     @Override
-    public byte[] get(String name) {
+    public byte[] get(String appId, String name) {
         final byte[][] targetArray = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, fileStore);
+        final Environment env = manager.getEnvironment(xodusRoot, appId);
         final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
@@ -152,9 +152,9 @@ public class JeeXodusVFSRepository implements FileStore {
     }
 
     @Override
-    public boolean delete(String name) {
+    public boolean delete(String appId, String name) {
         final boolean[] success = new boolean[1];
-        final Environment env = manager.getEnvironment(xodusRoot, fileStore);
+        final Environment env = manager.getEnvironment(xodusRoot, appId);
         final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
@@ -169,7 +169,7 @@ public class JeeXodusVFSRepository implements FileStore {
     }
 
     @Override
-    public boolean isExist(String name) {
+    public boolean isExist(String appId, String name) {
         throw new IllegalArgumentException("Not yet implemented");
     }
 }
