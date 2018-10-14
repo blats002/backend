@@ -35,6 +35,10 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
+            if(appId == null || appId.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return  null;
+            }
             if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(
                     entity.getMediaType(), true)) {
                 Request restletRequest = getRequest();
@@ -48,7 +52,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                     if(item.isFormField()) {
                     } else {
                         CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-                        File file = fileStore.put(name, countingInputStream);
+                        File file = fileStore.put(appId, name, countingInputStream);
                         long count = countingInputStream.getCount();
                         LOG.with(file).info("File size=" + count);
                         setStatus(Status.SUCCESS_CREATED);
@@ -69,7 +73,11 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return;
             }
-            boolean deleted = fileStore.delete(fileName);
+            if(appId == null || appId.isEmpty()) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return;
+            }
+            boolean deleted = fileStore.delete(appId, fileName);
             if(deleted) {
                 setStatus(Status.SUCCESS_OK);
             } else {
@@ -87,7 +95,8 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
-            InputStream is = fileStore.getStream(fileName);
+            String appId = getAttribute("appId");
+            InputStream is = fileStore.getStream(appId, fileName);
             Representation representation = new InputRepresentation(is);
             representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
             //representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
