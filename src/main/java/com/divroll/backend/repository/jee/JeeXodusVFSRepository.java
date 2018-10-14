@@ -120,7 +120,7 @@ public class JeeXodusVFSRepository implements FileStore {
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
             public void execute(@NotNull final Transaction txn) {
-                File file = vfs.createFile(txn, name);
+                File file = vfs.openFile(txn, name, false);
                 input[0] = vfs.readFile(txn, file);
             }
         });
@@ -137,7 +137,7 @@ public class JeeXodusVFSRepository implements FileStore {
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
             public void execute(@NotNull final Transaction txn) {
-                File file = vfs.createFile(txn, name);
+                File file = vfs.openFile(txn, name, false);
                 InputStream input = vfs.readFile(txn, file);
                 try {
                     targetArray[0] = ByteStreams.toByteArray(input);
