@@ -27,13 +27,17 @@ import com.divroll.backend.guice.SelfInjectingServerResource;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
+import com.divroll.backend.repository.EntityRepository;
+import com.divroll.backend.repository.jee.AppEntityRepository;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.SchemaService;
+import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
+import org.mozilla.javascript.*;
 import org.restlet.data.Header;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
@@ -42,6 +46,7 @@ import org.restlet.representation.Representation;
 import org.restlet.util.Series;
 import scala.actors.threadpool.Arrays;
 
+import javax.script.ScriptEngineManager;
 import java.io.*;
 import java.util.*;
 
@@ -94,6 +99,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     @Inject
     ApplicationService applicationService;
+
+    @Inject
+    EntityRepository entityRepository;
 
     @Inject
     SchemaService schemaService;
@@ -368,5 +376,57 @@ public class BaseServerResource extends SelfInjectingServerResource {
         });
     }
 
+    public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
+        AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
+        Object evaluated = eval(entity, repository, response, expression);
+        response = (TriggerResponse) evaluated;
+        LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
+        LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
+        return response.isSuccess();
+    }
+
+    public void afterSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
+        AppEntityRepository appEntityRespository = new AppEntityRepository(entityRepository, appId, entityType);
+        Object evaluated = eval(entity, appEntityRespository, response, expression);
+        LOG.info(String.valueOf(evaluated));
+    }
+
+    protected Object eval(Map<String,Comparable> entity, Object obj, TriggerResponse response, String expression) {
+        Context cx = Context.enter();
+        try {
+            ScriptableObject scope = cx.initStandardObjects();
+
+            // convert my "this" instance to JavaScript object
+            Object jsObj = Context.javaToJS(obj, scope);
+            Object jsRespObj = Context.javaToJS(response, scope);
+            Object jsEntity = Context.javaToJS(entity, scope);
+
+            // Convert it to a NativeObject (yes, this could have been done directly)
+            NativeObject nobj = new NativeObject();
+            for (Map.Entry<String, Comparable> entry : entity.entrySet()) {
+                nobj.defineProperty(entry.getKey(), entry.getValue(), NativeObject.READONLY);
+            }
+
+            ScriptableObject.putProperty(scope, "response", jsRespObj);
+            ScriptableObject.putProperty(scope, "query", jsObj);
+            ScriptableObject.putProperty(scope, "entity", nobj);
+
+            // prepare envelope function run()
+            cx.evaluateString(scope,
+                    String.format("function onRequest() { %s return response; } ", expression),
+                    "<func>", 1, null);
+
+            // call method run()
+            Object fObj = scope.get("onRequest", scope);
+            Function f = (Function) fObj;
+            Object result = f.call(cx, scope, (Scriptable) jsObj, null);
+            if (result instanceof Wrapper)
+                return ((Wrapper) result).unwrap();
+            return result;
+
+        } finally {
+            Context.exit();
+        }
+    }
 
 }

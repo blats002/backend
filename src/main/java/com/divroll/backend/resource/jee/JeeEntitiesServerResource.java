@@ -30,6 +30,7 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntitiesResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
@@ -147,12 +148,18 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         write = ACLHelper.onlyIds(jsonArray);
                     }
                     validateSchema(entityType, comparableMap);
-                    String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
-                    JSONObject entityObject = new JSONObject();
-                    entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                    result.put("entity", entityObject);
-                    pubSubService.created(appId, entityType, entityId);
-                    setStatus(Status.SUCCESS_CREATED);
+                    String expression = "response.body = entity.foo; if(query.isExist('Test', 'foo', entity.foo)) { response.error(); } else { response.success(); }";
+                    TriggerResponse response = new TriggerResponse();
+                    if(beforeSave(comparableMap, appId, entityType, response, expression)) {
+                        String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
+                        JSONObject entityObject = new JSONObject();
+                        entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                        result.put("entity", entityObject);
+                        pubSubService.created(appId, entityType, entityId);
+                        setStatus(Status.SUCCESS_CREATED);
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }
