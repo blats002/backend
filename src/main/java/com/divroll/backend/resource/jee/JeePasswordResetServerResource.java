@@ -1,5 +1,6 @@
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.job.EmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.Application;
@@ -84,9 +85,14 @@ public class JeePasswordResetServerResource extends BaseServerResource
                     }
                     String newHashPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
                     //LOG.info("newHashPassword->" + newHashPassword);
-                    Boolean success = userRepository.updateUserPassword(appId, storeName, userEntity.getEntityId(), newHashPassword);
-                    if(success) {
-                        setStatus(Status.SUCCESS_OK);
+                    if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
+                        Boolean success = userRepository.updateUserPassword(appId, storeName, userEntity.getEntityId(), newHashPassword);
+                        if(success) {
+                            afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType);
+                            setStatus(Status.SUCCESS_OK);
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        }
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     }
@@ -125,8 +131,14 @@ public class JeePasswordResetServerResource extends BaseServerResource
                         String currentPassword = userEntity.getPassword();
                         String newHashPassword = BCrypt.hashpw(entity.getPassword(), BCrypt.gensalt());
                         if(BCrypt.checkpw(entity.getPassword(), currentPassword)) {
-                            Boolean success = userRepository.updateUserPassword(appId, storeName, userEntity.getEntityId(), newHashPassword);
+                            Boolean success = false;
+                            if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
+                                success = userRepository.updateUserPassword(appId, storeName, userEntity.getEntityId(), newHashPassword);
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            }
                             if(success) {
+                                afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType);
                                 setStatus(Status.SUCCESS_OK);
                             } else {
                                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

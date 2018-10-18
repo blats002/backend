@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Email;
 import com.divroll.backend.model.UserRootDTO;
@@ -156,16 +157,27 @@ public class JeeApplicationServerResource extends BaseServerResource
 
         final EntityId id = applicationService.create(application);
         if (id != null) {
-            //Application app =  applicationService.read(id.toString());
-
             if(rootDTO != null) {
-                String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
-                String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(),
-                        null, null, null, false, false,
-                        new String[]{roleId});
+                if(beforeSave(application, ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, roleStoreName)) {
+                    String roleId = roleRepository.createRole(appId, roleStoreName, rootDTO.getRole(), null, null, false, false);
+                    if(roleId != null) {
+                        afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, userStoreName);
+                    }
+                    if(beforeSave(application, ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName)) {
+                        String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(),
+                                null, null, null, false, false,
+                                new String[]{roleId});
+                        if(userId != null) {
+                            afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName);
+                        }
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
+                } else {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    return null;
+                }
             }
-
-
             if (application != null) {
                 application.setAppId(appId);
                 application.setApiKey(apiKey);

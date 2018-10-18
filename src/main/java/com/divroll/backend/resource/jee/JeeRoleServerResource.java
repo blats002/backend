@@ -24,6 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
@@ -200,14 +201,21 @@ public class JeeRoleServerResource extends BaseServerResource
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
                     if (role.getPublicWrite() || role.getAclWrite().contains(authUserId)) {
-                        Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
-                        if (success) {
-                            pubSubService.updated(appId, storeName, roleId);
-                            setStatus(Status.SUCCESS_OK);
-                            role.setPublicWrite(publicWrite);
-                            role.setPublicRead(publicRead);
-                            role.setName(newRoleName);
-                            return role;
+                        if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", newRoleName).build(), appId, entityType)) {
+                            Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
+                            if (success) {
+                                pubSubService.updated(appId, storeName, roleId);
+                                setStatus(Status.SUCCESS_OK);
+                                role.setPublicWrite(publicWrite);
+                                role.setPublicRead(publicRead);
+                                role.setName(newRoleName);
+
+                                afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", newRoleName).build(), appId, entityType);
+
+                                return role;
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            }
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                         }
@@ -216,18 +224,25 @@ public class JeeRoleServerResource extends BaseServerResource
                     }
                 }
             } else {
-                Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
-                if (success) {
-                    pubSubService.updated(appId, storeName, roleId);
-                    setStatus(Status.SUCCESS_OK);
-                    Role role = new Role();
-                    role.setName(newRoleName);
-                    role.setEntityId(roleId);
-                    role.setAclWrite(ACLHelper.convert(write));
-                    role.setAclRead(ACLHelper.convert(read));
-                    role.setPublicRead(publicRead);
-                    role.setPublicWrite(publicWrite);
-                    return role;
+                if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", newRoleName).build(), appId, entityType)) {
+                    Boolean success = roleRepository.updateRole(appId, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
+                    if (success) {
+                        pubSubService.updated(appId, storeName, roleId);
+                        setStatus(Status.SUCCESS_OK);
+                        Role role = new Role();
+                        role.setName(newRoleName);
+                        role.setEntityId(roleId);
+                        role.setAclWrite(ACLHelper.convert(write));
+                        role.setAclRead(ACLHelper.convert(read));
+                        role.setPublicRead(publicRead);
+                        role.setPublicWrite(publicWrite);
+
+                        afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", newRoleName).build(), appId, entityType);
+
+                        return role;
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }

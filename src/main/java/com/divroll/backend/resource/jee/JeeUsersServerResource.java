@@ -24,6 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.helper.DTOHelper;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
@@ -189,9 +190,17 @@ public class JeeUsersServerResource extends BaseServerResource
                 if (app != null) {
                     String hashPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
                     validateIds(read, write);
-                    String entityId = userRepository.createUser(appId, storeName, username, hashPassword,
-                            null,
-                            read, write, publicRead, publicWrite, roleArray);
+                    String entityId = null;
+                    if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
+                        entityId = userRepository.createUser(appId, storeName, username, hashPassword,
+                                null,
+                                read, write, publicRead, publicWrite, roleArray);
+                        if(entityId != null) {
+                            afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType);
+                        }
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
                     if (entityId != null) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
                         User user = new User();
