@@ -47,6 +47,9 @@ public class Application {
     @ApiModelProperty(required = false, value = "Email configuration")
     private Email emailConfig;
 
+    @ApiModelProperty(required = false, value = "Cloud code")
+    private String cloudCode;
+
     private UserRootDTO user;
 
     public String getId() {
@@ -103,5 +106,13 @@ public class Application {
 
     public void setUser(UserRootDTO user) {
         this.user = user;
+    }
+
+    public String getCloudCode() {
+        return this.cloudCode;
+    }
+
+    public void setCloudCode(String cloudCode) {
+        this.cloudCode = cloudCode;
     }
 }

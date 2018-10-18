@@ -84,6 +84,7 @@ public class JeeApplicationService
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 application.setAppName((String) entityMap.get(Constants.APP_NAME));
+                application.setCloudCode((String) entityMap.get("cloudCode"));
                 EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
                         ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
                 if(embeddedEntityIterable != null) {
@@ -111,6 +112,9 @@ public class JeeApplicationService
             EmbeddedEntityIterable embeddedEntityIterable = new EmbeddedEntityIterable(application.getEmailConfig().toJSONObject());
             comparableMap.put("emailConfig", embeddedEntityIterable);
         }
+        if(application.getCloudCode() != null) {
+            comparableMap.put("cloudCode", application.getCloudCode());
+        }
         EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
                 Constants.MASTER_KEY, theMasterKey, String.class);
         store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
@@ -132,6 +136,7 @@ public class JeeApplicationService
                 application.setApiKey((String) entityMap.get(Constants.API_KEY));
                 application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
                 application.setAppName((String) entityMap.get(Constants.APP_NAME));
+                application.setCloudCode((String) entityMap.get("cloudCode"));
                 EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
                         ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
                 if(embeddedEntityIterable != null) {

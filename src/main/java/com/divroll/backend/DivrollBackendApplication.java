@@ -24,7 +24,6 @@ package com.divroll.backend;
 import com.divroll.backend.guice.GuiceConfigModule;
 import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
-import com.divroll.backend.xodus.impl.XodusEnvStoreImpl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
@@ -138,6 +137,8 @@ public class DivrollBackendApplication extends Application {
         router.attach(ROOT_URI + "kv/{entityType}/", JeeKeyValueServerResource.class);
         router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
         router.attach(ROOT_URI + "kv/{entityType}/{entityId}/", JeeKeyValueServerResource.class);
+
+        router.attach(ROOT_URI + "functions", JeeFunctionServerResource.class);
 
         router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
         router.attach(ROOT_URI + "setup", JeeBackupServerResource.class);

@@ -78,6 +78,7 @@ public class GuiceConfigModule extends AbstractModule {
         bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
         bind(EntityRepository.class).to(JeeEntityRepository.class).in(Scopes.SINGLETON);
         bind(FileStore.class).to(JeeXodusVFSRepository.class).in(Scopes.SINGLETON);
+        bind(CloudCodeService.class).to(JeeCloudCodeService.class).in(Scopes.SINGLETON);
         bind(EmailService.class).to(JeeEmailService.class).in(Scopes.SINGLETON);
 
         bind(SchemaService.class).to(JeeSchemaService.class).in(Scopes.SINGLETON);

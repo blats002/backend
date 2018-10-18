@@ -72,5 +72,8 @@ public interface EntityRepository {
 
     List<String> getBlobKeys(String instance, String storeName, String entityId);
 
-    boolean deleteProperty(String instance, String storeName, String propertyNamne);
+    boolean deleteProperty(String instance, String storeName, String propertyName);
+
+    List<Map<String, Object>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit);
+
 }
