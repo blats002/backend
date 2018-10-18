@@ -148,17 +148,38 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         write = ACLHelper.onlyIds(jsonArray);
                     }
                     validateSchema(entityType, comparableMap);
-                    String expression = "response.body = entity.foo; if(query.isExist('Test', 'foo', entity.foo)) { response.error(); } else { response.success(); }";
+
+                    String cloudCode = getApp().getCloudCode();
+                    LOG.info("Cloud Code : " + cloudCode);
+                    List<JsFunction> jsFunctions = new LinkedList<>();
+                    if(cloudCode != null && !cloudCode.isEmpty()) {
+                        jsFunctions = parseJS(cloudCode);
+                    }
+                    final String[] expression = {null};
+                    jsFunctions.forEach(jsFunction -> {
+                        if(jsFunction.getFunctionName().equals("beforeSave")) {
+                            expression[0] = jsFunction.getExpression();
+                        }
+                    });
                     TriggerResponse response = new TriggerResponse();
-                    if(beforeSave(comparableMap, appId, entityType, response, expression)) {
+                    if((expression[0] != null && !expression[0].isEmpty())) {
+                        if(beforeSave(comparableMap, appId, entityType, response, expression[0]))  {
+                            String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
+                            JSONObject entityObject = new JSONObject();
+                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            result.put("entity", entityObject);
+                            pubSubService.created(appId, entityType, entityId);
+                            setStatus(Status.SUCCESS_CREATED);
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        }
+                    } else {
                         String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                         JSONObject entityObject = new JSONObject();
                         entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                         result.put("entity", entityObject);
                         pubSubService.created(appId, entityType, entityId);
                         setStatus(Status.SUCCESS_CREATED);
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     }
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

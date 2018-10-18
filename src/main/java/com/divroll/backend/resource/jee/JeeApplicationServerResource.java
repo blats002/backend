@@ -87,6 +87,7 @@ public class JeeApplicationServerResource extends BaseServerResource
             String newApiKey = entity.getApiKey();
             String newMasterKey = entity.getMasterKey();
             Email email = entity.getEmailConfig();
+            String cloudCode = entity.getCloudCode();
             Application app = applicationService.read(appId);
             if (app != null) {
                 String encryptedMasterKey = app.getMasterKey();
@@ -104,6 +105,10 @@ public class JeeApplicationServerResource extends BaseServerResource
 
                     if(email != null) {
                         app.setEmailConfig(email);
+                    }
+
+                    if(cloudCode != null) {
+                        app.setCloudCode(cloudCode);
                     }
 
                     applicationService.update(app, encryptedMasterKey);
