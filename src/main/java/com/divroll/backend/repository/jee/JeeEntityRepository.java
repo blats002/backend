@@ -418,6 +418,66 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
+    public List<Map<String, Object>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit) {
+        final List<Map<String, Object>> entities = new LinkedList<Map<String, Object>>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable result = txn.find(storeName, propertyName, propertyValue).skip(skip).take(limit);
+                    result = result.skip(skip).take(limit);
+                    for (Entity entity : result) {
+                        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+                        for (String property : entity.getPropertyNames()) {
+                            Comparable value = entity.getProperty(property);
+                            if(value != null) {
+                                if(value != null) {
+                                    if(value instanceof EmbeddedEntityIterable) {
+                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                    } else if(value instanceof EmbeddedArrayIterable) {
+                                        comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                    } else {
+                                        comparableMap.put(property, value);
+                                    }
+                                }                            }
+                        }
+
+                        List<EntityStub> aclRead = new LinkedList<>();
+                        List<EntityStub> aclWrite = new LinkedList<>();
+
+                        Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                        Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                        for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
+                            aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
+                        }
+
+                        for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
+                            aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
+                        }
+
+                        comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
+                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                        comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                        if(entity.getType().equals(defaultUserStore)) {
+                            comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
+                        }
+                        entities.add(comparableMap);
+                    }
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return entities;
+    }
+
+    @Override
     public boolean deleteEntity(String instance, String storeName, final String entityId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
