@@ -31,13 +31,16 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.jee.AppEntityRepository;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.SchemaService;
+import com.divroll.backend.trigger.TriggerRequest;
 import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
 import org.mozilla.javascript.*;
+import org.mozilla.javascript.ast.*;
 import org.restlet.data.Header;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
@@ -378,7 +381,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
         AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
-        Object evaluated = eval(entity, repository, response, expression);
+        TriggerRequest request = new TriggerRequest(entity, entityType, repository);
+        Object evaluated = eval(request, response, expression);
         response = (TriggerResponse) evaluated;
         LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
         LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
@@ -387,28 +391,28 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     public void afterSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
         AppEntityRepository appEntityRespository = new AppEntityRepository(entityRepository, appId, entityType);
-        Object evaluated = eval(entity, appEntityRespository, response, expression);
+        TriggerRequest request = new TriggerRequest(entity, entityType, appEntityRespository);
+        Object evaluated = eval(request, response, expression);
         LOG.info(String.valueOf(evaluated));
     }
 
-    protected Object eval(Map<String,Comparable> entity, Object obj, TriggerResponse response, String expression) {
+    protected Object eval(TriggerRequest request, TriggerResponse response, String expression) {
         Context cx = Context.enter();
         try {
             ScriptableObject scope = cx.initStandardObjects();
 
             // convert my "this" instance to JavaScript object
-            Object jsObj = Context.javaToJS(obj, scope);
+            Object jsReqObj = Context.javaToJS(request, scope);
             Object jsRespObj = Context.javaToJS(response, scope);
-            Object jsEntity = Context.javaToJS(entity, scope);
 
             // Convert it to a NativeObject (yes, this could have been done directly)
             NativeObject nobj = new NativeObject();
-            for (Map.Entry<String, Comparable> entry : entity.entrySet()) {
+            for (Map.Entry<String, Comparable> entry : request.getEntity().entrySet()) {
                 nobj.defineProperty(entry.getKey(), entry.getValue(), NativeObject.READONLY);
             }
 
             ScriptableObject.putProperty(scope, "response", jsRespObj);
-            ScriptableObject.putProperty(scope, "query", jsObj);
+            ScriptableObject.putProperty(scope, "request", jsReqObj);
             ScriptableObject.putProperty(scope, "entity", nobj);
 
             // prepare envelope function run()
@@ -419,7 +423,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
             // call method run()
             Object fObj = scope.get("onRequest", scope);
             Function f = (Function) fObj;
-            Object result = f.call(cx, scope, (Scriptable) jsObj, null);
+            Object result = f.call(cx, scope, (Scriptable) jsReqObj, null);
             if (result instanceof Wrapper)
                 return ((Wrapper) result).unwrap();
             return result;
@@ -427,6 +431,57 @@ public class BaseServerResource extends SelfInjectingServerResource {
         } finally {
             Context.exit();
         }
+    }
+
+    protected List<JsFunction> parseJS(String jsCode) {
+        List<JsFunction> jsFunctions = new LinkedList<>();
+        AstRoot astRoot = new Parser().parse(jsCode, null, 1);
+        List<AstNode> statList = astRoot.getStatements();
+
+        Map<String,String> functionBodyMap = new HashMap<>();
+
+        for(Iterator<AstNode> iter = statList.iterator(); iter.hasNext();) {
+            AstNode astNode = iter.next();
+            if(astNode.getType() == Token.FUNCTION) {
+                FunctionNode fNode = (FunctionNode) astNode;
+                System.out.println("*** function Name : " + fNode.getName() + ", paramCount : " + fNode.getParams() + ", depth : " + fNode.depth());
+                AstNode bNode = fNode.getBody();
+                Block block = (Block)bNode;
+                String source = block.toSource();
+                System.out.println("JS Source : " + source);
+                functionBodyMap.put(fNode.getName(), source);
+
+                JsFunction jsFunction = new JsFunction();
+                jsFunction.setFunctionName(fNode.getName());
+                jsFunction.setExpression(source);
+                jsFunctions.add(jsFunction);
+
+            }
+        }
+
+//        for(Iterator<AstNode> iter = statList.iterator(); iter.hasNext();) {
+//            AstNode astNode = iter.next();
+//            if(astNode.getType() == Token.EXPR_RESULT) {
+//                ExpressionStatement expressionStatement = (ExpressionStatement) astNode;
+//                FunctionCall fCallNode = (FunctionCall) expressionStatement.getExpression();
+//                Name nameNode = (Name) fCallNode.getTarget();
+//                AstNode arg = Iterables.getFirst(fCallNode.getArguments(), null);
+//                System.out.println("*** function Name : " + nameNode.getIdentifier());
+//                System.out.print("*** function Call : " + fCallNode.getArguments());
+//                if(arg != null) {
+//                    StringLiteral stringLiteral = (StringLiteral) arg;
+//                    String entityType = stringLiteral.getValue();
+//                    System.out.print("*** entity Type : " + entityType);
+//                    JsFunction jsFunction = new JsFunction();
+//                    jsFunction.setFunctionName(nameNode.getIdentifier());
+//                    jsFunction.setArguments(Arrays.asList(new String[]{entityType}));
+//                    jsFunction.setExpression(functionBodyMap.get(nameNode.getIdentifier()));
+//                    jsFunctions.add(jsFunction);
+//                }
+//            }
+//        }
+
+        return jsFunctions;
     }
 
 }
