@@ -390,33 +390,29 @@ public class BaseServerResource extends SelfInjectingServerResource {
         });
     }
 
-    public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
-        AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
-        AppEmailService emailService = null;
-        Application application = getApp();
-        if(application != null && application.getEmailConfig() != null) {
-            Email emailConfig = application.getEmailConfig();
-            emailService = new AppEmailService(emailConfig);
+    public boolean beforeSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
+        String cloudCode = application.getCloudCode();
+        LOG.info("Cloud Code : " + cloudCode);
+        List<JsFunction> jsFunctions = new LinkedList<>();
+        if(cloudCode != null && !cloudCode.isEmpty()) {
+            jsFunctions = parseJS(cloudCode);
         }
-        TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
-        Object evaluated = eval(request, response, expression);
-        response = (TriggerResponse) evaluated;
-        LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
-        LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
-        return response.isSuccess();
-    }
-
-    public boolean afterSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
-        if(expression != null && !expression.isEmpty()) {
+        final String[] beforeSaveExpr = {null};
+        jsFunctions.forEach(jsFunction -> {
+            if(jsFunction.getFunctionName().equals("beforeSave")) {
+                beforeSaveExpr[0] = jsFunction.getExpression();
+            }
+        });
+        TriggerResponse response = new TriggerResponse();
+        if( beforeSaveExpr[0] != null &&  !beforeSaveExpr[0].isEmpty()) {
             AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
             AppEmailService emailService = null;
-            Application application = getApp();
             if(application != null && application.getEmailConfig() != null) {
                 Email emailConfig = application.getEmailConfig();
                 emailService = new AppEmailService(emailConfig);
             }
             TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
-            Object evaluated = eval(request, response, expression);
+            Object evaluated = eval(request, response, beforeSaveExpr[0]);
             response = (TriggerResponse) evaluated;
             LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
             LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
@@ -424,7 +420,48 @@ public class BaseServerResource extends SelfInjectingServerResource {
         } else {
             return true;
         }
+    }
 
+    public boolean afterSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
+        String cloudCode = application.getCloudCode();
+        final String[] afterSaveExpr = {null};
+        LOG.info("Cloud Code : " + cloudCode);
+        List<JsFunction> jsFunctions = new LinkedList<>();
+        if(cloudCode != null && !cloudCode.isEmpty()) {
+            jsFunctions = parseJS(cloudCode);
+        }
+        final String[] beforeSaveExpr = {null};
+        jsFunctions.forEach(jsFunction -> {
+            if(jsFunction.getFunctionName().equals("afterSave")) {
+                afterSaveExpr[0] = jsFunction.getExpression();
+            }
+        });
+        TriggerResponse response = new TriggerResponse();
+
+        if(afterSaveExpr[0] != null && !afterSaveExpr[0].isEmpty()) {
+            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
+            AppEmailService emailService = null;
+            if(application != null && application.getEmailConfig() != null) {
+                Email emailConfig = application.getEmailConfig();
+                emailService = new AppEmailService(emailConfig);
+            }
+            TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
+            Object evaluated = eval(request, response, afterSaveExpr[0]);
+            response = (TriggerResponse) evaluated;
+            LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
+            LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
+            return response.isSuccess();
+        } else {
+            return true;
+        }
+    }
+
+    public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType) {
+        return beforeSave(getApp(), entity, appId, entityType);
+    }
+
+    public boolean afterSave(Map<String, Comparable> entity, String appId, String entityType) {
+        return afterSave(getApp(), entity, appId, entityType);
     }
 
     protected Object eval(TriggerRequest request, TriggerResponse response, String expression) {

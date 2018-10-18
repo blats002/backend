@@ -243,9 +243,23 @@ public class JeeEntityServerResource extends BaseServerResource
                                     comparableMap.put(key, hashPassword);
                                 }
                             });
-                            success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                            if(beforeSave(comparableMap, appId, entityType)) {
+                                success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                if(success) {
+                                    afterSave(comparableMap, appId, entityType);
+                                }
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            }
                         } else {
-                            success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                            if(beforeSave(comparableMap, appId, entityType)) {
+                                success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                if(success) {
+                                    afterSave(comparableMap, appId, entityType);
+                                }
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            }
                         }
                         if (success) {
                             pubSubService.updated(appId, entityType, entityId);
@@ -300,9 +314,23 @@ public class JeeEntityServerResource extends BaseServerResource
                                             comparableMap.put(key, hashPassword);
                                         }
                                     });
-                                    success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                    if(beforeSave(comparableMap, appId, entityType)) {
+                                        success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        if(success) {
+                                            afterSave(comparableMap, appId, entityType);
+                                        }
+                                    } else {
+                                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                                    }
                                 } else {
-                                    success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                    if(beforeSave(comparableMap, appId, entityType)) {
+                                        success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        if(success) {
+                                            afterSave(comparableMap, appId, entityType);
+                                        }
+                                    } else {
+                                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                                    }
                                 }
                                 if (success) {
                                     pubSubService.updated(appId, entityType, entityId);

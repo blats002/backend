@@ -24,6 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.helper.DTOHelper;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
@@ -261,10 +262,18 @@ public class JeeUserServerResource extends BaseServerResource implements
             if (isMaster || (user.getPublicWrite() != null && user.getPublicWrite())) {
                 String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
                 validateIds(read, write);
-                Boolean success = userRepository.updateUser(appId, storeName, userId,
-                        newUsername, newHashPassword,
-                        null,
-                        read, write, publicRead, publicWrite, roleArray);
+                Boolean success = false;
+                if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", newUsername).build(), appId, entityType)) {
+                    success = userRepository.updateUser(appId, storeName, userId,
+                            newUsername, newHashPassword,
+                            null,
+                            read, write, publicRead, publicWrite, roleArray);
+                    if(success) {
+                        afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", newUsername).build(), appId, entityType);
+                    }
+                } else {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                }
                 if (success) {
                     User resultUser = new User();
                     resultUser.setEntityId(userId);
@@ -303,10 +312,18 @@ public class JeeUserServerResource extends BaseServerResource implements
                     }
                     if (isAccess) {
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
-                        Boolean success = userRepository.updateUser(appId, storeName, userId,
-                                newUsername, newHashPassword,
-                                null,
-                                read, write, publicRead, publicWrite, roleArray);
+                        Boolean success = false;
+                        if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", newUsername).build(), appId, entityType)) {
+                            success = userRepository.updateUser(appId, storeName, userId,
+                                    newUsername, newHashPassword,
+                                    null,
+                                    read, write, publicRead, publicWrite, roleArray);
+                            if(success) {
+                                afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", newUsername).build(), appId, entityType);
+                            }
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        }
                         if (success) {
                             User resultUser = new User();
                             resultUser.setEntityId(userId);

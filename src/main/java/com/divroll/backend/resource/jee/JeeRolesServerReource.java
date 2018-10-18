@@ -24,6 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.EntityStub;
@@ -187,8 +188,15 @@ public class JeeRolesServerReource extends BaseServerResource
 
             String roleId = null;
             validateIds(read, write);
-            roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite);
-
+            if(beforeSave(ComparableMapBuilder.newBuilder().put("name", roleName).build(), appId, entityType)) {
+                roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite);
+                if(roleId != null) {
+                    afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", roleName).build(), appId, entityType);
+                }
+            } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return null;
+            }
             if (roleId != null) {
                 pubSubService.created(appId, storeName, entityId);
                 setStatus(Status.SUCCESS_CREATED);
