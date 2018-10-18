@@ -24,6 +24,8 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
 import com.divroll.backend.guice.SelfInjectingServerResource;
+import com.divroll.backend.job.EmailJob;
+import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
@@ -31,6 +33,7 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.jee.AppEntityRepository;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.SchemaService;
+import com.divroll.backend.service.jee.AppEmailService;
 import com.divroll.backend.trigger.TriggerRequest;
 import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
@@ -41,6 +44,10 @@ import com.google.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.ast.*;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.data.Header;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
@@ -52,6 +59,10 @@ import scala.actors.threadpool.Arrays;
 import javax.script.ScriptEngineManager;
 import java.io.*;
 import java.util.*;
+
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -381,7 +392,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
         AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
-        TriggerRequest request = new TriggerRequest(entity, entityType, repository);
+        AppEmailService emailService = null;
+        Application application = getApp();
+        if(application != null && application.getEmailConfig() != null) {
+            Email emailConfig = application.getEmailConfig();
+            emailService = new AppEmailService(emailConfig);
+        }
+        TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
         Object evaluated = eval(request, response, expression);
         response = (TriggerResponse) evaluated;
         LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
@@ -389,11 +406,25 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return response.isSuccess();
     }
 
-    public void afterSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
-        AppEntityRepository appEntityRespository = new AppEntityRepository(entityRepository, appId, entityType);
-        TriggerRequest request = new TriggerRequest(entity, entityType, appEntityRespository);
-        Object evaluated = eval(request, response, expression);
-        LOG.info(String.valueOf(evaluated));
+    public boolean afterSave(Map<String, Comparable> entity, String appId, String entityType, TriggerResponse response, String expression) {
+        if(expression != null && !expression.isEmpty()) {
+            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
+            AppEmailService emailService = null;
+            Application application = getApp();
+            if(application != null && application.getEmailConfig() != null) {
+                Email emailConfig = application.getEmailConfig();
+                emailService = new AppEmailService(emailConfig);
+            }
+            TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
+            Object evaluated = eval(request, response, expression);
+            response = (TriggerResponse) evaluated;
+            LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
+            LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
+            return response.isSuccess();
+        } else {
+            return true;
+        }
+
     }
 
     protected Object eval(TriggerRequest request, TriggerResponse response, String expression) {

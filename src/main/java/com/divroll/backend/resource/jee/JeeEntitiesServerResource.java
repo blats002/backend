@@ -155,21 +155,31 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     if(cloudCode != null && !cloudCode.isEmpty()) {
                         jsFunctions = parseJS(cloudCode);
                     }
-                    final String[] expression = {null};
+                    final String[] beforeSaveExpr = {null};
+                    final String[] afterSaveExpr = {null};
                     jsFunctions.forEach(jsFunction -> {
                         if(jsFunction.getFunctionName().equals("beforeSave")) {
-                            expression[0] = jsFunction.getExpression();
+                            beforeSaveExpr[0] = jsFunction.getExpression();
+                        }
+                    });
+                    jsFunctions.forEach(jsFunction -> {
+                        if(jsFunction.getFunctionName().equals("afterSave")) {
+                            afterSaveExpr[0] = jsFunction.getExpression();
                         }
                     });
                     TriggerResponse response = new TriggerResponse();
-                    if((expression[0] != null && !expression[0].isEmpty())) {
-                        if(beforeSave(comparableMap, appId, entityType, response, expression[0]))  {
+                    if((beforeSaveExpr[0] != null && !beforeSaveExpr[0].isEmpty())) {
+                        if(beforeSave(comparableMap, appId, entityType, response, beforeSaveExpr[0]))  {
                             String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
                             JSONObject entityObject = new JSONObject();
                             entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                             result.put("entity", entityObject);
                             pubSubService.created(appId, entityType, entityId);
                             setStatus(Status.SUCCESS_CREATED);
+
+                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            afterSave(comparableMap, appId, entityType, response, afterSaveExpr[0]);
+
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                         }
@@ -180,6 +190,10 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         result.put("entity", entityObject);
                         pubSubService.created(appId, entityType, entityId);
                         setStatus(Status.SUCCESS_CREATED);
+
+                        comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                        afterSave(comparableMap, appId, entityType, response, afterSaveExpr[0]);
+
                     }
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
