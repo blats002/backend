@@ -141,7 +141,7 @@ public class DivrollBackendApplication extends Application {
         router.attach(ROOT_URI + "functions", JeeFunctionServerResource.class);
 
         router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
-        router.attach(ROOT_URI + "setup", JeeBackupServerResource.class);
+        router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
         router.attachDefault(JeeRootServerResource.class);
 
