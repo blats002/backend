@@ -409,6 +409,13 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+            <version>2.7.1</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -449,8 +456,8 @@
                         <artifactId>jelastic-maven-plugin</artifactId>
                         <version>1.8.4</version>
                         <configuration>
-                            <api_hoster>app.divroll.space</api_hoster>
-                            <email>webmaster@divroll.com</email>
+                            <api_hoster></api_hoster>
+                            <email></email>
                             <password></password>
                             <environment></environment>
                             <!--<context>[specify the context if you need it]</context>-->
