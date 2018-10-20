@@ -149,7 +149,14 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     }
                     validateSchema(entityType, comparableMap);
                     if(beforeSave(comparableMap, appId, entityType))  {
-                        String entityId = entityRepository.createEntity(appId, entityType, comparableMap, read, write, publicRead, publicWrite);
+                        String entityId = entityRepository.createEntity(appId, entityType,
+                                new EntityClassBuilder()
+                                        .comparableMap(comparableMap)
+                                        .read(read)
+                                        .write(write)
+                                        .publicRead(publicRead)
+                                        .publicWrite(publicWrite)
+                                        .build());
                         JSONObject entityObject = new JSONObject();
                         entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                         result.put("entity", entityObject);
