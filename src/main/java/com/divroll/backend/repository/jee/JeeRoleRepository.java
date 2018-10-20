@@ -24,6 +24,7 @@ package com.divroll.backend.repository.jee;
 import com.divroll.backend.Constants;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
+import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -62,7 +63,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
 
     @Override
     public String createRole(final String instance, final String storeName, final String roleName,
-                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
+                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, List<Action> actions) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {

@@ -23,6 +23,7 @@ package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
@@ -64,7 +65,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     XodusManager manager;
 
     @Override
-    public String createEntity(final String instance, final String storeName, EntityClass entityClass) {
+    public String createEntity(final String instance, final String storeName, EntityClass entityClass, List<Action> actions) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {

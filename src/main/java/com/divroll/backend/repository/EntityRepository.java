@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.repository;
 
+import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
 
@@ -34,7 +35,7 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface EntityRepository {
-    String createEntity(String instance, String storeName, EntityClass entityClass);
+    String createEntity(String instance, String storeName, EntityClass entityClass, List<Action> actions);
 
     boolean updateEntity(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);

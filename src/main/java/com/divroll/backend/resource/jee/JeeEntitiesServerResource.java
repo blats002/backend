@@ -26,6 +26,7 @@ import com.divroll.backend.helper.ACLHelper;
 import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.EntitiesResource;
 import com.divroll.backend.service.PubSubService;
@@ -156,7 +157,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                                         .write(write)
                                         .publicRead(publicRead)
                                         .publicWrite(publicWrite)
-                                        .build());
+                                        .build(), actions);
                         JSONObject entityObject = new JSONObject();
                         entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                         result.put("entity", entityObject);

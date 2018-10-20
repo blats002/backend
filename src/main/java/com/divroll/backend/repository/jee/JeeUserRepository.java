@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.model.User;
+import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -57,6 +58,10 @@ public class JeeUserRepository extends JeeBaseRespository
     String roleStoreName;
 
     @Inject
+    @Named("defaultUserStore")
+    String defaultUserStore;
+
+    @Inject
     @Named("xodusRoot")
     String xodusRoot;
 
@@ -66,7 +71,7 @@ public class JeeUserRepository extends JeeBaseRespository
     @Override
     public String createUser(String instance, final String storeName, final String username, final String password,
                              final Map<String,Comparable> comparableMap,
-                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles) {
+                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles, List<Action> actions) {
         final String[] entityId = {null};
 
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -114,6 +119,22 @@ public class JeeUserRepository extends JeeBaseRespository
                         if (roleEntity != null) {
                             entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
                         }
+                    }
+
+                    if(actions != null) {
+                        actions.forEach(action -> {
+                            if(action.actionOp().equals(Action.ACTION_OP.LINK)) {
+                                if(action.entityType().equals(defaultUserStore)) {
+                                    throw new IllegalArgumentException("Invalid action");
+                                }
+                                Map<String,Comparable> linkedEntityMap = action.entity().get();
+                                final Entity linkedEntity = txn.newEntity(action.entityType().get());
+                                linkedEntityMap.forEach((key,value)-> {
+                                    linkedEntity.setProperty(key, value);
+                                });
+
+                            }
+                        });
                     }
 
                     entityId[0] = entity.getId().toString();

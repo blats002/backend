@@ -22,6 +22,7 @@
 package com.divroll.backend.repository;
 
 import com.divroll.backend.model.User;
+import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.filter.TransactionFilter;
 
 import java.util.List;
@@ -36,7 +37,7 @@ public interface UserRepository {
     String createUser(String instance, String storeName, String username, String password,
                       final Map<String,Comparable> comparableMap,
                       String[] read, String[] write,
-                      final Boolean publicRead, final Boolean publicWrite, String[] roles);
+                      final Boolean publicRead, final Boolean publicWrite, String[] roles, List<Action> actions);
 
     boolean updateUser(String instance, String storeName, String entityId,
                        String newUsername, String newPassword,

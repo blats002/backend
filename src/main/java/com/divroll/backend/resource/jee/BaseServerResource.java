@@ -27,6 +27,8 @@ import com.divroll.backend.guice.SelfInjectingServerResource;
 import com.divroll.backend.job.EmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.action.Action;
+import com.divroll.backend.model.action.ActionParser;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.repository.EntityRepository;
@@ -106,6 +108,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String masterToken;
 
     protected List<TransactionFilter> filters;
+    protected List<Action> actions;
 
     private Application application;
 
@@ -223,6 +226,16 @@ public class BaseServerResource extends SelfInjectingServerResource {
                 filters = new TransactionFilterParser().parseQuery(queries);
             } catch (Exception e) {
 
+            }
+        }
+
+        String actionsString = getQueryValue("actions");
+        if(actionsString != null) {
+            try {
+                actions = new ActionParser().parseAction(actionsString);
+                LOG.with(actions).info("Actions: " + actions.size());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
