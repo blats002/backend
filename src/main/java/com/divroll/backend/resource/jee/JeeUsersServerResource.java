@@ -194,7 +194,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
                         entityId = userRepository.createUser(appId, storeName, username, hashPassword,
                                 null,
-                                read, write, publicRead, publicWrite, roleArray);
+                                read, write, publicRead, publicWrite, roleArray, actions);
                         if(entityId != null) {
                             afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType);
                         }

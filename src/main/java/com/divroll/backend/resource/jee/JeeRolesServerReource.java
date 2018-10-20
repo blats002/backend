@@ -189,7 +189,7 @@ public class JeeRolesServerReource extends BaseServerResource
             String roleId = null;
             validateIds(read, write);
             if(beforeSave(ComparableMapBuilder.newBuilder().put("name", roleName).build(), appId, entityType)) {
-                roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite);
+                roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite, actions);
                 if(roleId != null) {
                     afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", roleName).build(), appId, entityType);
                 }
