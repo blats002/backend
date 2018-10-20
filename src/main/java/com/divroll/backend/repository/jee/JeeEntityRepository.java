@@ -22,12 +22,10 @@
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
-import com.divroll.backend.model.EmbeddedArrayIterable;
-import com.divroll.backend.model.EmbeddedEntityIterable;
-import com.divroll.backend.model.EntityStub;
+import com.divroll.backend.model.*;
+import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
-import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.xodus.XodusManager;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -66,9 +64,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     XodusManager manager;
 
     @Override
-    public String createEntity(final String instance, final String storeName, final Map<String, Comparable> comparableMap,
-                               final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
-
+    public String createEntity(final String instance, final String storeName, EntityClass entityClass) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -76,10 +72,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     final Entity entity = txn.newEntity(storeName);
-                    Iterator<String> it = comparableMap.keySet().iterator();
+                    Iterator<String> it = entityClass.comparableMap().keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
-                        Comparable value = comparableMap.get(key);
+                        Comparable value = entityClass.comparableMap().get(key);
                         if (value == null) {
                             if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
                                     && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
@@ -102,8 +98,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
                     }
 
-                    if (read != null) {
-                        List<String> aclRead = Arrays.asList(read);
+                    if (entityClass.read() != null) {
+                        List<String> aclRead = Arrays.asList(entityClass.read());
                         // Add User to ACL
                         for (String userOrRoleId : aclRead) {
                             if (userOrRoleId != null && !userOrRoleId.isEmpty()) {
@@ -117,8 +113,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
                     }
 
-                    if (write != null) {
-                        List<String> aclWrite = Arrays.asList(write);
+                    if (entityClass.write() != null) {
+                        List<String> aclWrite = Arrays.asList(entityClass.write());
                         // Add User to ACL
                         for (String userId : aclWrite) {
                             if (userId != null && !userId.isEmpty()) {
@@ -131,14 +127,14 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
                     }
 
-                    if (publicRead != null) {
-                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                    if (entityClass.publicRead() != null) {
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, entityClass.publicRead());
                     } else {
                         entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     }
 
-                    if (publicWrite != null) {
-                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    if (entityClass.publicWrite() != null) {
+                        entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, entityClass.publicWrite());
                     } else {
                         entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
                     }
