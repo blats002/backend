@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
+import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -140,6 +141,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
                     }
 
+                    entityId[0] = entity.getId().toString();
+
+                    Map<String,Comparable> eMap = new LinkedHashMap<>(entityClass.comparableMap());
+                    eMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId[0]);
+                    EntityClass created = new EntityClassBuilder().from(entityClass).comparableMap(eMap).build();
+
                     if(actions != null) {
                         actions.forEach(action -> {
                             if(action.actionOp().equals(Action.ACTION_OP.LINK)) {
@@ -162,13 +169,13 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                     if(next.actionOp().equals(Action.ACTION_OP.SET)) {
                                         String propName = next.propertyName().get();
                                         String refPropName = next.referenceProperty().get();
-                                        Comparable refPropValue = entityClass.comparableMap().get(refPropName);
+                                        Comparable refPropValue = created.comparableMap().get(refPropName);
                                         if(propName.equals(Constants.RESERVED_FIELD_ACL_READ)) {
-                                            //EntityId referencedEntity = txn.toEntityId((String) refPropValue);
-                                            linkedEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, entity);
+                                            EntityId referencedEntity = txn.toEntityId((String) refPropValue);
+                                            linkedEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, txn.getEntity(referencedEntity));
                                         } else if(propName.equals(Constants.RESERVED_FIELD_ACL_WRITE)) {
-                                            //EntityId referencedEntity = txn.toEntityId((String) refPropValue);
-                                            linkedEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, entity);
+                                            EntityId referencedEntity = txn.toEntityId((String) refPropValue);
+                                            linkedEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, txn.getEntity(referencedEntity));
                                         }
 
                                     }
@@ -179,7 +186,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
 
 
-                    entityId[0] = entity.getId().toString();
                 }
             });
         } finally {
