@@ -4,6 +4,8 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.service.PubSubService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClients;
@@ -19,6 +21,9 @@ public class JeePubSubService implements PubSubService {
             = LoggerFactory.getLogger(JeePubSubService.class);
 
     // TODO: URI must be based on Restlet server context
+    @Inject
+    @Named("pubSubBase")
+    String pubSubBase;
 
     @Override
     public void created(String appId, String entityType, String entityId) {
@@ -29,7 +34,7 @@ public class JeePubSubService implements PubSubService {
             httpClient = HttpAsyncClients.createDefault();
             httpClient.start();
             Observable<ObservableHttpResponse> observable
-                    = ObservableHttp.createRequest(HttpAsyncMethods.createPost("http://localhost:8080/pubsub/"
+                    = ObservableHttp.createRequest(HttpAsyncMethods.createPost(pubSubBase
                             + appId + "/entities/" + entityType + "/created", jsonObject.toString(),
                     ContentType.TEXT_PLAIN), httpClient).toObservable();
             observable.flatMap(response -> response.getContent().map(bytes -> new String(bytes))).subscribe(resp -> {
