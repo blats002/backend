@@ -153,8 +153,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         String entityId = entityRepository.createEntity(appId, entityType,
                                 new EntityClassBuilder()
                                         .comparableMap(comparableMap)
-                                        .read(read)
-                                        .write(write)
+                                        .read(read != null ? read : new String[]{})
+                                        .write(write != null ? write : new String[]{})
                                         .publicRead(publicRead)
                                         .publicWrite(publicWrite)
                                         .build(), actions);

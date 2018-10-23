@@ -8,8 +8,16 @@ import java.util.Map;
 @Value.Style(visibility = Value.Style.ImplementationVisibility.PRIVATE)
 public interface EntityClass {
     Map<String, Comparable> comparableMap();
-    String[] read();
-    String[] write();
+    @Value.Default
+    default String[] read() {
+        return null;
+    }
+    @Value.Default
+    default String[] write() {
+        return null;
+    }
     Boolean publicRead();
     Boolean publicWrite();
+
+
 }
