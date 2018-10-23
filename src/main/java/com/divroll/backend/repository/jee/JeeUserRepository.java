@@ -124,14 +124,34 @@ public class JeeUserRepository extends JeeBaseRespository
                     if(actions != null) {
                         actions.forEach(action -> {
                             if(action.actionOp().equals(Action.ACTION_OP.LINK)) {
-                                if(action.entityType().equals(defaultUserStore)) {
-                                    throw new IllegalArgumentException("Invalid action");
-                                }
-                                Map<String,Comparable> linkedEntityMap = action.entity().get();
-                                final Entity linkedEntity = txn.newEntity(action.entityType().get());
-                                linkedEntityMap.forEach((key,value)-> {
+                                String entityType = action.entityType().get();
+                                Map<String,Comparable> entityMap = action.entity().get();
+                                String linkName = action.linkName().get();
+                                String backLinkName = action.backLinkName().get();
+
+                                final Entity linkedEntity = txn.newEntity(entityType);
+                                entityMap.forEach((key,value) -> {
                                     linkedEntity.setProperty(key, value);
                                 });
+                                entity.addLink(linkName, linkedEntity);
+                                if(backLinkName != null && !backLinkName.isEmpty()) {
+                                    linkedEntity.addLink(backLinkName, entity);
+                                }
+                                Action next = action.next().get();
+                                if(next != null) {
+                                    if(next.actionOp().equals(Action.ACTION_OP.SET)) {
+                                        String propName = next.propertyName().get();
+                                        String refPropName = next.referenceProperty().get();
+                                        Comparable refPropValue =  entity.getProperty(refPropName);
+                                        if(propName.equals(Constants.RESERVED_FIELD_ACL_READ)) {
+                                            EntityId referencedEntity = txn.toEntityId((String) refPropValue);
+                                            linkedEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, txn.getEntity(referencedEntity));
+                                        } else if(propName.equals(Constants.RESERVED_FIELD_ACL_WRITE)) {
+                                            EntityId referencedEntity = txn.toEntityId((String) refPropValue);
+                                            linkedEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, txn.getEntity(referencedEntity));
+                                        }
+                                    }
+                                }
 
                             }
                         });
