@@ -202,7 +202,8 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
 
     @Override
     public boolean updateRole(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap, String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
-        return false;
+        String roleName = (String) comparableMap.get("name");
+        return updateRole(instance, storeName, entityId, roleName, read, write, publicRead, publicWrite);
     }
 
     @Override
