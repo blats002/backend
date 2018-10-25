@@ -148,13 +148,28 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         JSONArray jsonArray = iterable.asJSONArray();
                         write = ACLHelper.onlyIds(jsonArray);
                     }
+
+                    if(read == null) {
+                        read = new String[]{};
+                    }
+                    if(write == null) {
+                        write = new String[]{};
+                    }
+                    if(publicRead == null) {
+                        publicRead = true;
+                    }
+                    if(publicWrite == null) {
+                        publicWrite = false;
+                    }
+
+
                     validateSchema(entityType, comparableMap);
                     if(beforeSave(comparableMap, appId, entityType))  {
                         String entityId = entityRepository.createEntity(appId, entityType,
                                 new EntityClassBuilder()
                                         .comparableMap(comparableMap)
-                                        .read(read != null ? read : new String[]{})
-                                        .write(write != null ? write : new String[]{})
+                                        .read(read)
+                                        .write(write)
                                         .publicRead(publicRead)
                                         .publicWrite(publicWrite)
                                         .build(), actions);
