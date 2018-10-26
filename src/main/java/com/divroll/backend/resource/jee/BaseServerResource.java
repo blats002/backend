@@ -24,8 +24,6 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
 import com.divroll.backend.guice.SelfInjectingServerResource;
-import com.divroll.backend.job.EmailJob;
-import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.ActionParser;
@@ -40,31 +38,27 @@ import com.divroll.backend.trigger.TriggerRequest;
 import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import org.mindrot.jbcrypt.BCrypt;
 import org.mozilla.javascript.*;
-import org.mozilla.javascript.ast.*;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.Trigger;
-import org.quartz.impl.StdSchedulerFactory;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.ast.AstNode;
+import org.mozilla.javascript.ast.AstRoot;
+import org.mozilla.javascript.ast.Block;
+import org.mozilla.javascript.ast.FunctionNode;
 import org.restlet.data.Header;
+import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.util.Series;
 import scala.actors.threadpool.Arrays;
 
-import javax.script.ScriptEngineManager;
 import java.io.*;
 import java.util.*;
-
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
-import static org.quartz.TriggerBuilder.newTrigger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -272,6 +266,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
     }
 
     protected boolean isAuthorized() {
+        if(apiKey == null || apiKey.isEmpty()) {
+            return false;
+        }
         if (application != null) {
             if (BCrypt.checkpw(masterKey, application.getMasterKey())) {
                 return true;
@@ -563,6 +560,104 @@ public class BaseServerResource extends SelfInjectingServerResource {
 //        }
 
         return jsFunctions;
+    }
+
+    protected Representation success() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", true);
+        jsonObject.put("code", Status.SUCCESS_OK.getCode());
+        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SUCCESS_OK);
+        return response;
+    }
+
+    protected Representation success(int code, String reasonPhrase) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", true);
+        jsonObject.put("code", code);
+        jsonObject.put("error", reasonPhrase);
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SUCCESS_OK);
+        return response;
+    }
+
+    protected Representation success(int code) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", true);
+        jsonObject.put("code", code);
+        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SUCCESS_OK);
+        return response;
+    }
+
+    protected Representation badRequest() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", false);
+        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
+        jsonObject.put("error", Status.CLIENT_ERROR_BAD_REQUEST.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return response;
+    }
+
+    protected Representation badRequest(String message) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", false);
+        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
+        jsonObject.put("error", message);
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return response;
+    }
+
+    protected Representation internalError() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", false);
+        jsonObject.put("code", Status.SERVER_ERROR_INTERNAL.getCode());
+        jsonObject.put("error", Status.SERVER_ERROR_INTERNAL.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SERVER_ERROR_INTERNAL);
+        return response;
+    }
+
+    protected Representation internalError(String stacktrace) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("success", false);
+        jsonObject.put("code", Status.SERVER_ERROR_INTERNAL.getCode());
+        jsonObject.put("error", Status.SERVER_ERROR_INTERNAL.getReasonPhrase());
+        jsonObject.put("stacktrace", stacktrace);
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SERVER_ERROR_INTERNAL);
+        return response;
+    }
+
+    protected Representation unauthorized() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", Status.CLIENT_ERROR_UNAUTHORIZED.getCode());
+        jsonObject.put("error", Status.CLIENT_ERROR_UNAUTHORIZED.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return response;
+    }
+
+    protected Representation notFound() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("code", Status.CLIENT_ERROR_NOT_FOUND.getCode());
+        jsonObject.put("error", Status.CLIENT_ERROR_NOT_FOUND.getReasonPhrase());
+        Representation response = new StringRepresentation(jsonObject.toJSONString());
+        response.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return response;
     }
 
 }

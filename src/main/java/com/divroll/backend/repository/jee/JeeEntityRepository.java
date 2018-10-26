@@ -255,6 +255,88 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
+    public <T> Map<String, Object> getFirstEntity(String dir, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz) {
+        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
+                    for (String property : entity.getPropertyNames()) {
+                        Comparable value = entity.getProperty(property);
+                        if(value != null) {
+                            if(value instanceof EmbeddedEntityIterable) {
+                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                            } else if(value instanceof EmbeddedArrayIterable) {
+                                comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                            } else {
+                                comparableMap.put(property, value);
+                            }
+                        }
+                    }
+
+                    List<EntityStub> aclRead = new LinkedList<>();
+                    List<EntityStub> aclWrite = new LinkedList<>();
+
+                    Comparable comparablePublicRead = entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    Comparable comparablePublicWrite = entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                    Boolean publicRead = null;
+                    Boolean publicWrite = null;
+
+                    if(comparablePublicRead != null) {
+                        publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    }
+
+                    if (comparablePublicWrite != null) {
+                        publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+                    }
+
+                    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
+                        aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
+                    }
+
+                    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
+                        aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
+                    }
+                    comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
+                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return comparableMap;
+    }
+
+    @Override
+    public <T> InputStream getFirstEntityBlob(String appId, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz, String blobKey) {
+        System.out.println("appId = " + appId);
+        final InputStream[] inputStream = new InputStream[1];
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appId);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
+                    if(entity != null) {
+                        inputStream[0] = entity.getBlob(blobKey);
+                    }
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return inputStream[0];
+    }
+
+    @Override
     public Map<String, Object> getEntity(String instance, final String storeName, final String entityId) {
         final Map<String, Object> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);

@@ -54,7 +54,9 @@ public final class Constants {
     public static final String JWT_ID_KEY = "id";
     public static final String DEFAULT_CHARSET = "utf-8";
     public static final String ACL_ASTERISK = "*";
+
     public static final String ENTITYSTORE_APPLICATION = "Application";
+    public static final String ENTITYSTORE_FUNCTION = "Function";
 
     public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
     public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";
