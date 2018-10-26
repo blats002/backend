@@ -36,10 +36,12 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface EntityRepository {
-    String createEntity(String instance, String storeName, EntityClass entityClass, List<Action> actions);
+    String createEntity(String instance, String storeName, EntityClass entityClass,
+                        List<Action> actions, final List<String> uniqueProperties);
 
     boolean updateEntity(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
-                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
+                         final List<String> uniqueProperties);
 
     <T> Map<String, Object> getFirstEntity(String dir, final String kind, final String propertyKey, final Comparable<T> propertyVal, Class<T> clazz);
 

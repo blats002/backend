@@ -35,12 +35,14 @@ import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
+import scala.actors.threadpool.Arrays;
 
 import java.util.*;
 
@@ -64,6 +66,11 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
     @Inject
     PubSubService pubSubService;
+
+    @Inject
+    @Named("defaultFunctionStore")
+    String defaultFunctionStore;
+
 
     @Override
     public Representation createEntity(Representation entity) {
@@ -162,31 +169,57 @@ public class JeeEntitiesServerResource extends BaseServerResource
                         publicWrite = false;
                     }
 
-
                     validateSchema(entityType, comparableMap);
-                    if(beforeSave(comparableMap, appId, entityType))  {
-                        String entityId = entityRepository.createEntity(appId, entityType,
-                                new EntityClassBuilder()
-                                        .comparableMap(comparableMap)
-                                        .read(read)
-                                        .write(write)
-                                        .publicRead(publicRead)
-                                        .publicWrite(publicWrite)
-                                        .build(), actions);
-                        JSONObject entityObject = new JSONObject();
-                        entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                        result.put("entity", entityObject);
-                        pubSubService.created(appId, entityType, entityId);
-                        setStatus(Status.SUCCESS_CREATED);
-                        comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                        afterSave(comparableMap, appId, entityType);
+
+                    if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
+                        if (beforeSave(comparableMap, appId, entityType)) {
+                            String entityId = entityRepository.createEntity(appId, entityType,
+                                    new EntityClassBuilder()
+                                            .comparableMap(comparableMap)
+                                            .read(read)
+                                            .write(write)
+                                            .publicRead(publicRead)
+                                            .publicWrite(publicWrite)
+                                            .build(), actions, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                            JSONObject entityObject = new JSONObject();
+                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            result.put("entity", entityObject);
+                            pubSubService.created(appId, entityType, entityId);
+                            setStatus(Status.SUCCESS_CREATED);
+                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            afterSave(comparableMap, appId, entityType);
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        }
                     } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        if(beforeSave(comparableMap, appId, entityType))  {
+                            String entityId = entityRepository.createEntity(appId, entityType,
+                                    new EntityClassBuilder()
+                                            .comparableMap(comparableMap)
+                                            .read(read)
+                                            .write(write)
+                                            .publicRead(publicRead)
+                                            .publicWrite(publicWrite)
+                                            .build(), actions, null);
+                            JSONObject entityObject = new JSONObject();
+                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            result.put("entity", entityObject);
+                            pubSubService.created(appId, entityType, entityId);
+                            setStatus(Status.SUCCESS_CREATED);
+                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            afterSave(comparableMap, appId, entityType);
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        }
                     }
+
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }
             }
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
