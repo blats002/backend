@@ -79,14 +79,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     if(uniqueProperties != null) {
                         uniqueProperties.forEach(property -> {
                             Comparable propertyValue = entityClass.comparableMap().get(property);
-                            if(iterable[0] == null) {
+                            if(iterable[0] == null && propertyValue != null) {
                                 iterable[0] = txn.find(storeName, property, propertyValue);
                             }
-                            iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                            if(propertyValue != null) {
+                                iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                            }
                         });
                     }
-
-                    if(!iterable[0].isEmpty()) {
+                    if(iterable[0] != null && !iterable[0].isEmpty()) {
                         throw new IllegalArgumentException("Duplicate value(s) found");
                     }
 
@@ -226,14 +227,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     if(uniqueProperties != null) {
                         uniqueProperties.forEach(property -> {
                             Comparable propertyValue = comparableMap.get(property);
-                            if(iterable[0] == null) {
+                            if(iterable[0] == null && propertyValue != null) {
                                 iterable[0] = txn.find(storeName, property, propertyValue);
                             }
-                            iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                            if(propertyValue != null) {
+                                iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                            }
                         });
                     }
-
-                    if(!iterable[0].isEmpty()) {
+                    if(iterable[0] != null && !iterable[0].isEmpty()) {
                         throw new IllegalArgumentException("Duplicate value(s) found");
                     }
 
