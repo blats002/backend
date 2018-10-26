@@ -38,6 +38,7 @@ import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
@@ -45,6 +46,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
+import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -83,6 +85,10 @@ public class JeeEntityServerResource extends BaseServerResource
     @Inject
     @Named("defaultRoleStore")
     String defaultRoleStore;
+
+    @Inject
+    @Named("defaultFunctionStore")
+    String defaultFunctionStore;
 
     @Override
     public Representation getEntity() {
@@ -251,9 +257,20 @@ public class JeeEntityServerResource extends BaseServerResource
                             } else {
                                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                             }
+                        } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
+                            if(beforeSave(comparableMap, appId, entityType)) {
+                                success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write,
+                                        publicRead, publicWrite, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                                if(success) {
+                                    afterSave(comparableMap, appId, entityType);
+                                }
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            }
                         } else {
                             if(beforeSave(comparableMap, appId, entityType)) {
-                                success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write,
+                                        publicRead, publicWrite, null);
                                 if(success) {
                                     afterSave(comparableMap, appId, entityType);
                                 }
@@ -322,9 +339,19 @@ public class JeeEntityServerResource extends BaseServerResource
                                     } else {
                                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                                     }
+                                } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
+                                    if(beforeSave(comparableMap, appId, entityType)) {
+                                        success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write,
+                                                publicRead, publicWrite, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                                        if(success) {
+                                            afterSave(comparableMap, appId, entityType);
+                                        }
+                                    } else {
+                                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                                    }
                                 } else {
                                     if(beforeSave(comparableMap, appId, entityType)) {
-                                        success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite, null);
                                         if(success) {
                                             afterSave(comparableMap, appId, entityType);
                                         }

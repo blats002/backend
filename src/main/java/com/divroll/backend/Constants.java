@@ -67,6 +67,7 @@ public final class Constants {
     public static final String RESERVED_FIELD_PUBLICREAD = "publicRead";
     public static final String RESERVED_FIELD_USERNAME = "username";
     public static final String RESERVED_FIELD_PASSWORD = "password";
+    public static final String RESERVED_FIELD_FUNCTION_NAME = "functionName";
 
     public static final String ERROR_MISSING_AUTH_TOKEN = "Missing auth token";
     public static final String ERROR_INVALID_AUTH_TOKEN = "Invalid auth token";

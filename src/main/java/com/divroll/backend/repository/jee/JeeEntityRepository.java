@@ -66,13 +66,30 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     XodusManager manager;
 
     @Override
-    public String createEntity(final String instance, final String storeName, EntityClass entityClass, List<Action> actions) {
+    public String createEntity(final String instance, final String storeName, EntityClass entityClass,
+                               List<Action> actions, List<String> uniqueProperties) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
+
+                    final EntityIterable[] iterable = new EntityIterable[1];
+                    if(uniqueProperties != null) {
+                        uniqueProperties.forEach(property -> {
+                            Comparable propertyValue = entityClass.comparableMap().get(property);
+                            if(iterable[0] == null) {
+                                iterable[0] = txn.find(storeName, property, propertyValue);
+                            }
+                            iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                        });
+                    }
+
+                    if(!iterable[0].isEmpty()) {
+                        throw new IllegalArgumentException("Duplicate value(s) found");
+                    }
+
                     final Entity entity = txn.newEntity(storeName);
                     Iterator<String> it = entityClass.comparableMap().keySet().iterator();
                     while (it.hasNext()) {
@@ -196,15 +213,31 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
     @Override
     public boolean updateEntity(String instance, String storeName, final String entityId, final Map<String, Comparable> comparableMap,
-                                final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
+                                final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
+                                List<String> uniqueProperties) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityId idOfEntity = txn.toEntityId(entityId);
 
+                    final EntityIterable[] iterable = new EntityIterable[1];
+                    if(uniqueProperties != null) {
+                        uniqueProperties.forEach(property -> {
+                            Comparable propertyValue = comparableMap.get(property);
+                            if(iterable[0] == null) {
+                                iterable[0] = txn.find(storeName, property, propertyValue);
+                            }
+                            iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                        });
+                    }
+
+                    if(!iterable[0].isEmpty()) {
+                        throw new IllegalArgumentException("Duplicate value(s) found");
+                    }
+
+                    EntityId idOfEntity = txn.toEntityId(entityId);
                     final Entity entity = txn.getEntity(idOfEntity);
                     Iterator<String> it = comparableMap.keySet().iterator();
                     while (it.hasNext()) {
