@@ -59,6 +59,8 @@
         <jettyVersion>9.4.12.RC2</jettyVersion>
 
         <godaddy.logging.version>1.2.5</godaddy.logging.version>
+        <customcode.version>0-SNAPSHOT</customcode.version>
+
     </properties>
 
     <build>
@@ -416,6 +418,18 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.divroll.functions</groupId>
+            <artifactId>sdk</artifactId>
+            <version>${customcode.version}</version>
+            <!--<scope>provided</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -441,6 +455,11 @@
                         <groupId>org.eclipse.jetty</groupId>
                         <artifactId>jetty-maven-plugin</artifactId>
                         <version>${jettyVersion}</version>
+                        <configuration>
+                            <httpConnector>
+                                <port>9999</port>
+                            </httpConnector>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.tomcat.maven</groupId>

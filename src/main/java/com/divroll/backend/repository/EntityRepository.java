@@ -24,6 +24,7 @@ package com.divroll.backend.repository;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
+import jetbrains.exodus.entitystore.EntityId;
 
 import java.io.InputStream;
 import java.util.List;
@@ -39,6 +40,12 @@ public interface EntityRepository {
 
     boolean updateEntity(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+
+    <T> Map<String, Object> getFirstEntity(String dir, final String kind, final String propertyKey, final Comparable<T> propertyVal, Class<T> clazz);
+
+    <T> InputStream getFirstEntityBlob(String dir, final String kind, final
+            String propertyKey, final Comparable<T> propertyVal, Class<T> clazz,
+                                       String blobKey);
 
     Map<String, Object> getEntity(String instance, String storeName, String entityId);
 

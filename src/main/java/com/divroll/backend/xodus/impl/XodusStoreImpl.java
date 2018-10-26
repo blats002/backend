@@ -133,6 +133,37 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     */
 
     @Override
+    public EntityId putIfNotExists(String dir, String kind, Map<String, Comparable> properties, String uniqueProperty) {
+        if (dir == null || kind == null) {
+            return null;
+        }
+        final EntityId[] entityId = {null};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    Comparable uniqueValue = properties.get(uniqueProperty);
+                    EntityIterable result = txn.find(kind, uniqueProperty, uniqueValue);
+                    if(result.isEmpty()) {
+                        final Entity entity = txn.newEntity(kind);
+                        Iterator<String> it = properties.keySet().iterator();
+                        while (it.hasNext()) {
+                            String key = it.next();
+                            Comparable comparable = properties.get(key);
+                            entity.setProperty(key, comparable);
+                        }
+                        entityId[0] = entity.getId();
+                    }
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+        return entityId[0];
+    }
+
+    @Override
     public EntityId put(String dir, final String kind, final Map<String, Comparable> properties) {
         if (dir == null || kind == null) {
             return null;
@@ -311,6 +342,24 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                     for (String p : ids) {
                         // TODO
                     }
+                }
+            });
+        } finally {
+            //entityStore.close();
+        }
+    }
+
+    @Override
+    public void delete(String dir, String kind, String propertyName, Comparable propertyValue) {
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityIterable result = txn.find(kind, propertyName, propertyValue);
+                    result.forEach(entity -> {
+                        entity.delete();
+                    });
                 }
             });
         } finally {

@@ -40,6 +40,8 @@ public interface XodusStore {
 //    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Long propertyValue);
 //    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Boolean propertyValue);
 //    public EntityId putIfNotExists(String dir, final String entityType, final String propertyKey, final InputStream is);
+    public EntityId putIfNotExists(String dir, final String kind, Map<String, Comparable> properties, String uniqueProperty);
+
     public EntityId put(String dir, final String kind, Map<String, Comparable> properties);
 
     public <T> EntityId put(String dir, String kind, String id, Map<String, Comparable> comparableMap);
@@ -58,6 +60,8 @@ public interface XodusStore {
     public void delete(String dir, final String id);
 
     public void delete(String dir, final String... id);
+
+    public void delete(String dir, String kind, String propertyName, Comparable propertyValue);
 
     public <T> EntityId getFirstEntityId(String dir, final String kind, final String propertyKey,
                                          Comparable<T> propertyVal, Class<T> clazz);
