@@ -24,10 +24,9 @@ package com.divroll.functions;
 import java.util.Map;
 
 /**
- *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
  */
 public interface CustomCodeEventListener {
 	void onSuccess(Map<String, ?> result);

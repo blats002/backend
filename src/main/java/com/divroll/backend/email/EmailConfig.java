@@ -21,6 +21,11 @@
  */
 package com.divroll.backend.email;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
 public class EmailConfig {
 
     private String smtpHost;

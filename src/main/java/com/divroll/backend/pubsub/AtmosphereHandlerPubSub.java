@@ -33,6 +33,11 @@ import org.atmosphere.util.SimpleBroadcaster;
 
 import java.io.IOException;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
 @Singleton
 @AtmosphereHandlerService(path = "/{applicationId}/{topic}",
         interceptors = {

@@ -22,10 +22,9 @@
 package com.divroll.functions;
 
 /**
- *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
  */
 public class CustomCodeException extends Exception {
 	private static final long serialVersionUID = 1L;

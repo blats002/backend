@@ -29,10 +29,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 /**
- *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
  */
 public class JarByteClassloader extends ClassLoader {
 	public byte[] bytes;

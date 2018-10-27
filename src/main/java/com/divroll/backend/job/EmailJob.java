@@ -31,6 +31,11 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
 public class EmailJob implements StatefulJob {
 
     private static final Logger LOG

@@ -23,6 +23,11 @@ package com.divroll.backend.model;
 
 import org.json.JSONObject;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
 public class Email {
 
     private String emailHost;

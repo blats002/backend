@@ -35,6 +35,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 /**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
+/**
  Outgoing Mail (EmailConfig) Server
  requires TLS or SSL: smtp.gmail.com (use authentication)
  Use Authentication: Yes
