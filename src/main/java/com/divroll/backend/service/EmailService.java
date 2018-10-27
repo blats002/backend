@@ -26,6 +26,11 @@ import com.divroll.backend.email.EmailConfig;
 import javax.mail.MessagingException;
 import java.io.UnsupportedEncodingException;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
 public interface EmailService {
     void sendEmail(EmailConfig smtpConfig, String from, String password, String to, String subject, String htmlBody)
             throws UnsupportedEncodingException, MessagingException;

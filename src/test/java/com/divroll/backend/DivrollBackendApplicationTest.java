@@ -36,6 +36,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DivrollBackendApplicationTest {

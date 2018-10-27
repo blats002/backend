@@ -38,10 +38,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 /**
- *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
  */
 public class TestCustomCode {
 

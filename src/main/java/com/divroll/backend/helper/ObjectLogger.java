@@ -21,7 +21,6 @@
  */
 package com.divroll.backend.helper;
 
-
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 
