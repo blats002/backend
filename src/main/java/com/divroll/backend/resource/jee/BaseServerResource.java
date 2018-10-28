@@ -70,7 +70,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected static final Integer DEFAULT_LIMIT = 100;
     private static final Logger LOG
             = LoggerFactory.getLogger(BaseServerResource.class);
-    protected Map<String, Object> queryMap = new LinkedHashMap<>();
+    protected Map<String, Comparable> queryMap = new LinkedHashMap<>();
     protected Map<String, String> propsMap = new LinkedHashMap<>();
 
     protected String appName;
@@ -311,7 +311,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return new JsonRepresentation(jsonObject.toJSONString());
     }
 
-    protected Map<String, Object> cleanup(Map<String, Object> result) {
+    protected Map<String, Comparable> cleanup(Map<String, Comparable> result) {
         result.remove(Constants.RESERVED_FIELD_PUBLICWRITE);
         result.remove(Constants.RESERVED_FIELD_PUBLICREAD);
         return result;
@@ -562,71 +562,114 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return jsFunctions;
     }
 
-    protected Representation success() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("success", true);
-        jsonObject.put("code", Status.SUCCESS_OK.getCode());
-        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
-        setStatus(Status.SUCCESS_OK);
-        return response;
+    protected Representation notFound() {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return null;
     }
 
-    protected Representation success(int code, String reasonPhrase) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("success", true);
-        jsonObject.put("code", code);
-        jsonObject.put("error", reasonPhrase);
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
-        setStatus(Status.SUCCESS_OK);
-        return response;
-    }
-
-    protected Representation success(int code) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("success", true);
-        jsonObject.put("code", code);
-        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
-        setStatus(Status.SUCCESS_OK);
-        return response;
+    protected Representation unauthorized() {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return null;
     }
 
     protected Representation badRequest() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("success", false);
-        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
-        jsonObject.put("error", Status.CLIENT_ERROR_BAD_REQUEST.getReasonPhrase());
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        return response;
+        return null;
     }
 
-    protected Representation badRequest(String message) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("success", false);
-        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
-        jsonObject.put("error", message);
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
-        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        return response;
-    }
-
-    protected Representation internalError() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("success", false);
-        jsonObject.put("code", Status.SERVER_ERROR_INTERNAL.getCode());
-        jsonObject.put("error", Status.SERVER_ERROR_INTERNAL.getReasonPhrase());
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
+    protected Representation serverError() {
         setStatus(Status.SERVER_ERROR_INTERNAL);
-        return response;
+        return null;
     }
+
+    protected Representation success(org.json.JSONObject jsonObject) {
+        setStatus(Status.SUCCESS_OK);
+        if(jsonObject == null) {
+            return null;
+        }
+        Representation representation = new JsonRepresentation(jsonObject.toString());
+        return representation;
+    }
+
+    protected Representation success() {
+        setStatus(Status.SUCCESS_OK);
+        return null;
+    }
+
+    protected Representation created(org.json.JSONObject jsonObject) {
+        setStatus(Status.SUCCESS_CREATED);
+        if(jsonObject == null) {
+            return null;
+        }
+        Representation representation = new JsonRepresentation(jsonObject.toString());
+        return representation;
+    }
+
+//    protected Representation success() {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("success", true);
+//        jsonObject.put("code", Status.SUCCESS_OK.getCode());
+//        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.SUCCESS_OK);
+//        return response;
+//    }
+//
+//    protected Representation success(int code, String reasonPhrase) {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("success", true);
+//        jsonObject.put("code", code);
+//        jsonObject.put("error", reasonPhrase);
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.SUCCESS_OK);
+//        return response;
+//    }
+//
+//    protected Representation success(int code) {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("success", true);
+//        jsonObject.put("code", code);
+//        jsonObject.put("error", Status.SUCCESS_OK.getReasonPhrase());
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.SUCCESS_OK);
+//        return response;
+//    }
+
+//    protected Representation badRequest() {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("success", false);
+//        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
+//        jsonObject.put("error", Status.CLIENT_ERROR_BAD_REQUEST.getReasonPhrase());
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+//        return response;
+//    }
+
+//    protected Representation badRequest(String message) {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("success", false);
+//        jsonObject.put("code", Status.CLIENT_ERROR_BAD_REQUEST.getCode());
+//        jsonObject.put("error", message);
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+//        return response;
+//    }
+//
+//    protected Representation internalError() {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("success", false);
+//        jsonObject.put("code", Status.SERVER_ERROR_INTERNAL.getCode());
+//        jsonObject.put("error", Status.SERVER_ERROR_INTERNAL.getReasonPhrase());
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.SERVER_ERROR_INTERNAL);
+//        return response;
+//    }
 
     protected Representation internalError(String stacktrace) {
         JSONObject jsonObject = new JSONObject();
@@ -640,24 +683,24 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return response;
     }
 
-    protected Representation unauthorized() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", Status.CLIENT_ERROR_UNAUTHORIZED.getCode());
-        jsonObject.put("error", Status.CLIENT_ERROR_UNAUTHORIZED.getReasonPhrase());
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
-        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-        return response;
-    }
+//    protected Representation unauthorized() {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("code", Status.CLIENT_ERROR_UNAUTHORIZED.getCode());
+//        jsonObject.put("error", Status.CLIENT_ERROR_UNAUTHORIZED.getReasonPhrase());
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+//        return response;
+//    }
 
-    protected Representation notFound() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", Status.CLIENT_ERROR_NOT_FOUND.getCode());
-        jsonObject.put("error", Status.CLIENT_ERROR_NOT_FOUND.getReasonPhrase());
-        Representation response = new StringRepresentation(jsonObject.toJSONString());
-        response.setMediaType(MediaType.APPLICATION_JSON);
-        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-        return response;
-    }
+//    protected Representation notFound() {
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("code", Status.CLIENT_ERROR_NOT_FOUND.getCode());
+//        jsonObject.put("error", Status.CLIENT_ERROR_NOT_FOUND.getReasonPhrase());
+//        Representation response = new StringRepresentation(jsonObject.toJSONString());
+//        response.setMediaType(MediaType.APPLICATION_JSON);
+//        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+//        return response;
+//    }
 
 }

@@ -22,6 +22,7 @@
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
+import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
@@ -36,6 +37,7 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
+import util.ComparableLinkedList;
 
 import java.io.InputStream;
 import java.util.*;
@@ -290,8 +292,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public <T> Map<String, Object> getFirstEntity(String dir, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz) {
-        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+    public <T> Map<String, Comparable> getFirstEntity(String dir, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz) {
+        final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -302,17 +304,17 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
                             if(value instanceof EmbeddedEntityIterable) {
-                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
                             } else if(value instanceof EmbeddedArrayIterable) {
-                                comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                comparableMap.put(property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
                             } else {
                                 comparableMap.put(property, value);
                             }
                         }
                     }
 
-                    List<EntityStub> aclRead = new LinkedList<>();
-                    List<EntityStub> aclWrite = new LinkedList<>();
+                    List<EntityStub> aclRead = new ComparableLinkedList<>();
+                    List<EntityStub> aclWrite = new ComparableLinkedList<>();
 
                     Comparable comparablePublicRead = entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                     Comparable comparablePublicWrite = entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
@@ -336,10 +338,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
-                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
-                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
-                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
-                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 }
@@ -372,8 +374,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Map<String, Object> getEntity(String instance, final String storeName, final String entityId) {
-        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+    public Map<String, Comparable> getEntity(String instance, final String storeName, final String entityId) {
+        final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -386,9 +388,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
                             if(value instanceof EmbeddedEntityIterable) {
-                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
                             } else if(value instanceof EmbeddedArrayIterable) {
-                                comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                comparableMap.put(property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
                             } else {
                                 comparableMap.put(property, value);
                             }
@@ -420,10 +422,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         aclWrite.add(new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
                     }
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, idOfEntity.toString());
-                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
-                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
-                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
-                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 }
@@ -576,8 +578,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Object>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit) {
-        final List<Map<String, Object>> entities = new LinkedList<Map<String, Object>>();
+    public List<Map<String, Comparable>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit) {
+        final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -586,15 +588,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     EntityIterable result = txn.find(storeName, propertyName, propertyValue).skip(skip).take(limit);
                     result = result.skip(skip).take(limit);
                     for (Entity entity : result) {
-                        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+                        final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {
                                     if(value instanceof EmbeddedEntityIterable) {
-                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
                                     } else if(value instanceof EmbeddedArrayIterable) {
-                                        comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                        comparableMap.put(property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
                                     } else {
                                         comparableMap.put(property, value);
                                     }
@@ -616,10 +618,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
 
                         comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
-                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
-                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
-                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
-                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                         if(entity.getType().equals(defaultUserStore)) {
@@ -758,8 +760,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Map<String, Object> getFirstLinkedEntity(String instance, String storeName, final String entityId, final String linkName) {
-        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+    public Map<String, Comparable> getFirstLinkedEntity(String instance, String storeName, final String entityId, final String linkName) {
+        final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -792,10 +794,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
 
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
-                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
-                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
-                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
-                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                    comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                    comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -808,9 +810,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Object>> getLinkedEntities(String instance, String storeName,
+    public List<Map<String, Comparable>> getLinkedEntities(String instance, String storeName,
                                                        final String entityId, final String linkName) {
-        final List<Map<String, Object>> entities = new LinkedList<Map<String, Object>>();
+        final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -820,15 +822,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     Entity txnEntity = txn.getEntity(idOfEntity);
                     EntityIterable result = txnEntity.getLinks(Arrays.asList(new String[]{linkName}));
                     for (Entity entity : result) {
-                        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+                        final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {
                                     if(value instanceof EmbeddedEntityIterable) {
-                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
                                     } else if(value instanceof EmbeddedArrayIterable) {
-                                        comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                        comparableMap.put(property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
                                     } else {
                                         comparableMap.put(property, value);
                                     }
@@ -851,10 +853,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
 
                         comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
-                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
-                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
-                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
-                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -873,9 +875,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
+    public List<Map<String, Comparable>> listEntities(String instance, String storeName, String userIdRoleId,
                                                   int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
-        final List<Map<String, Object>> entities = new LinkedList<Map<String, Object>>();
+        final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -923,15 +925,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
                     result = result.skip(skip).take(limit);
                     for (Entity entity : result) {
-                        final Map<String, Object> comparableMap = new LinkedHashMap<>();
+                        final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
                         for (String property : entity.getPropertyNames()) {
                             Comparable value = entity.getProperty(property);
                             if(value != null) {
                                 if(value != null) {
                                     if(value instanceof EmbeddedEntityIterable) {
-                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asJSONObject());
+                                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
                                     } else if(value instanceof EmbeddedArrayIterable) {
-                                        comparableMap.put(property, ((EmbeddedArrayIterable) value).asJSONArray());
+                                        comparableMap.put(property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
                                     } else {
                                         comparableMap.put(property, value);
                                     }
@@ -953,10 +955,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
 
                         comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
-                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, aclRead);
-                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, aclWrite);
-                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, entity.getBlobNames());
-                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, entity.getLinkNames());
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                        comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                        comparableMap.put(Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                        comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                         if(entity.getType().equals(defaultUserStore)) {

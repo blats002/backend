@@ -22,6 +22,7 @@
 package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -29,7 +30,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
  * @since 0-SNAPSHOT
  */
 @XStreamAlias("entity")
-public class EntityStub {
+public class EntityStub implements Comparable {
     private String entityId;
     private String entityType;
 
@@ -58,5 +59,10 @@ public class EntityStub {
 
     public void setEntityType(String entityType) {
         this.entityType = entityType;
+    }
+
+    @Override
+    public int compareTo(@NotNull Object o) {
+        return 0;
     }
 }

@@ -70,46 +70,56 @@ public class JeeUsersServerResource extends BaseServerResource
 
     @Override
     public Users listUsers() {
-
-        int skipValue = 0;
-        int limitValue = DEFAULT_LIMIT;
-
-        if (skip != null && limit != null) {
-            skipValue = skip;
-            limitValue = limit;
-        }
-
-        Application app = applicationService.read(appId);
-        if (app == null) {
-            return null;
-        }
-
-        if (!isMaster()) {
-            String authUserId = null;
-            try {
-                authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            } catch (Exception e) {
-                // do nothing
+        try {
+            if (!isAuthorized()) {
+                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return null;
             }
-            List<User> processedResults = new LinkedList<>();
-            List<User> results = userRepository.listUsers(appId, storeName, authUserId,
-                    skipValue, limitValue, sort, false, filters);
-            Users users = new Users();
-            users.setResults(DTOHelper.convert(results));
-            users.setLimit(Long.valueOf(limitValue));
-            users.setSkip(Long.valueOf(skipValue));
-            setStatus(Status.SUCCESS_OK);
-            return users;
-        } else {
-            List<User> results = userRepository
-                    .listUsers(appId, storeName, null, skipValue, limitValue, null, true, filters);
-            Users users = new Users();
-            users.setResults(DTOHelper.convert(results));
-            users.setLimit(Long.valueOf(skipValue));
-            users.setSkip(Long.valueOf(limitValue));
-            setStatus(Status.SUCCESS_OK);
-            return users;
+
+            int skipValue = 0;
+            int limitValue = DEFAULT_LIMIT;
+
+            if (skip != null && limit != null) {
+                skipValue = skip;
+                limitValue = limit;
+            }
+
+            Application app = applicationService.read(appId);
+            if (app == null) {
+                return null;
+            }
+
+            if (!isMaster()) {
+                String authUserId = null;
+                try {
+                    authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                } catch (Exception e) {
+                    // do nothing
+                }
+                List<User> processedResults = new LinkedList<>();
+                List<User> results = userRepository.listUsers(appId, storeName, authUserId,
+                        skipValue, limitValue, sort, false, filters);
+                Users users = new Users();
+                users.setResults(DTOHelper.convert(results));
+                users.setLimit(Long.valueOf(limitValue));
+                users.setSkip(Long.valueOf(skipValue));
+                setStatus(Status.SUCCESS_OK);
+                return users;
+            } else {
+                List<User> results = userRepository
+                        .listUsers(appId, storeName, null, skipValue, limitValue, null, true, filters);
+                Users users = new Users();
+                users.setResults(DTOHelper.convert(results));
+                users.setLimit(Long.valueOf(skipValue));
+                users.setSkip(Long.valueOf(limitValue));
+                setStatus(Status.SUCCESS_OK);
+                return users;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            setStatus(Status.SERVER_ERROR_INTERNAL);
         }
+        return null;
     }
 
     @Override

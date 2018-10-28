@@ -21,6 +21,10 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 
@@ -29,7 +33,14 @@ import org.restlet.resource.Delete;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Property", description = "Entity property resource")
 public interface PropertyResource {
+    @ApiOperation(value = "delete a entity property", tags = "property")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "user updated"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")})
+
     @Delete
     void deleteProperty(Representation representation);
 }

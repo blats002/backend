@@ -23,6 +23,7 @@ package com.divroll.backend.resource;
 
 import com.divroll.backend.model.UserDTO;
 import com.divroll.backend.model.Users;
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
@@ -34,6 +35,7 @@ import org.restlet.resource.Post;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Users", description = "Users resource")
 public interface UsersResource {
     @ApiOperation(value = "create a new user", tags = "user")
     @ApiResponses({
@@ -43,6 +45,11 @@ public interface UsersResource {
     @Post
     UserDTO createUser(UserDTO entity);
 
+    @ApiOperation(value = "list users", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "success list users"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access")})
     @Get
     Users listUsers();
 }

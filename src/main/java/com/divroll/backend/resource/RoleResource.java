@@ -22,6 +22,7 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Role;
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
@@ -34,6 +35,7 @@ import org.restlet.resource.Put;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Role", description = "Role resource")
 public interface RoleResource {
     @ApiOperation(value = "retrieve a role", tags = "role")
     @ApiResponses({

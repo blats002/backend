@@ -90,7 +90,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
             List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                     ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
@@ -154,7 +154,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
 
             if(map == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -227,7 +227,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
 
             if(map != null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);

@@ -22,6 +22,9 @@
 package com.divroll.backend.resource;
 
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Post;
@@ -31,11 +34,21 @@ import org.restlet.resource.Post;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@Api(value = "User", description = "User resource")
+@Api(value = "User", description = "User Role link resource")
 public interface UserRoleResource {
+    @ApiOperation(value = "", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "user role link created"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access")})
     @Post
     void createUserRoleLink(Representation entity);
 
+    @ApiOperation(value = "", tags = "user")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "deleted"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access")})
     @Delete
     void deleteUserRoleLink(Representation entity);
 }

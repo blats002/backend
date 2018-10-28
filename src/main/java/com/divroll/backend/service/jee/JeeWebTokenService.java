@@ -62,7 +62,7 @@ public class JeeWebTokenService implements WebTokenService {
     }
 
     @Override
-    public Map<String, Object> readToken(String secret) {
+    public Map<String, Comparable> readToken(String secret) {
         return null;
     }
 

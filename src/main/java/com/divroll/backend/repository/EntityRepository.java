@@ -43,13 +43,13 @@ public interface EntityRepository {
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
                          final List<String> uniqueProperties);
 
-    <T> Map<String, Object> getFirstEntity(String dir, final String kind, final String propertyKey, final Comparable<T> propertyVal, Class<T> clazz);
+    <T> Map<String, Comparable> getFirstEntity(String dir, final String kind, final String propertyKey, final Comparable<T> propertyVal, Class<T> clazz);
 
     <T> InputStream getFirstEntityBlob(String dir, final String kind, final
             String propertyKey, final Comparable<T> propertyVal, Class<T> clazz,
                                        String blobKey);
 
-    Map<String, Object> getEntity(String instance, String storeName, String entityId);
+    Map<String, Comparable> getEntity(String instance, String storeName, String entityId);
 
     Comparable getEntityProperty(String instance, String storeName, String entityId, String propertyName);
 
@@ -65,11 +65,11 @@ public interface EntityRepository {
 
     boolean isLinked(String instance, String storeName, String linkName, String sourceId, String targetId);
 
-    Map<String, Object> getFirstLinkedEntity(String instance, String storeName, String entityId, String linkName);
+    Map<String, Comparable> getFirstLinkedEntity(String instance, String storeName, String entityId, String linkName);
 
-    List<Map<String, Object>> getLinkedEntities(String instance, String storeName, String entityId, String linkName);
+    List<Map<String, Comparable>> getLinkedEntities(String instance, String storeName, String entityId, String linkName);
 
-    List<Map<String, Object>> listEntities(String instance, String storeName, String userIdRoleId,
+    List<Map<String, Comparable>> listEntities(String instance, String storeName, String userIdRoleId,
                                            int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters);
 
     InputStream getEntityBlob(String instance, String storeName, String entityId, String blobKey);
@@ -84,6 +84,6 @@ public interface EntityRepository {
 
     boolean deleteProperty(String instance, String storeName, String propertyName);
 
-    List<Map<String, Object>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit);
+    List<Map<String, Comparable>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit);
 
 }

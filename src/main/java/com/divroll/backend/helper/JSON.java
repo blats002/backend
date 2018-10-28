@@ -24,11 +24,12 @@ package com.divroll.backend.helper;
 import com.divroll.backend.model.EmbeddedArrayIterable;
 import com.divroll.backend.model.EmbeddedEntityIterable;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import util.ComparableHashMap;
+import util.ComparableLinkedList;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -39,48 +40,93 @@ public class JSON {
     private JSON() {
     }
 
-    public static Map<String, Comparable> toComparableMap(JSONObject jsonObject) {
-        Iterator<String> it = jsonObject.keySet().iterator();
-        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        while (it.hasNext()) {
-            String k = it.next();
-            try {
-                JSONObject jso = jsonObject.getJSONObject(k);
-                comparableMap.put(k, new EmbeddedEntityIterable(jso));
-            } catch (Exception e) {
+//    public static Map<String, Comparable> toComparableMap(JSONObject jsonObject) {
+//        Iterator<String> it = jsonObject.keySet().iterator();
+//        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+//        while (it.hasNext()) {
+//            String k = it.next();
+//            try {
+//                JSONObject jso = jsonObject.getJSONObject(k);
+//                comparableMap.put(k, new EmbeddedEntityIterable(jso));
+//            } catch (Exception e) {
+//
+//            }
+//            try {
+//                JSONArray jsa = jsonObject.getJSONArray(k);
+//                comparableMap.put(k, new EmbeddedArrayIterable(jsa));
+//            } catch (Exception e) {
+//
+//            }
+//            try {
+//                Boolean value = jsonObject.getBoolean(k);
+//                comparableMap.put(k, value);
+//            } catch (Exception e) {
+//
+//            }
+//            try {
+//                Long value = jsonObject.getLong(k);
+//                comparableMap.put(k, value);
+//            } catch (Exception e) {
+//
+//            }
+//            try {
+//                Double value = jsonObject.getDouble(k);
+//                comparableMap.put(k, value);
+//            } catch (Exception e) {
+//
+//            }
+//            try {
+//                String value = jsonObject.getString(k);
+//                comparableMap.put(k, value);
+//            } catch (Exception e) {
+//
+//            }
+//        }
+//        return comparableMap;
+//    }
 
-            }
-            try {
-                JSONArray jsa = jsonObject.getJSONArray(k);
-                comparableMap.put(k, new EmbeddedArrayIterable(jsa));
-            } catch (Exception e) {
-
-            }
-            try {
-                Boolean value = jsonObject.getBoolean(k);
-                comparableMap.put(k, value);
-            } catch (Exception e) {
-
-            }
-            try {
-                Long value = jsonObject.getLong(k);
-                comparableMap.put(k, value);
-            } catch (Exception e) {
-
-            }
-            try {
-                Double value = jsonObject.getDouble(k);
-                comparableMap.put(k, value);
-            } catch (Exception e) {
-
-            }
-            try {
-                String value = jsonObject.getString(k);
-                comparableMap.put(k, value);
-            } catch (Exception e) {
-
-            }
+    public static Map<String, Comparable> jsonToMap(JSONObject json) throws JSONException {
+        Map<String, Comparable> retMap = new ComparableHashMap<String, Comparable>();
+        if(json != JSONObject.NULL) {
+            retMap = toMap(json);
         }
-        return comparableMap;
+        return retMap;
     }
+
+    public static Map<String, Comparable> toMap(JSONObject object) throws JSONException {
+        Map<String, Comparable> map = new ComparableHashMap<String, Comparable>();
+        Iterator<String> keysItr = object.keys();
+        while(keysItr.hasNext()) {
+            String key = keysItr.next();
+            Object value = object.get(key);
+            if(value instanceof JSONArray) {
+                List<Comparable> valueList = toList((JSONArray) value);
+                value = new EmbeddedArrayIterable(valueList);
+            }
+            else if(value instanceof JSONObject) {
+                Map<String, Comparable> valueMap = toMap((JSONObject) value);
+                value = new EmbeddedEntityIterable(Comparables.cast(valueMap));
+            }
+            map.put(key, (Comparable) value);
+        }
+        return map;
+    }
+
+    public static List<Comparable> toList(JSONArray array) throws JSONException {
+        List<Comparable> list = new ComparableLinkedList<>();
+        for(int i = 0; i < array.length(); i++) {
+            Object value = array.get(i);
+            if(value instanceof JSONArray) {
+                List<Comparable> valueList = toList((JSONArray) value);
+                value = new EmbeddedArrayIterable(valueList);
+            }
+            else if(value instanceof JSONObject) {
+                Map<String, Comparable> valueMap = toMap((JSONObject) value);
+                value = new EmbeddedEntityIterable(Comparables.cast(valueMap));
+            }
+            list.add((Comparable) value);
+        }
+        return list;
+    }
+
 }

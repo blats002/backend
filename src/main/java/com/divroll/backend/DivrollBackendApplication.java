@@ -163,7 +163,7 @@ public class DivrollBackendApplication extends Application {
     private void attachSwaggerSpecification2(Router router) {
         Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(
                 this);
-        restlet.setBasePath("http://localhost:8080/");
+        restlet.setBasePath("http://localhost:9999/");
         restlet.attach(router, "/docs");
     }
 

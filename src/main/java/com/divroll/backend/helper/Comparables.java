@@ -19,9 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.repository.jee;
+package com.divroll.backend.helper;
 
-import com.divroll.backend.repository.EntityRepository;
+import util.ComparableHashMap;
+import util.ComparableLinkedList;
 
 import java.util.List;
 import java.util.Map;
@@ -31,25 +32,31 @@ import java.util.Map;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class AppEntityRepository {
-
-    private final EntityRepository repository;
-    private final String instance;
-    private final String storeName;
-
-    public AppEntityRepository(EntityRepository repository, String instance, String storeName) {
-        this.repository = repository;
-        this.storeName = storeName;
-        this.instance = instance;
+public class Comparables {
+    public static <V extends Comparable> ComparableLinkedList<Comparable> cast(List<V> comparableList) {
+        if(comparableList == null) {
+            return null;
+        }
+        if(comparableList.isEmpty()) {
+            return new ComparableLinkedList<Comparable>();
+        }
+        ComparableLinkedList<Comparable> casted = new ComparableLinkedList<Comparable>();
+        comparableList.forEach(comparable -> {
+            casted.add(comparable);
+        });
+        return casted;
     }
-
-    public Map<String,Comparable> getEntityById(String entityId) {
-        return repository.getEntity(instance, storeName, entityId);
+    public static <K extends Comparable, V extends Comparable> ComparableHashMap<K,V> cast(Map<K,V> map) {
+        if(map == null) {
+            return null;
+        }
+        if(map.isEmpty()) {
+            return new ComparableHashMap<>();
+        }
+        ComparableHashMap<K, V> casted = new ComparableHashMap<>();
+        map.forEach((key,value) -> {
+            casted.put(key, value);
+        });
+        return casted;
     }
-
-    public boolean isExist(String entityType, String propertyName, Comparable propertyValue) {
-        List<Map<String,Comparable>> entities = repository.getEntities(instance, entityType, propertyName, propertyValue, 0, 1);
-        return !entities.isEmpty();
-    }
-
 }

@@ -108,30 +108,8 @@ public class ActionParser {
     }
 
     private Map<String,Comparable> jsonObjToMap(JSONObject jsonObject) {
-//        Type mapType = new TypeToken<Map<String, Comparable>>(){}.getType();
-//        Map<String, Comparable> comparableMap = new Gson().fromJson(jsonObject.toString(), mapType);
-//        return comparableMap;
-        Map<String, Comparable> comparableMap = JSON.toComparableMap(jsonObject);
+        Map<String, Comparable> comparableMap = JSON.jsonToMap(jsonObject);
         return comparableMap;
-    }
-
-    private Comparable toComparable(Object jsonValue) {
-        if(jsonValue instanceof JSONObject) {
-            // TODO
-        } else if(jsonValue instanceof JSONArray) {
-           // TODO
-        } else if(jsonValue instanceof Boolean) {
-            Boolean value = Boolean.valueOf((Boolean) jsonValue);
-            return value;
-        } else if(jsonValue instanceof Number) {
-            Number value = (Number) jsonValue;
-            Double doubleValue = value.doubleValue();
-            return doubleValue;
-        } else if(jsonValue instanceof String) {
-            String value = (String) jsonValue;
-            return value;
-        }
-        return null;
     }
 
 }
