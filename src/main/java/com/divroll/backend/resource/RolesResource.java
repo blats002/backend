@@ -23,6 +23,10 @@ package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Role;
 import com.divroll.backend.model.Roles;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
@@ -31,10 +35,21 @@ import org.restlet.resource.Post;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Roles", description = "Roles resource")
 public interface RolesResource {
+    @ApiOperation(value = "", tags = "role")
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "role created"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access")})
     @Post
     Role createRole(Role entity);
 
+    @ApiOperation(value = "", tags = "role")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "success"),
+            @ApiResponse(code = 400, message = "bad request"),
+            @ApiResponse(code = 401, message = "unauthorized access")})
     @Get
     Roles getRoles();
 }

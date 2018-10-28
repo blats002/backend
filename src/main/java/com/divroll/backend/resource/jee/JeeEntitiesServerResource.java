@@ -23,6 +23,7 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.EntityIterables;
 import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
@@ -77,12 +78,10 @@ public class JeeEntitiesServerResource extends BaseServerResource
         JSONObject result = new JSONObject();
         try {
             if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
+                return unauthorized();
             }
             if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
+                return badRequest();
             }
             String dir = appId;
             if (dir != null) {
@@ -91,11 +90,10 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
                 if (entityJSONObject == null) {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    return null;
+                    return badRequest();
                 }
 
-                Map<String, Comparable> comparableMap = JSON.toComparableMap(entityJSONObject);
+                Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
 
                 String[] read = new String[]{};
                 String[] write = new String[]{};
@@ -146,13 +144,13 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
                     if(comparableMap.get(Constants.RESERVED_FIELD_ACL_READ) != null) {
                         EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_READ);
-                        JSONArray jsonArray = iterable.asJSONArray();
+                        JSONArray jsonArray = EntityIterables.toJSONArray(iterable);
                         read = ACLHelper.onlyIds(jsonArray);
                     }
 
                     if(comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
                         EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE);
-                        JSONArray jsonArray = iterable.asJSONArray();
+                        JSONArray jsonArray = EntityIterables.toJSONArray(iterable);
                         write = ACLHelper.onlyIds(jsonArray);
                     }
 
@@ -184,12 +182,12 @@ public class JeeEntitiesServerResource extends BaseServerResource
                             JSONObject entityObject = new JSONObject();
                             entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                             result.put("entity", entityObject);
-                            pubSubService.created(appId, entityType, entityId);
-                            setStatus(Status.SUCCESS_CREATED);
                             comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            pubSubService.created(appId, entityType, entityId);
                             afterSave(comparableMap, appId, entityType);
+                            return created(result);
                         } else {
-                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            return badRequest();
                         }
                     } else {
                         if(beforeSave(comparableMap, appId, entityType))  {
@@ -204,39 +202,33 @@ public class JeeEntitiesServerResource extends BaseServerResource
                             JSONObject entityObject = new JSONObject();
                             entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                             result.put("entity", entityObject);
-                            pubSubService.created(appId, entityType, entityId);
-                            setStatus(Status.SUCCESS_CREATED);
                             comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            pubSubService.created(appId, entityType, entityId);
                             afterSave(comparableMap, appId, entityType);
+                            return created(result);
                         } else {
-                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                            return badRequest();
                         }
                     }
-
                 } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    return badRequest();
                 }
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return badRequest();
         } catch (Exception e) {
             e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return serverError();
         }
-        Representation representation = null;
-        if (result != null) {
-            representation = new JsonRepresentation(result.toString());
-        }
-        return representation;
+        return null;
     }
 
     @Override
     public Representation getEntities() {
         try {
             if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
+                return unauthorized();
             }
 
             int skipValue = 0;
@@ -249,7 +241,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
             if (isMaster()) {
                 try {
-                    List<Map<String, Object>> entityObjs
+                    List<Map<String, Comparable>> entityObjs
                             = entityRepository.listEntities(appId, entityType, null,
                             skipValue, limitValue, sort, true, filters);
                     JSONObject responseBody = new JSONObject();
@@ -258,11 +250,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     entitiesJSONObject.put("skip", skipValue);
                     entitiesJSONObject.put("limit", limitValue);
                     responseBody.put("entities", entitiesJSONObject);
-                    Representation representation = new JsonRepresentation(responseBody.toString());
-                    setStatus(Status.SUCCESS_OK);
-                    return representation;
+                    return success(responseBody);
                 } catch (Exception e) {
-                    setStatus(Status.SERVER_ERROR_INTERNAL);
+                    return serverError();
                 }
             } else {
 
@@ -275,7 +265,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 }
 
                 try {
-                    List<Map<String, Object>> entityObjs = entityRepository.listEntities(appId, entityType,
+                    List<Map<String, Comparable>> entityObjs = entityRepository.listEntities(appId, entityType,
                             authUserId, skipValue, limitValue, sort, false, filters);
 
                     JSONObject responseBody = new JSONObject();
@@ -285,21 +275,20 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     entitiesJSONObject.put("limit", limitValue);
                     responseBody.put("entities", entitiesJSONObject);
 
-                    Representation representation = new JsonRepresentation(responseBody);
-                    setStatus(Status.SUCCESS_OK);
-                    return representation;
+                    return success(responseBody);
                 } catch (Exception e) {
-                    setStatus(Status.SERVER_ERROR_INTERNAL);
+                    e.printStackTrace();
+                    return serverError();
                 }
             }
 
         } catch (EntityRemovedInDatabaseException e) {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND, "Entity was removed ");
+            e.printStackTrace();
+            return notFound();
         } catch (Exception e) {
             e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return serverError();
         }
-        return null;
     }
 
     @Override
@@ -309,18 +298,17 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 boolean status = entityRepository.deleteEntities(appId, entityType);
                 if(status) {
                     pubSubService.deletedAll(appId, entityType);
-                    setStatus(Status.SUCCESS_OK);
+                    return success();
                 } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    return badRequest();
                 }
             } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                return unauthorized();
             }
         } catch (Exception e) {
             e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return serverError();
         }
-        return null;
     }
 
 }

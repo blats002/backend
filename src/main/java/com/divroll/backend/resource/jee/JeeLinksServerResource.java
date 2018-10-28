@@ -88,7 +88,7 @@ public class JeeLinksServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Object> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
 
             if(map == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -114,7 +114,7 @@ public class JeeLinksServerResource extends BaseServerResource
                 }
 
                 if (isMaster || isWriteAccess || isPublic) {
-                    List<Map<String,Object>> entities = entityRepository.getLinkedEntities(appId, entityType, entityId, linkName);
+                    List<Map<String,Comparable>> entities = entityRepository.getLinkedEntities(appId, entityType, entityId, linkName);
                     if(entities != null) {
                         JSONObject responseBody = new JSONObject();
                         JSONObject entitiesJSONObject = new JSONObject();

@@ -22,6 +22,9 @@
 package com.divroll.backend.service.jee;
 
 import com.divroll.backend.Constants;
+import com.divroll.backend.helper.Comparables;
+import com.divroll.backend.helper.EntityIterables;
+import com.divroll.backend.helper.JSON;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.resource.jee.JeeUsersServerResource;
@@ -88,7 +91,7 @@ public class JeeApplicationService
                 EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
                         ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
                 if(embeddedEntityIterable != null) {
-                    JSONObject jsonObject = embeddedEntityIterable.asJSONObject();
+                    JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
                     Email emailConfg = new Email();
                     emailConfg.fromJSONObject(jsonObject);
                     application.setEmailConfig(emailConfg);
@@ -109,7 +112,8 @@ public class JeeApplicationService
             comparableMap.put(Constants.APP_NAME, application.getAppName());
         }
         if(application.getEmailConfig() != null) {
-            EmbeddedEntityIterable embeddedEntityIterable = new EmbeddedEntityIterable(application.getEmailConfig().toJSONObject());
+            JSONObject jsonObject = application.getEmailConfig().toJSONObject();
+            EmbeddedEntityIterable embeddedEntityIterable = new EmbeddedEntityIterable(Comparables.cast(JSON.jsonToMap(jsonObject)));
             comparableMap.put("emailConfig", embeddedEntityIterable);
         }
         if(application.getCloudCode() != null) {
@@ -140,7 +144,7 @@ public class JeeApplicationService
                 EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
                         ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
                 if(embeddedEntityIterable != null) {
-                    JSONObject jsonObject = embeddedEntityIterable.asJSONObject();
+                    JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
                     Email emailConfg = new Email();
                     emailConfg.fromJSONObject(jsonObject);
                     application.setEmailConfig(emailConfg);

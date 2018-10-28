@@ -25,10 +25,9 @@ import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.ByteIterator;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -39,11 +38,8 @@ public class EmbeddedArrayIterable implements Serializable, ByteIterable {
 
     private byte[] bytes;
 
-    public EmbeddedArrayIterable(JSONArray jsonArray) {
-        try {
-            bytes = jsonArray.toString().getBytes("utf-8");
-        } catch (UnsupportedEncodingException e) {
-        }
+    public EmbeddedArrayIterable(List<Comparable> objects) {
+        bytes = serialize(objects);
     }
 
     @Override
@@ -72,16 +68,30 @@ public class EmbeddedArrayIterable implements Serializable, ByteIterable {
         return 0;
     }
 
-    public JSONArray asJSONArray() {
-        try {
-            String jsonString = new String(bytes, "utf-8");
-            return new JSONArray(jsonString);
-        } catch (UnsupportedEncodingException e) {
+    public List<Comparable> asObject() {
+        return (List<Comparable>) deserialize(bytes);
+    }
 
+    public static byte[] serialize(Object obj) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ObjectOutputStream os = new ObjectOutputStream(out);
+            os.writeObject(obj);
+            return out.toByteArray();
+        } catch (IOException e) {
         }
         return null;
     }
-
+    public static Comparable deserialize(byte[] data) {
+        try {
+            ByteArrayInputStream in = new ByteArrayInputStream(data);
+            ObjectInputStream is = new ObjectInputStream(in);
+            return (Comparable) is.readObject();
+        } catch (IOException e) {
+        } catch (ClassNotFoundException e) {
+        }
+        return null;
+    }
 
 
 }

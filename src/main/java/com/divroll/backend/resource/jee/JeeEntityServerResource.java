@@ -103,7 +103,7 @@ public class JeeEntityServerResource extends BaseServerResource
             }
 
             if (isMaster()) {
-                Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
                     setStatus(Status.SUCCESS_OK);
                     JSONObject jsonObject = new JSONObject();
@@ -126,7 +126,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 Boolean publicRead = false;
                 Boolean isAccess = false;
 
-                Map<String, Object> entityObj = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> entityObj = entityRepository.getEntity(appId, entityType, entityId);
                 if (entityObj != null) {
                     ObjectLogger.log(entityObj);
                     List<EntityStub> aclReadList = (List<EntityStub>) (entityObj.get("aclRead"));
@@ -184,7 +184,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 org.json.JSONObject jsonObject = new org.json.JSONObject(entity.getText());
                 org.json.JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
-                Map<String, Comparable> comparableMap = JSON.toComparableMap(entityJSONObject);
+                Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
 
 //                Application app = applicationService.read(appId);
 //                if (app == null) {
@@ -289,7 +289,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 } else {
                     if (!isMaster) {
-                        Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
+                        Map<String, Comparable> entityMap = entityRepository.getEntity(appId, entityType, entityId);
                         String authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
                         if (entityMap == null) {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -401,7 +401,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 return;
             }
             if (!isMaster()) {
-                Map<String, Object> entityMap = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> entityMap = entityRepository.getEntity(appId, entityType, entityId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (entityMap == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
