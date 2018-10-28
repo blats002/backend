@@ -59,20 +59,20 @@ public class JeeBackupServerResource extends BaseServerResource
 
     @Override
     public void restore(Representation entity) {
-        if (!isAuthorized()) {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return;
-        }
-        if (entity == null) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return;
-        }
-        Application app = applicationService.read(appId);
-        if (app == null) {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            return;
-        }
+//        if (!isAuthorized()) {
+//            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+//            return;
+//        }
         if (isMaster()) {
+            if (entity == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return;
+            }
+            Application app = applicationService.read(appId);
+            if (app == null) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return;
+            }
             if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
                 try {
                     DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -100,17 +100,16 @@ public class JeeBackupServerResource extends BaseServerResource
 
     @Override
     public Representation backup(Representation entity) {
-        if (!isAuthorized()) {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return null;
-        }
-        Application app = applicationService.read(appId);
-        if (app == null) {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            return null;
-        }
-
+//        if (!isAuthorized()) {
+//            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+//            return null;
+//        }
         if (isMaster()) {
+            Application app = applicationService.read(appId);
+            if (app == null) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
+            }
             try {
                 String folderPath = xodusRoot + appId;
                 String zipPath = xodusRoot + appId + ".zip";
