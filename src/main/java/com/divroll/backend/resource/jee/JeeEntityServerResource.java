@@ -184,6 +184,10 @@ public class JeeEntityServerResource extends BaseServerResource
                 org.json.JSONObject jsonObject = new org.json.JSONObject(entity.getText());
                 org.json.JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
+                if(entityJSONObject == null) {
+                    return badRequest();
+                }
+
                 Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
 
 //                Application app = applicationService.read(appId);
@@ -238,7 +242,10 @@ public class JeeEntityServerResource extends BaseServerResource
                         validateSchema(entityType, comparableMap);
                         boolean success = false;
                         if(entityType.equalsIgnoreCase(defaultRoleStore)) {
-                            success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                            if (beforeSave(comparableMap, appId, entityType)) {
+                                success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                afterSave(comparableMap, appId, entityType);
+                            }
                         } else if(entityType.equalsIgnoreCase(defaultUserStore)) {
                             comparableMap.forEach((key,value) -> {
                                 if(key.equalsIgnoreCase("password")) {
@@ -319,8 +326,17 @@ public class JeeEntityServerResource extends BaseServerResource
                             if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
                                 validateSchema(entityType, comparableMap);
                                 boolean success = false;
-                                if(entityType.equalsIgnoreCase(defaultRoleStore)) {
-                                    success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                if(entityType.equalsIgnoreCase(defaultUserStore)) {
+                                    if (beforeSave(comparableMap, appId, entityType)) {
+                                        success = userRepository.updateUser(appId, entityId, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        afterSave(comparableMap, appId, entityType);
+                                    }
+                                    afterSave(comparableMap, appId, entityType);
+                                }else if(entityType.equalsIgnoreCase(defaultRoleStore)) {
+                                    if (beforeSave(comparableMap, appId, entityType)) {
+                                        success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        afterSave(comparableMap, appId, entityType);
+                                    }
                                 } else if(entityType.equalsIgnoreCase(defaultUserStore)) {
                                     comparableMap.forEach((key,value) -> {
                                         if(key.equalsIgnoreCase("password")) {

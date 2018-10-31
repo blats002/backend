@@ -50,6 +50,9 @@ public class Application {
     @ApiModelProperty(required = false, value = "Cloud code")
     private String cloudCode;
 
+    private String dateCreated;
+    private String dateUpdated;
+
     private UserRootDTO user;
 
     public String getId() {
@@ -114,5 +117,21 @@ public class Application {
 
     public void setCloudCode(String cloudCode) {
         this.cloudCode = cloudCode;
+    }
+
+    public String getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(String dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public String getDateUpdated() {
+        return dateUpdated;
+    }
+
+    public void setDateUpdated(String dateUpdated) {
+        this.dateUpdated = dateUpdated;
     }
 }

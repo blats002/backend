@@ -22,24 +22,26 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
-import com.divroll.backend.helper.ACLHelper;
-import com.divroll.backend.helper.EntityIterables;
-import com.divroll.backend.helper.JSON;
-import com.divroll.backend.helper.ObjectLogger;
+import com.divroll.backend.helper.*;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.repository.EntityRepository;
+import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.EntitiesResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.simple.JSONValue;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
@@ -60,6 +62,12 @@ public class JeeEntitiesServerResource extends BaseServerResource
     private static final Integer DEFAULT_LIMIT = 100;
 
     @Inject
+    UserRepository userRepository;
+
+    @Inject
+    RoleRepository roleRepository;
+
+    @Inject
     EntityRepository entityRepository;
 
     @Inject
@@ -71,6 +79,14 @@ public class JeeEntitiesServerResource extends BaseServerResource
     @Inject
     @Named("defaultFunctionStore")
     String defaultFunctionStore;
+
+    @Inject
+    @Named("defaultUserStore")
+    String defaultUserStore;
+
+    @Inject
+    @Named("defaultRoleStore")
+    String defaultRoleStore;
 
 
     @Override
@@ -169,7 +185,49 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
                     validateSchema(entityType, comparableMap);
 
-                    if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
+                    if(entityType.equalsIgnoreCase(defaultUserStore)) {
+                        if (beforeSave(comparableMap, appId, entityType)) {
+
+                            String username = (String) comparableMap.get(Constants.RESERVED_FIELD_USERNAME);
+                            String password = (String) comparableMap.get(Constants.RESERVED_FIELD_PASSWORD);
+
+                            if(username == null || password == null || username.isEmpty() || password.isEmpty()) {
+                                return badRequest();
+                            }
+
+                            JSONArray roleJSONArray = comparableMap.get("roles") != null ? (JSONArray) comparableMap.get("roles") : null;
+                            List<String> roleList = new LinkedList<>();
+                            try {
+                                for(int i = 0; i<roleJSONArray.length();i++) {
+                                    JSONObject jsonValue = roleJSONArray.getJSONObject(i);
+                                    if(jsonValue != null) {
+                                        String roleId = jsonValue.getString(Constants.ROLE_ID);
+                                        roleList.add(roleId);
+                                    } else {
+                                        String roleId = roleJSONArray.getString(i);
+                                        roleList.add(roleId);
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            String entityId = userRepository.createUser(appId, entityType, username, password,
+                                    comparableMap, read, write, publicRead, publicWrite, Iterables.toArray(roleList, String.class), actions);
+                            JSONObject entityObject = new JSONObject();
+                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            result.put("entity", entityObject);
+                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
+                            pubSubService.created(appId, entityType, entityId);
+                            afterSave(comparableMap, appId, entityType);
+                        }
+                        afterSave(comparableMap, appId, entityType);
+                    } else if(entityType.equalsIgnoreCase(defaultRoleStore)) {
+                        if (beforeSave(comparableMap, appId, entityType)) {
+                            String roleName = (String) comparableMap.get(Constants.ROLE_NAME);
+                            roleRepository.createRole(appId, entityType, roleName, read, write, publicRead, publicWrite, actions);
+                            afterSave(comparableMap, appId, entityType);
+                        }
+                    } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
                         if (beforeSave(comparableMap, appId, entityType)) {
                             String entityId = entityRepository.createEntity(appId, entityType,
                                     new EntityClassBuilder()
