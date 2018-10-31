@@ -82,9 +82,6 @@ public class JeeUserRepository extends JeeBaseRespository
                 public void execute(@NotNull final StoreTransaction txn) {
                     final Entity entity = txn.newEntity(storeName);
 
-                    entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
-                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
-
                     entity.setProperty(Constants.RESERVED_FIELD_USERNAME, username);
                     entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, password);
 
@@ -160,6 +157,9 @@ public class JeeUserRepository extends JeeBaseRespository
                             }
                         });
                     }
+
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
                     entityId[0] = entity.getId().toString();
                 }
@@ -569,6 +569,14 @@ public class JeeUserRepository extends JeeBaseRespository
                         user.setAclWrite(aclWrite);
                         user.setPublicRead((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
                         user.setPublicWrite((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+
+                        String dateCreated = (userEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                ? (String) userEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                        String dateUpdated = (userEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                ? (String) userEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                        user.setDateCreated(dateCreated);
+                        user.setDateUpdated(dateUpdated);
 
                         List<Role> roles = new LinkedList<>();
                         for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
