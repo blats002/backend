@@ -69,6 +69,9 @@ public class DTOHelper {
             userDTO.setPublicRead(user.getPublicRead());
             userDTO.setPublicWrite(user.getPublicWrite());
 
+            userDTO.setDateCreated(user.getDateCreated());
+            userDTO.setDateUpdated(user.getDateUpdated());
+
             if(user.getRoles() != null) {
                 List<RoleDTO> roles = null;
                 for(Role role : user.getRoles()) {

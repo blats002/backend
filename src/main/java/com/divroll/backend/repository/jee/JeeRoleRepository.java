@@ -293,6 +293,8 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                     EntityId roleEntityId = txn.toEntityId(roleID);
                     Entity userEntity = txn.getEntity(userEntityId);
                     Entity roleEntity = txn.getEntity(roleEntityId);
+                    userEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+                    roleEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                     success[0] = userEntity.addLink(Constants.ROLE_NAME, roleEntity);
                 }
             });
@@ -314,6 +316,8 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                     EntityId roleEntityId = txn.toEntityId(roleID);
                     Entity userEntity = txn.getEntity(userEntityId);
                     Entity roleEntity = txn.getEntity(roleEntityId);
+                    userEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+                    roleEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                     success[0] = userEntity.deleteLink(Constants.ROLE_NAME, roleEntity);
                 }
             });
