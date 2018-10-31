@@ -82,10 +82,7 @@ public class JeeBlobServerResource extends BaseServerResource
     @Override
     public void setBlob(Representation entity) {
         try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
+
             if (entity == null || entity.isEmpty()) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return;
@@ -188,10 +185,7 @@ public class JeeBlobServerResource extends BaseServerResource
     @Override
     public void deleteBlob(Representation entity) {
         try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
+
             Application app = applicationService.read(appId);
             if (app == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);

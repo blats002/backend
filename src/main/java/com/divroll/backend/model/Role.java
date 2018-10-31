@@ -50,6 +50,9 @@ public class Role {
     @ApiModelProperty(required = false, value = "")
     private Boolean publicWrite;
 
+    private String dateCreated;
+    private String dateUpdated;
+
     public Role() {
     }
 
@@ -105,4 +108,19 @@ public class Role {
         this.publicWrite = publicWrite;
     }
 
+    public String getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(String dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public String getDateUpdated() {
+        return dateUpdated;
+    }
+
+    public void setDateUpdated(String dateUpdated) {
+        this.dateUpdated = dateUpdated;
+    }
 }

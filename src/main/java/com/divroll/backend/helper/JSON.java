@@ -107,7 +107,9 @@ public class JSON {
                 Map<String, Comparable> valueMap = toMap((JSONObject) value);
                 value = new EmbeddedEntityIterable(Comparables.cast(valueMap));
             }
-            map.put(key, (Comparable) value);
+            else if(value != JSONObject.NULL) {
+                map.put(key, (Comparable) value);
+            }
         }
         return map;
     }

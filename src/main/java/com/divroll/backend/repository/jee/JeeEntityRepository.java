@@ -94,6 +94,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
 
                     final Entity entity = txn.newEntity(storeName);
+
                     Iterator<String> it = entityClass.comparableMap().keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
@@ -119,6 +120,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                             }
                         }
                     }
+
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
                     if (entityClass.read() != null) {
                         List<String> aclRead = Arrays.asList(entityClass.read());
@@ -281,7 +285,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
                         entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     }
-
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                     success[0] = true;
                 }
             });
@@ -344,6 +348,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+
+                    String dateCreated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                            ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                    String dateUpdated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                            ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
                 }
             });
         } finally {
@@ -428,6 +441,16 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+
+                    String dateCreated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                            ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                    String dateUpdated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                            ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
+
                 }
             });
         } finally {
@@ -486,6 +509,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     EntityId idOfEntity = txn.toEntityId(entityId);
                     final Entity entity = txn.getEntity(idOfEntity);
                     entity.setBlob(blobKey, is);
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                     success[0] = true;
                 }
             });
@@ -627,6 +651,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         if(entity.getType().equals(defaultUserStore)) {
                             comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
                         }
+
+                        String dateCreated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                        String dateUpdated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                        comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                        comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
                         entities.add(comparableMap);
                     }
                 }
@@ -707,6 +740,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     EntityId idOfTarget = txn.toEntityId(targetId);
                     Entity sourceEntity = txn.getEntity(idOfSource);
                     Entity targetEntity = txn.getEntity(idOfTarget);
+
+                    sourceEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+                    targetEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
                     success[0] = sourceEntity.addLink(linkName, targetEntity);
                 }
             });
@@ -728,6 +765,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     EntityId targetEntityId = txn.toEntityId(targetId);
                     Entity sourceEntity = txn.getEntity(sourceEntityId);
                     Entity targetEntity = txn.getEntity(targetEntityId);
+
+                    sourceEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+                    targetEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
                     success[0] = sourceEntity.deleteLink(linkName, targetEntity);
                 }
             });
@@ -801,6 +842,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
+                    String dateCreated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                            ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                    String dateUpdated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                            ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
+
                 }
             });
         } finally {
@@ -864,6 +914,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                             comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
                         }
                         comparableMap.put("entityType", entity.getType());
+
+                        String dateCreated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                        String dateUpdated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                        comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                        comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
                         entities.add(comparableMap);
                     }
                 }
@@ -961,6 +1020,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         comparableMap.put(Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                         comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
+                        String dateCreated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                        String dateUpdated = (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                        comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                        comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
                         if(entity.getType().equals(defaultUserStore)) {
                             comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
                         }

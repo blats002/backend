@@ -63,6 +63,8 @@ public class User {
     @ApiModelProperty(required = false, value = "")
     private Boolean publicWrite;
 
+    private String dateCreated;
+    private String dateUpdated;
 
     public String getUsername() {
         return username;
@@ -145,5 +147,21 @@ public class User {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(String dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public String getDateUpdated() {
+        return dateUpdated;
+    }
+
+    public void setDateUpdated(String dateUpdated) {
+        this.dateUpdated = dateUpdated;
     }
 }

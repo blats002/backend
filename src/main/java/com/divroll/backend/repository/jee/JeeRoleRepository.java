@@ -73,6 +73,9 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                     final Entity entity = txn.newEntity(storeName);
                     entity.setProperty(Constants.ROLE_NAME, roleName);
 
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
                         if (aclRead != null) {
@@ -190,6 +193,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                         }
                     }
                     entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
                     success[0] = true;
                 }
@@ -239,6 +243,14 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
 
                     role.setAclRead(aclRead);
                     role.setAclWrite(aclWrite);
+
+                    String dateCreated = (roleEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                            ? (String) roleEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                    String dateUpdated = (roleEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                            ? (String) roleEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                    role.setDateCreated(dateCreated);
+                    role.setDateUpdated(dateUpdated);
 
                     entity[0] = role;
                 }

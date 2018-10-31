@@ -81,6 +81,10 @@ public class JeeUserRepository extends JeeBaseRespository
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     final Entity entity = txn.newEntity(storeName);
+
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
                     entity.setProperty(Constants.RESERVED_FIELD_USERNAME, username);
                     entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, password);
 
@@ -231,7 +235,7 @@ public class JeeUserRepository extends JeeBaseRespository
                         }
 
                     }
-
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                     success[0] = true;
                 }
             });
@@ -254,6 +258,7 @@ public class JeeUserRepository extends JeeBaseRespository
                     if (newPassword != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, newPassword);
                     }
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                     success[0] = true;
                 }
             });
@@ -312,6 +317,8 @@ public class JeeUserRepository extends JeeBaseRespository
                         }
                         entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                     }
+
+                    entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
                     success[0] = true;
                 }
@@ -389,6 +396,14 @@ public class JeeUserRepository extends JeeBaseRespository
                         Boolean publicRead = (Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
                         Boolean publicWrite = (Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
 
+                        String dateCreated = (userEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                ? (String) userEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                        String dateUpdated = (userEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                ? (String) userEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                        user.setDateCreated(dateCreated);
+                        user.setDateUpdated(dateUpdated);
+
                         user.setPublicWrite(publicWrite);
                         user.setPublicRead(publicRead);
 
@@ -426,6 +441,14 @@ public class JeeUserRepository extends JeeBaseRespository
                             roles.add(role);
                         }
                         user.setRoles(roles);
+
+                        String dateCreated = (userEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                ? (String) userEntity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) : null);
+                        String dateUpdated = (userEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                ? (String) userEntity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) : null);
+
+                        user.setDateCreated(dateCreated);
+                        user.setDateUpdated(dateUpdated);
 
                         entity[0] = user;
                     }
