@@ -124,32 +124,51 @@ public class JeeUserServerResource extends BaseServerResource implements
                 }
             } else { // login
 
-                if (username == null) {
+                if (username == null && authToken == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_MISSING_USERNAME_PASSWORD);
                     return null;
                 }
 
-                User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+                User userEntity = null;
 
-                if (userEntity == null) {
-                    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                    return null;
-                }
-
-                String userId = userEntity.getEntityId();
-                String existingPassword = userEntity.getPassword();
-
-                if (BCrypt.checkpw(password, existingPassword)) {
-                    String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                if (authToken != null) {
+                    String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                    userEntity = userRepository.getUser(appId, storeName, authUserId);
+                    if (userEntity == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    }
                     User user = new User();
-                    user.setEntityId(userId);
-                    user.setWebToken(webToken);
-                    userEntity.setPassword(null);
+                    user.setEntityId(userEntity.getEntityId());
+                    user.setUsername(userEntity.getUsername());
+                    user.setPassword(null);
+                    user.setAclRead(userEntity.getAclRead());
+                    user.setAclWrite(userEntity.getAclWrite());
+                    user.setPublicRead(userEntity.getPublicRead());
+                    user.setPublicWrite(userEntity.getPublicWrite());
+                    user.setRoles(userEntity.getRoles());
                     setStatus(Status.SUCCESS_OK);
                     return UserDTO.convert(user);
                 } else {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                    return null;
+                    userEntity = userRepository.getUserByUsername(appId, storeName, username);
+                    String userId = userEntity.getEntityId();
+                    String existingPassword = userEntity.getPassword();
+                    if (userEntity == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    }
+                    if (BCrypt.checkpw(password, existingPassword)) {
+                        String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+                        User user = new User();
+                        user.setEntityId(userId);
+                        user.setWebToken(webToken);
+                        userEntity.setPassword(null);
+                        setStatus(Status.SUCCESS_OK);
+                        return UserDTO.convert(user);
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                        return null;
+                    }
                 }
             }
 
