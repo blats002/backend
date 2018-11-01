@@ -457,7 +457,7 @@
                         <version>${jettyVersion}</version>
                         <configuration>
                             <httpConnector>
-                                <port>9999</port>
+                                <port>8080</port>
                             </httpConnector>
                         </configuration>
                     </plugin>
@@ -475,10 +475,10 @@
                         <artifactId>jelastic-maven-plugin</artifactId>
                         <version>1.8.4</version>
                         <configuration>
-                            <api_hoster></api_hoster>
-                            <email></email>
-                            <password></password>
-                            <environment></environment>
+                            <api_hoster>app.divroll.space</api_hoster>
+                            <email>webmaster@divroll.com</email>
+                            <password>2bESNZpw04</password>
+                            <environment>backend2</environment>
                             <!--<context>[specify the context if you need it]</context>-->
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>
