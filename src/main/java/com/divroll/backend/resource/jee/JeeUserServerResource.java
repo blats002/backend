@@ -151,12 +151,12 @@ public class JeeUserServerResource extends BaseServerResource implements
                     return UserDTO.convert(user);
                 } else {
                     userEntity = userRepository.getUserByUsername(appId, storeName, username);
-                    String userId = userEntity.getEntityId();
-                    String existingPassword = userEntity.getPassword();
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                         return null;
                     }
+                    String userId = userEntity.getEntityId();
+                    String existingPassword = userEntity.getPassword();
                     if (BCrypt.checkpw(password, existingPassword)) {
                         String webToken = webTokenService.createToken(app.getMasterKey(), userId);
                         User user = new User();
