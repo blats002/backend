@@ -30,6 +30,7 @@ import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.RoleResource;
+import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;

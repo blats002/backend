@@ -19,29 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.resource;
+package com.divroll.backend.service;
 
-import org.restlet.representation.Representation;
-import org.restlet.resource.Delete;
-import org.restlet.resource.Get;
-import org.restlet.resource.Post;
-import org.restlet.resource.Put;
+import com.divroll.backend.model.Application;
+import com.divroll.backend.model.action.Action;
+import com.divroll.backend.model.action.EntityAction;
+import com.divroll.backend.model.action.LinkAction;
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface BlobResource {
-    @Post
-    Representation setBlob(Representation entity);
+public interface EntityService {
+    JSONObject createEntity(Application application, String entityType,
+                            Map<String, Comparable> comparableMap,
+                            String aclRead, String aclWrite,
+                            Boolean publicRead, Boolean publicWrite, List<Action> actions, List<EntityAction> entityActions) throws Exception;
 
-    @Put
-    Representation updateBlob(Representation entity);
+    boolean beforeSave(Application application,
+                       Map<String, Comparable> entity, String appId, String entityType);
 
-    @Delete
-    void deleteBlob(Representation entity);
-
-    @Get
-    Representation getBlob(Representation entity);
+    boolean afterSave(Application application, Map<String, Comparable> entity,
+                      String appId, String entityType);
+    void validateSchema(String appId, String entityType, Map<String,Comparable> comparableMap)
+            throws IllegalArgumentException;
 }

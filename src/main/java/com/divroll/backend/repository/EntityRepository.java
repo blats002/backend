@@ -22,6 +22,8 @@
 package com.divroll.backend.repository;
 
 import com.divroll.backend.model.action.Action;
+import com.divroll.backend.model.action.EntityAction;
+import com.divroll.backend.model.action.LinkAction;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
 import jetbrains.exodus.entitystore.EntityId;
@@ -37,7 +39,7 @@ import java.util.Map;
  */
 public interface EntityRepository {
     String createEntity(String instance, String storeName, EntityClass entityClass,
-                        List<Action> actions, final List<String> uniqueProperties);
+                        List<Action> actions, List<EntityAction> entityActions, final List<String> uniqueProperties);
 
     boolean updateEntity(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
@@ -50,6 +52,14 @@ public interface EntityRepository {
                                        String blobKey);
 
     Map<String, Comparable> getEntity(String instance, String storeName, String entityId);
+
+    List<String> getACLReadList(String instance, String entityId);
+
+    List<String> getACLWriteList(String instance, String entityId);
+
+    boolean isPublicRead(String instance, String entityId);
+
+    boolean isPublicWrite(String instance, String entityId);
 
     Comparable getEntityProperty(String instance, String storeName, String entityId, String propertyName);
 

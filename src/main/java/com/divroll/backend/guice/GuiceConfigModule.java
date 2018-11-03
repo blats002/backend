@@ -76,6 +76,7 @@ public class GuiceConfigModule extends AbstractModule {
         bind(CloudCodeService.class).to(JeeCloudCodeService.class).in(Scopes.SINGLETON);
         bind(EmailService.class).to(JeeEmailService.class).in(Scopes.SINGLETON);
 
+        bind(EntityService.class).to(JeeEntityService.class).in(Scopes.SINGLETON);
         bind(SchemaService.class).to(JeeSchemaService.class).in(Scopes.SINGLETON);
         bind(WebTokenService.class).to(JeeWebTokenService.class).in(Scopes.SINGLETON);
         bind(ApplicationService.class).to(JeeApplicationService.class).in(Scopes.SINGLETON);

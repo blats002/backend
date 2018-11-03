@@ -34,9 +34,11 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface RoleRepository {
-    String createRole(String instance, String storeName, String roleName, String[] read, String[] write, final Boolean publicRead, final Boolean publicWrite, List<Action> actions);
+    String createRole(String instance, String storeName, String roleName, String[] read, String[] write,
+                      final Boolean publicRead, final Boolean publicWrite, List<Action> actions);
 
-    boolean updateRole(String instance, String storeName, String entityId, String newRoleName, final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+    boolean updateRole(String instance, String storeName, String entityId, String newRoleName,
+                       final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
 
     boolean updateRole(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);

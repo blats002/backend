@@ -22,32 +22,28 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
-import com.divroll.backend.helper.*;
-import com.divroll.backend.model.*;
-import com.divroll.backend.model.builder.EntityClassBuilder;
+import com.divroll.backend.helper.JSON;
+import com.divroll.backend.model.action.EntityAction;
+import com.divroll.backend.model.action.ImmutableBacklinkAction;
+import com.divroll.backend.model.action.ImmutableLinkAction;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.EntitiesResource;
+import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
-import com.divroll.backend.trigger.TriggerResponse;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.simple.JSONValue;
-import org.restlet.data.Status;
-import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
-import scala.actors.threadpool.Arrays;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -88,10 +84,11 @@ public class JeeEntitiesServerResource extends BaseServerResource
     @Named("defaultRoleStore")
     String defaultRoleStore;
 
+    @Inject
+    EntityService entityService;
 
     @Override
     public Representation createEntity(Representation entity) {
-        JSONObject result = new JSONObject();
         try {
             if (!isAuthorized()) {
                 return unauthorized();
@@ -101,7 +98,6 @@ public class JeeEntitiesServerResource extends BaseServerResource
             }
             String dir = appId;
             if (dir != null) {
-
                 JSONObject jsonObject = new JSONObject(entity.getText());
                 JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
@@ -109,168 +105,51 @@ public class JeeEntitiesServerResource extends BaseServerResource
                     return badRequest();
                 }
 
+                String authUserId = null;
+                try {
+                    authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
+                } catch (Exception e) {
+                    // do nothing
+                }
+
+                List<EntityAction> entityActions = new LinkedList<>();
+                if(linkName != null && linkFrom != null) {
+                    boolean isAuth = true;
+                    if( authUserId == null || ( !entityRepository.getACLWriteList(appId, linkFrom).contains(authUserId)
+                            && !isMaster() ) ) {
+                        isAuth = false;
+                    }
+                    if(linkFrom.equals(authUserId)) {
+                        isAuth = true;
+                    }
+                    if(entityRepository.isPublicWrite(appId, linkFrom)) {
+                        isAuth = true;
+                    }
+                    if(!isAuth) {
+                        return unauthorized();
+                    }
+                    entityActions.add(ImmutableBacklinkAction.builder()
+                            .linkName(linkName)
+                            .entityId(linkFrom)
+                            .build());
+                } else if(authUserId != null && linkName != null && linkTo != null) {
+                    if( authUserId == null || !entityRepository.getACLWriteList(appId, linkTo).contains(authUserId)
+                            && !isMaster()) {
+                        return unauthorized();
+                    }
+                    entityActions.add(ImmutableLinkAction.builder()
+                            .linkName(linkName)
+                            .entityId(linkFrom)
+                            .build());
+                }
+
                 Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
-
-                String[] read = new String[]{};
-                String[] write = new String[]{};
-
-                if (aclRead != null) {
-                    try {
-                        JSONArray jsonArray = new JSONArray(aclRead);
-                        read = ACLHelper.onlyIds(jsonArray);
-                    } catch (Exception e) {
-                        // do nothing
-                    }
+                JSONObject response = entityService.createEntity(getApp(), entityType, comparableMap,
+                        aclRead, aclWrite, publicRead, publicWrite, actions, entityActions);
+                if(entityType.equals(defaultUserStore)) {
+                    response.remove(Constants.RESERVED_FIELD_PASSWORD);
                 }
-
-                if (aclWrite != null) {
-                    try {
-                        JSONArray jsonArray = new JSONArray(aclWrite);
-                        write = ACLHelper.onlyIds(jsonArray);
-                    } catch (Exception e) {
-                        // do nothing
-                    }
-                }
-
-                ObjectLogger.log(comparableMap);
-                ObjectLogger.log(jsonObject);
-                if (!comparableMap.isEmpty()) {
-
-                    if (comparableMap.get("publicRead") != null) {
-                        Comparable publicReadComparable = comparableMap.get("publicRead");
-                        if (publicReadComparable instanceof Boolean) {
-                            publicRead = (Boolean) publicReadComparable;
-                        } else if (publicReadComparable instanceof String) {
-                            publicRead = Boolean.valueOf((String) publicReadComparable);
-                        }
-                    }
-
-
-                    if (comparableMap.get("publicWrite") != null) {
-                        Comparable publicWriteComparable = comparableMap.get("publicWrite");
-                        if (publicWriteComparable instanceof Boolean) {
-                            publicWrite = (Boolean) publicWriteComparable;
-                        } else if (publicWriteComparable instanceof String) {
-                            publicWrite = Boolean.valueOf((String) publicWriteComparable);
-                        }
-                    }
-
-                    //System.out.println("READ: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_READ)).asJSONArray());
-                    //System.out.println("WRITE: " + ((EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE)).asJSONArray());
-
-                    if(comparableMap.get(Constants.RESERVED_FIELD_ACL_READ) != null) {
-                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_READ);
-                        JSONArray jsonArray = EntityIterables.toJSONArray(iterable);
-                        read = ACLHelper.onlyIds(jsonArray);
-                    }
-
-                    if(comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
-                        EmbeddedArrayIterable iterable = (EmbeddedArrayIterable) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE);
-                        JSONArray jsonArray = EntityIterables.toJSONArray(iterable);
-                        write = ACLHelper.onlyIds(jsonArray);
-                    }
-
-                    if(read == null) {
-                        read = new String[]{};
-                    }
-                    if(write == null) {
-                        write = new String[]{};
-                    }
-                    if(publicRead == null) {
-                        publicRead = true;
-                    }
-                    if(publicWrite == null) {
-                        publicWrite = false;
-                    }
-
-                    validateSchema(entityType, comparableMap);
-
-                    if(entityType.equalsIgnoreCase(defaultUserStore)) {
-                        if (beforeSave(comparableMap, appId, entityType)) {
-
-                            String username = (String) comparableMap.get(Constants.RESERVED_FIELD_USERNAME);
-                            String password = (String) comparableMap.get(Constants.RESERVED_FIELD_PASSWORD);
-
-                            if(username == null || password == null || username.isEmpty() || password.isEmpty()) {
-                                return badRequest();
-                            }
-
-                            JSONArray roleJSONArray = comparableMap.get("roles") != null ? (JSONArray) comparableMap.get("roles") : null;
-                            List<String> roleList = new LinkedList<>();
-                            try {
-                                for(int i = 0; i<roleJSONArray.length();i++) {
-                                    JSONObject jsonValue = roleJSONArray.getJSONObject(i);
-                                    if(jsonValue != null) {
-                                        String roleId = jsonValue.getString(Constants.ROLE_ID);
-                                        roleList.add(roleId);
-                                    } else {
-                                        String roleId = roleJSONArray.getString(i);
-                                        roleList.add(roleId);
-                                    }
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            String entityId = userRepository.createUser(appId, entityType, username, password,
-                                    comparableMap, read, write, publicRead, publicWrite, Iterables.toArray(roleList, String.class), actions);
-                            JSONObject entityObject = new JSONObject();
-                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                            result.put("entity", entityObject);
-                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                            pubSubService.created(appId, entityType, entityId);
-                            afterSave(comparableMap, appId, entityType);
-                        }
-                        afterSave(comparableMap, appId, entityType);
-                    } else if(entityType.equalsIgnoreCase(defaultRoleStore)) {
-                        if (beforeSave(comparableMap, appId, entityType)) {
-                            String roleName = (String) comparableMap.get(Constants.ROLE_NAME);
-                            roleRepository.createRole(appId, entityType, roleName, read, write, publicRead, publicWrite, actions);
-                            afterSave(comparableMap, appId, entityType);
-                        }
-                    } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
-                        if (beforeSave(comparableMap, appId, entityType)) {
-                            String entityId = entityRepository.createEntity(appId, entityType,
-                                    new EntityClassBuilder()
-                                            .comparableMap(comparableMap)
-                                            .read(read)
-                                            .write(write)
-                                            .publicRead(publicRead)
-                                            .publicWrite(publicWrite)
-                                            .build(), actions, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
-                            JSONObject entityObject = new JSONObject();
-                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                            result.put("entity", entityObject);
-                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                            pubSubService.created(appId, entityType, entityId);
-                            afterSave(comparableMap, appId, entityType);
-                            return created(result);
-                        } else {
-                            return badRequest();
-                        }
-                    } else {
-                        if(beforeSave(comparableMap, appId, entityType))  {
-                            String entityId = entityRepository.createEntity(appId, entityType,
-                                    new EntityClassBuilder()
-                                            .comparableMap(comparableMap)
-                                            .read(read)
-                                            .write(write)
-                                            .publicRead(publicRead)
-                                            .publicWrite(publicWrite)
-                                            .build(), actions, null);
-                            JSONObject entityObject = new JSONObject();
-                            entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                            result.put("entity", entityObject);
-                            comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                            pubSubService.created(appId, entityType, entityId);
-                            afterSave(comparableMap, appId, entityType);
-                            return created(result);
-                        } else {
-                            return badRequest();
-                        }
-                    }
-                } else {
-                    return badRequest();
-                }
+                return created(response);
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
