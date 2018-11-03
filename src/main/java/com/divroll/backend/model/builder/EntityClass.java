@@ -23,6 +23,8 @@ package com.divroll.backend.model.builder;
 
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -44,6 +46,6 @@ public interface EntityClass {
     }
     Boolean publicRead();
     Boolean publicWrite();
-
-
+    @Nullable String blobName();
+    @Nullable InputStream blob();
 }

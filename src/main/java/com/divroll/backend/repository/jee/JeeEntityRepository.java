@@ -235,6 +235,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         });
                     }
 
+                    if(entityClass.blobName() != null && entityClass.blob() != null) {
+                        entity.setBlob(entityClass.blobName(), entityClass.blob());
+                    }
 
                 }
             });
