@@ -239,7 +239,7 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if (isMaster) {
                     if (!comparableMap.isEmpty()) {
-                        validateSchema(entityType, comparableMap);
+                        entityService.validateSchema(appId, entityType, comparableMap);
                         boolean success = false;
                         if(entityType.equalsIgnoreCase(defaultRoleStore)) {
                             if (beforeSave(comparableMap, appId, entityType)) {
@@ -324,7 +324,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
 
                             if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
-                                validateSchema(entityType, comparableMap);
+                                entityService.validateSchema(appId, entityType, comparableMap);
                                 boolean success = false;
                                 if(entityType.equalsIgnoreCase(defaultUserStore)) {
                                     if (beforeSave(comparableMap, appId, entityType)) {

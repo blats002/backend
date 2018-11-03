@@ -25,6 +25,9 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
+import com.divroll.backend.model.action.BacklinkAction;
+import com.divroll.backend.model.action.EntityAction;
+import com.divroll.backend.model.action.LinkAction;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.model.filter.TransactionFilter;
@@ -69,7 +72,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
     @Override
     public String createEntity(final String instance, final String storeName, EntityClass entityClass,
-                               List<Action> actions, List<String> uniqueProperties) {
+                               List<Action> actions, List<EntityAction> entityActions, List<String> uniqueProperties) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -205,6 +208,29 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                     }
                                 }
 
+                            }
+                        });
+                    }
+
+                    if(entityActions != null) {
+                        entityActions.forEach(action -> {
+                            if(action instanceof LinkAction) {
+                                LinkAction linkAction = (LinkAction) action;
+                                String targetId = linkAction.entityId();
+                                String linkName = linkAction.linkName();
+                                if(targetId != null && linkName != null) {
+                                    EntityId targetEntityId = txn.toEntityId(targetId);
+                                    entity.addLink(linkName, txn.getEntity(targetEntityId));
+                                }
+                            } else if(action instanceof BacklinkAction) {
+                                BacklinkAction backlinkAction = (BacklinkAction) action;
+                                String targetId = backlinkAction.entityId();
+                                String linkName = backlinkAction.linkName();
+                                if(targetId != null && linkName != null) {
+                                    EntityId sourceEntityId = txn.toEntityId(targetId);
+                                    Entity source = txn.getEntity(sourceEntityId);
+                                    source.addLink(linkName, entity);
+                                }
                             }
                         });
                     }
@@ -457,6 +483,91 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             ////entityStore.close();
         }
         return comparableMap;
+    }
+
+    @Override
+    public List<String> getACLReadList(String instance, String entityId) {
+        final List<String> aclList = new LinkedList<>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    EntityIterable links = entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE);
+                    for(Entity aclWriteLink : links) {
+                        String id = aclWriteLink.getId().toString();
+                        aclList.add(id);
+                    }
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return aclList;    }
+
+    @Override
+    public List<String> getACLWriteList(String instance, String entityId) {
+        final List<String> aclList = new LinkedList<>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    EntityIterable links = entity.getLinks(Constants.RESERVED_FIELD_ACL_READ);
+                    for(Entity aclWriteLink : links) {
+                        String id = aclWriteLink.getId().toString();
+                        aclList.add(id);
+                    }
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return aclList;
+    }
+
+    @Override
+    public boolean isPublicRead(String instance, String entityId) {
+        final boolean[] isPublicRead = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    Boolean publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    isPublicRead[0] = publicRead;
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return isPublicRead[0];
+    }
+
+    @Override
+    public boolean isPublicWrite(String instance, String entityId) {
+        final boolean[] isPublicWrite = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                    EntityId idOfEntity = txn.toEntityId(entityId);
+                    final Entity entity = txn.getEntity(idOfEntity);
+                    Boolean publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+                    isPublicWrite[0] = publicWrite;
+                }
+            });
+        } finally {
+            ////entityStore.close();
+        }
+        return isPublicWrite[0];
     }
 
     @Override

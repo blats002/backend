@@ -32,6 +32,7 @@ import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.jee.AppEntityRepository;
 import com.divroll.backend.service.ApplicationService;
+import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.SchemaService;
 import com.divroll.backend.service.jee.AppEmailService;
 import com.divroll.backend.trigger.TriggerRequest;
@@ -98,6 +99,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected String linkName;
     protected String targetEntityId;
+    protected String linkFrom;
+    protected String linkTo;
 
     protected String masterToken;
 
@@ -108,6 +111,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected String fileName;
 
+
     @Inject
     ApplicationService applicationService;
 
@@ -116,6 +120,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     @Inject
     SchemaService schemaService;
+
+    @Inject
+    EntityService entityService;
 
     @Override
     protected void doInit() {
@@ -141,6 +148,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
         propertyName = getAttribute("propertyName");
         linkName = getAttribute("linkName");
         targetEntityId = getAttribute("targetEntityId");
+
+        if(linkName == null) {
+            linkName = getQueryValue("linkName");
+        }
+
+        linkFrom = getQueryValue("linkFrom");
+        linkTo = getQueryValue("linkTo");
 
         username = getQueryValue(Constants.QUERY_USERNAME);
         sort = getQueryValue("sort");
@@ -350,216 +364,20 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return application;
     }
 
-    protected void validateSchema(String entityType, Map<String,Comparable> comparableMap)
-            throws IllegalArgumentException {
-        List<EntityType> entityTypes = schemaService.listSchemas(appId);
-        entityTypes.forEach(type -> {
-            if(type.getEntityType().equalsIgnoreCase("users")) {
-                List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
-                propertyTypes.forEach(propertyType -> {
-                    propertyType.getPropertyName();
-                });
-
-            } else if(type.getEntityType().equalsIgnoreCase("roles")) {
-                List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
-
-            } else if(type.getEntityType().equalsIgnoreCase(entityType)) {
-                List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
-
-            }
-        });
-        comparableMap.forEach((key,value) -> {
-            List<EntityPropertyType> types = schemaService.listPropertyTypes(appId, entityType);
-            types.forEach(type -> {
-                if(type.equals(key)) {
-                    EntityPropertyType.TYPE expectedPropertyType = type.getPropertyType();
-                    if(value instanceof EmbeddedEntityIterable) {
-                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.OBJECT)) {
-                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                        }
-                    } else if(value instanceof EmbeddedArrayIterable) {
-                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.ARRAY)) {
-                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                        }
-                    } else if(value instanceof Boolean) {
-                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.BOOLEAN)) {
-                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                        }
-                    } else if(value instanceof String) {
-                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.STRING)) {
-                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                        }
-                    } else if(value instanceof Number) {
-                        if(!expectedPropertyType.equals(EntityPropertyType.TYPE.NUMBER)) {
-                            throw new IllegalArgumentException("Property " + key + " should be a " + type.toString());
-                        }
-                    }
-                }
-            });
-
-        });
-    }
-
     public boolean beforeSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
-        String cloudCode = application.getCloudCode();
-        LOG.info("Cloud Code : " + cloudCode);
-        List<JsFunction> jsFunctions = new LinkedList<>();
-        if(cloudCode != null && !cloudCode.isEmpty()) {
-            jsFunctions = parseJS(cloudCode);
-        }
-        final String[] beforeSaveExpr = {null};
-        jsFunctions.forEach(jsFunction -> {
-            if(jsFunction.getFunctionName().equals("beforeSave")) {
-                beforeSaveExpr[0] = jsFunction.getExpression();
-            }
-        });
-        TriggerResponse response = new TriggerResponse();
-        if( beforeSaveExpr[0] != null &&  !beforeSaveExpr[0].isEmpty()) {
-            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
-            AppEmailService emailService = null;
-            if(application != null && application.getEmailConfig() != null) {
-                Email emailConfig = application.getEmailConfig();
-                emailService = new AppEmailService(emailConfig);
-            }
-            TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
-            Object evaluated = eval(request, response, beforeSaveExpr[0]);
-            response = (TriggerResponse) evaluated;
-            LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
-            LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
-            return response.isSuccess();
-        } else {
-            return true;
-        }
+        return entityService.beforeSave(application, entity, appId, entityType);
     }
 
     public boolean afterSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
-        String cloudCode = application.getCloudCode();
-        final String[] afterSaveExpr = {null};
-        LOG.info("Cloud Code : " + cloudCode);
-        List<JsFunction> jsFunctions = new LinkedList<>();
-        if(cloudCode != null && !cloudCode.isEmpty()) {
-            jsFunctions = parseJS(cloudCode);
-        }
-        final String[] beforeSaveExpr = {null};
-        jsFunctions.forEach(jsFunction -> {
-            if(jsFunction.getFunctionName().equals("afterSave")) {
-                afterSaveExpr[0] = jsFunction.getExpression();
-            }
-        });
-        TriggerResponse response = new TriggerResponse();
-
-        if(afterSaveExpr[0] != null && !afterSaveExpr[0].isEmpty()) {
-            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
-            AppEmailService emailService = null;
-            if(application != null && application.getEmailConfig() != null) {
-                Email emailConfig = application.getEmailConfig();
-                emailService = new AppEmailService(emailConfig);
-            }
-            TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
-            Object evaluated = eval(request, response, afterSaveExpr[0]);
-            response = (TriggerResponse) evaluated;
-            LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
-            LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
-            return response.isSuccess();
-        } else {
-            return true;
-        }
+        return entityService.afterSave(application, entity, appId, entityType);
     }
 
     public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType) {
-        return beforeSave(getApp(), entity, appId, entityType);
+        return entityService.beforeSave(getApp(), entity, appId, entityType);
     }
 
     public boolean afterSave(Map<String, Comparable> entity, String appId, String entityType) {
-        return afterSave(getApp(), entity, appId, entityType);
-    }
-
-    protected Object eval(TriggerRequest request, TriggerResponse response, String expression) {
-        Context cx = Context.enter();
-        try {
-            ScriptableObject scope = cx.initStandardObjects();
-
-            // convert my "this" instance to JavaScript object
-            Object jsReqObj = Context.javaToJS(request, scope);
-            Object jsRespObj = Context.javaToJS(response, scope);
-
-            // Convert it to a NativeObject (yes, this could have been done directly)
-            NativeObject nobj = new NativeObject();
-            for (Map.Entry<String, Comparable> entry : request.getEntity().entrySet()) {
-                nobj.defineProperty(entry.getKey(), entry.getValue(), NativeObject.READONLY);
-            }
-
-            ScriptableObject.putProperty(scope, "response", jsRespObj);
-            ScriptableObject.putProperty(scope, "request", jsReqObj);
-            ScriptableObject.putProperty(scope, "entity", nobj);
-
-            // prepare envelope function run()
-            cx.evaluateString(scope,
-                    String.format("function onRequest() { %s return response; } ", expression),
-                    "<func>", 1, null);
-
-            // call method run()
-            Object fObj = scope.get("onRequest", scope);
-            Function f = (Function) fObj;
-            Object result = f.call(cx, scope, (Scriptable) jsReqObj, null);
-            if (result instanceof Wrapper)
-                return ((Wrapper) result).unwrap();
-            return result;
-
-        } finally {
-            Context.exit();
-        }
-    }
-
-    protected List<JsFunction> parseJS(String jsCode) {
-        List<JsFunction> jsFunctions = new LinkedList<>();
-        AstRoot astRoot = new Parser().parse(jsCode, null, 1);
-        List<AstNode> statList = astRoot.getStatements();
-
-        Map<String,String> functionBodyMap = new HashMap<>();
-
-        for(Iterator<AstNode> iter = statList.iterator(); iter.hasNext();) {
-            AstNode astNode = iter.next();
-            if(astNode.getType() == Token.FUNCTION) {
-                FunctionNode fNode = (FunctionNode) astNode;
-                System.out.println("*** function Name : " + fNode.getName() + ", paramCount : " + fNode.getParams() + ", depth : " + fNode.depth());
-                AstNode bNode = fNode.getBody();
-                Block block = (Block)bNode;
-                String source = block.toSource();
-                System.out.println("JS Source : " + source);
-                functionBodyMap.put(fNode.getName(), source);
-
-                JsFunction jsFunction = new JsFunction();
-                jsFunction.setFunctionName(fNode.getName());
-                jsFunction.setExpression(source);
-                jsFunctions.add(jsFunction);
-
-            }
-        }
-
-//        for(Iterator<AstNode> iter = statList.iterator(); iter.hasNext();) {
-//            AstNode astNode = iter.next();
-//            if(astNode.getType() == Token.EXPR_RESULT) {
-//                ExpressionStatement expressionStatement = (ExpressionStatement) astNode;
-//                FunctionCall fCallNode = (FunctionCall) expressionStatement.getExpression();
-//                Name nameNode = (Name) fCallNode.getTarget();
-//                AstNode arg = Iterables.getFirst(fCallNode.getArguments(), null);
-//                System.out.println("*** function Name : " + nameNode.getIdentifier());
-//                System.out.print("*** function Call : " + fCallNode.getArguments());
-//                if(arg != null) {
-//                    StringLiteral stringLiteral = (StringLiteral) arg;
-//                    String entityType = stringLiteral.getValue();
-//                    System.out.print("*** entity Type : " + entityType);
-//                    JsFunction jsFunction = new JsFunction();
-//                    jsFunction.setFunctionName(nameNode.getIdentifier());
-//                    jsFunction.setArguments(Arrays.asList(new String[]{entityType}));
-//                    jsFunction.setExpression(functionBodyMap.get(nameNode.getIdentifier()));
-//                    jsFunctions.add(jsFunction);
-//                }
-//            }
-//        }
-
-        return jsFunctions;
+        return entityService.afterSave(getApp(), entity, appId, entityType);
     }
 
     protected Representation notFound() {
@@ -568,7 +386,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     }
 
     protected Representation unauthorized() {
-        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
     }
 
