@@ -21,14 +21,12 @@
  */
 package com.divroll.backend.resource.jee;
 
-import com.alibaba.fastjson.JSONPath;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
 import com.divroll.backend.helper.JSON;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
-import com.divroll.backend.model.action.BacklinkAction;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
@@ -156,9 +154,50 @@ public class JeeBlobServerResource extends BaseServerResource
                                 .build());
                     }
 
-                    JSONObject entityJSONObject = entityService.createEntity(getApp(), entityType, comparableMap,
-                            aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions);
-                    return created(entityJSONObject);
+                    if(encoding != null && encoding.equals("base64")) {
+                        String base64 = entity.getText();
+                        byte[] bytes = BaseEncoding.base64().decode(base64);
+                        InputStream inputStream = ByteSource.wrap(bytes).openStream();
+                        JSONObject entityJSONObject = entityService.createEntity(getApp(), entityType, comparableMap,
+                                aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
+                                blobName, inputStream);
+                        String entityId = entityJSONObject.getString(Constants.RESERVED_FIELD_ENTITY_ID);
+                        if(entityJSONObject != null && entityId != null){
+                            pubSubService.updated(appId, entityType, entityId);
+                            setStatus(Status.SUCCESS_CREATED);
+                            return created(entityJSONObject);
+                        } else {
+                            return badRequest();
+                        }
+                    } else {
+                        if (MediaType.MULTIPART_FORM_DATA.equals(
+                                entity.getMediaType(), true)) {
+                            Request restletRequest = getRequest();
+                            HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
+                            ServletFileUpload upload = new ServletFileUpload();
+                            FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+                            while (fileIterator.hasNext()) {
+                                FileItemStream item = fileIterator.next();
+                                String fieldName = item.getFieldName();
+                                String name = item.getName();
+                                if(item.isFormField()) {
+                                } else {
+                                    CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
+                                    JSONObject wrappedEntityJSON = entityService.createEntity(getApp(), entityType, comparableMap,
+                                            aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
+                                            blobName, countingInputStream);
+                                    JSONObject entityJSON = wrappedEntityJSON.getJSONObject("entity");
+                                    String entityId = entityJSON.getString(Constants.RESERVED_FIELD_ENTITY_ID);
+                                    if(wrappedEntityJSON != null && entityId != null){
+                                        pubSubService.updated(appId, entityType, entityId);
+                                        return created(wrappedEntityJSON);
+                                    } else {
+                                        return badRequest();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     return badRequest();
                 }

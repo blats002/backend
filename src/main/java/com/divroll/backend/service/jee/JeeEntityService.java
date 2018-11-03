@@ -54,6 +54,7 @@ import org.mozilla.javascript.ast.Block;
 import org.mozilla.javascript.ast.FunctionNode;
 import scala.actors.threadpool.Arrays;
 
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -97,7 +98,17 @@ public class JeeEntityService implements EntityService {
     public JSONObject createEntity(Application application, String entityType, Map<String, Comparable> comparableMap,
                                    String aclRead, String aclWrite, Boolean publicRead, Boolean publicWrite, List<Action> actions,
                                    List<EntityAction> entityActions) throws Exception {
+        return createEntity(application, entityType, comparableMap, aclRead, aclWrite,
+                publicRead, publicWrite,
+                actions, entityActions, null,null);
+    }
 
+    @Override
+    public JSONObject createEntity(Application application, String entityType, Map<String, Comparable> comparableMap,
+                                   String aclRead, String aclWrite,
+                                   Boolean publicRead, Boolean publicWrite,
+                                   List<Action> actions, List<EntityAction> entityActions,
+                                   String blobName, InputStream blobStream) throws Exception {
         JSONObject result = new JSONObject();
 
         String[] read = new String[]{};
@@ -244,6 +255,8 @@ public class JeeEntityService implements EntityService {
                                     .write(write)
                                     .publicRead(publicRead)
                                     .publicWrite(publicWrite)
+                                    .blobName(blobName)
+                                    .blob(blobStream)
                                     .build(), actions, entityActions,null);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);

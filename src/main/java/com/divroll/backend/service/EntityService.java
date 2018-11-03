@@ -27,6 +27,7 @@ import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.LinkAction;
 import org.json.JSONObject;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,12 @@ public interface EntityService {
                             Map<String, Comparable> comparableMap,
                             String aclRead, String aclWrite,
                             Boolean publicRead, Boolean publicWrite, List<Action> actions, List<EntityAction> entityActions) throws Exception;
+
+    JSONObject createEntity(Application application, String entityType,
+                            Map<String, Comparable> comparableMap,
+                            String aclRead, String aclWrite,
+                            Boolean publicRead, Boolean publicWrite,
+                            List<Action> actions, List<EntityAction> entityActions, String blobName, InputStream blobStream) throws Exception;
 
     boolean beforeSave(Application application,
                        Map<String, Comparable> entity, String appId, String entityType);
