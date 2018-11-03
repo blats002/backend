@@ -121,7 +121,7 @@ public class JeeBlobServerResource extends BaseServerResource
                 String entityJson = getQueryValue("entity");
                 try {
                     JSONObject jsonObject = new JSONObject(entityJson);
-                    Map<String, Comparable> comparableMap = JSON.jsonToMap(jsonObject.getJSONObject("entity"));
+                    Map<String, Comparable> comparableMap = JSON.jsonToMap(jsonObject);
 
                     List<EntityAction> entityActions = new LinkedList<>();
                     if(linkName != null && linkFrom != null) {
