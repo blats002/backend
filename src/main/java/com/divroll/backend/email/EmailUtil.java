@@ -23,15 +23,21 @@ package com.divroll.backend.email;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.wildbit.java.postmark.Postmark;
+import com.wildbit.java.postmark.client.ApiClient;
+import com.wildbit.java.postmark.client.data.model.message.Message;
+import com.wildbit.java.postmark.client.data.model.message.MessageResponse;
+import com.wildbit.java.postmark.client.exception.PostmarkException;
 
-import javax.mail.Message;
+//import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.util.Date;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -52,6 +58,8 @@ public class EmailUtil {
      */
     public static void sendEmail(Session session, String toEmail, String fromEmail, String fromName, String subject, String body)
             throws MessagingException, UnsupportedEncodingException {
+       System.out.println("*** Sending email via SMTP ***");
+
         MimeMessage msg = new MimeMessage(session);
         //set message headers
         msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
@@ -63,10 +71,21 @@ public class EmailUtil {
         msg.setSubject(subject, "UTF-8");
         msg.setText(body, "UTF-8");
         msg.setSentDate(new Date());
-        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
+        msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
         LOG.info("Message is ready");
 
         Transport.send(msg);
         LOG.info("EMail Sent Successfully");
+//        System.out.println("*** Sending email via Postmark ***");
+//        ApiClient client = Postmark.getApiClient("");
+//        Message message = new Message("***REMOVED***", "***REMOVED***", "Hello from Postmark!", "Hello message body");
+//        try {
+//            MessageResponse response = client.deliverMessage(message);
+//        } catch (PostmarkException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
     }
 }

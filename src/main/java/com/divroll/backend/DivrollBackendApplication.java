@@ -26,7 +26,6 @@ import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.quartz.Scheduler;
@@ -35,14 +34,11 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.engine.Engine;
-import org.restlet.engine.application.CorsFilter;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.routing.Router;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -72,27 +68,6 @@ public class DivrollBackendApplication extends Application {
         configureJobScheduler();
 
         Router router = new Router(getContext());
-
-        CorsFilter corsFilter = new CorsFilter(getContext());
-        corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
-        corsFilter.setAllowedHeaders(Sets.newHashSet(
-                Constants.HEADER_MASTER_KEY,
-                Constants.HEADER_MASTER_KEY.toLowerCase(),
-                Constants.HEADER_API_KEY,
-                Constants.HEADER_API_KEY.toLowerCase(),
-                Constants.HEADER_APP_ID,
-                Constants.HEADER_APP_ID.toLowerCase(),
-                Constants.HEADER_AUTH_TOKEN,
-                Constants.HEADER_AUTH_TOKEN.toLowerCase(),
-                Constants.HEADER_ACCEPT,
-                Constants.HEADER_ACCEPT.toLowerCase(),
-                Constants.HEADER_ACL_READ,
-                Constants.HEADER_ACL_READ.toLowerCase(),
-                Constants.HEADER_ACL_WRITE,
-                Constants.HEADER_ACL_WRITE.toLowerCase(),
-                Constants.HEADER_CONTENT_TYPE,
-                Constants.HEADER_CONTENT_TYPE.toLowerCase()));
-        corsFilter.setAllowedCredentials(true);
 
         router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
         router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
@@ -129,11 +104,9 @@ public class DivrollBackendApplication extends Application {
 
         attachSwaggerSpecification2(router);
 
-        corsFilter.setNext(router);
-
-        return corsFilter;
-
+        return router;
     }
+
 
     private void configureConverters() {
         List<ConverterHelper> converters = Engine.getInstance()
