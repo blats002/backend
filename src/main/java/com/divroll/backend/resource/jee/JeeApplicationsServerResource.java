@@ -150,7 +150,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
                     if(beforeSave(ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName)) {
                         String userId = userRepository.createUser(appId, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(),
                                 null, null, null, false, false,
-                                new String[]{roleId}, actions);
+                                new String[]{roleId}, actions, null, null, null);
                         if(userId != null) {
                             afterSave(ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName);
                         }

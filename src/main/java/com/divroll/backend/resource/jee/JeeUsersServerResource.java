@@ -23,11 +23,10 @@ package com.divroll.backend.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
 import com.divroll.backend.Constants;
-import com.divroll.backend.helper.ACLHelper;
-import com.divroll.backend.helper.ComparableMapBuilder;
-import com.divroll.backend.helper.DTOHelper;
-import com.divroll.backend.helper.ObjectLogger;
+import com.divroll.backend.helper.*;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.builder.EntityClass;
+import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UsersResource;
 import com.divroll.backend.service.PubSubService;
@@ -37,12 +36,14 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -192,6 +193,26 @@ public class JeeUsersServerResource extends BaseServerResource
 
             User userEntity = userRepository.getUserByUsername(appId, storeName, username);
 
+            String entityJson = getQueryValue("entity");
+            LOG.with("entity", entityJson);
+            String otherEntityType = getQueryValue("entityType");
+            Map<String, Comparable> linkedEntityComparableMap = null;
+            EntityClass otherEntityClass = null;
+            if(entityJson != null) {
+                JSONObject jsonObject = new JSONObject(entityJson);
+                linkedEntityComparableMap = JSON.jsonToMap(jsonObject);
+                otherEntityClass = new EntityClassBuilder()
+                        .write(null)
+                        .read(null)
+                        .blob(null)
+                        .blobName(null)
+                        .comparableMap(linkedEntityComparableMap)
+                        .publicRead(false)
+                        .publicWrite(false)
+                        .entityType(otherEntityType)
+                        .build();
+            }
+
             if (userEntity != null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_USERNAME_EXISTS);
                 return null;
@@ -204,7 +225,8 @@ public class JeeUsersServerResource extends BaseServerResource
                     if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
                         entityId = userRepository.createUser(appId, storeName, username, hashPassword,
                                 null,
-                                read, write, publicRead, publicWrite, roleArray, actions);
+                                read, write, publicRead, publicWrite, roleArray, actions,
+                                otherEntityClass, linkName, backlinkName);
                         if(entityId != null) {
                             afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType);
                         }

@@ -26,6 +26,7 @@ import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.model.User;
 import com.divroll.backend.model.action.Action;
+import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -71,7 +72,8 @@ public class JeeUserRepository extends JeeBaseRespository
     @Override
     public String createUser(String instance, final String storeName, final String username, final String password,
                              final Map<String,Comparable> comparableMap,
-                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles, List<Action> actions) {
+                             final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles, List<Action> actions,
+                             EntityClass linkedEntity, String linkName, String backlinkName) {
         final String[] entityId = {null};
 
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -160,6 +162,51 @@ public class JeeUserRepository extends JeeBaseRespository
 
                     entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
                     entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
+                    if(linkedEntity != null && linkName != null) {
+                        Entity otherEntity = txn.newEntity(linkedEntity.entityType());
+//                        linkedEntity.comparableMap().forEach((key,value)->{
+//
+//                        });
+
+                        Iterator<String> it = linkedEntity.comparableMap().keySet().iterator();
+                        while (it.hasNext()) {
+                            String key = it.next();
+                            Comparable value = linkedEntity.comparableMap().get(key);
+                            if (value == null) {
+                                if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
+                                        && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
+                                        && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                                        && !key.equals(Constants.RESERVED_FIELD_ACL_READ)) {
+                                    otherEntity.deleteProperty(key);
+                                }
+                            } else {
+                                if (!key.equals(Constants.RESERVED_FIELD_PUBLICREAD)
+                                        && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
+                                        && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                                        && !key.equals(Constants.RESERVED_FIELD_ACL_READ)
+                                        && !key.equals(Constants.RESERVED_FIELD_BLOBNAMES)
+                                        && !key.equals(Constants.RESERVED_FIELD_LINKS)) {
+//                                if(value instanceof EmbeddedEntityIterable) {
+//                                    LOG.info(value.toString());
+//                                }
+                                    otherEntity.setProperty(key, value);
+                                }
+                            }
+                        }
+
+                        otherEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, entity);
+                        otherEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, entity);
+
+                        otherEntity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                        otherEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
+                        entity.setLink(linkName, otherEntity);
+                        if(backlinkName != null) {
+                            otherEntity.setLink(backlinkName, entity);
+                        }
+
+                    }
 
                     entityId[0] = entity.getId().toString();
                 }
