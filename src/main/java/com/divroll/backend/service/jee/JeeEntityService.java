@@ -262,8 +262,12 @@ public class JeeEntityService implements EntityService {
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                    pubSubService.created(application.getAppId(), entityType, entityId);
                     afterSave(application, comparableMap, application.getAppId(), entityType);
+                    try {
+                        pubSubService.created(application.getAppId(), entityType, entityId);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     return result;
                 } else {
                     throw new IllegalArgumentException();
