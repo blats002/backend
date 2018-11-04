@@ -54,31 +54,33 @@ public class AppEmailService {
     }
 
     public void send(String subject, String to, String htmlBody) {
+        System.out.println("*** Sending email ***");
         if(emailConfig != null) {
-            JobDetail job = newJob(RetryJobWrapper.class)
-                    .storeDurably()
-                    .requestRecovery(true)
-                    .withIdentity(UUID.randomUUID().toString(), "emailJobs")
-                    .withDescription("An important job that fails with an exception and is retried.")
-                    .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, EmailJob.class.getName())
-                    // Set defaults - can be overridden in trigger definition in schedule file
-                    .usingJobData(RetryJobWrapper.MAX_RETRIES_KEY, "5")
-                    .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
-                    .usingJobData("smtpHost", emailConfig.getEmailHost())
-                    .usingJobData("tlsPort", emailConfig.getEmailPort())
-                    .usingJobData("fromEmail", emailConfig.getEmailAddress())
-                    .usingJobData("password", emailConfig.getPassword())
-                    .usingJobData("toEmail", to)
-                    .usingJobData("subject", subject)
-                    .usingJobData("htmlBody", htmlBody)
-                    .build();
-
-            Trigger trigger = newTrigger()
-                    .withIdentity(UUID.randomUUID().toString(), "emailJobs")
-                    .startNow()
-                    .withSchedule(simpleSchedule())
-                    .build();
             try {
+                JobDetail job = newJob(RetryJobWrapper.class)
+                        .storeDurably()
+                        .requestRecovery(true)
+                        .withIdentity(UUID.randomUUID().toString(), "emailJobs")
+                        .withDescription("An important job that fails with an exception and is retried.")
+                        .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, EmailJob.class.getName())
+                        // Set defaults - can be overridden in trigger definition in schedule file
+                        .usingJobData(RetryJobWrapper.MAX_RETRIES_KEY, "5")
+                        .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
+                        .usingJobData("smtpHost", emailConfig.getEmailHost())
+                        .usingJobData("tlsPort", emailConfig.getEmailPort())
+                        .usingJobData("fromEmail", emailConfig.getEmailAddress())
+                        .usingJobData("password", emailConfig.getPassword())
+                        .usingJobData("toEmail", to)
+                        .usingJobData("subject", subject)
+                        .usingJobData("htmlBody", htmlBody)
+                        .build();
+
+                Trigger trigger = newTrigger()
+                        .withIdentity(UUID.randomUUID().toString(), "emailJobs")
+                        .startNow()
+                        .withSchedule(simpleSchedule())
+                        .build();
+
                 Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
                 scheduler.scheduleJob(job, trigger);
             } catch (SchedulerException e) {
