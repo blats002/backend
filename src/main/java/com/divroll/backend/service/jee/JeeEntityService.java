@@ -211,7 +211,8 @@ public class JeeEntityService implements EntityService {
                         e.printStackTrace();
                     }
                     String entityId = userRepository.createUser(application.getAppId(), entityType, username, password,
-                            comparableMap, read, write, publicRead, publicWrite, Iterables.toArray(roleList, String.class), actions);
+                            comparableMap, read, write, publicRead, publicWrite, Iterables.toArray(roleList, String.class), actions,
+                            null, null, null);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);

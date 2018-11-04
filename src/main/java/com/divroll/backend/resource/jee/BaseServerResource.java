@@ -98,6 +98,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String propertyName;
 
     protected String linkName;
+    protected String backlinkName;
     protected String targetEntityId;
     protected String linkFrom;
     protected String linkTo;
@@ -152,6 +153,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
         if(linkName == null) {
             linkName = getQueryValue("linkName");
         }
+
+        backlinkName = getQueryValue("backlinkName");
 
         linkFrom = getQueryValue("linkFrom");
         linkTo = getQueryValue("linkTo");
