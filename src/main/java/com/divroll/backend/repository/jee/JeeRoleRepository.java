@@ -365,13 +365,14 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityIterable result = null;
+                    EntityIterable result;
                     if(namespace != null && !namespace.isEmpty()) {
                         result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
                     } else {
                         result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
                     }
                     if (isMasterKey) {
+                        result = txn.getAll(storeName);
                         result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);

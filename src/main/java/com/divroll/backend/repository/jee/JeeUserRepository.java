@@ -567,6 +567,7 @@ public class JeeUserRepository extends JeeBaseRespository
                         result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
                     }
                     if (isMastekey) {
+                        result = txn.getAll(storeName);
                         result = result.minus(txn.findWithProp(storeName, namespaceProperty));
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
