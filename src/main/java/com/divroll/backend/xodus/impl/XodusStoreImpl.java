@@ -62,6 +62,9 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     @Named("defaultRoleStore")
     String roleStoreName;
 
+    @Inject
+    @Named("namespaceProperty")
+    String namespaceProperty;
 
     /*
     @Override
@@ -133,7 +136,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     */
 
     @Override
-    public EntityId putIfNotExists(String dir, String kind, Map<String, Comparable> properties, String uniqueProperty) {
+    public EntityId putIfNotExists(String dir, String namespace, String kind, Map<String, Comparable> properties, String uniqueProperty) {
         if (dir == null || kind == null) {
             return null;
         }
@@ -144,7 +147,16 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     Comparable uniqueValue = properties.get(uniqueProperty);
-                    EntityIterable result = txn.find(kind, uniqueProperty, uniqueValue);
+                    EntityIterable result;
+
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(kind, namespaceProperty).union(txn.find(kind, namespaceProperty, namespace));
+                        result = result.intersect(txn.find(kind, uniqueProperty, uniqueValue));
+                    } else {
+                        result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
+                        result = result.intersect(txn.find(kind, uniqueProperty, uniqueValue));
+                    }
+
                     if(result.isEmpty()) {
                         final Entity entity = txn.newEntity(kind);
                         Iterator<String> it = properties.keySet().iterator();
@@ -164,7 +176,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public EntityId put(String dir, final String kind, final Map<String, Comparable> properties) {
+    public EntityId put(String dir, String namespace, final String kind, final Map<String, Comparable> properties) {
         if (dir == null || kind == null) {
             return null;
         }
@@ -175,6 +187,11 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     final Entity entity = txn.newEntity(kind);
+
+                    if(namespace != null && !namespace.isEmpty()) {
+                        entity.setProperty(namespaceProperty, namespace);
+                    }
+
                     Iterator<String> it = properties.keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
@@ -191,7 +208,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public <T> EntityId put(String dir, final String kind, final String id,
+    public <T> EntityId put(String dir, String namespace, final String kind, final String id,
                             final Map<String, Comparable> properties) {
         final EntityId[] result = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
@@ -201,6 +218,9 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId entityId = txn.toEntityId(id);
                     Entity entity = txn.getEntity(entityId);
+                    if(namespace != null && !namespace.isEmpty()) {
+                        entity.setProperty(namespaceProperty, namespace);
+                    }
                     Iterator<String> it = properties.keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
@@ -217,7 +237,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public byte[] getBlob(final String dir, final String kind, final String blobKey) {
+    public byte[] getBlob(final String dir, String namespace, final String kind, final String blobKey) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         final List<Comparable<InputStream>> results = new LinkedList<Comparable<InputStream>>();
         try {
@@ -243,7 +263,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public EntityId update(final String dir, final String kind, final String id,
+    public EntityId update(final String dir, String namespace, final String kind, final String id,
                            final Map<String, Comparable> properties) {
         final EntityId[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
@@ -268,7 +288,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public Map<String, Comparable> get(String dir, final String id) {
+    public Map<String, Comparable> get(String dir, String namespace, final String id) {
         final Map<String, Comparable>[] result = new Map[]{null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
@@ -291,7 +311,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public Map<String, Comparable> get(String dir, EntityId id) {
+    public Map<String, Comparable> get(String dir, String namespace, EntityId id) {
         final Map<String, Comparable>[] result = new Map[]{null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
@@ -313,12 +333,12 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public <T> T get(String dir, String kind, String id, String key) {
+    public <T> T get(String dir, String namespace, String kind, String id, String key) {
         return null;
     }
 
     @Override
-    public void delete(String dir, final String id) {
+    public void delete(String dir, String namespace, final String id) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -333,7 +353,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public void delete(String dir, final String... ids) {
+    public void delete(String dir, String namespace, final String... ids) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -350,7 +370,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public void delete(String dir, String kind, String propertyName, Comparable propertyValue) {
+    public void delete(String dir, String namespace, String kind, String propertyName, Comparable propertyValue) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
@@ -369,7 +389,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
 
 
     @Override
-    public <T> EntityId getFirstEntityId(String dir, final String kind, final String propertyKey, final Comparable<T> propertyVal,
+    public <T> EntityId getFirstEntityId(String dir, String namespace, final String kind, final String propertyKey, final Comparable<T> propertyVal,
                                          Class<T> clazz) {
         final EntityId[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
@@ -377,7 +397,13 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
+                    EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(kind, namespaceProperty).union(txn.find(kind, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
+                    }
+                    Entity entity = result.intersect(txn.find(kind, propertyKey, propertyVal)).getFirst();
                     if (entity != null) {
                         entityId[0] = entity.getId();
                     }
@@ -390,14 +416,19 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public List<Map<String, Comparable>> list(String dir, final String entityType, int skip, int limit) {
+    public List<Map<String, Comparable>> list(String dir, String namespace, final String entityType, int skip, int limit) {
         List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityIterable result = txn.getAll(entityType);
+                    EntityIterable result;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+                    }
                     result = result.skip(skip).take(limit);
                     for(Entity entity : result) {
                         Map<String, Comparable> map = new LinkedHashMap<>();
@@ -416,14 +447,19 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public List<Map<String, Comparable>> list(String dir, String entityType, List<TransactionFilter> filters, int skip, int limit) {
+    public List<Map<String, Comparable>> list(String dir, String namespace, String entityType, List<TransactionFilter> filters, int skip, int limit) {
         List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityIterable result = txn.getAll(entityType);
+                    EntityIterable result;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+                    }
                     if(filters != null && !filters.isEmpty()){
                         result = filter(entityType, result, filters, txn);
                     }
@@ -445,7 +481,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public List<EntityPropertyType> listPropertyTypes(String dir, String entityType) {
+    public List<EntityPropertyType> listPropertyTypes(String dir, String namespace, String entityType) {
         List<EntityPropertyType> propertyTypes = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
@@ -453,6 +489,11 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = txn.getAll(entityType);
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+                    }
                     if(result != null && result.iterator().hasNext()) {
                         Entity entity = result.getFirst();
                         if(entity != null) {
@@ -489,7 +530,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
     }
 
     @Override
-    public List<String> listEntityTypes(String dir) {
+    public List<String> listEntityTypes(String dir, String namespace) {
         List<String> list = new LinkedList<String>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {

@@ -50,7 +50,7 @@ public class JeeEntityTypeServerResource extends BaseServerResource
                  setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                  return;
              }
-             entityRepository.deleteEntityType(appId, entityType);
+             entityRepository.deleteEntityType(appId, namespace, entityType);
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);

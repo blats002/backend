@@ -30,17 +30,17 @@ import com.divroll.backend.model.exception.ACLException;
  */
 public interface KeyValueService {
 
-    public <T> boolean putIfNotExists(String instance, final String storeName, final String key, final Comparable value,
+    public <T> boolean putIfNotExists(String instance, String namespace, final String storeName, final String key, final Comparable value,
                                       String[] read, String[] write, Class<T> clazz);
 
-    public <T> T get(String instance, final String storeName, final String key, final String uuid, Class<T> clazz)
+    public <T> T get(String instance, String namespace, final String storeName, final String key, final String uuid, Class<T> clazz)
             throws ACLException;
 
-    public <T> boolean put(String instance, final String storeName, final String key, final Comparable value, String uuid,
+    public <T> boolean put(String instance, String namespace, final String storeName, final String key, final Comparable value, String uuid,
                            String[] read, String[] write,
                            Class<T> clazz)
             throws ACLException;
 
-    public boolean delete(String instance, final String storeName, final String key, final String uuid)
+    public boolean delete(String instance, String namespace, final String storeName, final String key, final String uuid)
             throws ACLException;
 }

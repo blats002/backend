@@ -52,7 +52,7 @@ public class JeePubSubService implements PubSubService {
     String pubSubBase;
 
     @Override
-    public void created(String appId, String entityType, String entityId) {
+    public void created(String appId, String namespace, String entityType, String entityId) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
         CloseableHttpAsyncClient httpClient;
@@ -72,12 +72,12 @@ public class JeePubSubService implements PubSubService {
     }
 
     @Override
-    public void updated(String appId, String entityType, String entityId) {
+    public void updated(String appId, String namespace, String entityType, String entityId) {
         entityUpdated(appId, entityType, entityId);
     }
 
     @Override
-    public void deleted(String appId, String entityType, String entityId) {
+    public void deleted(String appId, String namespace, String entityType, String entityId) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
         CloseableHttpAsyncClient httpClient;
@@ -96,7 +96,7 @@ public class JeePubSubService implements PubSubService {
     }
 
     @Override
-    public void deletedAll(String appId, String entityType) {
+    public void deletedAll(String appId, String namespace, String entityType) {
         CloseableHttpAsyncClient httpClient;
         try {
             httpClient = HttpAsyncClients.createDefault();
@@ -113,12 +113,12 @@ public class JeePubSubService implements PubSubService {
     }
 
     @Override
-    public void linked(String appId, String entityType, String linkName, String entityId, String targetEntityId) {
+    public void linked(String appId, String namespace, String entityType, String linkName, String entityId, String targetEntityId) {
         entityUpdated(appId, entityType, entityId);
     }
 
     @Override
-    public void unlinked(String appId, String entityType, String linkName, String entityId, String targetEntityId) {
+    public void unlinked(String appId, String namespace, String entityType, String linkName, String entityId, String targetEntityId) {
         entityUpdated(appId, entityType, entityId);
     }
 

@@ -78,7 +78,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                     if(item.isFormField()) {
                     } else {
                         CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-                        File file = fileStore.put(appId, name, countingInputStream);
+                        File file = fileStore.put(appId, namespace, name, countingInputStream);
                         long count = countingInputStream.getCount();
                         LOG.with(file).info("File size=" + count);
                         setStatus(Status.SUCCESS_CREATED);
@@ -103,7 +103,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return;
             }
-            boolean deleted = fileStore.delete(appId, fileName);
+            boolean deleted = fileStore.delete(appId, namespace, fileName);
             if(deleted) {
                 setStatus(Status.SUCCESS_OK);
             } else {
@@ -122,7 +122,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
                 return null;
             }
             String appId = getAttribute("appId");
-            InputStream is = fileStore.getStream(appId, fileName);
+            InputStream is = fileStore.getStream(appId, namespace, fileName);
             Representation representation = new InputRepresentation(is);
             representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
             //representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));

@@ -11,6 +11,6 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface SchemaService {
-    List<EntityType> listSchemas(String appId);
-    List<EntityPropertyType> listPropertyTypes(String appId, String entityType);
+    List<EntityType> listSchemas(String appId, String namespace);
+    List<EntityPropertyType> listPropertyTypes(String appId, String entityType, String namespace);
 }

@@ -69,7 +69,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     }
 
     private byte[] getJar(String appId, String functionName) {
-        byte[] jarBytes = functionRepository.retrieveFunctionEntity(appId, functionName);
+        byte[] jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
         return  jarBytes;
     }
 

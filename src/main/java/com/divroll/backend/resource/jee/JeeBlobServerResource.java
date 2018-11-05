@@ -126,14 +126,14 @@ public class JeeBlobServerResource extends BaseServerResource
                     List<EntityAction> entityActions = new LinkedList<>();
                     if(linkName != null && linkFrom != null) {
                         boolean isAuth = true;
-                        if( authUserId == null || ( !entityRepository.getACLWriteList(appId, linkFrom).contains(authUserId)
+                        if( authUserId == null || ( !entityRepository.getACLWriteList(appId, namespace, linkFrom).contains(authUserId)
                                 && !isMaster() ) ) {
                             isAuth = false;
                         }
                         if(linkFrom.equals(authUserId)) {
                             isAuth = true;
                         }
-                        if(entityRepository.isPublicWrite(appId, linkFrom)) {
+                        if(entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
                             isAuth = true;
                         }
                         if(!isAuth) {
@@ -144,7 +144,7 @@ public class JeeBlobServerResource extends BaseServerResource
                                 .entityId(linkFrom)
                                 .build());
                     } else if(authUserId != null && linkName != null && linkTo != null) {
-                        if( authUserId == null || !entityRepository.getACLWriteList(appId, linkTo).contains(authUserId)
+                        if( authUserId == null || !entityRepository.getACLWriteList(appId, namespace, linkTo).contains(authUserId)
                                 && !isMaster()) {
                             return unauthorized();
                         }
@@ -158,12 +158,12 @@ public class JeeBlobServerResource extends BaseServerResource
                         String base64 = entity.getText();
                         byte[] bytes = BaseEncoding.base64().decode(base64);
                         InputStream inputStream = ByteSource.wrap(bytes).openStream();
-                        JSONObject entityJSONObject = entityService.createEntity(getApp(), entityType, comparableMap,
+                        JSONObject entityJSONObject = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
                                 aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
                                 blobName, inputStream);
                         String entityId = entityJSONObject.getString(Constants.RESERVED_FIELD_ENTITY_ID);
                         if(entityJSONObject != null && entityId != null){
-                            pubSubService.updated(appId, entityType, entityId);
+                            pubSubService.updated(appId, namespace, entityType, entityId);
                             setStatus(Status.SUCCESS_CREATED);
                             return created(entityJSONObject);
                         } else {
@@ -183,13 +183,13 @@ public class JeeBlobServerResource extends BaseServerResource
                                 if(item.isFormField()) {
                                 } else {
                                     CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-                                    JSONObject wrappedEntityJSON = entityService.createEntity(getApp(), entityType, comparableMap,
+                                    JSONObject wrappedEntityJSON = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
                                             aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
                                             blobName, countingInputStream);
                                     JSONObject entityJSON = wrappedEntityJSON.getJSONObject("entity");
                                     String entityId = entityJSON.getString(Constants.RESERVED_FIELD_ENTITY_ID);
                                     if(wrappedEntityJSON != null && entityId != null){
-                                        pubSubService.updated(appId, entityType, entityId);
+                                        pubSubService.updated(appId, namespace, entityType, entityId);
                                         return created(wrappedEntityJSON);
                                     } else {
                                         return badRequest();
@@ -202,7 +202,7 @@ public class JeeBlobServerResource extends BaseServerResource
                     return badRequest();
                 }
             } else if (entityId != null) {
-                Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
                 List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                         ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
@@ -215,7 +215,7 @@ public class JeeBlobServerResource extends BaseServerResource
                 } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                     isWriteAccess = true;
                 } else if (authUserId != null) {
-                    List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                    List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                     for (Role role : roles) {
                         if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                             isWriteAccess = true;
@@ -229,8 +229,8 @@ public class JeeBlobServerResource extends BaseServerResource
                         String base64 = entity.getText();
                         byte[] bytes = BaseEncoding.base64().decode(base64);
                         InputStream inputStream = ByteSource.wrap(bytes).openStream();
-                        if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, inputStream)) {
-                            pubSubService.updated(appId, entityType, entityId);
+                        if (entityRepository.createEntityBlob(appId, namespace, entityType, entityId, blobName, inputStream)) {
+                            pubSubService.updated(appId, namespace, entityType, entityId);
                             setStatus(Status.SUCCESS_CREATED);
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -249,8 +249,8 @@ public class JeeBlobServerResource extends BaseServerResource
                                 if(item.isFormField()) {
                                 } else {
                                     CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-                                    if (entityRepository.createEntityBlob(appId, entityType, entityId, blobName, countingInputStream)) {
-                                        pubSubService.updated(appId, entityType, entityId);
+                                    if (entityRepository.createEntityBlob(appId, namespace, entityType, entityId, blobName, countingInputStream)) {
+                                        pubSubService.updated(appId, namespace, entityType, entityId);
                                         setStatus(Status.SUCCESS_CREATED);
                                     } else {
                                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -301,7 +301,7 @@ public class JeeBlobServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
             List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                     ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
@@ -314,7 +314,7 @@ public class JeeBlobServerResource extends BaseServerResource
             } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
             } else if (authUserId != null) {
-                List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                 for (Role role : roles) {
                     if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                         isWriteAccess = true;
@@ -323,8 +323,8 @@ public class JeeBlobServerResource extends BaseServerResource
             }
 
             if (isMaster || isWriteAccess || isPublic) {
-                if (entityRepository.deleteEntityBlob(appId, entityType, entityId, blobName)) {
-                    pubSubService.updated(appId, entityType, entityId);
+                if (entityRepository.deleteEntityBlob(appId, namespace, entityType, entityId, blobName)) {
+                    pubSubService.updated(appId, namespace, entityType, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -364,7 +364,7 @@ public class JeeBlobServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
             List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                     ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
@@ -377,7 +377,7 @@ public class JeeBlobServerResource extends BaseServerResource
             } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
             } else if (authUserId != null) {
-                List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                 for (Role role : roles) {
                     if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                         isWriteAccess = true;
@@ -388,7 +388,7 @@ public class JeeBlobServerResource extends BaseServerResource
             String encoding = getQueryValue("encoding");
 
             if (isMaster || isWriteAccess || isPublic) {
-                InputStream is = entityRepository.getEntityBlob(appId, entityType, entityId, blobName);
+                InputStream is = entityRepository.getEntityBlob(appId, namespace, entityType, entityId, blobName);
 
                 if(encoding != null && encoding.equals("base64")) {
                     if (is == null) {

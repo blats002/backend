@@ -40,38 +40,38 @@ public interface XodusStore {
 //    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Long propertyValue);
 //    public void putIfNotExists(String dir, final String entityType, final String propertyKey, final Boolean propertyValue);
 //    public EntityId putIfNotExists(String dir, final String entityType, final String propertyKey, final InputStream is);
-    public EntityId putIfNotExists(String dir, final String kind, Map<String, Comparable> properties, String uniqueProperty);
+    public EntityId putIfNotExists(String dir, String namespace, final String kind, Map<String, Comparable> properties, String uniqueProperty);
 
-    public EntityId put(String dir, final String kind, Map<String, Comparable> properties);
+    public EntityId put(String dir, String namespace, final String kind, Map<String, Comparable> properties);
 
-    public <T> EntityId put(String dir, String kind, String id, Map<String, Comparable> comparableMap);
+    public <T> EntityId put(String dir, String namespace, String kind, String id, Map<String, Comparable> comparableMap);
 
-    public Map<String, Comparable> get(String dir, String id);
+    public Map<String, Comparable> get(String dir, String namespace, String id);
 
-    public Map<String, Comparable> get(String dir, EntityId id);
+    public Map<String, Comparable> get(String dir, String namespace, EntityId id);
 
 
-    public <T> T get(String dir, String kind, String id, String key);
+    public <T> T get(String dir, String namespace, String kind, String id, String key);
 
-    public byte[] getBlob(String dir, final String kind, final String blobKey);
+    public byte[] getBlob(String dir, String namespace, final String kind, final String blobKey);
 
-    public EntityId update(String dir, final String kind, String id, Map<String, Comparable> properties);
+    public EntityId update(String dir, String namespace, final String kind, String id, Map<String, Comparable> properties);
 
-    public void delete(String dir, final String id);
+    public void delete(String dir, String namespace, final String id);
 
-    public void delete(String dir, final String... id);
+    public void delete(String dir, String namespace, final String... id);
 
-    public void delete(String dir, String kind, String propertyName, Comparable propertyValue);
+    public void delete(String dir, String namespace, String kind, String propertyName, Comparable propertyValue);
 
-    public <T> EntityId getFirstEntityId(String dir, final String kind, final String propertyKey,
+    public <T> EntityId getFirstEntityId(String dir, String namespace, final String kind, final String propertyKey,
                                          Comparable<T> propertyVal, Class<T> clazz);
 
-    List<Map<String, Comparable>> list(String dir, final String entityType, int skip, int limit);
+    List<Map<String, Comparable>> list(String dir, String namespace, final String entityType, int skip, int limit);
 
-    List<Map<String, Comparable>> list(String dir, final String entityType, List<TransactionFilter> filters, int skip, int limit);
+    List<Map<String, Comparable>> list(String dir, String namespace, final String entityType, List<TransactionFilter> filters, int skip, int limit);
 
-    public List<EntityPropertyType>  listPropertyTypes(final String dir, final String entityType);
+    public List<EntityPropertyType>  listPropertyTypes(final String dir, String namespace, final String entityType);
 
-    List<String> listEntityTypes(String dir);
+    List<String> listEntityTypes(String dir, String namespace);
 
 }
