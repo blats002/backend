@@ -96,7 +96,7 @@ public class JeeRolesServerReource extends BaseServerResource
             } catch (Exception e) {
                 // do nothing
             }
-            List<Role> results = roleRepository.listRoles(appId, storeName, authUserId,
+            List<Role> results = roleRepository.listRoles(appId, namespace, storeName, authUserId,
                     skipValue, limitValue, sort, false, filters);
             Roles roles = new Roles();
             roles.setResults(results);
@@ -105,7 +105,7 @@ public class JeeRolesServerReource extends BaseServerResource
             setStatus(Status.SUCCESS_OK);
             return roles;
         } else {
-            List<Role> results = roleRepository.listRoles(appId, storeName, null,
+            List<Role> results = roleRepository.listRoles(appId, namespace, storeName, null,
                     skipValue, limitValue, sort, true, filters);
             Roles roles = new Roles();
             roles.setResults(results);
@@ -189,7 +189,7 @@ public class JeeRolesServerReource extends BaseServerResource
             String roleId = null;
             validateIds(read, write);
             if(beforeSave(ComparableMapBuilder.newBuilder().put("name", roleName).build(), appId, entityType)) {
-                roleId = roleRepository.createRole(appId, storeName, roleName, read, write, publicRead, publicWrite, actions);
+                roleId = roleRepository.createRole(appId, namespace, storeName, roleName, read, write, publicRead, publicWrite, actions);
                 if(roleId != null) {
                     afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", roleName).build(), appId, entityType);
                 }
@@ -198,7 +198,7 @@ public class JeeRolesServerReource extends BaseServerResource
                 return null;
             }
             if (roleId != null) {
-                pubSubService.created(appId, storeName, entityId);
+                pubSubService.created(appId, namespace, storeName, entityId);
                 setStatus(Status.SUCCESS_CREATED);
                 Role role = new Role();
                 role.setName(roleName);

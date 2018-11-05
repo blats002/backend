@@ -55,7 +55,7 @@ public class JeePropertyServerResource extends BaseServerResource
             return;
         }
         if(isMaster()) {
-            boolean isDeleted = entityRepository.deleteProperty(appId, entityType, propertyName);
+            boolean isDeleted = entityRepository.deleteProperty(appId, namespace, entityType, propertyName);
             if(isDeleted) {
                 setStatus(Status.SUCCESS_OK);
             } else {

@@ -90,7 +90,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
             List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                     ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
 
@@ -103,7 +103,7 @@ public class JeeLinkServerResource extends BaseServerResource
             } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                 isWriteAccess = true;
             } else if (authUserId != null) {
-                List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                 for (Role role : roles) {
                     if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                         isWriteAccess = true;
@@ -112,9 +112,9 @@ public class JeeLinkServerResource extends BaseServerResource
             }
 
             if (isMaster || isWriteAccess || isPublic) {
-                if(entityRepository.linkEntity(appId, entityType, linkName,
+                if(entityRepository.linkEntity(appId, namespace, entityType, linkName,
                         entityId, targetEntityId)) {
-                    pubSubService.linked(appId, entityType, linkName, entityId, targetEntityId);
+                    pubSubService.linked(appId, namespace, entityType, linkName, entityId, targetEntityId);
                     setStatus(Status.SUCCESS_CREATED);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -154,7 +154,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
 
             if(map == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -171,7 +171,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                     isWriteAccess = true;
                 } else if (authUserId != null) {
-                    List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                    List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                     for (Role role : roles) {
                         if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                             isWriteAccess = true;
@@ -180,9 +180,9 @@ public class JeeLinkServerResource extends BaseServerResource
                 }
 
                 if (isMaster || isWriteAccess || isPublic) {
-                    if(entityRepository.unlinkEntity(appId, entityType, linkName,
+                    if(entityRepository.unlinkEntity(appId, namespace, entityType, linkName,
                             entityId, targetEntityId)) {
-                        pubSubService.unlinked(appId, entityType, linkName, entityId, targetEntityId);
+                        pubSubService.unlinked(appId, namespace, entityType, linkName, entityId, targetEntityId);
                         setStatus(Status.SUCCESS_OK);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -227,7 +227,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 // do nothing
             }
 
-            Map<String, Comparable> map = entityRepository.getEntity(appId, entityType, entityId);
+            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
 
             if(map != null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -245,7 +245,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                     isWriteAccess = true;
                 } else if (authUserId != null) {
-                    List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                    List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                     for (Role role : roles) {
                         if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                             isWriteAccess = true;
@@ -254,7 +254,7 @@ public class JeeLinkServerResource extends BaseServerResource
                 }
 
                 if (isMaster || isWriteAccess || isPublic) {
-                    if(entityRepository.isLinked(appId, entityType, linkName,
+                    if(entityRepository.isLinked(appId, namespace, entityType, linkName,
                             entityId, targetEntityId)) {
                         setStatus(Status.SUCCESS_OK);
                     } else {

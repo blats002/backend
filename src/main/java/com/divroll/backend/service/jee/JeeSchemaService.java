@@ -46,21 +46,21 @@ public class JeeSchemaService implements SchemaService {
     XodusStore store;
 
     @Override
-    public List<EntityType> listSchemas(String appId) {
+    public List<EntityType> listSchemas(String appId, String namespace) {
         List<EntityType> entityTypeList = new LinkedList<>();
-        store.listEntityTypes(appId).forEach(s -> {
+        store.listEntityTypes(appId, namespace).forEach(s -> {
             EntityType entityType = new EntityType();
             entityType.setEntityType(s);
-            entityType.setPropertyTypes(store.listPropertyTypes(appId, s));
+            entityType.setPropertyTypes(store.listPropertyTypes(appId, namespace, s));
             entityTypeList.add(entityType);
         });
         return entityTypeList;
     }
 
     @Override
-    public List<EntityPropertyType> listPropertyTypes(String appId, String entityType) {
+    public List<EntityPropertyType> listPropertyTypes(String appId, String namespace, String entityType) {
         List<EntityPropertyType> propertyTypes = new LinkedList<>();
-        listSchemas(appId).forEach(schema -> {
+        listSchemas(appId, namespace).forEach(schema -> {
             if(schema.getEntityType().equalsIgnoreCase(entityType)) {
                 propertyTypes.addAll(schema.getPropertyTypes());
             }

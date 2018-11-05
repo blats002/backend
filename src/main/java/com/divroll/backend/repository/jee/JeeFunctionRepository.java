@@ -58,17 +58,17 @@ public class JeeFunctionRepository implements FunctionRepository {
     EntityRepository entityRepository;
 
     @Override
-    public String createFunction(String appId, String functionName, String jar) {
+    public String createFunction(String appId, String namespace, String functionName, String jar) {
         Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         comparableMap.put("appId", appId);
         comparableMap.put("functionName", functionName);
         comparableMap.put("jar", jar);
-        EntityId entityId = store.putIfNotExists(masterStore, Constants.ENTITYSTORE_FUNCTION, comparableMap, "functionName");
+        EntityId entityId = store.putIfNotExists(masterStore,  namespace, Constants.ENTITYSTORE_FUNCTION, comparableMap, "functionName");
         return entityId.toString();
     }
 
     @Override
-    public boolean deleteFunction(String appId, String functionName) {
+    public boolean deleteFunction(String appId, String namespace, String functionName) {
         try {
             store.delete(masterStore, Constants.ENTITYSTORE_FUNCTION, "functionName", functionName);
             return true;
@@ -78,18 +78,18 @@ public class JeeFunctionRepository implements FunctionRepository {
     }
 
     @Override
-    public byte[] retrieveFunction(String appId, String functionName) {
-        EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_FUNCTION, "functionName", functionName, String.class);
-        Map<String, Comparable> comparableMap = store.get(masterStore, entityId);
+    public byte[] retrieveFunction(String appId, String namespace, String functionName) {
+        EntityId entityId = store.getFirstEntityId(masterStore,  namespace, Constants.ENTITYSTORE_FUNCTION, "functionName", functionName, String.class);
+        Map<String, Comparable> comparableMap = store.get(masterStore,  namespace, entityId);
         String jar = (String) comparableMap.get("jar");
         return Base64.base64ToByteArray(jar);
     }
 
     @Override
-    public byte[] retrieveFunctionEntity(String appId, String functionName) {
+    public byte[] retrieveFunctionEntity(String appId, String namespace, String functionName) {
         byte[] jarBytes = null;
         System.out.println("appId = " + appId);
-        InputStream is = entityRepository.getFirstEntityBlob(appId, Constants.ENTITYSTORE_FUNCTION,
+        InputStream is = entityRepository.getFirstEntityBlob(appId, namespace, Constants.ENTITYSTORE_FUNCTION,
                 "functionName", functionName, String.class, "jar");
         try {
             jarBytes = ByteStreams.toByteArray(is);

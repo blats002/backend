@@ -59,10 +59,14 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     String xodusRoot;
 
     @Inject
+    @Named("namespaceProperty")
+    String namespaceProperty;
+
+    @Inject
     XodusManager manager;
 
     @Override
-    public String createRole(final String instance, final String storeName, final String roleName,
+    public String createRole(final String instance, String namespace, final String storeName, final String roleName,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, List<Action> actions) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -71,8 +75,12 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     final Entity entity = txn.newEntity(storeName);
-                    entity.setProperty(Constants.ROLE_NAME, roleName);
 
+                    if(namespace != null && !namespace.isEmpty()) {
+                        entity.setProperty(namespaceProperty, namespace);
+                    }
+
+                    entity.setProperty(Constants.ROLE_NAME, roleName);
                     entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
                     entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
@@ -154,7 +162,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean updateRole(String instance, final String storeName, final String roleId, final String newRoleName,
+    public boolean updateRole(String instance, String namespace, final String storeName, final String roleId, final String newRoleName,
                               final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -205,13 +213,13 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean updateRole(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap, String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
+    public boolean updateRole(String instance, String namespace, String storeName, String entityId, Map<String, Comparable> comparableMap, String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
         String roleName = (String) comparableMap.get("name");
-        return updateRole(instance, storeName, entityId, roleName, read, write, publicRead, publicWrite);
+        return updateRole(instance, namespace, storeName, entityId, roleName, read, write, publicRead, publicWrite);
     }
 
     @Override
-    public Role getRole(String instance, String storeName, final String roleId) {
+    public Role getRole(String instance, String namespace, String storeName, final String roleId) {
         final Role[] entity = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -262,7 +270,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean deleteRole(String instance, String storeName, final String roleID) {
+    public boolean deleteRole(String instance, String namespace, String storeName, final String roleID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -282,7 +290,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean linkRole(String instance, String storeName, final String roleID, final String userID) {
+    public boolean linkRole(String instance, String namespace, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -305,7 +313,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean unlinkRole(String instance, String storeName, final String roleID, final String userID) {
+    public boolean unlinkRole(String instance, String namespace, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -328,7 +336,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean isLinked(String instance, String storeName, final String roleID, final String userID) {
+    public boolean isLinked(String instance, String namespace, String storeName, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -350,7 +358,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public List<Role> listRoles(String instance, String storeName, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
+    public List<Role> listRoles(String instance, String namespace, String storeName, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -358,8 +366,13 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                    }
                     if (isMasterKey) {
-                        result = txn.getAll(storeName).skip(skip).take(limit);
+                        result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
                         }
@@ -429,7 +442,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public List<Role> getRolesOfEntity(String instance, final String entityId) {
+    public List<Role> getRolesOfEntity(String instance, String namespace, final String entityId) {
         final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {

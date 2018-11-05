@@ -103,7 +103,7 @@ public class JeeEntityServerResource extends BaseServerResource
             }
 
             if (isMaster()) {
-                Map<String, Comparable> entityObj = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> entityObj = entityRepository.getEntity(appId, namespace, entityType, entityId);
                 if (entityObj != null) {
                     setStatus(Status.SUCCESS_OK);
                     JSONObject jsonObject = new JSONObject();
@@ -126,7 +126,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 Boolean publicRead = false;
                 Boolean isAccess = false;
 
-                Map<String, Comparable> entityObj = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> entityObj = entityRepository.getEntity(appId, namespace, entityType, entityId);
                 if (entityObj != null) {
                     ObjectLogger.log(entityObj);
                     List<EntityStub> aclReadList = (List<EntityStub>) (entityObj.get("aclRead"));
@@ -134,7 +134,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     if (authUserId != null && ACLHelper.contains(authUserId, aclReadList)) {
                         isAccess = true;
                     } else if(authUserId != null){
-                        List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                        List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                         for (Role role : roles) {
                             if (ACLHelper.contains(role.getEntityId(), aclReadList)) {
                                 isAccess = true;
@@ -239,11 +239,11 @@ public class JeeEntityServerResource extends BaseServerResource
 
                 if (isMaster) {
                     if (!comparableMap.isEmpty()) {
-                        entityService.validateSchema(appId, entityType, comparableMap);
+                        entityService.validateSchema(appId, namespace, entityType, comparableMap);
                         boolean success = false;
                         if(entityType.equalsIgnoreCase(defaultRoleStore)) {
                             if (beforeSave(comparableMap, appId, entityType)) {
-                                success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                success = roleRepository.updateRole(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 afterSave(comparableMap, appId, entityType);
                             }
                         } else if(entityType.equalsIgnoreCase(defaultUserStore)) {
@@ -257,7 +257,7 @@ public class JeeEntityServerResource extends BaseServerResource
                                 }
                             });
                             if(beforeSave(comparableMap, appId, entityType)) {
-                                success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                success = userRepository.updateUser(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                 if(success) {
                                     afterSave(comparableMap, appId, entityType);
                                 }
@@ -266,7 +266,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
                         } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
                             if(beforeSave(comparableMap, appId, entityType)) {
-                                success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write,
+                                success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write,
                                         publicRead, publicWrite, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
                                 if(success) {
                                     afterSave(comparableMap, appId, entityType);
@@ -276,7 +276,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
                         } else {
                             if(beforeSave(comparableMap, appId, entityType)) {
-                                success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write,
+                                success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write,
                                         publicRead, publicWrite, null);
                                 if(success) {
                                     afterSave(comparableMap, appId, entityType);
@@ -286,7 +286,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
                         }
                         if (success) {
-                            pubSubService.updated(appId, entityType, entityId);
+                            pubSubService.updated(appId, namespace, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -296,7 +296,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
                 } else {
                     if (!isMaster) {
-                        Map<String, Comparable> entityMap = entityRepository.getEntity(appId, entityType, entityId);
+                        Map<String, Comparable> entityMap = entityRepository.getEntity(appId, namespace, entityType, entityId);
                         String authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
                         if (entityMap == null) {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -315,7 +315,7 @@ public class JeeEntityServerResource extends BaseServerResource
                             if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                                 authUserIdWriteAllow = true;
                             } else if (authUserId != null) {
-                                List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                                 for (Role role : roles) {
                                     if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                                         authUserIdWriteAllow = true;
@@ -324,17 +324,17 @@ public class JeeEntityServerResource extends BaseServerResource
                             }
 
                             if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
-                                entityService.validateSchema(appId, entityType, comparableMap);
+                                entityService.validateSchema(appId, namespace, entityType, comparableMap);
                                 boolean success = false;
                                 if(entityType.equalsIgnoreCase(defaultUserStore)) {
                                     if (beforeSave(comparableMap, appId, entityType)) {
-                                        success = userRepository.updateUser(appId, entityId, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        success = userRepository.updateUser(appId, namespace, entityId, entityId, comparableMap, read, write, publicRead, publicWrite);
                                         afterSave(comparableMap, appId, entityType);
                                     }
                                     afterSave(comparableMap, appId, entityType);
                                 }else if(entityType.equalsIgnoreCase(defaultRoleStore)) {
                                     if (beforeSave(comparableMap, appId, entityType)) {
-                                        success = roleRepository.updateRole(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        success = roleRepository.updateRole(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                         afterSave(comparableMap, appId, entityType);
                                     }
                                 } else if(entityType.equalsIgnoreCase(defaultUserStore)) {
@@ -348,7 +348,7 @@ public class JeeEntityServerResource extends BaseServerResource
                                         }
                                     });
                                     if(beforeSave(comparableMap, appId, entityType)) {
-                                        success = userRepository.updateUser(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
+                                        success = userRepository.updateUser(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite);
                                         if(success) {
                                             afterSave(comparableMap, appId, entityType);
                                         }
@@ -357,7 +357,7 @@ public class JeeEntityServerResource extends BaseServerResource
                                     }
                                 } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
                                     if(beforeSave(comparableMap, appId, entityType)) {
-                                        success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write,
+                                        success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write,
                                                 publicRead, publicWrite, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
                                         if(success) {
                                             afterSave(comparableMap, appId, entityType);
@@ -367,7 +367,7 @@ public class JeeEntityServerResource extends BaseServerResource
                                     }
                                 } else {
                                     if(beforeSave(comparableMap, appId, entityType)) {
-                                        success = entityRepository.updateEntity(appId, entityType, entityId, comparableMap, read, write, publicRead, publicWrite, null);
+                                        success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite, null);
                                         if(success) {
                                             afterSave(comparableMap, appId, entityType);
                                         }
@@ -376,7 +376,7 @@ public class JeeEntityServerResource extends BaseServerResource
                                     }
                                 }
                                 if (success) {
-                                    pubSubService.updated(appId, entityType, entityId);
+                                    pubSubService.updated(appId, namespace, entityType, entityId);
                                     setStatus(Status.SUCCESS_OK);
                                 } else {
                                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -417,7 +417,7 @@ public class JeeEntityServerResource extends BaseServerResource
                 return;
             }
             if (!isMaster()) {
-                Map<String, Comparable> entityMap = entityRepository.getEntity(appId, entityType, entityId);
+                Map<String, Comparable> entityMap = entityRepository.getEntity(appId, namespace, entityType, entityId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (entityMap == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -440,7 +440,7 @@ public class JeeEntityServerResource extends BaseServerResource
                     if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
                         isAccess = true;
                     } else if (authUserId != null) {
-                        List<Role> roles = roleRepository.getRolesOfEntity(appId, authUserId);
+                        List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                         for (Role role : roles) {
                             if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
                                 isAccess = true;
@@ -453,9 +453,9 @@ public class JeeEntityServerResource extends BaseServerResource
                     }
 
                     if (publicWrite || authUserIdWriteAllow || isAccess) {
-                        Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
+                        Boolean success = entityRepository.deleteEntity(appId, namespace, entityType, entityId);
                         if (success) {
-                            pubSubService.deleted(appId, entityType, entityId);
+                            pubSubService.deleted(appId, namespace, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -466,9 +466,9 @@ public class JeeEntityServerResource extends BaseServerResource
                 }
             } else {
                 // Master key bypasses all checks
-                Boolean success = entityRepository.deleteEntity(appId, entityType, entityId);
+                Boolean success = entityRepository.deleteEntity(appId, namespace, entityType, entityId);
                 if (success) {
-                    pubSubService.deleted(appId, entityType, entityId);
+                    pubSubService.deleted(appId, namespace, entityType, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

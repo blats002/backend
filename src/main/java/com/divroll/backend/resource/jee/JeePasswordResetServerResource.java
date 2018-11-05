@@ -93,7 +93,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
             Application application = applicationService.read(appId);
             if(application != null) {
                 String username = webTokenService.readUserIdFromToken(application.getMasterKey(), usernameWebToken);
-                User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+                User userEntity = userRepository.getUserByUsername(appId, namespace, storeName, username);
                 String newPassword = webTokenService.readUserIdFromToken(userEntity.getPassword(), passwordWebToken);
 
                 //LOG.info("username->" + username);
@@ -109,7 +109,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
                     String newHashPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
                     //LOG.info("newHashPassword->" + newHashPassword);
                     if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
-                        Boolean success = userRepository.updateUserPassword(appId, storeName, userEntity.getEntityId(), newHashPassword);
+                        Boolean success = userRepository.updateUserPassword(appId, namespace, storeName, userEntity.getEntityId(), newHashPassword);
                         if(success) {
                             afterSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType);
                             setStatus(Status.SUCCESS_OK);
@@ -147,7 +147,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
             }
             if (validate(entity.getUsername(), entity.getNewPassword())) {
                 if(entity.getPassword() != null && !entity.getPassword().isEmpty()) {
-                    User userEntity = userRepository.getUserByUsername(appId, storeName, entity.getUsername());
+                    User userEntity = userRepository.getUserByUsername(appId, namespace, storeName, entity.getUsername());
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                     } else {
@@ -156,7 +156,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
                         if(BCrypt.checkpw(entity.getPassword(), currentPassword)) {
                             Boolean success = false;
                             if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
-                                success = userRepository.updateUserPassword(appId, storeName, userEntity.getEntityId(), newHashPassword);
+                                success = userRepository.updateUserPassword(appId, namespace, storeName, userEntity.getEntityId(), newHashPassword);
                             } else {
                                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                             }
@@ -173,7 +173,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
                         }
                     }
                 } else {
-                    User userEntity = userRepository.getUserByUsername(appId, storeName, entity.getUsername());
+                    User userEntity = userRepository.getUserByUsername(appId, namespace, storeName, entity.getUsername());
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                     } else {

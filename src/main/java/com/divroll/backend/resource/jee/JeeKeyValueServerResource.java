@@ -92,7 +92,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
             if (dir != null) {
                 if (accept != null) {
                     if (accept.equals(MediaType.APPLICATION_OCTET_STREAM) || accept.equals("application/octet-stream")) {
-                        ByteBuffer value = keyValueService.get(appId, entityType, entityId, authUUID, ByteBuffer.class);
+                        ByteBuffer value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, ByteBuffer.class);
                         if (value != null) {
                             byte[] arr = new byte[value.remaining()];
                             value.get(arr);
@@ -102,7 +102,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
                             return representation;
                         }
                     } else if (accept.equals(MediaType.APPLICATION_JSON)) {
-                        String value = keyValueService.get(appId, entityType, entityId, authUUID, String.class);
+                        String value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
                         if (value != null) {
                             Representation representation = new JsonRepresentation(value);
                             setStatus(Status.SUCCESS_OK);
@@ -112,7 +112,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
                         }
                     } else {
                         // default
-                        String value = keyValueService.get(appId, entityType, entityId, authUUID, String.class);
+                        String value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
                         if (value != null) {
                             Representation representation = new StringRepresentation(value);
                             setStatus(Status.SUCCESS_OK);
@@ -123,8 +123,8 @@ public class JeeKeyValueServerResource extends BaseServerResource
                     }
                 } else {
                     // treat as String
-                    String value = keyValueService.get(appId, entityType, entityId, authUUID, String.class);
-                    boolean success = keyValueService.delete(appId, entityType, entityId, authUUID);
+                    String value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
+                    boolean success = keyValueService.delete(appId, namespace, entityType, entityId, authUUID);
                     if (success) {
                         Representation representation = new StringRepresentation(value);
                         setStatus(Status.SUCCESS_OK);
@@ -185,7 +185,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
             if (dir != null) {
                 if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM) || contentType.equals("application/octet-stream")) {
                     byte[] value = ByteStreams.toByteArray(entity.getStream());
-                    boolean success = keyValueService.putIfNotExists(appId, entityType, entityId, ByteBuffer.wrap(value),
+                    boolean success = keyValueService.putIfNotExists(appId, namespace, entityType, entityId, ByteBuffer.wrap(value),
                             read, write, ByteBuffer.class);
                     if (success) {
                         setStatus(Status.SUCCESS_CREATED);
@@ -194,7 +194,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
                     }
                 } else {
                     String value = entity.getText();
-                    boolean success = keyValueService.putIfNotExists(appId, entityType, entityId, value,
+                    boolean success = keyValueService.putIfNotExists(appId, namespace, entityType, entityId, value,
                             read, write, String.class);
                     if (success) {
                         setStatus(Status.SUCCESS_CREATED);
@@ -269,7 +269,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
             if (dir != null) {
                 if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM) || contentType.equals("application/octet-stream")) {
                     byte[] value = ByteStreams.toByteArray(entity.getStream());
-                    boolean success = keyValueService.put(appId, entityType, entityId, ByteBuffer.wrap(value), authUUID,
+                    boolean success = keyValueService.put(appId, namespace, entityType, entityId, ByteBuffer.wrap(value), authUUID,
                             read, write, ByteBuffer.class);
                     if (success) {
                         setStatus(Status.SUCCESS_NO_CONTENT);
@@ -282,7 +282,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
                     String value = entity.getText();
                     try {
                         // Try to put the value, if it throws then this is a unauthorized request
-                        boolean success = keyValueService.put(appId, entityType, entityId, value, authUUID,
+                        boolean success = keyValueService.put(appId, namespace, entityType, entityId, value, authUUID,
                                 read, write, String.class);
                         if (success) {
                             setStatus(Status.SUCCESS_NO_CONTENT);
@@ -338,7 +338,7 @@ public class JeeKeyValueServerResource extends BaseServerResource
             if (dir != null) {
                 try {
                     // Try to put the value, if it throws then this is a unauthorized request
-                    boolean success = keyValueService.delete(appId, entityType, entityId, authUUID);
+                    boolean success = keyValueService.delete(appId, namespace, entityType, entityId, authUUID);
                     if (success) {
                         setStatus(Status.SUCCESS_OK);
                     } else {
