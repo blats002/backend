@@ -23,6 +23,7 @@ package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.Comparables;
+import com.divroll.backend.helper.EntityIterables;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.BacklinkAction;
@@ -68,10 +69,14 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     String defaultUserStore;
 
     @Inject
+    @Named("namespaceProperty")
+    String namespaceProperty;
+
+    @Inject
     XodusManager manager;
 
     @Override
-    public String createEntity(final String instance, final String storeName, EntityClass entityClass,
+    public String createEntity(final String instance, String namespace, final String storeName, EntityClass entityClass,
                                List<Action> actions, List<EntityAction> entityActions, List<String> uniqueProperties) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -97,6 +102,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
 
                     final Entity entity = txn.newEntity(storeName);
+
+                    if(namespace != null && !namespace.isEmpty()) {
+                        entity.setProperty(namespaceProperty, namespace);
+                    }
 
                     Iterator<String> it = entityClass.comparableMap().keySet().iterator();
                     while (it.hasNext()) {
@@ -248,7 +257,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean updateEntity(String instance, String storeName, final String entityId, final Map<String, Comparable> comparableMap,
+    public boolean updateEntity(String instance, String namespace, String storeName, final String entityId, final Map<String, Comparable> comparableMap,
                                 final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
                                 List<String> uniqueProperties) {
         final boolean[] success = {false};
@@ -325,14 +334,22 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public <T> Map<String, Comparable> getFirstEntity(String dir, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz) {
+    public <T> Map<String, Comparable> getFirstEntity(String dir, String namespace, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz) {
         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
+
+                    EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(kind, namespaceProperty).union(txn.find(kind, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
+                    }
+
+                    Entity entity = result.intersect(txn.find(kind, propertyKey, propertyVal)).getFirst();
                     for (String property : entity.getPropertyNames()) {
                         Comparable value = entity.getProperty(property);
                         if(value != null) {
@@ -395,7 +412,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public <T> InputStream getFirstEntityBlob(String appId, String kind, String propertyKey, Comparable<T> propertyVal, Class<T> clazz, String blobKey) {
+    public <T> InputStream getFirstEntityBlob(String appId, String namespace, String kind,
+                                              String propertyKey, Comparable<T> propertyVal, Class<T> clazz, String blobKey) {
         System.out.println("appId = " + appId);
         final InputStream[] inputStream = new InputStream[1];
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appId);
@@ -403,7 +421,13 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    Entity entity = txn.find(kind, propertyKey, propertyVal).getFirst();
+                    EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(kind, namespaceProperty).union(txn.find(kind, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
+                    }
+                    Entity entity = result.intersect(txn.find(kind, propertyKey, propertyVal)).getFirst();
                     if(entity != null) {
                         inputStream[0] = entity.getBlob(blobKey);
                     }
@@ -416,7 +440,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Map<String, Comparable> getEntity(String instance, final String storeName, final String entityId) {
+    public Map<String, Comparable> getEntity(String instance, String namespace, final String storeName, final String entityId) {
         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -489,7 +513,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<String> getACLReadList(String instance, String entityId) {
+    public List<String> getACLReadList(String instance, String namespace, String entityId) {
         final List<String> aclList = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -511,7 +535,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
         return aclList;    }
 
     @Override
-    public List<String> getACLWriteList(String instance, String entityId) {
+    public List<String> getACLWriteList(String instance, String namespace, String entityId) {
         final List<String> aclList = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -534,7 +558,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean isPublicRead(String instance, String entityId) {
+    public boolean isPublicRead(String instance, String namespace, String entityId) {
         final boolean[] isPublicRead = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -554,7 +578,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean isPublicWrite(String instance, String entityId) {
+    public boolean isPublicWrite(String instance, String namespace, String entityId) {
         final boolean[] isPublicWrite = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -574,7 +598,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Comparable getEntityProperty(String instance, final String storeName, final String entityId,
+    public Comparable getEntityProperty(String instance, String namespace, final String storeName, final String entityId,
                                         final String propertyName) {
         final Comparable[] comparable = new Comparable[1];
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -594,7 +618,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public InputStream getEntityBlob(String instance, String storeName, final String entityId, final String blobKey) {
+    public InputStream getEntityBlob(String instance, String namespace, String storeName, final String entityId, final String blobKey) {
         final InputStream[] inputStream = new InputStream[1];
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -613,7 +637,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean createEntityBlob(String instance, String storeName, String entityId, String blobKey, InputStream is) {
+    public boolean createEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey, InputStream is) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -634,7 +658,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntityBlob(String instance, String storeName, String entityId, String blobKey) {
+    public boolean deleteEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -654,7 +678,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<String> getLinkNames(String instance, String storeName, String entityId) {
+    public List<String> getLinkNames(String instance, String namespace, String storeName, String entityId) {
         final List<String>[] result = new List[]{new LinkedList<>()};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -673,7 +697,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<String> getBlobKeys(String instance, String storeName, String entityId) {
+    public List<String> getBlobKeys(String instance, String namespace, String storeName, String entityId) {
         final List<String>[] result = new List[]{new LinkedList<>()};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -692,7 +716,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteProperty(String instance, String storeName, String propertyName) {
+    public boolean deleteProperty(String instance, String namespace, String storeName, String propertyName) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -716,14 +740,21 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Comparable>> getEntities(String instance, String storeName, String propertyName, Comparable propertyValue, int skip, int limit) {
+    public List<Map<String, Comparable>> getEntities(String instance, String namespace, String storeName, String propertyName, Comparable propertyValue, int skip, int limit) {
         final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityIterable result = txn.find(storeName, propertyName, propertyValue).skip(skip).take(limit);
+
+                    EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                    }
+                    result = result.intersect(txn.find(storeName, propertyName, propertyValue)).skip(skip).take(limit);
                     result = result.skip(skip).take(limit);
                     for (Entity entity : result) {
                         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
@@ -785,7 +816,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntity(String instance, String storeName, final String entityId) {
+    public boolean deleteEntity(String instance, String namespace, String storeName, final String entityId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -804,14 +835,19 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntities(String instance, final String storeName) {
+    public boolean deleteEntities(String instance, String namespace, final String storeName) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    EntityIterable result = txn.getAll(storeName);
+                    EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                    }
                     final boolean[] hasError = {false};
                     for(Entity entity : result) {
                         if(!entity.delete()) {
@@ -829,7 +865,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntityType(String instance, String entityType) {
+    public boolean deleteEntityType(String instance, String namespace, String entityType) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -843,7 +879,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean linkEntity(String instance, String storeName, final String linkName, final String sourceId, final String targetId) {
+    public boolean linkEntity(String instance, String namespace, String storeName, final String linkName, final String sourceId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -868,7 +904,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean unlinkEntity(String instance, String storeName, final String linkName, final String entityId, final String targetId) {
+    public boolean unlinkEntity(String instance, String namespace, String storeName, final String linkName,
+                                final String entityId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -893,7 +930,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean isLinked(String instance, String storeName, final String linkName, final String entityId, final String targetId) {
+    public boolean isLinked(String instance, String namespace, String storeName,
+                            final String linkName, final String entityId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -915,7 +953,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Map<String, Comparable> getFirstLinkedEntity(String instance, String storeName, final String entityId, final String linkName) {
+    public Map<String, Comparable> getFirstLinkedEntity(String instance, String namespace, String storeName,
+                                                        final String entityId, final String linkName) {
         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -974,7 +1013,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Comparable>> getLinkedEntities(String instance, String storeName,
+    public List<Map<String, Comparable>> getLinkedEntities(String instance, String namespace, String storeName,
                                                        final String entityId, final String linkName) {
         final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1048,7 +1087,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Comparable>> listEntities(String instance, String storeName, String userIdRoleId,
+    public List<Map<String, Comparable>> listEntities(String instance, String namespace, String storeName, String userIdRoleId,
                                                   int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1057,8 +1096,13 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                    }
                     if (isMasterKey) {
-                        result = txn.getAll(storeName).skip(skip).take(limit);
+                        result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
                         }

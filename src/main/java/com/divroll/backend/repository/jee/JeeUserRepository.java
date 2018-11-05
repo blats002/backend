@@ -67,10 +67,14 @@ public class JeeUserRepository extends JeeBaseRespository
     String xodusRoot;
 
     @Inject
+    @Named("namespaceProperty")
+    String namespaceProperty;
+
+    @Inject
     XodusManager manager;
 
     @Override
-    public String createUser(String instance, final String storeName, final String username, final String password,
+    public String createUser(String instance, String namespace, final String storeName, final String username, final String password,
                              final Map<String,Comparable> comparableMap,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, String[] roles, List<Action> actions,
                              EntityClass linkedEntity, String linkName, String backlinkName) {
@@ -86,6 +90,10 @@ public class JeeUserRepository extends JeeBaseRespository
 
                     entity.setProperty(Constants.RESERVED_FIELD_USERNAME, username);
                     entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, password);
+
+                    if(namespace != null && !namespace.isEmpty())  {
+                        entity.setProperty(namespaceProperty, namespace);
+                    }
 
                     if (read != null) {
                         List<String> aclRead = Arrays.asList(read);
@@ -133,6 +141,11 @@ public class JeeUserRepository extends JeeBaseRespository
                                 String backLinkName = action.backLinkName().get();
 
                                 final Entity linkedEntity = txn.newEntity(entityType);
+
+                                if(namespace != null && !namespace.isEmpty())  {
+                                    linkedEntity.setProperty(namespaceProperty, namespace);
+                                }
+
                                 entityMap.forEach((key,value) -> {
                                     linkedEntity.setProperty(key, value);
                                 });
@@ -168,7 +181,9 @@ public class JeeUserRepository extends JeeBaseRespository
 //                        linkedEntity.comparableMap().forEach((key,value)->{
 //
 //                        });
-
+                        if(namespace != null && !namespace.isEmpty())  {
+                            otherEntity.setProperty(namespaceProperty, namespace);
+                        }
                         Iterator<String> it = linkedEntity.comparableMap().keySet().iterator();
                         while (it.hasNext()) {
                             String key = it.next();
@@ -218,7 +233,7 @@ public class JeeUserRepository extends JeeBaseRespository
     }
 
     @Override
-    public boolean updateUser(String instance, String storeName, final String userId,
+    public boolean updateUser(String instance, String namespace, String storeName, final String userId,
                               final String newUsername, final String newPassword,
                               final Map<String,Comparable> comparableMap,
                               final String[] read, final String[] write,
@@ -230,6 +245,7 @@ public class JeeUserRepository extends JeeBaseRespository
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityId idOfEntity = txn.toEntityId(userId);
+
                     final Entity entity = txn.getEntity(idOfEntity);
                     if (newUsername != null) {
                         entity.setProperty(Constants.RESERVED_FIELD_USERNAME, newUsername);
@@ -293,7 +309,7 @@ public class JeeUserRepository extends JeeBaseRespository
     }
 
     @Override
-    public boolean updateUserPassword(String instance, String storeName, String entityId, String newPassword) {
+    public boolean updateUserPassword(String instance, String namespace, String storeName, String entityId, String newPassword) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -315,7 +331,7 @@ public class JeeUserRepository extends JeeBaseRespository
         return success[0];    }
 
     @Override
-    public boolean updateUser(String instance, String storeName, String entityId, Map<String, Comparable> comparableMap,
+    public boolean updateUser(String instance, String namespace, String storeName, String entityId, Map<String, Comparable> comparableMap,
                               String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -323,6 +339,7 @@ public class JeeUserRepository extends JeeBaseRespository
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
+
                     EntityId idOfEntity = txn.toEntityId(entityId);
 
                     final Entity entity = txn.getEntity(idOfEntity);
@@ -376,7 +393,7 @@ public class JeeUserRepository extends JeeBaseRespository
         return success[0];    }
 
     @Override
-    public User getUser(String instance, String storeName, final String userID) {
+    public User getUser(String instance, String namespace, String storeName, final String userID) {
         final User[] entity = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -466,14 +483,22 @@ public class JeeUserRepository extends JeeBaseRespository
     }
 
     @Override
-    public User getUserByUsername(String instance, final String storeName, final String username) {
+    public User getUserByUsername(String instance, String namespace, final String storeName, final String username) {
         final User[] entity = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    final Entity userEntity = txn.find(storeName, Constants.QUERY_USERNAME, username).getFirst();
+
+                    EntityIterable result;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                    }
+
+                    final Entity userEntity = result.intersect(txn.find(storeName, Constants.QUERY_USERNAME, username)).getFirst();
                     if (userEntity != null) {
                         User user = new User();
                         user.setUsername((String) userEntity.getProperty(Constants.RESERVED_FIELD_USERNAME));
@@ -508,7 +533,7 @@ public class JeeUserRepository extends JeeBaseRespository
     }
 
     @Override
-    public boolean deleteUser(String instance, String storeName, final String userID) {
+    public boolean deleteUser(String instance, String namespace, String storeName, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -527,7 +552,7 @@ public class JeeUserRepository extends JeeBaseRespository
     }
 
     @Override
-    public List<User> listUsers(String instance, String storeName, String userIdRoleId,
+    public List<User> listUsers(String instance, String namespace, String storeName, String userIdRoleId,
                                 int skip, int limit, final String sort, boolean isMastekey, List<TransactionFilter> filters) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         final List<User> users = new LinkedList<>();
@@ -536,8 +561,13 @@ public class JeeUserRepository extends JeeBaseRespository
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
+                    if(namespace != null && !namespace.isEmpty()) {
+                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                    } else {
+                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                    }
                     if (isMastekey) {
-                        result = txn.getAll(storeName);
+                        result = result.minus(txn.findWithProp(storeName, namespaceProperty));
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
                         }

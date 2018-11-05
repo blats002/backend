@@ -50,7 +50,7 @@ public class JeeKeyValueService implements KeyValueService {
     XodusEnvStore store;
 
     @Override
-    public <T> boolean putIfNotExists(String instance, String storeName, String key, Comparable value,
+    public <T> boolean putIfNotExists(String instance, String namespace, String storeName, String key, Comparable value,
                                       String[] read, String[] write,
                                       Class<T> clazz) {
         if (value == null) {
@@ -85,7 +85,7 @@ public class JeeKeyValueService implements KeyValueService {
     }
 
     @Override
-    public <T> T get(String instance, String storeName, String key, String uuid, Class<T> clazz)
+    public <T> T get(String instance, String namespace, String storeName, String key, String uuid, Class<T> clazz)
             throws ACLException {
         if (String.class.equals(clazz)) {
             ByteValue value = store.get(instance, storeName, key, ByteValue.class);
@@ -149,7 +149,7 @@ public class JeeKeyValueService implements KeyValueService {
     }
 
     @Override
-    public <T> boolean put(String instance, String storeName, String key, Comparable value, String uuid,
+    public <T> boolean put(String instance, String namespace, String storeName, String key, Comparable value, String uuid,
                            String[] read, String[] write, Class<T> clazz)
             throws ACLException {
 
@@ -158,7 +158,7 @@ public class JeeKeyValueService implements KeyValueService {
         }
 
         // This will throw the ACLException
-        ACL acl = get(instance, storeName, key, uuid, ACL.class);
+        ACL acl = get(instance, namespace, storeName, key, uuid, ACL.class);
 
         if (acl == null) {
             return false;
@@ -245,8 +245,8 @@ public class JeeKeyValueService implements KeyValueService {
     }
 
     @Override
-    public boolean delete(String instance, String storeName, String key, String uuid) throws ACLException {
-        if (get(instance, storeName, key, uuid, ACL.class) != null) {
+    public boolean delete(String instance, String namespace, String storeName, String key, String uuid) throws ACLException {
+        if (get(instance, namespace, storeName, key, uuid, ACL.class) != null) {
             return store.delete(instance, storeName, key);
         } else {
             throw new ACLException();

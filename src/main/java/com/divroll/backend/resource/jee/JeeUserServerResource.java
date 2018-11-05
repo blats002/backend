@@ -84,7 +84,7 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
             if (validateId(userId)) {
                 if (isMaster()) {
-                    User userEntity = userRepository.getUser(appId, storeName, userId);
+                    User userEntity = userRepository.getUser(appId, namespace, storeName, userId);
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                         return null;
@@ -99,7 +99,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                     }
                     Boolean isAccess = false;
 
-                    User userEntity = userRepository.getUser(appId, storeName, userId);
+                    User userEntity = userRepository.getUser(appId, namespace, storeName, userId);
 
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -133,7 +133,7 @@ public class JeeUserServerResource extends BaseServerResource implements
 
                 if (authToken != null) {
                     String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                    userEntity = userRepository.getUser(appId, storeName, authUserId);
+                    userEntity = userRepository.getUser(appId, namespace, storeName, authUserId);
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                         return null;
@@ -150,7 +150,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                     setStatus(Status.SUCCESS_OK);
                     return UserDTO.convert(user);
                 } else {
-                    userEntity = userRepository.getUserByUsername(appId, storeName, username);
+                    userEntity = userRepository.getUserByUsername(appId, namespace, storeName, username);
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                         return null;
@@ -267,7 +267,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 write = ACLHelper.onlyIds(aclWriteList);
             }
 
-            final User user = userRepository.getUser(appId, storeName, userId);
+            final User user = userRepository.getUser(appId, namespace, storeName, userId);
             if (user == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 return null;
@@ -283,7 +283,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                 validateIds(read, write);
                 Boolean success = false;
                 if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", newUsername).build(), appId, entityType)) {
-                    success = userRepository.updateUser(appId, storeName, userId,
+                    success = userRepository.updateUser(appId, namespace, storeName, userId,
                             newUsername, newHashPassword,
                             null,
                             read, write, publicRead, publicWrite, roleArray);
@@ -305,7 +305,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                     for (Object roleId : Arrays.asList(roleArray)) {
                         resultUser.getRoles().add(new Role((String) roleId));
                     }
-                    pubSubService.updated(appId, storeName, userId);
+                    pubSubService.updated(appId, namespace, storeName, userId);
                     setStatus(Status.SUCCESS_OK);
                     return UserDTO.convert((User) ObjectLogger.log(resultUser));
                 } else {
@@ -318,7 +318,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                     if (authUserId.equals(user.getEntityId())) {
                         isAccess = true;
                     } else {
-                        final User authUser = userRepository.getUser(appId, storeName, authUserId);
+                        final User authUser = userRepository.getUser(appId, namespace, storeName, authUserId);
                         for (Role role : authUser.getRoles()) {
                             String roleId = role.getEntityId();
                             if (ACLHelper.contains(roleId, user.getAclWrite())) {
@@ -333,7 +333,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                         String newHashPassword = BCrypt.hashpw(newPlainPassword, BCrypt.gensalt());
                         Boolean success = false;
                         if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", newUsername).build(), appId, entityType)) {
-                            success = userRepository.updateUser(appId, storeName, userId,
+                            success = userRepository.updateUser(appId, namespace, storeName, userId,
                                     newUsername, newHashPassword,
                                     null,
                                     read, write, publicRead, publicWrite, roleArray);
@@ -355,7 +355,7 @@ public class JeeUserServerResource extends BaseServerResource implements
                             for (Object roleId : Arrays.asList(roleArray)) {
                                 resultUser.getRoles().add(new Role((String) roleId));
                             }
-                            pubSubService.updated(appId, storeName, userId);
+                            pubSubService.updated(appId, namespace, storeName, userId);
                             setStatus(Status.SUCCESS_OK);
                             return UserDTO.convert((User) ObjectLogger.log(resultUser));
                         } else {
@@ -410,10 +410,10 @@ public class JeeUserServerResource extends BaseServerResource implements
             User userEntity = null;
 
             if (userId != null) {
-                userEntity = userRepository.getUser(appId, storeName, userId);
+                userEntity = userRepository.getUser(appId, namespace, storeName, userId);
             }
             if (username != null) {
-                userEntity = userRepository.getUserByUsername(appId, storeName, username);
+                userEntity = userRepository.getUserByUsername(appId, namespace, storeName, username);
             }
 
             String id = userEntity.getEntityId();
@@ -425,7 +425,7 @@ public class JeeUserServerResource extends BaseServerResource implements
             if (authUserId != null && ACLHelper.contains(authUserId, userEntity.getAclWrite())) {
                 isAccess = true;
             } else if (authUserId != null) {
-                final User authUser = userRepository.getUser(appId, storeName, authUserId);
+                final User authUser = userRepository.getUser(appId, namespace, storeName, authUserId);
                 for (Role role : authUser.getRoles()) {
                     String roleId = role.getEntityId();
                     if (ACLHelper.contains(roleId, userEntity.getAclWrite())) {
@@ -435,8 +435,8 @@ public class JeeUserServerResource extends BaseServerResource implements
             }
 
             if (isMaster || isAccess || publicWrite) {
-                if (userRepository.deleteUser(appId, storeName, id)) {
-                    pubSubService.deleted(appId, storeName, entityId);
+                if (userRepository.deleteUser(appId, namespace, storeName, id)) {
+                    pubSubService.deleted(appId, namespace, storeName, entityId);
                     setStatus(Status.SUCCESS_OK);
                 } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_CANNOT_DELETE_USER);

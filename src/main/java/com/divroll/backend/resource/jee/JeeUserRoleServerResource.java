@@ -81,17 +81,17 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
             Application app = applicationService.read(appId);
             if (app != null) {
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                Role role = roleRepository.getRole(appId, storeName, roleId);
-                User user = userRepository.getUser(appId, storeName, userId);
-                User authUser = userRepository.getUser(appId, storeName, authUserId);
+                Role role = roleRepository.getRole(appId,  namespace, storeName, roleId);
+                User user = userRepository.getUser(appId,  namespace, storeName, userId);
+                User authUser = userRepository.getUser(appId,  namespace, storeName, authUserId);
                 if (authUser == null || user == null || role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     return;
                 }
                 if (isUserAuthForRole(user, role)) {
-                    boolean success = roleRepository.linkRole(appId, storeName, role.getEntityId(), user.getEntityId());
+                    boolean success = roleRepository.linkRole(appId, namespace, storeName, role.getEntityId(), user.getEntityId());
                     if (success) {
-                        pubSubService.linked(appId, storeName, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
+                        pubSubService.linked(appId, namespace, storeName, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -125,17 +125,17 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
             Application app = applicationService.read(appId);
             if (app != null) {
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                Role role = roleRepository.getRole(appId, storeName, roleId);
-                User user = userRepository.getUser(appId, storeName, userId);
-                User authUser = userRepository.getUser(appId, storeName, authUserId);
+                Role role = roleRepository.getRole(appId, namespace, storeName, roleId);
+                User user = userRepository.getUser(appId, namespace, storeName, userId);
+                User authUser = userRepository.getUser(appId, namespace, storeName, authUserId);
                 if (authUser == null || user == null || role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                     return;
                 }
                 if (isUserAuthForRole(user, role)) {
-                    boolean success = roleRepository.unlinkRole(appId, storeName, role.getEntityId(), user.getEntityId());
+                    boolean success = roleRepository.unlinkRole(appId,  namespace, storeName, role.getEntityId(), user.getEntityId());
                     if (success) {
-                        pubSubService.unlinked(appId, storeName, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
+                        pubSubService.unlinked(appId,  namespace, storeName, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
                         setStatus(Status.SUCCESS_CREATED);
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -156,7 +156,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements
 
     private boolean isUserAuthForRole(User user, Role role) {
         try {
-            boolean isLinked = roleRepository.isLinked(appId, storeName, role.getEntityId(), user.getEntityId());
+            boolean isLinked = roleRepository.isLinked(appId,  namespace, storeName, role.getEntityId(), user.getEntityId());
             return isLinked;
         } catch (Exception e) {
 

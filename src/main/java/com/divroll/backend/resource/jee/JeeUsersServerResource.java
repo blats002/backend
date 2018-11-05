@@ -98,7 +98,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     // do nothing
                 }
                 List<User> processedResults = new LinkedList<>();
-                List<User> results = userRepository.listUsers(appId, storeName, authUserId,
+                List<User> results = userRepository.listUsers(appId,  namespace, storeName, authUserId,
                         skipValue, limitValue, sort, false, filters);
                 Users users = new Users();
                 users.setResults(DTOHelper.convert(results));
@@ -108,7 +108,7 @@ public class JeeUsersServerResource extends BaseServerResource
                 return users;
             } else {
                 List<User> results = userRepository
-                        .listUsers(appId, storeName, null, skipValue, limitValue, null, true, filters);
+                        .listUsers(appId,  namespace, storeName, null, skipValue, limitValue, null, true, filters);
                 Users users = new Users();
                 users.setResults(DTOHelper.convert(results));
                 users.setLimit(Long.valueOf(skipValue));
@@ -191,7 +191,7 @@ public class JeeUsersServerResource extends BaseServerResource
             List<RoleDTO> roles = entity.getRoles();
             String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
-            User userEntity = userRepository.getUserByUsername(appId, storeName, username);
+            User userEntity = userRepository.getUserByUsername(appId, namespace, storeName, username);
 
             String entityJson = getQueryValue("entity");
             LOG.with("entity", entityJson);
@@ -223,7 +223,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     validateIds(read, write);
                     String entityId = null;
                     if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
-                        entityId = userRepository.createUser(appId, storeName, username, hashPassword,
+                        entityId = userRepository.createUser(appId, namespace, storeName, username, hashPassword,
                                 null,
                                 read, write, publicRead, publicWrite, roleArray, actions,
                                 otherEntityClass, linkName, backlinkName);
@@ -246,7 +246,7 @@ public class JeeUsersServerResource extends BaseServerResource
                         for (Object roleId : Arrays.asList(roleArray)) {
                             user.getRoles().add(new Role((String) roleId));
                         }
-                        pubSubService.created(appId, storeName, entityId);
+                        pubSubService.created(appId,  namespace, storeName, entityId);
                         setStatus(Status.SUCCESS_CREATED);
                         return UserDTO.convert((User) ObjectLogger.log(user));
                     } else {

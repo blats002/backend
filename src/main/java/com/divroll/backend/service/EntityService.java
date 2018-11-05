@@ -37,22 +37,22 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface EntityService {
-    JSONObject createEntity(Application application, String entityType,
+    JSONObject createEntity(Application application, String namespace, String entityType,
                             Map<String, Comparable> comparableMap,
                             String aclRead, String aclWrite,
                             Boolean publicRead, Boolean publicWrite, List<Action> actions, List<EntityAction> entityActions) throws Exception;
 
-    JSONObject createEntity(Application application, String entityType,
+    JSONObject createEntity(Application application, String namespace, String entityType,
                             Map<String, Comparable> comparableMap,
                             String aclRead, String aclWrite,
                             Boolean publicRead, Boolean publicWrite,
                             List<Action> actions, List<EntityAction> entityActions, String blobName, InputStream blobStream) throws Exception;
 
-    boolean beforeSave(Application application,
+    boolean beforeSave(Application application, String namespace,
                        Map<String, Comparable> entity, String appId, String entityType);
 
-    boolean afterSave(Application application, Map<String, Comparable> entity,
+    boolean afterSave(Application application, String namespace, Map<String, Comparable> entity,
                       String appId, String entityType);
-    void validateSchema(String appId, String entityType, Map<String,Comparable> comparableMap)
+    void validateSchema(String appId, String namespace, String entityType, Map<String,Comparable> comparableMap)
             throws IllegalArgumentException;
 }

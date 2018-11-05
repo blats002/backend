@@ -79,6 +79,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String entityType;
     protected String blobName;
     protected String appId;
+    protected String namespace;
     protected String apiKey;
     protected String masterKey;
     protected String authToken;
@@ -166,6 +167,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         LOG.with(headers).info("Logging headers");
 
+        namespace = headers.getFirstValue("X-Divroll-Namespace") != null
+                ? headers.getFirstValue("X-Divroll-Namespace") : headers.getFirstValue("X-Divroll-Namespace".toLowerCase());
+
         appId = headers.getFirstValue(Constants.HEADER_APP_ID) != null
                 ? headers.getFirstValue(Constants.HEADER_APP_ID) : headers.getFirstValue(Constants.HEADER_APP_ID.toLowerCase());
         apiKey = headers.getFirstValue(Constants.HEADER_API_KEY) != null
@@ -187,6 +191,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         if(masterKey == null) {
             masterKey= getQueryValue(Constants.MASTER_KEY);
+        }
+
+        if(namespace == null) {
+            namespace = getQueryValue("namespace");
         }
 
         aclRead = headers.getFirstValue(Constants.HEADER_ACL_READ) != null
@@ -368,19 +376,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
     }
 
     public boolean beforeSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
-        return entityService.beforeSave(application, entity, appId, entityType);
+        return entityService.beforeSave(application, namespace, entity, appId, entityType);
     }
 
     public boolean afterSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
-        return entityService.afterSave(application, entity, appId, entityType);
+        return entityService.afterSave(application, namespace, entity, appId, entityType);
     }
 
     public boolean beforeSave(Map<String, Comparable> entity, String appId, String entityType) {
-        return entityService.beforeSave(getApp(), entity, appId, entityType);
+        return entityService.beforeSave(getApp(), namespace, entity, appId, entityType);
     }
 
     public boolean afterSave(Map<String, Comparable> entity, String appId, String entityType) {
-        return entityService.afterSave(getApp(), entity, appId, entityType);
+        return entityService.afterSave(getApp(), namespace, entity, appId, entityType);
     }
 
     protected Representation notFound() {

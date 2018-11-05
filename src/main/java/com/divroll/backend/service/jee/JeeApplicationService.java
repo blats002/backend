@@ -71,16 +71,16 @@ public class JeeApplicationService
         if(application.getAppName() != null) {
             comparableMap.put(Constants.APP_NAME, application.getAppName());
         }
-        EntityId entityId = store.put(masterStore, Constants.ENTITYSTORE_APPLICATION, comparableMap);
+        EntityId entityId = store.put(masterStore, null, Constants.ENTITYSTORE_APPLICATION, comparableMap);
         return entityId;
     }
 
     @Override
     public Application read(String applicationId) {
-        EntityId id = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION, Constants.APP_ID,
+        EntityId id = store.getFirstEntityId(masterStore, null, Constants.ENTITYSTORE_APPLICATION, Constants.APP_ID,
                 applicationId, String.class);
         if (id != null) {
-            Map<String, Comparable> entityMap = store.get(masterStore, id.toString());
+            Map<String, Comparable> entityMap = store.get(masterStore, null, id.toString());
             if (entityMap != null) {
                 Application application = new Application();
                 application.setAppId((String) entityMap.get(Constants.APP_ID));
@@ -119,9 +119,9 @@ public class JeeApplicationService
         if(application.getCloudCode() != null) {
             comparableMap.put("cloudCode", application.getCloudCode());
         }
-        EntityId entityId = store.getFirstEntityId(masterStore, Constants.ENTITYSTORE_APPLICATION,
+        EntityId entityId = store.getFirstEntityId(masterStore, null, Constants.ENTITYSTORE_APPLICATION,
                 Constants.MASTER_KEY, theMasterKey, String.class);
-        store.update(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
+        store.update(masterStore, null, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class JeeApplicationService
     @Override
     public List<Application> list(List<TransactionFilter> filters, int skip, int limit) {
         List<Application> apps = new LinkedList<>();
-        List<Map<String,Comparable>> list = store.list(masterStore, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit);
+        List<Map<String,Comparable>> list = store.list(masterStore, null, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit);
         for(Map entityMap : list) {
             if (entityMap != null) {
                 Application application = new Application();

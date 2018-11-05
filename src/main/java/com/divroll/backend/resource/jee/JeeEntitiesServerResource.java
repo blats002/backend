@@ -115,14 +115,14 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 List<EntityAction> entityActions = new LinkedList<>();
                 if(linkName != null && linkFrom != null) {
                     boolean isAuth = true;
-                    if( authUserId == null || ( !entityRepository.getACLWriteList(appId, linkFrom).contains(authUserId)
+                    if( authUserId == null || ( !entityRepository.getACLWriteList(appId, namespace, linkFrom).contains(authUserId)
                             && !isMaster() ) ) {
                         isAuth = false;
                     }
                     if(linkFrom.equals(authUserId)) {
                         isAuth = true;
                     }
-                    if(entityRepository.isPublicWrite(appId, linkFrom)) {
+                    if(entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
                         isAuth = true;
                     }
                     if(!isAuth) {
@@ -133,7 +133,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                             .entityId(linkFrom)
                             .build());
                 } else if(authUserId != null && linkName != null && linkTo != null) {
-                    if( authUserId == null || !entityRepository.getACLWriteList(appId, linkTo).contains(authUserId)
+                    if( authUserId == null || !entityRepository.getACLWriteList(appId, namespace, linkTo).contains(authUserId)
                             && !isMaster()) {
                         return unauthorized();
                     }
@@ -144,7 +144,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 }
 
                 Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
-                JSONObject response = entityService.createEntity(getApp(), entityType, comparableMap,
+                JSONObject response = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
                         aclRead, aclWrite, publicRead, publicWrite, actions, entityActions);
                 if(entityType.equals(defaultUserStore)) {
                     response.remove(Constants.RESERVED_FIELD_PASSWORD);
@@ -179,7 +179,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
             if (isMaster()) {
                 try {
                     List<Map<String, Comparable>> entityObjs
-                            = entityRepository.listEntities(appId, entityType, null,
+                            = entityRepository.listEntities(appId, namespace, entityType, null,
                             skipValue, limitValue, sort, true, filters);
                     JSONObject responseBody = new JSONObject();
                     JSONObject entitiesJSONObject = new JSONObject();
@@ -202,7 +202,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 }
 
                 try {
-                    List<Map<String, Comparable>> entityObjs = entityRepository.listEntities(appId, entityType,
+                    List<Map<String, Comparable>> entityObjs = entityRepository.listEntities(appId, namespace, entityType,
                             authUserId, skipValue, limitValue, sort, false, filters);
 
                     JSONObject responseBody = new JSONObject();
@@ -232,9 +232,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
     public Representation deleteEntities() {
         try {
             if(isMaster()) {
-                boolean status = entityRepository.deleteEntities(appId, entityType);
+                boolean status = entityRepository.deleteEntities(appId, namespace, entityType);
                 if(status) {
-                    pubSubService.deletedAll(appId, entityType);
+                    pubSubService.deletedAll(appId, namespace, entityType);
                     return success();
                 } else {
                     return badRequest();

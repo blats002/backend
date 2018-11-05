@@ -68,7 +68,7 @@ public class JeeManageFunctionServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
-            functionRepository.createFunction(appId, functionName, entity.getJar());
+            functionRepository.createFunction(appId, namespace, functionName, entity.getJar());
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);
@@ -91,7 +91,7 @@ public class JeeManageFunctionServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return;
             }
-            functionRepository.deleteFunction(appId, functionName);
+            functionRepository.deleteFunction(appId, namespace, functionName);
         } catch (Exception e) {
             e.printStackTrace();
             setStatus(Status.SERVER_ERROR_INTERNAL);

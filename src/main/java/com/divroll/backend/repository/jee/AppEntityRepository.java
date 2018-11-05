@@ -35,20 +35,24 @@ public class AppEntityRepository {
 
     private final EntityRepository repository;
     private final String instance;
+    private final String namespace;
     private final String storeName;
 
-    public AppEntityRepository(EntityRepository repository, String instance, String storeName) {
+
+    public AppEntityRepository(EntityRepository repository, String instance, String namespace, String storeName) {
         this.repository = repository;
         this.storeName = storeName;
         this.instance = instance;
+        this.namespace = namespace;
     }
 
-    public Map<String,Comparable> getEntityById(String entityId) {
-        return repository.getEntity(instance, storeName, entityId);
+    public Map<String,Comparable> getEntityById(String namespace, String entityId) {
+        return repository.getEntity(instance, namespace, storeName, entityId);
     }
 
-    public boolean isExist(String entityType, String propertyName, Comparable propertyValue) {
-        List<Map<String,Comparable>> entities = repository.getEntities(instance, entityType, propertyName, propertyValue, 0, 1);
+    public boolean isExist(String namespace, String entityType, String propertyName, Comparable propertyValue) {
+        List<Map<String,Comparable>> entities = repository.getEntities(instance, namespace, entityType,
+                propertyName, propertyValue, 0, 1);
         return !entities.isEmpty();
     }
 

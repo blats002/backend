@@ -95,16 +95,16 @@ public class JeeEntityService implements EntityService {
     PubSubService pubSubService;
 
     @Override
-    public JSONObject createEntity(Application application, String entityType, Map<String, Comparable> comparableMap,
+    public JSONObject createEntity(Application application, String namespace, String entityType, Map<String, Comparable> comparableMap,
                                    String aclRead, String aclWrite, Boolean publicRead, Boolean publicWrite, List<Action> actions,
                                    List<EntityAction> entityActions) throws Exception {
-        return createEntity(application, entityType, comparableMap, aclRead, aclWrite,
+        return createEntity(application, namespace, entityType, comparableMap, aclRead, aclWrite,
                 publicRead, publicWrite,
                 actions, entityActions, null,null);
     }
 
     @Override
-    public JSONObject createEntity(Application application, String entityType, Map<String, Comparable> comparableMap,
+    public JSONObject createEntity(Application application, String namespace, String entityType, Map<String, Comparable> comparableMap,
                                    String aclRead, String aclWrite,
                                    Boolean publicRead, Boolean publicWrite,
                                    List<Action> actions, List<EntityAction> entityActions,
@@ -182,10 +182,10 @@ public class JeeEntityService implements EntityService {
                 publicWrite = false;
             }
 
-            validateSchema(application.getAppId(), entityType, comparableMap);
+            validateSchema(application.getAppId(), namespace, entityType, comparableMap);
 
             if(entityType.equalsIgnoreCase(defaultUserStore)) {
-                if (beforeSave(application, comparableMap, application.getAppId(), entityType)) {
+                if (beforeSave(application, namespace, comparableMap, application.getAppId(), entityType)) {
 
                     String username = (String) comparableMap.get(Constants.RESERVED_FIELD_USERNAME);
                     String password = (String) comparableMap.get(Constants.RESERVED_FIELD_PASSWORD);
@@ -210,26 +210,26 @@ public class JeeEntityService implements EntityService {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    String entityId = userRepository.createUser(application.getAppId(), entityType, username, password,
+                    String entityId = userRepository.createUser(application.getAppId(), namespace, entityType, username, password,
                             comparableMap, read, write, publicRead, publicWrite, Iterables.toArray(roleList, String.class), actions,
                             null, null, null);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                    pubSubService.created(application.getAppId(), entityType, entityId);
-                    afterSave(application, comparableMap, application.getAppId(), entityType);
+                    pubSubService.created(application.getAppId(), namespace, entityType, entityId);
+                    afterSave(application, namespace, comparableMap, application.getAppId(), entityType);
                 }
-                afterSave(application, comparableMap, application.getAppId(), entityType);
+                afterSave(application, namespace, comparableMap, application.getAppId(), entityType);
             } else if(entityType.equalsIgnoreCase(defaultRoleStore)) {
-                if (beforeSave(application, comparableMap, application.getAppId(), entityType)) {
+                if (beforeSave(application, namespace, comparableMap, application.getAppId(), entityType)) {
                     String roleName = (String) comparableMap.get(Constants.ROLE_NAME);
-                    roleRepository.createRole(application.getAppId(), entityType, roleName, read, write, publicRead, publicWrite, actions);
-                    afterSave(application, comparableMap, application.getAppId(), entityType);
+                    roleRepository.createRole(application.getAppId(), namespace, entityType, roleName, read, write, publicRead, publicWrite, actions);
+                    afterSave(application, namespace, comparableMap, application.getAppId(), entityType);
                 }
             } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
-                if (beforeSave(application, comparableMap, application.getAppId(), entityType)) {
-                    String entityId = entityRepository.createEntity(application.getAppId(), entityType,
+                if (beforeSave(application, namespace, comparableMap, application.getAppId(), entityType)) {
+                    String entityId = entityRepository.createEntity(application.getAppId(), namespace, entityType,
                             new EntityClassBuilder()
                                     .comparableMap(comparableMap)
                                     .read(read)
@@ -241,15 +241,15 @@ public class JeeEntityService implements EntityService {
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                    pubSubService.created(application.getAppId(), entityType, entityId);
-                    afterSave(application, comparableMap, application.getAppId(), entityType);
+                    pubSubService.created(application.getAppId(), namespace, entityType, entityId);
+                    afterSave(application, namespace, comparableMap, application.getAppId(), entityType);
                     return result;
                 } else {
                     throw new IllegalArgumentException();
                 }
             } else {
-                if(beforeSave(application, comparableMap, application.getAppId(), entityType))  {
-                    String entityId = entityRepository.createEntity(application.getAppId(), entityType,
+                if(beforeSave(application, namespace, comparableMap, application.getAppId(), entityType))  {
+                    String entityId = entityRepository.createEntity(application.getAppId(), namespace, entityType,
                             new EntityClassBuilder()
                                     .comparableMap(comparableMap)
                                     .read(read)
@@ -263,9 +263,9 @@ public class JeeEntityService implements EntityService {
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
                     comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
-                    afterSave(application, comparableMap, application.getAppId(), entityType);
+                    afterSave(application, namespace, comparableMap, application.getAppId(), entityType);
                     try {
-                        pubSubService.created(application.getAppId(), entityType, entityId);
+                        pubSubService.created(application.getAppId(), namespace, entityType, entityId);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -281,7 +281,7 @@ public class JeeEntityService implements EntityService {
     }
 
     @Override
-    public boolean beforeSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
+    public boolean beforeSave(Application application, String namespace, Map<String, Comparable> entity, String appId, String entityType) {
         String cloudCode = application.getCloudCode();
         LOG.info("Cloud Code : " + cloudCode);
         List<JsFunction> jsFunctions = new LinkedList<>();
@@ -296,7 +296,7 @@ public class JeeEntityService implements EntityService {
         });
         TriggerResponse response = new TriggerResponse();
         if( beforeSaveExpr[0] != null &&  !beforeSaveExpr[0].isEmpty()) {
-            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
+            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, namespace, entityType);
             AppEmailService emailService = null;
             if(application != null && application.getEmailConfig() != null) {
                 Email emailConfig = application.getEmailConfig();
@@ -314,7 +314,7 @@ public class JeeEntityService implements EntityService {
     }
 
     @Override
-    public boolean afterSave(Application application, Map<String, Comparable> entity, String appId, String entityType) {
+    public boolean afterSave(Application application, String namespace, Map<String, Comparable> entity, String appId, String entityType) {
         String cloudCode = application.getCloudCode();
         final String[] afterSaveExpr = {null};
         LOG.info("Cloud Code : " + cloudCode);
@@ -331,7 +331,7 @@ public class JeeEntityService implements EntityService {
         TriggerResponse response = new TriggerResponse();
 
         if(afterSaveExpr[0] != null && !afterSaveExpr[0].isEmpty()) {
-            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, entityType);
+            AppEntityRepository repository = new AppEntityRepository(entityRepository, appId, namespace, entityType);
             AppEmailService emailService = null;
             if(application != null && application.getEmailConfig() != null) {
                 Email emailConfig = application.getEmailConfig();
@@ -437,9 +437,9 @@ public class JeeEntityService implements EntityService {
     }
 
     @Override
-    public void validateSchema(String appId, String entityType, Map<String,Comparable> comparableMap)
+    public void validateSchema(String appId, String namespace, String entityType, Map<String,Comparable> comparableMap)
             throws IllegalArgumentException {
-        List<EntityType> entityTypes = schemaService.listSchemas(appId);
+        List<EntityType> entityTypes = schemaService.listSchemas(appId, namespace);
         entityTypes.forEach(type -> {
             if(type.getEntityType().equalsIgnoreCase("users")) {
                 List<EntityPropertyType> propertyTypes = type.getPropertyTypes();
@@ -456,7 +456,7 @@ public class JeeEntityService implements EntityService {
             }
         });
         comparableMap.forEach((key,value) -> {
-            List<EntityPropertyType> types = schemaService.listPropertyTypes(appId, entityType);
+            List<EntityPropertyType> types = schemaService.listPropertyTypes(appId, namespace, entityType);
             types.forEach(type -> {
                 if(type.equals(key)) {
                     EntityPropertyType.TYPE expectedPropertyType = type.getPropertyType();
