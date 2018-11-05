@@ -1102,6 +1102,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
                     }
                     if (isMasterKey) {
+                        result = txn.getAll(storeName);
                         result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
