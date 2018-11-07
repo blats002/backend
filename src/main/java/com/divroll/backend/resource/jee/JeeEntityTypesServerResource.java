@@ -60,10 +60,10 @@ public class JeeEntityTypesServerResource extends BaseServerResource
                 entityTypes.setSkip(0);
 
                 List<EntityType> entityTypeList = new LinkedList<>();
-                store.listEntityTypes(appId, namespace).forEach(s -> {
+                store.listEntityTypes(appId, null).forEach(s -> {
                     EntityType entityType = new EntityType();
                     entityType.setEntityType(s);
-                    entityType.setPropertyTypes(store.listPropertyTypes(appId, namespace, s));
+                    entityType.setPropertyTypes(store.listPropertyTypes(appId, null, s));
                     entityTypeList.add(entityType);
                 });
 
