@@ -553,7 +553,7 @@ public class JeeUserRepository extends JeeBaseRespository
 
     @Override
     public List<User> listUsers(String instance, String namespace, String storeName, String userIdRoleId,
-                                int skip, int limit, final String sort, boolean isMastekey, List<TransactionFilter> filters) {
+                                int skip, int limit, final String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         final List<User> users = new LinkedList<>();
         try {
@@ -566,9 +566,9 @@ public class JeeUserRepository extends JeeBaseRespository
                     } else {
                         result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
                     }
-                    if (isMastekey) {
+                    if (isMasterKey) {
                         result = txn.getAll(storeName);
-                        result = result.minus(txn.findWithProp(storeName, namespaceProperty));
+                        result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
                             result = filter(storeName, result, filters, txn);
                         }
