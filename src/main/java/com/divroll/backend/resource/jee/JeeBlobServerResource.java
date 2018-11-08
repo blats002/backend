@@ -30,6 +30,7 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
+import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.BlobResource;
@@ -160,7 +161,9 @@ public class JeeBlobServerResource extends BaseServerResource
                         InputStream inputStream = ByteSource.wrap(bytes).openStream();
                         JSONObject entityJSONObject = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
                                 aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
-                                blobName, inputStream);
+                                blobName, inputStream, new EntityMetadataBuilder()
+                                        .uniqueProperties(uniqueProperties)
+                                        .build());
                         String entityId = entityJSONObject.getString(Constants.RESERVED_FIELD_ENTITY_ID);
                         if(entityJSONObject != null && entityId != null){
                             pubSubService.updated(appId, namespace, entityType, entityId);
@@ -185,7 +188,9 @@ public class JeeBlobServerResource extends BaseServerResource
                                     CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
                                     JSONObject wrappedEntityJSON = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
                                             aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
-                                            blobName, countingInputStream);
+                                            blobName, countingInputStream, new EntityMetadataBuilder()
+                                                    .uniqueProperties(uniqueProperties)
+                                                    .build());
                                     JSONObject entityJSON = wrappedEntityJSON.getJSONObject("entity");
                                     String entityId = entityJSON.getString(Constants.RESERVED_FIELD_ENTITY_ID);
                                     if(wrappedEntityJSON != null && entityId != null){
@@ -256,6 +261,15 @@ public class JeeBlobServerResource extends BaseServerResource
                                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                                     }
                                 }
+                            }
+                        } else if(entity != null && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
+                            InputStream inputStream = entity.getStream();
+                            CountingInputStream countingInputStream = new CountingInputStream(inputStream);
+                            if (entityRepository.createEntityBlob(appId, namespace, entityType, entityId, blobName, countingInputStream)) {
+                                pubSubService.updated(appId, namespace, entityType, entityId);
+                                setStatus(Status.SUCCESS_CREATED);
+                            } else {
+                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                             }
                         }
 

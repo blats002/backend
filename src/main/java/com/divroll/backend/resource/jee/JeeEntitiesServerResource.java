@@ -26,6 +26,7 @@ import com.divroll.backend.helper.JSON;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
+import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
@@ -39,6 +40,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONObject;
+import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 
 import java.util.LinkedList;
@@ -145,7 +147,9 @@ public class JeeEntitiesServerResource extends BaseServerResource
 
                 Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
                 JSONObject response = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
-                        aclRead, aclWrite, publicRead, publicWrite, actions, entityActions);
+                        aclRead, aclWrite, publicRead, publicWrite, actions, entityActions, new EntityMetadataBuilder()
+                                .uniqueProperties(uniqueProperties)
+                                .build());
                 if(entityType.equals(defaultUserStore)) {
                     response.remove(Constants.RESERVED_FIELD_PASSWORD);
                 }
@@ -241,6 +245,27 @@ public class JeeEntitiesServerResource extends BaseServerResource
                 }
             } else {
                 return unauthorized();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return serverError();
+        }
+    }
+
+    @Override
+    public Representation updateEntities(Representation representation) {
+        if(!isMaster()) {
+            return unauthorized();
+        }
+        try {
+            boolean updated = entityRepository.updateProperty(appId, namespace, entityType, propertyName,
+                    new EntityMetadataBuilder()
+                            .uniqueProperties(uniqueProperties)
+                            .build());
+            if(updated) {
+                return success();
+            } else {
+                return badRequest();
             }
         } catch (Exception e) {
             e.printStackTrace();

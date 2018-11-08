@@ -30,6 +30,8 @@ import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.LinkAction;
 import com.divroll.backend.model.builder.EntityClassBuilder;
+import com.divroll.backend.model.builder.EntityMetadata;
+import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
@@ -97,10 +99,10 @@ public class JeeEntityService implements EntityService {
     @Override
     public JSONObject createEntity(Application application, String namespace, String entityType, Map<String, Comparable> comparableMap,
                                    String aclRead, String aclWrite, Boolean publicRead, Boolean publicWrite, List<Action> actions,
-                                   List<EntityAction> entityActions) throws Exception {
+                                   List<EntityAction> entityActions, EntityMetadata metadata) throws Exception {
         return createEntity(application, namespace, entityType, comparableMap, aclRead, aclWrite,
                 publicRead, publicWrite,
-                actions, entityActions, null,null);
+                actions, entityActions, null,null, metadata);
     }
 
     @Override
@@ -108,7 +110,7 @@ public class JeeEntityService implements EntityService {
                                    String aclRead, String aclWrite,
                                    Boolean publicRead, Boolean publicWrite,
                                    List<Action> actions, List<EntityAction> entityActions,
-                                   String blobName, InputStream blobStream) throws Exception {
+                                   String blobName, InputStream blobStream, EntityMetadata metadata) throws Exception {
         JSONObject result = new JSONObject();
 
         String[] read = new String[]{};
@@ -236,7 +238,10 @@ public class JeeEntityService implements EntityService {
                                     .write(write)
                                     .publicRead(publicRead)
                                     .publicWrite(publicWrite)
-                                    .build(), actions, entityActions, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                                    //.build(), actions, entityActions, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                                    .build(), actions, entityActions, new EntityMetadataBuilder()
+                                        .uniqueProperties(Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}))
+                                        .build());
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
@@ -258,7 +263,7 @@ public class JeeEntityService implements EntityService {
                                     .publicWrite(publicWrite)
                                     .blobName(blobName)
                                     .blob(blobStream)
-                                    .build(), actions, entityActions,null);
+                                    .build(), actions, entityActions, metadata);
                     JSONObject entityObject = new JSONObject();
                     entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
                     result.put("entity", entityObject);
