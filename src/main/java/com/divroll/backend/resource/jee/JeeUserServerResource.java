@@ -133,6 +133,10 @@ public class JeeUserServerResource extends BaseServerResource implements
 
                 if (authToken != null) {
                     String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+                    if(authUserId == null) {
+                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                        return null;
+                    }
                     userEntity = userRepository.getUser(appId, namespace, storeName, authUserId);
                     if (userEntity == null) {
                         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
