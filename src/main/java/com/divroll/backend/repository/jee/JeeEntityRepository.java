@@ -1321,7 +1321,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    protected String getRoleStoreName() {
+    protected String getDefaultRoleStore() {
         return defaultRoleStore;
     }
 }

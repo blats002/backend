@@ -56,7 +56,7 @@ public class JeeUserRepository extends JeeBaseRespository
 
     @Inject
     @Named("defaultRoleStore")
-    String roleStoreName;
+    String defaultRoleStore;
 
     @Inject
     @Named("defaultUserStore")
@@ -676,7 +676,7 @@ public class JeeUserRepository extends JeeBaseRespository
     }
 
     @Override
-    protected String getRoleStoreName() {
-        return roleStoreName;
+    protected String getDefaultRoleStore() {
+        return defaultRoleStore;
     }
 }

@@ -44,7 +44,7 @@ public abstract class JeeBaseRespository {
     private static final Logger LOG
             = LoggerFactory.getLogger(JeeBaseRespository.class);
 
-    protected abstract String getRoleStoreName();
+    protected abstract String getDefaultRoleStore();
 
     protected EntityIterable filter(final String entityType, final EntityIterable entityIterable, List<TransactionFilter> filters, final StoreTransaction txn) {
         final EntityIterable[] entityIterableResult = {entityIterable};
