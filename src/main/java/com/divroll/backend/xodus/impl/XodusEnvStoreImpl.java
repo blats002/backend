@@ -80,13 +80,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final String value) {
+    public void put(String instance, final String entityType, final String key, final String value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     store.put(txn, StringBinding.stringToEntry(key), StringBinding.stringToEntry(value));
                 }
             });
@@ -96,13 +96,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final Boolean value) {
+    public void put(String instance, final String entityType, final String key, final Boolean value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     store.put(txn, StringBinding.stringToEntry(key), BooleanBinding.booleanToEntry(value));
                 }
             });
@@ -112,13 +112,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final Double value) {
+    public void put(String instance, final String entityType, final String key, final Double value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     store.put(txn, StringBinding.stringToEntry(key), DoubleBinding.doubleToEntry(value));
                 }
             });
@@ -128,13 +128,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final Float value) {
+    public void put(String instance, final String entityType, final String key, final Float value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     store.put(txn, StringBinding.stringToEntry(key), FloatBinding.floatToEntry(value));
                 }
             });
@@ -144,13 +144,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final Integer value) {
+    public void put(String instance, final String entityType, final String key, final Integer value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     store.put(txn, StringBinding.stringToEntry(key), IntegerBinding.intToEntry(value));
                 }
             });
@@ -160,12 +160,12 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final Long value) {
+    public void put(String instance, final String entityType, final String key, final Long value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         env.executeInTransaction(new TransactionalExecutable() {
             @Override
             public void execute(@NotNull final Transaction txn) {
-                final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                 store.put(txn, StringBinding.stringToEntry(key), LongBinding.longToEntry(value));
             }
         });
@@ -173,13 +173,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public void put(String instance, final String storeName, final String key, final Short value) {
+    public void put(String instance, final String entityType, final String key, final Short value) {
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     store.put(txn, StringBinding.stringToEntry(key), ShortBinding.shortToEntry(value));
                 }
             });
@@ -190,14 +190,14 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public boolean put(String instance, final String storeName, final String key, final ByteValue value) {
+    public boolean put(String instance, final String entityType, final String key, final ByteValue value) {
         final Boolean[] isSuccess = {false};
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     isSuccess[0] = store.put(txn, StringBinding.stringToEntry(key), new ByteValueIterable(value));
                 }
             });
@@ -209,14 +209,14 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public boolean putIfNotExists(String instance, final String storeName, final String key, final ByteValue value) {
+    public boolean putIfNotExists(String instance, final String entityType, final String key, final ByteValue value) {
         final Boolean[] isSuccess = {false};
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     isSuccess[0] = store.add(txn, StringBinding.stringToEntry(key), new ByteValueIterable(value));
                 }
             });
@@ -227,14 +227,14 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public boolean batchPut(String instance, final String storeName, final Map<String, String> properties) {
+    public boolean batchPut(String instance, final String entityType, final Map<String, String> properties) {
         final Boolean[] isSuccess = {false};
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     Iterator<String> it = properties.keySet().iterator();
                     while (it.hasNext()) {
                         String key = it.next();
@@ -251,14 +251,14 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public <T> T get(String instance, final String storeName, final String key, final Class<T> clazz) {
+    public <T> T get(String instance, final String entityType, final String key, final Class<T> clazz) {
         final Object[] result = new Object[]{null};
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     final ByteIterable value = store.get(txn, StringBinding.stringToEntry(key));
                     if (value != null) {
                         if (ByteValue.class.equals(clazz)) {
@@ -301,14 +301,14 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
     @Override
-    public boolean delete(String instance, final String storeName, final String key) {
+    public boolean delete(String instance, final String entityType, final String key) {
         final Boolean[] isSuccess = {false};
         final Environment env = manager.getEnvironment(xodusRoot, instance);
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     isSuccess[0] = store.delete(txn, StringBinding.stringToEntry(key));
                 }
             });
@@ -320,12 +320,12 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
     }
 
 //    @Override
-//    public void putIfNotExists(String instance, final String storeName, final String key, final byte[] value) {
+//    public void putIfNotExists(String instance, final String entityType, final String key, final byte[] value) {
 //        final Environment env = Environments.newInstance(xodusRoot + instance);
 //        env.executeInTransaction(new TransactionalExecutable() {
 //            @Override
 //            public void execute(@NotNull final Transaction txn) {
-//                final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+//                final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
 //                store.putIfNotExists(txn, StringBinding.stringValueToEntry(key), ByteBinding.byteToEntry(value));
 //            }
 //        });
@@ -333,7 +333,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
 //    }
 
     @Override
-    public boolean delete(String instance, final String storeName, String... keys) {
+    public boolean delete(String instance, final String entityType, String... keys) {
         final Boolean[] isSuccess = {false};
         final List<String> keyList = Arrays.asList(keys);
         final Environment env = manager.getEnvironment(xodusRoot, instance);
@@ -341,7 +341,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     for (String key : keyList) {
                         isSuccess[0] = store.delete(txn, StringBinding.stringToEntry(key));
                     }
@@ -358,13 +358,13 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
      * Batch Put properties and delete keys
      *
      * @param instance
-     * @param storeName
+     * @param entityType
      * @param properties
      * @param keys
      * @return
      */
     @Override
-    public boolean batchPutDelete(String instance, final String storeName, final Map<String, String> properties, final String... keys) {
+    public boolean batchPutDelete(String instance, final String entityType, final Map<String, String> properties, final String... keys) {
         final Boolean[] isSuccess = {false};
         final List<String> keyList = Arrays.asList(keys);
         final Environment env = manager.getEnvironment(xodusRoot, instance);
@@ -372,7 +372,7 @@ public class XodusEnvStoreImpl implements XodusEnvStore {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final Transaction txn) {
-                    final Store store = env.openStore(storeName, StoreConfig.WITHOUT_DUPLICATES, txn);
+                    final Store store = env.openStore(entityType, StoreConfig.WITHOUT_DUPLICATES, txn);
                     for (String key : keyList) {
                         isSuccess[0] = store.delete(txn, StringBinding.stringToEntry(key));
                     }

@@ -50,7 +50,7 @@ public class JeeKeyValueService implements KeyValueService {
     XodusEnvStore store;
 
     @Override
-    public <T> boolean putIfNotExists(String instance, String namespace, String storeName, String key, Comparable value,
+    public <T> boolean putIfNotExists(String instance, String namespace, String entityType, String key, Comparable value,
                                       String[] read, String[] write,
                                       Class<T> clazz) {
         if (value == null) {
@@ -66,7 +66,7 @@ public class JeeKeyValueService implements KeyValueService {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                return store.putIfNotExists(instance, storeName, key, byteValue);
+                return store.putIfNotExists(instance, entityType, key, byteValue);
             }
         } else if (ByteBuffer.class.equals(clazz)) {
             ByteBuffer byteBuffer = ((ByteBuffer) value);
@@ -77,7 +77,7 @@ public class JeeKeyValueService implements KeyValueService {
             byteValue.setValue(arr);
             byteValue.setRead(read);
             byteValue.setWrite(write);
-            return store.putIfNotExists(instance, storeName, key, byteValue);
+            return store.putIfNotExists(instance, entityType, key, byteValue);
 
         }
 
@@ -85,10 +85,10 @@ public class JeeKeyValueService implements KeyValueService {
     }
 
     @Override
-    public <T> T get(String instance, String namespace, String storeName, String key, String uuid, Class<T> clazz)
+    public <T> T get(String instance, String namespace, String entityType, String key, String uuid, Class<T> clazz)
             throws ACLException {
         if (String.class.equals(clazz)) {
-            ByteValue value = store.get(instance, storeName, key, ByteValue.class);
+            ByteValue value = store.get(instance, entityType, key, ByteValue.class);
             if (value != null) {
                 String[] read = value.getRead();
                 Boolean publicRead = read != null ? Arrays.asList(read).contains(Constants.ACL_ASTERISK) : false;
@@ -115,7 +115,7 @@ public class JeeKeyValueService implements KeyValueService {
                 }
             }
         } else if (ByteBuffer.class.equals(clazz)) {
-            ByteValue value = store.get(instance, storeName, key, ByteValue.class);
+            ByteValue value = store.get(instance, entityType, key, ByteValue.class);
             if (value != null) {
                 String[] read = value.getRead();
                 Boolean publicRead = read != null ? Arrays.asList(read).contains(Constants.ACL_ASTERISK) : false;
@@ -130,7 +130,7 @@ public class JeeKeyValueService implements KeyValueService {
                 }
             }
         } else if (ACL.class.equals(clazz)) { // Helper case to delete a key
-            ACL value = store.get(instance, storeName, key, ACL.class);
+            ACL value = store.get(instance, entityType, key, ACL.class);
             if (value != null) {
                 String[] read = value.getRead();
                 Boolean publicRead = read != null ? Arrays.asList(read).contains(Constants.ACL_ASTERISK) : false;
@@ -149,7 +149,7 @@ public class JeeKeyValueService implements KeyValueService {
     }
 
     @Override
-    public <T> boolean put(String instance, String namespace, String storeName, String key, Comparable value, String uuid,
+    public <T> boolean put(String instance, String namespace, String entityType, String key, Comparable value, String uuid,
                            String[] read, String[] write, Class<T> clazz)
             throws ACLException {
 
@@ -158,7 +158,7 @@ public class JeeKeyValueService implements KeyValueService {
         }
 
         // This will throw the ACLException
-        ACL acl = get(instance, namespace, storeName, key, uuid, ACL.class);
+        ACL acl = get(instance, namespace, entityType, key, uuid, ACL.class);
 
         if (acl == null) {
             return false;
@@ -227,7 +227,7 @@ public class JeeKeyValueService implements KeyValueService {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                return store.put(instance, storeName, key, byteValue);
+                return store.put(instance, entityType, key, byteValue);
             }
         } else if (ByteBuffer.class.equals(clazz)) {
             ByteBuffer byteBuffer = ((ByteBuffer) value);
@@ -238,16 +238,16 @@ public class JeeKeyValueService implements KeyValueService {
             byteValue.setValue(arr);
             byteValue.setRead(aclRead);
             byteValue.setWrite(aclWrite);
-            return store.put(instance, storeName, key, byteValue);
+            return store.put(instance, entityType, key, byteValue);
         }
 
         return false;
     }
 
     @Override
-    public boolean delete(String instance, String namespace, String storeName, String key, String uuid) throws ACLException {
-        if (get(instance, namespace, storeName, key, uuid, ACL.class) != null) {
-            return store.delete(instance, storeName, key);
+    public boolean delete(String instance, String namespace, String entityType, String key, String uuid) throws ACLException {
+        if (get(instance, namespace, entityType, key, uuid, ACL.class) != null) {
+            return store.delete(instance, entityType, key);
         } else {
             throw new ACLException();
         }

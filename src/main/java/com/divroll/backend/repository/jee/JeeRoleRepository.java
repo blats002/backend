@@ -66,7 +66,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     XodusManager manager;
 
     @Override
-    public String createRole(final String instance, String namespace, final String storeName, final String roleName,
+    public String createRole(final String instance, String namespace, final String entityType, final String roleName,
                              final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite, List<Action> actions) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -74,7 +74,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
-                    final Entity entity = txn.newEntity(storeName);
+                    final Entity entity = txn.newEntity(entityType);
 
                     if(namespace != null && !namespace.isEmpty()) {
                         entity.setProperty(namespaceProperty, namespace);
@@ -162,7 +162,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean updateRole(String instance, String namespace, final String storeName, final String roleId, final String newRoleName,
+    public boolean updateRole(String instance, String namespace, final String entityType, final String roleId, final String newRoleName,
                               final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -213,13 +213,13 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean updateRole(String instance, String namespace, String storeName, String entityId, Map<String, Comparable> comparableMap, String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
+    public boolean updateRole(String instance, String namespace, String entityType, String entityId, Map<String, Comparable> comparableMap, String[] read, String[] write, Boolean publicRead, Boolean publicWrite) {
         String roleName = (String) comparableMap.get("name");
-        return updateRole(instance, namespace, storeName, entityId, roleName, read, write, publicRead, publicWrite);
+        return updateRole(instance, namespace, entityType, entityId, roleName, read, write, publicRead, publicWrite);
     }
 
     @Override
-    public Role getRole(String instance, String namespace, String storeName, final String roleId) {
+    public Role getRole(String instance, String namespace, String entityType, final String roleId) {
         final Role[] entity = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -270,7 +270,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean deleteRole(String instance, String namespace, String storeName, final String roleID) {
+    public boolean deleteRole(String instance, String namespace, String entityType, final String roleID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -290,7 +290,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean linkRole(String instance, String namespace, String storeName, final String roleID, final String userID) {
+    public boolean linkRole(String instance, String namespace, String entityType, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -313,7 +313,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean unlinkRole(String instance, String namespace, String storeName, final String roleID, final String userID) {
+    public boolean unlinkRole(String instance, String namespace, String entityType, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -336,7 +336,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public boolean isLinked(String instance, String namespace, String storeName, final String roleID, final String userID) {
+    public boolean isLinked(String instance, String namespace, String entityType, final String roleID, final String userID) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -358,7 +358,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    public List<Role> listRoles(String instance, String namespace, String storeName, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
+    public List<Role> listRoles(String instance, String namespace, String entityType, String userIdRoleId, int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final List<Role> roles = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -367,45 +367,45 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result;
                     if(namespace != null && !namespace.isEmpty()) {
-                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
                     } else {
-                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
                     }
                     if (isMasterKey) {
-                        result = txn.getAll(storeName);
+                        result = txn.getAll(entityType);
                         result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
-                            result = filter(storeName, result, filters, txn);
+                            result = filter(entityType, result, filters, txn);
                         }
                     } else if (userIdRoleId == null) {
-                        result = txn.find(storeName, "publicRead", true);
+                        result = txn.find(entityType, "publicRead", true);
                         if(filters != null && !filters.isEmpty()) {
-                            result = filter(storeName, result, filters, txn);
+                            result = filter(entityType, result, filters, txn);
                         }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
-                                result = txn.sort(storeName, sortDescending, result, false);
+                                result = txn.sort(entityType, sortDescending, result, false);
                             } else {
                                 String sortAscending = sort.substring(1);
-                                result = txn.sort(storeName, sortAscending, result, true);
+                                result = txn.sort(entityType, sortAscending, result, true);
                             }
                         }
                         long count = result.count();
                     } else {
                         Entity targetEntity = txn.getEntity(txn.toEntityId(userIdRoleId));
-                        result = txn.findLinks(storeName, targetEntity, "aclRead")
-                                .concat(txn.find(storeName, "publicRead", true));
+                        result = txn.findLinks(entityType, targetEntity, "aclRead")
+                                .concat(txn.find(entityType, "publicRead", true));
                         if(filters != null && !filters.isEmpty()) {
-                            result = filter(storeName, result, filters, txn);
+                            result = filter(entityType, result, filters, txn);
                         }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
-                                result = txn.sort(storeName, sortDescending, result, false);
+                                result = txn.sort(entityType, sortDescending, result, false);
                             } else {
                                 String sortAscending = sort.substring(1);
-                                result = txn.sort(storeName, sortAscending, result, true);
+                                result = txn.sort(entityType, sortAscending, result, true);
                             }
                         }
                     }

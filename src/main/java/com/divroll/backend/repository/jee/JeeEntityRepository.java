@@ -81,7 +81,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     XodusManager manager;
 
     @Override
-    public String createEntity(final String instance, String namespace, final String storeName, EntityClass entityClass,
+    public String createEntity(final String instance, String namespace, final String entityType, EntityClass entityClass,
                                List<Action> actions, List<EntityAction> entityActions, final EntityMetadata metadata) {
         final String[] entityId = {null};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -100,10 +100,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
                             Comparable propertyValue = entityClass.comparableMap().get(property);
                             if(iterable[0] == null && propertyValue != null) {
-                                iterable[0] = txn.find(storeName, property, propertyValue);
+                                iterable[0] = txn.find(entityType, property, propertyValue);
                             }
                             if(propertyValue != null) {
-                                iterable[0] = iterable[0].union(txn.find(storeName, property, propertyValue));
+                                iterable[0] = iterable[0].union(txn.find(entityType, property, propertyValue));
                             }
                         });
                     }
@@ -112,7 +112,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         throw new IllegalArgumentException("Duplicate value(s) found");
                     }
 
-                    final Entity entity = txn.newEntity(storeName);
+                    final Entity entity = txn.newEntity(entityType);
                     if(namespace != null && !namespace.isEmpty()) {
                         entity.setProperty(namespaceProperty, namespace);
                     }
@@ -121,11 +121,11 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     // Get meta data from previous entity
                     Entity reference = null;
                     if(namespace != null) {
-                        reference = txn.getAll(storeName).intersect(txn.find(storeName, namespaceProperty, namespace)).getFirst();
+                        reference = txn.getAll(entityType).intersect(txn.find(entityType, namespaceProperty, namespace)).getFirst();
                     } else {
-                        reference = txn.getAll(storeName).getFirst();
+                        reference = txn.getAll(entityType).getFirst();
                     }
-                    //Entity reference = txn.getAll(storeName).getFirst();
+                    //Entity reference = txn.getAll(entityType).getFirst();
                     ComparableHashMap finalMetadata = null;
                     if(reference != null) {
                         EmbeddedEntityIterable embeddedMetadata = (EmbeddedEntityIterable) reference.getProperty(metadataProperty);
@@ -297,7 +297,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean updateEntity(String instance, String namespace, String storeName, final String entityId, final Map<String, Comparable> comparableMap,
+    public boolean updateEntity(String instance, String namespace, String entityType, final String entityId, final Map<String, Comparable> comparableMap,
                                 final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
                                 final EntityMetadata metadata) {
         final boolean[] success = {false};
@@ -318,9 +318,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     ComparableLinkedList<Comparable> uniquePropertyList = null;
                     Entity reference = null;
                     if(namespace != null) {
-                        reference = txn.getAll(storeName).intersect(txn.find(storeName, namespaceProperty, namespace)).getFirst();
+                        reference = txn.getAll(entityType).intersect(txn.find(entityType, namespaceProperty, namespace)).getFirst();
                     } else {
-                        reference = txn.getAll(storeName).getFirst();
+                        reference = txn.getAll(entityType).getFirst();
                     }
                     if(reference.getProperty(metadataProperty) != null) {
                         EmbeddedEntityIterable metadata = (EmbeddedEntityIterable) reference.getProperty(metadataProperty);
@@ -333,10 +333,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         uniquePropertyList.forEach(property -> {
                             Comparable propertyValue = comparableMap.get(property);
                             if(iterable[0] == null && propertyValue != null) {
-                                iterable[0] = txn.find(storeName, (String)property, propertyValue);
+                                iterable[0] = txn.find(entityType, (String)property, propertyValue);
                             }
                             if(propertyValue != null) {
-                                iterable[0] = iterable[0].union(txn.find(storeName, (String)property, propertyValue));
+                                iterable[0] = iterable[0].union(txn.find(entityType, (String)property, propertyValue));
                             }
                         });
                     }
@@ -502,7 +502,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Map<String, Comparable> getEntity(String instance, String namespace, final String storeName, final String entityId) {
+    public Map<String, Comparable> getEntity(String instance, String namespace, final String entityType, final String entityId) {
         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -660,7 +660,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Comparable getEntityProperty(String instance, String namespace, final String storeName, final String entityId,
+    public Comparable getEntityProperty(String instance, String namespace, final String entityType, final String entityId,
                                         final String propertyName) {
         final Comparable[] comparable = new Comparable[1];
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -680,7 +680,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public InputStream getEntityBlob(String instance, String namespace, String storeName, final String entityId, final String blobKey) {
+    public InputStream getEntityBlob(String instance, String namespace, String entityType, final String entityId, final String blobKey) {
         final InputStream[] inputStream = new InputStream[1];
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -699,7 +699,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean createEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey, InputStream is) {
+    public boolean createEntityBlob(String instance, String namespace, String entityType, String entityId, String blobKey, InputStream is) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -720,7 +720,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey) {
+    public boolean deleteEntityBlob(String instance, String namespace, String entityType, String entityId, String blobKey) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -740,7 +740,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<String> getLinkNames(String instance, String namespace, String storeName, String entityId) {
+    public List<String> getLinkNames(String instance, String namespace, String entityType, String entityId) {
         final List<String>[] result = new List[]{new LinkedList<>()};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -759,7 +759,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<String> getBlobKeys(String instance, String namespace, String storeName, String entityId) {
+    public List<String> getBlobKeys(String instance, String namespace, String entityType, String entityId) {
         final List<String>[] result = new List[]{new LinkedList<>()};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -778,7 +778,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteProperty(String instance, String namespace, String storeName, String propertyName) {
+    public boolean deleteProperty(String instance, String namespace, String entityType, String propertyName) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -790,7 +790,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         throw new IllegalArgumentException(metadataProperty + " property cannot be removed");
                     }
 
-                    EntityIterable entities = txn.findWithProp(storeName, propertyName);
+                    EntityIterable entities = txn.findWithProp(entityType, propertyName);
                     final boolean[] hasError = {false};
                     entities.forEach(entity -> {
                         if(!entity.deleteProperty(propertyName)) {
@@ -859,7 +859,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
         return success[0];    }
 
     @Override
-    public List<Map<String, Comparable>> getEntities(String instance, String namespace, String storeName, String propertyName, Comparable propertyValue, int skip, int limit) {
+    public List<Map<String, Comparable>> getEntities(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue, int skip, int limit) {
         final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -869,11 +869,11 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
                     EntityIterable result = null;
                     if(namespace != null && !namespace.isEmpty()) {
-                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
                     } else {
-                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
                     }
-                    result = result.intersect(txn.find(storeName, propertyName, propertyValue)).skip(skip).take(limit);
+                    result = result.intersect(txn.find(entityType, propertyName, propertyValue)).skip(skip).take(limit);
                     result = result.skip(skip).take(limit);
                     for (Entity entity : result) {
                         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
@@ -935,7 +935,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntity(String instance, String namespace, String storeName, final String entityId) {
+    public boolean deleteEntity(String instance, String namespace, String entityType, final String entityId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -954,7 +954,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean deleteEntities(String instance, String namespace, final String storeName) {
+    public boolean deleteEntities(String instance, String namespace, final String entityType) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -963,9 +963,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
                     if(namespace != null && !namespace.isEmpty()) {
-                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
                     } else {
-                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
                     }
                     final boolean[] hasError = {false};
                     for(Entity entity : result) {
@@ -998,7 +998,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean linkEntity(String instance, String namespace, String storeName, final String linkName, final String sourceId, final String targetId) {
+    public boolean linkEntity(String instance, String namespace, String entityType, final String linkName, final String sourceId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -1023,7 +1023,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean unlinkEntity(String instance, String namespace, String storeName, final String linkName,
+    public boolean unlinkEntity(String instance, String namespace, String entityType, final String linkName,
                                 final String entityId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1049,7 +1049,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public boolean isLinked(String instance, String namespace, String storeName,
+    public boolean isLinked(String instance, String namespace, String entityType,
                             final String linkName, final String entityId, final String targetId) {
         final boolean[] success = {false};
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1072,7 +1072,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public Map<String, Comparable> getFirstLinkedEntity(String instance, String namespace, String storeName,
+    public Map<String, Comparable> getFirstLinkedEntity(String instance, String namespace, String entityType,
                                                         final String entityId, final String linkName) {
         final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1132,7 +1132,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Comparable>> getLinkedEntities(String instance, String namespace, String storeName,
+    public List<Map<String, Comparable>> getLinkedEntities(String instance, String namespace, String entityType,
                                                        final String entityId, final String linkName) {
         final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1206,7 +1206,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     }
 
     @Override
-    public List<Map<String, Comparable>> listEntities(String instance, String namespace, String storeName, String userIdRoleId,
+    public List<Map<String, Comparable>> listEntities(String instance, String namespace, String entityType, String userIdRoleId,
                                                   int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters) {
         final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1216,47 +1216,47 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 public void execute(@NotNull final StoreTransaction txn) {
                     EntityIterable result = null;
                     if(namespace != null && !namespace.isEmpty()) {
-                        result = txn.findWithProp(storeName, namespaceProperty).union(txn.find(storeName, namespaceProperty, namespace));
+                        result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
                     } else {
-                        result = txn.getAll(storeName).minus(txn.findWithProp(storeName, namespaceProperty));
+                        result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
                     }
                     if (isMasterKey) {
-                        result = txn.getAll(storeName);
+                        result = txn.getAll(entityType);
                         result = result.skip(skip).take(limit);
                         if(filters != null && !filters.isEmpty()) {
-                            result = filter(storeName, result, filters, txn);
+                            result = filter(entityType, result, filters, txn);
                         }
                     } else if (userIdRoleId == null) {
-                        result = txn.find(storeName, "publicRead", true);
+                        result = txn.find(entityType, "publicRead", true);
                         long count = result.count();
                         LOG.info("COUNT: " + count);
                         if(filters != null && !filters.isEmpty()) {
-                            result = filter(storeName, result, filters, txn);
+                            result = filter(entityType, result, filters, txn);
                         }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
-                                result = txn.sort(storeName, sortDescending, result, false);
+                                result = txn.sort(entityType, sortDescending, result, false);
                             } else {
                                 String sortAscending = sort.substring(1);
-                                result = txn.sort(storeName, sortAscending, result, true);
+                                result = txn.sort(entityType, sortAscending, result, true);
                             }
                         }
 
                     } else {
                         Entity targetEntity = txn.getEntity(txn.toEntityId(userIdRoleId));
-                        result = txn.findLinks(storeName, targetEntity, "aclRead")
-                                .concat(txn.find(storeName, "publicRead", true));
+                        result = txn.findLinks(entityType, targetEntity, "aclRead")
+                                .concat(txn.find(entityType, "publicRead", true));
                         if(filters != null && !filters.isEmpty()) {
-                            result = filter(storeName, result, filters, txn);
+                            result = filter(entityType, result, filters, txn);
                         }
                         if (sort != null) {
                             if (sort.startsWith("-")) {
                                 String sortDescending = sort.substring(1);
-                                result = txn.sort(storeName, sortDescending, result, false);
+                                result = txn.sort(entityType, sortDescending, result, false);
                             } else {
                                 String sortAscending = sort.substring(1);
-                                result = txn.sort(storeName, sortAscending, result, true);
+                                result = txn.sort(entityType, sortAscending, result, true);
                             }
                         }
                     }
