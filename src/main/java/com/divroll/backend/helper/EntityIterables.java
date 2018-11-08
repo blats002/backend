@@ -60,10 +60,10 @@ public class EntityIterables {
             JSONArray jsonArray = new JSONArray();
             comparableList.forEach(value -> {
                 if(value instanceof EmbeddedArrayIterable) {
-                    JSONObject jso = toJSONObject((EmbeddedEntityIterable) value);
+                    JSONArray jso = toJSONArray((EmbeddedArrayIterable) value);
                     jsonArray.put(jso);
                 } else if(value instanceof EmbeddedEntityIterable) {
-                    JSONArray jsa = toJSONArray((EmbeddedArrayIterable) value);
+                    JSONObject jsa = toJSONObject((EmbeddedEntityIterable) value);
                     jsonArray.put(jsa);
                 } else {
                     jsonArray.put(value);

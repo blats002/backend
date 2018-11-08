@@ -30,6 +30,7 @@ import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
+import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
@@ -267,7 +268,9 @@ public class JeeEntityServerResource extends BaseServerResource
                         } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
                             if(beforeSave(comparableMap, appId, entityType)) {
                                 success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write,
-                                        publicRead, publicWrite, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                                        publicRead, publicWrite, new EntityMetadataBuilder()
+                                                .uniqueProperties(Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}))
+                                                .build());
                                 if(success) {
                                     afterSave(comparableMap, appId, entityType);
                                 }
@@ -358,7 +361,9 @@ public class JeeEntityServerResource extends BaseServerResource
                                 } else if(entityType.equalsIgnoreCase(defaultFunctionStore)) {
                                     if(beforeSave(comparableMap, appId, entityType)) {
                                         success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write,
-                                                publicRead, publicWrite, Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}));
+                                                publicRead, publicWrite, new EntityMetadataBuilder()
+                                                        .uniqueProperties(Arrays.asList(new String[]{Constants.RESERVED_FIELD_FUNCTION_NAME}))
+                                                        .build());
                                         if(success) {
                                             afterSave(comparableMap, appId, entityType);
                                         }
@@ -367,7 +372,10 @@ public class JeeEntityServerResource extends BaseServerResource
                                     }
                                 } else {
                                     if(beforeSave(comparableMap, appId, entityType)) {
-                                        success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite, null);
+                                        success = entityRepository.updateEntity(appId, namespace, entityType, entityId, comparableMap, read, write, publicRead, publicWrite,
+                                                new EntityMetadataBuilder()
+                                                .uniqueProperties(uniqueProperties)
+                                                .build());
                                         if(success) {
                                             afterSave(comparableMap, appId, entityType);
                                         }

@@ -285,6 +285,11 @@
             <version>1.2.3</version>
         </dependency>
         <dependency>
+            <groupId>org.jetbrains.xodus</groupId>
+            <artifactId>xodus-query</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-zip</artifactId>
             <version>1.13</version>
@@ -429,7 +434,11 @@
             <artifactId>json-simple</artifactId>
             <version>1.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.wildbit.java</groupId>
+            <artifactId>postmark</artifactId>
+            <version>1.1.7</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -475,10 +484,10 @@
                         <artifactId>jelastic-maven-plugin</artifactId>
                         <version>1.8.4</version>
                         <configuration>
-                            <api_hoster>app.divroll.space</api_hoster>
-                            <email>webmaster@divroll.com</email>
-                            <password>2bESNZpw04</password>
-                            <environment>backend2</environment>
+                            <api_hoster></api_hoster>
+                            <email></email>
+                            <password></password>
+                            <environment></environment>
                             <!--<context>[specify the context if you need it]</context>-->
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>
