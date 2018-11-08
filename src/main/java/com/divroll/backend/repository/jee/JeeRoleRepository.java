@@ -52,7 +52,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
 
     @Inject
     @Named("defaultRoleStore")
-    String roleStoreName;
+    String defaultRoleStore;
 
     @Inject
     @Named("xodusRoot")
@@ -466,7 +466,7 @@ public class JeeRoleRepository  extends JeeBaseRespository implements RoleReposi
     }
 
     @Override
-    protected String getRoleStoreName() {
-        return roleStoreName;
+    protected String getDefaultRoleStore() {
+        return defaultRoleStore;
     }
 }

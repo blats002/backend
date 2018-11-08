@@ -33,7 +33,6 @@ import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.json.JSONObject;
@@ -58,7 +57,7 @@ public class JeeUsersServerResource extends BaseServerResource
 
     @Inject
     @Named("defaultUserStore")
-    String storeName;
+    String defaultUserStore;
 
     @Inject
     UserRepository userRepository;
@@ -98,7 +97,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     // do nothing
                 }
                 List<User> processedResults = new LinkedList<>();
-                List<User> results = userRepository.listUsers(appId,  namespace, storeName, authUserId,
+                List<User> results = userRepository.listUsers(appId,  namespace, defaultUserStore, authUserId,
                         skipValue, limitValue, sort, false, filters);
                 Users users = new Users();
                 users.setResults(DTOHelper.convert(results));
@@ -108,7 +107,7 @@ public class JeeUsersServerResource extends BaseServerResource
                 return users;
             } else {
                 List<User> results = userRepository
-                        .listUsers(appId,  namespace, storeName, null, skipValue, limitValue, null, true, filters);
+                        .listUsers(appId,  namespace, defaultUserStore, null, skipValue, limitValue, null, true, filters);
                 Users users = new Users();
                 users.setResults(DTOHelper.convert(results));
                 users.setLimit(Long.valueOf(skipValue));
@@ -191,7 +190,7 @@ public class JeeUsersServerResource extends BaseServerResource
             List<RoleDTO> roles = entity.getRoles();
             String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
-            User userEntity = userRepository.getUserByUsername(appId, namespace, storeName, username);
+            User userEntity = userRepository.getUserByUsername(appId, namespace, defaultUserStore, username);
 
             String entityJson = getQueryValue("entity");
             LOG.with("entity", entityJson);
@@ -223,7 +222,7 @@ public class JeeUsersServerResource extends BaseServerResource
                     validateIds(read, write);
                     String entityId = null;
                     if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", entityId).put("username", username).build(), appId, entityType)) {
-                        entityId = userRepository.createUser(appId, namespace, storeName, username, hashPassword,
+                        entityId = userRepository.createUser(appId, namespace, defaultUserStore, username, hashPassword,
                                 null,
                                 read, write, publicRead, publicWrite, roleArray, actions,
                                 otherEntityClass, linkName, backlinkName);
@@ -246,7 +245,7 @@ public class JeeUsersServerResource extends BaseServerResource
                         for (Object roleId : Arrays.asList(roleArray)) {
                             user.getRoles().add(new Role((String) roleId));
                         }
-                        pubSubService.created(appId,  namespace, storeName, entityId);
+                        pubSubService.created(appId,  namespace, defaultUserStore, entityId);
                         setStatus(Status.SUCCESS_CREATED);
                         return UserDTO.convert((User) ObjectLogger.log(user));
                     } else {
