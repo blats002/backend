@@ -49,7 +49,7 @@ public interface XodusEnvStore {
 
     public boolean putIfNotExists(String instance, String store, String key, ByteValue value);
 
-    public boolean batchPut(String instance, final String storeName, final Map<String, String> properties);
+    public boolean batchPut(String instance, final String entityType, final Map<String, String> properties);
 
     public <T> T get(String instance, String store, String key, final Class<T> clazz);
 
@@ -57,6 +57,6 @@ public interface XodusEnvStore {
 
     public boolean delete(String instance, String store, String... keys);
 
-    public boolean batchPutDelete(String instance, final String storeName, final Map<String, String> properties, final String... keys);
+    public boolean batchPutDelete(String instance, final String entityType, final Map<String, String> properties, final String... keys);
 
 }
