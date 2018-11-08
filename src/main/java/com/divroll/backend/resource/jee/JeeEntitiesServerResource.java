@@ -40,7 +40,6 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.json.JSONObject;
-import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 
 import java.util.LinkedList;

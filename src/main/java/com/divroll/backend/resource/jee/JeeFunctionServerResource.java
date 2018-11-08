@@ -21,17 +21,11 @@
  */
 package com.divroll.backend.resource.jee;
 
-import com.divroll.backend.model.Application;
 import com.divroll.backend.repository.EntityRepository;
-import com.divroll.backend.repository.jee.AppEntityRepository;
 import com.divroll.backend.resource.FunctionResource;
 import com.divroll.backend.service.ApplicationService;
 import com.google.inject.Inject;
-import org.mozilla.javascript.*;
 import org.restlet.representation.Representation;
-import org.restlet.representation.StringRepresentation;
-
-import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

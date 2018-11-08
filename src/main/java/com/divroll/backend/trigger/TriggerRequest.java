@@ -23,6 +23,7 @@ package com.divroll.backend.trigger;
 
 import com.divroll.backend.repository.jee.AppEntityRepository;
 import com.divroll.backend.service.jee.AppEmailService;
+
 import java.util.Map;
 
 /**

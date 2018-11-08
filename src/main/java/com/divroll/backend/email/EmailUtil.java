@@ -23,21 +23,16 @@ package com.divroll.backend.email;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.wildbit.java.postmark.Postmark;
-import com.wildbit.java.postmark.client.ApiClient;
-import com.wildbit.java.postmark.client.data.model.message.Message;
-import com.wildbit.java.postmark.client.data.model.message.MessageResponse;
-import com.wildbit.java.postmark.client.exception.PostmarkException;
 
-//import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.IOException;
-import java.util.Date;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
+
+//import javax.mail.Message;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

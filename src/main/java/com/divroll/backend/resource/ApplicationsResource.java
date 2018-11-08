@@ -22,13 +22,12 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Applications;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.resource.Get;
-import com.divroll.backend.model.Applications;
 import org.restlet.resource.Post;
-import org.restlet.resource.Put;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

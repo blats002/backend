@@ -22,12 +22,8 @@
 package com.divroll.backend.model.action;
 
 import com.divroll.backend.helper.JSON;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
