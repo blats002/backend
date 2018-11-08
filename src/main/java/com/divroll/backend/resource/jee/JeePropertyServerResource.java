@@ -22,6 +22,7 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.model.Keys;
+import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.resource.PropertyResource;
 import com.godaddy.logging.Logger;
@@ -64,5 +65,26 @@ public class JeePropertyServerResource extends BaseServerResource
         } else {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         }
+    }
+
+    @Override
+    public Representation updateProperty(Representation entity) {
+        if(!isMaster()) {
+            return unauthorized();
+        }
+        try {
+            boolean updated = entityRepository.updateProperty(appId, namespace, entityType, propertyName,
+                    new EntityMetadataBuilder()
+                            .uniqueProperties(uniqueProperties)
+                            .build());
+            if(updated) {
+                setStatus(Status.SUCCESS_OK);
+            } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return serverError();
+        }
+        return null;
     }
 }

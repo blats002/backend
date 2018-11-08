@@ -55,11 +55,13 @@ public class JSON {
             Object value = object.get(key);
             if(value instanceof JSONArray) {
                 List<Comparable> valueList = toList((JSONArray) value);
-                value = new EmbeddedArrayIterable(valueList);
+                EmbeddedArrayIterable iterable = new EmbeddedArrayIterable(valueList);
+                map.put(key, iterable);
             }
             else if(value instanceof JSONObject) {
                 Map<String, Comparable> valueMap = toMap((JSONObject) value);
-                value = new EmbeddedEntityIterable(Comparables.cast(valueMap));
+                EmbeddedEntityIterable iterable = new EmbeddedEntityIterable(Comparables.cast(valueMap));
+                map.put(key, iterable);
             }
             else if(value != JSONObject.NULL) {
                 map.put(key, (Comparable) value);

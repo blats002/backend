@@ -41,6 +41,7 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import org.json.JSONArray;
 import org.mindrot.jbcrypt.BCrypt;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.Function;
@@ -125,6 +126,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     @Inject
     EntityService entityService;
+
+    protected List<String> uniqueProperties;
 
     @Override
     protected void doInit() {
@@ -259,6 +262,20 @@ public class BaseServerResource extends SelfInjectingServerResource {
         }
 
         fileName = getAttribute("fileName");
+
+        String uniquePropertiesString = getQueryValue("uniqueProperties");
+        if(uniquePropertiesString != null) {
+            JSONArray jsonArray = new JSONArray(uniquePropertiesString);
+            if(jsonArray != null) {
+                for(int i=0;i<jsonArray.length();i++) {
+                    String uniqueProperty = jsonArray.getString(i);
+                    if(uniqueProperties == null) {
+                        uniqueProperties = new LinkedList<>();
+                    }
+                    uniqueProperties.add(uniqueProperty);
+                }
+            }
+        }
 
     }
 

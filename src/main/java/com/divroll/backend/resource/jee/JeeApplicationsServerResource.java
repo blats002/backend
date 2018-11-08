@@ -117,6 +117,10 @@ public class JeeApplicationsServerResource extends BaseServerResource
         }
 
         if(appName == null) {
+            if(application == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return null;
+            }
             appName = application.getAppName();
             if(appName == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

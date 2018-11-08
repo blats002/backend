@@ -23,10 +23,9 @@ package com.divroll.backend.repository;
 
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
-import com.divroll.backend.model.action.LinkAction;
 import com.divroll.backend.model.builder.EntityClass;
+import com.divroll.backend.model.builder.EntityMetadata;
 import com.divroll.backend.model.filter.TransactionFilter;
-import jetbrains.exodus.entitystore.EntityId;
 
 import java.io.InputStream;
 import java.util.List;
@@ -38,12 +37,13 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface EntityRepository {
+
     String createEntity(String instance, String namespace, String storeName, EntityClass entityClass,
-                        List<Action> actions, List<EntityAction> entityActions, final List<String> uniqueProperties);
+                        List<Action> actions, List<EntityAction> entityActions, final EntityMetadata metadata);
 
     boolean updateEntity(String instance, String namespace, String storeName, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
-                         final List<String> uniqueProperties);
+                         final EntityMetadata metadata);
 
     <T> Map<String, Comparable> getFirstEntity(String dir, String namespace, final String kind, final String propertyKey, final Comparable<T> propertyVal, Class<T> clazz);
 
@@ -93,6 +93,8 @@ public interface EntityRepository {
     List<String> getBlobKeys(String instance, String namespace, String storeName, String entityId);
 
     boolean deleteProperty(String instance, String namespace, String storeName, String propertyName);
+
+    boolean updateProperty(String instance, String namespace, String storeName, String propertyName, EntityMetadata update);
 
     List<Map<String, Comparable>> getEntities(String instance, String namespace, String storeName, String propertyName, Comparable propertyValue, int skip, int limit);
 

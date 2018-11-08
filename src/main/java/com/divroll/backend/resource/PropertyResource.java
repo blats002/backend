@@ -27,6 +27,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
+import org.restlet.resource.Put;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -42,5 +43,8 @@ public interface PropertyResource {
             @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")})
 
     @Delete
-    void deleteProperty(Representation representation);
+    void deleteProperty(Representation entity);
+
+    @Put
+    Representation updateProperty(Representation entity);
 }
