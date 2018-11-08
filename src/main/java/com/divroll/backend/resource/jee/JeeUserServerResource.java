@@ -32,6 +32,7 @@ import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserResource;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -42,7 +43,6 @@ import org.restlet.data.Status;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import com.godaddy.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

@@ -21,7 +21,6 @@
  */
 package com.divroll.backend.resource.jee;
 
-import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Function;
 import com.divroll.backend.repository.FunctionRepository;
 import com.divroll.backend.resource.ManageFunctionResource;

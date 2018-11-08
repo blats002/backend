@@ -22,7 +22,6 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.PasswordResetDTO;
-import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 

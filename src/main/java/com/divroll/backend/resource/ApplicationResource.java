@@ -22,13 +22,10 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Application;
-import com.divroll.backend.model.UserRootDTO;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
-import org.restlet.representation.Representation;
-import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 
