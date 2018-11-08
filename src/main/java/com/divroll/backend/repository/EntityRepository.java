@@ -38,10 +38,10 @@ import java.util.Map;
  */
 public interface EntityRepository {
 
-    String createEntity(String instance, String namespace, String storeName, EntityClass entityClass,
+    String createEntity(String instance, String namespace, String entityType, EntityClass entityClass,
                         List<Action> actions, List<EntityAction> entityActions, final EntityMetadata metadata);
 
-    boolean updateEntity(String instance, String namespace, String storeName, String entityId, Map<String, Comparable> comparableMap,
+    boolean updateEntity(String instance, String namespace, String entityType, String entityId, Map<String, Comparable> comparableMap,
                          final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite,
                          final EntityMetadata metadata);
 
@@ -51,7 +51,7 @@ public interface EntityRepository {
             String propertyKey, final Comparable<T> propertyVal, Class<T> clazz,
                                        String blobKey);
 
-    Map<String, Comparable> getEntity(String instance, String namespace, String storeName, String entityId);
+    Map<String, Comparable> getEntity(String instance, String namespace, String entityType, String entityId);
 
     List<String> getACLReadList(String instance, String namespace, String entityId);
 
@@ -61,41 +61,41 @@ public interface EntityRepository {
 
     boolean isPublicWrite(String instance, String namespace, String entityId);
 
-    Comparable getEntityProperty(String instance, String namespace, String storeName, String entityId, String propertyName);
+    Comparable getEntityProperty(String instance, String namespace, String entityType, String entityId, String propertyName);
 
-    boolean deleteEntity(String instance, String namespace, String storeName, String entityId);
+    boolean deleteEntity(String instance, String namespace, String entityType, String entityId);
 
-    boolean deleteEntities(String instance, String namespace, String storeName);
+    boolean deleteEntities(String instance, String namespace, String entityType);
 
     boolean deleteEntityType(String instance, String namespace, String entityType);
 
-    boolean linkEntity(String instance, String namespace, String storeName, String linkName, String sourceId, String targetId);
+    boolean linkEntity(String instance, String namespace, String entityType, String linkName, String sourceId, String targetId);
 
-    boolean unlinkEntity(String instance, String namespace, String storeName, String linkName, String sourceId, String targetId);
+    boolean unlinkEntity(String instance, String namespace, String entityType, String linkName, String sourceId, String targetId);
 
-    boolean isLinked(String instance, String namespace, String storeName, String linkName, String sourceId, String targetId);
+    boolean isLinked(String instance, String namespace, String entityType, String linkName, String sourceId, String targetId);
 
-    Map<String, Comparable> getFirstLinkedEntity(String instance, String namespace, String storeName, String entityId, String linkName);
+    Map<String, Comparable> getFirstLinkedEntity(String instance, String namespace, String entityType, String entityId, String linkName);
 
-    List<Map<String, Comparable>> getLinkedEntities(String instance, String namespace, String storeName, String entityId, String linkName);
+    List<Map<String, Comparable>> getLinkedEntities(String instance, String namespace, String entityType, String entityId, String linkName);
 
-    List<Map<String, Comparable>> listEntities(String instance, String namespace, String storeName, String userIdRoleId,
+    List<Map<String, Comparable>> listEntities(String instance, String namespace, String entityType, String userIdRoleId,
                                            int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters);
 
-    InputStream getEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey);
+    InputStream getEntityBlob(String instance, String namespace, String entityType, String entityId, String blobKey);
 
-    boolean createEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey, InputStream is);
+    boolean createEntityBlob(String instance, String namespace, String entityType, String entityId, String blobKey, InputStream is);
 
-    boolean deleteEntityBlob(String instance, String namespace, String storeName, String entityId, String blobKey);
+    boolean deleteEntityBlob(String instance, String namespace, String entityType, String entityId, String blobKey);
 
-    List<String> getLinkNames(String instance, String namespace, String storeName, String entityId);
+    List<String> getLinkNames(String instance, String namespace, String entityType, String entityId);
 
-    List<String> getBlobKeys(String instance, String namespace, String storeName, String entityId);
+    List<String> getBlobKeys(String instance, String namespace, String entityType, String entityId);
 
-    boolean deleteProperty(String instance, String namespace, String storeName, String propertyName);
+    boolean deleteProperty(String instance, String namespace, String entityType, String propertyName);
 
-    boolean updateProperty(String instance, String namespace, String storeName, String propertyName, EntityMetadata update);
+    boolean updateProperty(String instance, String namespace, String entityType, String propertyName, EntityMetadata update);
 
-    List<Map<String, Comparable>> getEntities(String instance, String namespace, String storeName, String propertyName, Comparable propertyValue, int skip, int limit);
+    List<Map<String, Comparable>> getEntities(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue, int skip, int limit);
 
 }
