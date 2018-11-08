@@ -21,6 +21,11 @@
  */
 package com.divroll.functions;
 
+import com.divroll.backend.functions.customcode.CustomCodeMethod;
+import com.divroll.backend.functions.jar.JarEntryObject;
+import com.divroll.backend.functions.rest.CustomCodeRequest;
+import org.json.simple.JSONValue;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -31,11 +36,6 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
-
-import com.divroll.backend.functions.customcode.CustomCodeMethod;
-import com.divroll.backend.functions.jar.JarEntryObject;
-import com.divroll.backend.functions.rest.CustomCodeRequest;
-import org.json.simple.JSONValue;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

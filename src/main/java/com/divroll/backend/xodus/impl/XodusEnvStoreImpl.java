@@ -24,7 +24,6 @@ package com.divroll.backend.xodus.impl;
 import com.divroll.backend.model.ACL;
 import com.divroll.backend.model.ByteValue;
 import com.divroll.backend.model.ByteValueIterable;
-import com.divroll.backend.service.jee.JeeSchemaService;
 import com.divroll.backend.xodus.XodusEnvStore;
 import com.divroll.backend.xodus.XodusManager;
 import com.godaddy.logging.Logger;

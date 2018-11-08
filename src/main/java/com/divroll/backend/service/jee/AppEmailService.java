@@ -23,9 +23,7 @@ package com.divroll.backend.service.jee;
 
 import com.divroll.backend.job.EmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
-import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Email;
-import com.divroll.backend.model.User;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;

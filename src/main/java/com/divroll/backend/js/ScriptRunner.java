@@ -22,8 +22,8 @@
 package com.divroll.backend.js;
 
 import org.dynjs.Config;
-import org.dynjs.exception.ThrowException;
-import org.dynjs.runtime.*;
+import org.dynjs.runtime.DynJS;
+import org.dynjs.runtime.Runner;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
