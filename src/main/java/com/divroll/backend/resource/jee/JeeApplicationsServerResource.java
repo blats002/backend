@@ -24,7 +24,6 @@ package com.divroll.backend.resource.jee;
 import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Applications;
-import com.divroll.backend.model.Email;
 import com.divroll.backend.model.UserRootDTO;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
@@ -38,7 +37,6 @@ import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,11 +63,11 @@ public class JeeApplicationsServerResource extends BaseServerResource
 
     @Inject
     @Named("defaultRoleStore")
-    String roleStoreName;
+    String defaultRoleStore;
 
     @Inject
     @Named("defaultUserStore")
-    String userStoreName;
+    String defaultUserStore;
 
     @Inject
     @Named("masterToken")
@@ -146,17 +144,17 @@ public class JeeApplicationsServerResource extends BaseServerResource
             //Application app =  applicationService.read(id.toString());
 
             if(rootDTO != null) {
-                if(beforeSave(ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, roleStoreName)) {
-                    String roleId = roleRepository.createRole(appId, namespace, roleStoreName, rootDTO.getRole(), null, null, false, false, actions);
+                if(beforeSave(ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, defaultRoleStore)) {
+                    String roleId = roleRepository.createRole(appId, namespace, defaultRoleStore, rootDTO.getRole(), null, null, false, false, actions);
                     if(roleId != null) {
-                        afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, userStoreName);
+                        afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, defaultUserStore);
                     }
-                    if(beforeSave(ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName)) {
-                        String userId = userRepository.createUser(appId, namespace, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(),
+                    if(beforeSave(ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore)) {
+                        String userId = userRepository.createUser(appId, namespace, defaultUserStore, rootDTO.getUsername(), rootDTO.getPassword(),
                                 null, null, null, false, false,
                                 new String[]{roleId}, actions, null, null, null);
                         if(userId != null) {
-                            afterSave(ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName);
+                            afterSave(ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore);
                         }
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

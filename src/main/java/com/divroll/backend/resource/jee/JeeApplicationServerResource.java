@@ -36,10 +36,7 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
-import org.restlet.representation.Representation;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -59,11 +56,11 @@ public class JeeApplicationServerResource extends BaseServerResource
 
     @Inject
     @Named("defaultRoleStore")
-    String roleStoreName;
+    String defaultRoleStore;
 
     @Inject
     @Named("defaultUserStore")
-    String userStoreName;
+    String defaultUserStore;
 
     @Inject
     XodusStore store;
@@ -158,17 +155,17 @@ public class JeeApplicationServerResource extends BaseServerResource
         final EntityId id = applicationService.create(application);
         if (id != null) {
             if(rootDTO != null) {
-                if(beforeSave(application, ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, roleStoreName)) {
-                    String roleId = roleRepository.createRole(appId, namespace, roleStoreName, rootDTO.getRole(), null, null, false, false, actions);
+                if(beforeSave(application, ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, defaultRoleStore)) {
+                    String roleId = roleRepository.createRole(appId, namespace, defaultRoleStore, rootDTO.getRole(), null, null, false, false, actions);
                     if(roleId != null) {
-                        afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, userStoreName);
+                        afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, defaultUserStore);
                     }
-                    if(beforeSave(application, ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName)) {
-                        String userId = userRepository.createUser(appId, namespace, userStoreName, rootDTO.getUsername(), rootDTO.getPassword(),
+                    if(beforeSave(application, ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore)) {
+                        String userId = userRepository.createUser(appId, namespace, defaultUserStore, rootDTO.getUsername(), rootDTO.getPassword(),
                                 null, null, null, false, false,
                                 new String[]{roleId}, actions,  null, null, null);
                         if(userId != null) {
-                            afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, userStoreName);
+                            afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore);
                         }
                     } else {
                         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

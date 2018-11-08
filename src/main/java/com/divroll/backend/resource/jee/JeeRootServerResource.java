@@ -44,7 +44,7 @@ public class JeeRootServerResource extends SelfInjectingServerResource
 
     @Inject
     @Named("app")
-    String name;
+    String appName;
 
     @Inject
     @Named("xodusRoot")
@@ -57,7 +57,7 @@ public class JeeRootServerResource extends SelfInjectingServerResource
     @Get("json")
     public Server represent() {
         Server server = new Server();
-        server.setName(name);
+        server.setName(appName);
         server.setXodusRoot(xodusRoot);
         server.setdefaultUserStore(defaultUserStore);
         setStatus(Status.SUCCESS_OK);

@@ -30,7 +30,6 @@ import com.divroll.backend.model.EntityStub;
 import com.divroll.backend.model.Role;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.RoleResource;
-import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;
@@ -55,7 +54,7 @@ public class JeeRoleServerResource extends BaseServerResource
 
     @Inject
     @Named("defaultRoleStore")
-    String storeName;
+    String defaultRoleStore;
 
     @Inject
     RoleRepository roleRepository;
@@ -82,7 +81,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 return null;
             }
             if (isMaster()) {
-                Role role = roleRepository.getRole(appId, namespace, storeName, roleId);
+                Role role = roleRepository.getRole(appId, namespace, defaultRoleStore, roleId);
                 if (role != null) {
                     setStatus(Status.SUCCESS_OK);
                     return role;
@@ -98,7 +97,7 @@ public class JeeRoleServerResource extends BaseServerResource
 
                 Boolean isAccess = false;
 
-                Role role = roleRepository.getRole(appId,  namespace, storeName, roleId);
+                Role role = roleRepository.getRole(appId,  namespace, defaultRoleStore, roleId);
                 if(role == null) {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                     return null;
@@ -196,16 +195,16 @@ public class JeeRoleServerResource extends BaseServerResource
             publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
             if (!isMaster()) {
-                Role role = roleRepository.getRole(appId,  namespace, storeName, roleId);
+                Role role = roleRepository.getRole(appId,  namespace, defaultRoleStore, roleId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
                     if (role.getPublicWrite() || role.getAclWrite().contains(authUserId)) {
                         if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", newRoleName).build(), appId, entityType)) {
-                            Boolean success = roleRepository.updateRole(appId, namespace, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
+                            Boolean success = roleRepository.updateRole(appId, namespace, defaultRoleStore, roleId, newRoleName, read, write, publicRead, publicWrite);
                             if (success) {
-                                pubSubService.updated(appId,  namespace, storeName, roleId);
+                                pubSubService.updated(appId,  namespace, defaultRoleStore, roleId);
                                 setStatus(Status.SUCCESS_OK);
                                 role.setPublicWrite(publicWrite);
                                 role.setPublicRead(publicRead);
@@ -226,9 +225,9 @@ public class JeeRoleServerResource extends BaseServerResource
                 }
             } else {
                 if(beforeSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", newRoleName).build(), appId, entityType)) {
-                    Boolean success = roleRepository.updateRole(appId, namespace, storeName, roleId, newRoleName, read, write, publicRead, publicWrite);
+                    Boolean success = roleRepository.updateRole(appId, namespace, defaultRoleStore, roleId, newRoleName, read, write, publicRead, publicWrite);
                     if (success) {
-                        pubSubService.updated(appId, namespace, storeName, roleId);
+                        pubSubService.updated(appId, namespace, defaultRoleStore, roleId);
                         setStatus(Status.SUCCESS_OK);
                         Role role = new Role();
                         role.setName(newRoleName);
@@ -275,13 +274,13 @@ public class JeeRoleServerResource extends BaseServerResource
                 return;
             }
             if (!isMaster()) {
-                Role role = roleRepository.getRole(appId, namespace, storeName, roleId);
+                Role role = roleRepository.getRole(appId, namespace, defaultRoleStore, roleId);
                 String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
                 if (role == null) {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 } else {
                     if (role.getPublicWrite() || ACLHelper.contains(authUserId, role.getAclWrite())) {
-                        Boolean success = roleRepository.deleteRole(appId, namespace, storeName, roleId);
+                        Boolean success = roleRepository.deleteRole(appId, namespace, defaultRoleStore, roleId);
                         if (success) {
                             pubSubService.deleted(appId, namespace, entityType, entityId);
                             setStatus(Status.SUCCESS_OK);
@@ -294,7 +293,7 @@ public class JeeRoleServerResource extends BaseServerResource
                 }
             } else {
                 // Master key bypasses all checks
-                Boolean success = roleRepository.deleteRole(appId, namespace, storeName, roleId);
+                Boolean success = roleRepository.deleteRole(appId, namespace, defaultRoleStore, roleId);
                 if (success) {
                     pubSubService.deleted(appId, namespace, entityType, entityId);
                     setStatus(Status.SUCCESS_OK);
