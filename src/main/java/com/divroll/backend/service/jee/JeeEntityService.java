@@ -556,7 +556,9 @@ public class JeeEntityService implements EntityService {
               schemaService.listPropertyTypes(appId, namespace, entityType);
           types.forEach(
               type -> {
-                if (type.equals(key)) {
+                if (type != null
+                        && type.getPropertyType() != null
+                        && type.getPropertyType().toString().equals(key)) {
                   EntityPropertyType.TYPE expectedPropertyType = type.getPropertyType();
                   if (value instanceof EmbeddedEntityIterable) {
                     if (!expectedPropertyType.equals(EntityPropertyType.TYPE.OBJECT)) {

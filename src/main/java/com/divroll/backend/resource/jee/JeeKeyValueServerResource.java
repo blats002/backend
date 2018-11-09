@@ -84,7 +84,7 @@ public class JeeKeyValueServerResource extends BaseServerResource implements Key
       String dir = appId;
       if (dir != null) {
         if (accept != null) {
-          if (accept.equals(MediaType.APPLICATION_OCTET_STREAM)
+          if (accept.equals(MediaType.APPLICATION_OCTET_STREAM.toString())
               || accept.equals("application/octet-stream")) {
             ByteBuffer value =
                 keyValueService.get(
@@ -97,7 +97,7 @@ public class JeeKeyValueServerResource extends BaseServerResource implements Key
               setStatus(Status.SUCCESS_OK);
               return representation;
             }
-          } else if (accept.equals(MediaType.APPLICATION_JSON)) {
+          } else if (accept.equals(MediaType.APPLICATION_JSON.toString())) {
             String value =
                 keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
             if (value != null) {
@@ -181,7 +181,7 @@ public class JeeKeyValueServerResource extends BaseServerResource implements Key
 
       String dir = appId;
       if (dir != null) {
-        if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM)
+        if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM.toString())
             || contentType.equals("application/octet-stream")) {
           byte[] value = ByteStreams.toByteArray(entity.getStream());
           boolean success =
@@ -274,7 +274,7 @@ public class JeeKeyValueServerResource extends BaseServerResource implements Key
 
       String dir = appId;
       if (dir != null) {
-        if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM)
+        if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM.toString())
             || contentType.equals("application/octet-stream")) {
           byte[] value = ByteStreams.toByteArray(entity.getStream());
           boolean success =
