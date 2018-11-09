@@ -107,7 +107,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
               List<String> uniqueList = new LinkedList<>();
               ComparableHashMap metaDataHashMap = null;
-              if(metadata.uniqueProperties() == null) {
+              if(first != null && metadata.uniqueProperties() == null) {
                   EmbeddedEntityIterable embeddedEntityIterable = first.getProperty(metadataProperty) != null
                           ? (EmbeddedEntityIterable) first.getProperty(metadataProperty)
                           : null;
@@ -121,7 +121,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                       }
                   }
               } else {
-                  uniqueList.addAll(metadata.uniqueProperties());
+                  if(metadata.uniqueProperties() != null) {
+                      uniqueList.addAll(metadata.uniqueProperties());
+                  }
               }
 
               final EntityIterable[] iterable = new EntityIterable[1];
@@ -152,7 +154,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 entity.setProperty(namespaceProperty, namespace);
               }
-              
+
               ComparableLinkedList<Comparable> uProperties = new ComparableLinkedList<>();
               uProperties.addAll(uniqueList);
               removeDuplicates(uProperties);
@@ -389,11 +391,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     });
               }
 
-              if (iterable[0] != null && !iterable[0].isEmpty()) {
+              EntityId idOfEntity = txn.toEntityId(entityId);
+
+              if (iterable[0] != null && !iterable[0].isEmpty() && !iterable[0].getFirst().getId().equals(idOfEntity)) {
                 throw new IllegalArgumentException("Duplicate value(s) found");
               }
 
-              EntityId idOfEntity = txn.toEntityId(entityId);
               final Entity entity = txn.getEntity(idOfEntity);
               Iterator<String> it = comparableMap.keySet().iterator();
               while (it.hasNext()) {
