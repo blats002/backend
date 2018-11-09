@@ -97,10 +97,36 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
 
+              Entity first = null;
+
+              if(namespace != null) {
+                  first = txn.find(entityType, namespaceProperty, namespace).getFirst();
+              } else {
+                  first = txn.getAll(entityType).minus(txn.find(entityType, namespaceProperty, namespace)).getFirst();
+              }
+
+              List<String> uniqueList = new LinkedList<>();
+              ComparableHashMap metaDataHashMap = null;
+              if(metadata.uniqueProperties() == null) {
+                  EmbeddedEntityIterable embeddedEntityIterable = first.getProperty(metadataProperty) != null
+                          ? (EmbeddedEntityIterable) first.getProperty(metadataProperty)
+                          : null;
+                  if(embeddedEntityIterable != null) {
+                      metaDataHashMap = (ComparableHashMap) embeddedEntityIterable.asObject();
+                      if(metaDataHashMap != null) {
+                          ComparableLinkedList comparableLinkedList = metaDataHashMap.get("uniqueProperties") != null
+                                  ? (ComparableLinkedList) metaDataHashMap.get("uniqueProperties")
+                                  : null;
+                          uniqueList.addAll(comparableLinkedList);
+                      }
+                  }
+              } else {
+                  uniqueList.addAll(metadata.uniqueProperties());
+              }
+
               final EntityIterable[] iterable = new EntityIterable[1];
-              if (metadata.uniqueProperties() != null) {
-                metadata
-                    .uniqueProperties()
+              if (!uniqueList.isEmpty()) {
+                  uniqueList
                     .forEach(
                         property -> {
                           if (!entityClass.comparableMap().keySet().contains(property)) {
@@ -126,46 +152,15 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 entity.setProperty(namespaceProperty, namespace);
               }
-
-              ////////////////////////////////////////////////////////////////////////////////////////////////////
-              // Get meta data from previous entity
-              Entity reference = null;
-              if (namespace != null) {
-                reference =
-                    txn.getAll(entityType)
-                        .intersect(txn.find(entityType, namespaceProperty, namespace))
-                        .getFirst();
-              } else {
-                reference = txn.getAll(entityType).getFirst();
+              
+              ComparableLinkedList<Comparable> uProperties = new ComparableLinkedList<>();
+              uProperties.addAll(uniqueList);
+              removeDuplicates(uProperties);
+              if(metaDataHashMap == null) {
+                  metaDataHashMap = new ComparableHashMap();
               }
-              ComparableHashMap finalMetadata = null;
-              if (reference != null) {
-                EmbeddedEntityIterable embeddedMetadata =
-                    (EmbeddedEntityIterable) reference.getProperty(metadataProperty);
-                if (embeddedMetadata != null) {
-                  finalMetadata = ((ComparableHashMap) embeddedMetadata.asObject());
-                }
-              }
-              // Set new meta data for all entities
-              if (metadata.uniqueProperties() != null) {
-                if (finalMetadata == null) {
-                  finalMetadata = new ComparableHashMap();
-                }
-                ComparableLinkedList<Comparable> uniqueProperties =
-                    new ComparableLinkedList<Comparable>();
-                uniqueProperties.addAll(metadata.uniqueProperties());
-                removeDuplicates(uniqueProperties);
-                finalMetadata.put("uniqueProperties", uniqueProperties);
-                entity.setProperty(
-                    metadataProperty, new EmbeddedEntityIterable(Comparables.cast(finalMetadata)));
-              } else {
-                if (finalMetadata == null) {
-                  finalMetadata = new ComparableHashMap();
-                }
-                entity.setProperty(
-                    metadataProperty, new EmbeddedEntityIterable(Comparables.cast(finalMetadata)));
-              }
-              ////////////////////////////////////////////////////////////////////////////////////////////////////
+              metaDataHashMap.put("uniqueProperties", uProperties);
+              entity.setProperty(metadataProperty, new EmbeddedEntityIterable(metaDataHashMap));
 
               Iterator<String> it = entityClass.comparableMap().keySet().iterator();
               while (it.hasNext()) {
