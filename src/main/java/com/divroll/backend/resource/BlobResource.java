@@ -33,15 +33,15 @@ import org.restlet.resource.Put;
  * @since 0-SNAPSHOT
  */
 public interface BlobResource {
-    @Post
-    Representation setBlob(Representation entity);
+  @Post
+  Representation setBlob(Representation entity);
 
-    @Put
-    Representation updateBlob(Representation entity);
+  @Put
+  Representation updateBlob(Representation entity);
 
-    @Delete
-    void deleteBlob(Representation entity);
+  @Delete
+  void deleteBlob(Representation entity);
 
-    @Get
-    Representation getBlob(Representation entity);
+  @Get
+  Representation getBlob(Representation entity);
 }

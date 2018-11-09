@@ -35,17 +35,18 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class GuiceServletModule extends ServletModule {
-    private static Map<String, String> map(String... params) {
-        Preconditions.checkArgument(params.length % 2 == 0, "You have to have a n even number of map params");
-        Map<String, String> map = Maps.newHashMap();
-        for (int i = 0; i < params.length; i += 2) {
-            map.put(params[i], params[i + 1]);
-        }
-        return map;
+  private static Map<String, String> map(String... params) {
+    Preconditions.checkArgument(
+        params.length % 2 == 0, "You have to have a n even number of map params");
+    Map<String, String> map = Maps.newHashMap();
+    for (int i = 0; i < params.length; i += 2) {
+      map.put(params[i], params[i + 1]);
     }
+    return map;
+  }
 
-    @Override
-    protected void configureServlets() {
-        bind(ServerServlet.class).in(Scopes.SINGLETON);
-    }
+  @Override
+  protected void configureServlets() {
+    bind(ServerServlet.class).in(Scopes.SINGLETON);
+  }
 }

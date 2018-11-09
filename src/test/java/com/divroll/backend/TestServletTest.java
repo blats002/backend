@@ -43,47 +43,45 @@ import java.net.URL;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class TestServletTest {
-    /**
-     * Deployment for the test
-     *
-     * @return web archive
-     */
-    @Deployment(name = "default")
-    public static WebArchive getTestArchive() {
-        return ShrinkWrap.create(WebArchive.class, "simple.war")
-                .addClass(TestServlet.class)
-                .setWebXML("web-2.5.xml")
-                .addAsWebInfResource("logging.properties");
-    }
+  /**
+   * Deployment for the test
+   *
+   * @return web archive
+   */
+  @Deployment(name = "default")
+  public static WebArchive getTestArchive() {
+    return ShrinkWrap.create(WebArchive.class, "simple.war")
+        .addClass(TestServlet.class)
+        .setWebXML("web-2.5.xml")
+        .addAsWebInfResource("logging.properties");
+  }
 
-    @Test
-    @OperateOnDeployment("default")
-    public void shouldBeAbleToInvokeServletInDeployedWebApp() throws Exception {
-        String body = readAllAndClose(new URL("http://localhost:8080/Test").openStream());
-        Assert.assertEquals(
-                "Verify that the servlet was deployed and returns expected result",
-                TestServlet.MESSAGE,
-                body);
-    }
+  @Test
+  @OperateOnDeployment("default")
+  public void shouldBeAbleToInvokeServletInDeployedWebApp() throws Exception {
+    String body = readAllAndClose(new URL("http://localhost:8080/Test").openStream());
+    Assert.assertEquals(
+        "Verify that the servlet was deployed and returns expected result",
+        TestServlet.MESSAGE,
+        body);
+  }
 
-    @Test
-    public void test() {
+  @Test
+  public void test() {}
 
+  private String readAllAndClose(InputStream is) throws Exception {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try {
+      int read;
+      while ((read = is.read()) != -1) {
+        out.write(read);
+      }
+    } finally {
+      try {
+        is.close();
+      } catch (Exception ignored) {
+      }
     }
-
-    private String readAllAndClose(InputStream is) throws Exception {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            int read;
-            while ((read = is.read()) != -1) {
-                out.write(read);
-            }
-        } finally {
-            try {
-                is.close();
-            } catch (Exception ignored) {
-            }
-        }
-        return out.toString();
-    }
+    return out.toString();
+  }
 }

@@ -66,375 +66,402 @@ import java.util.Map;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeBlobServerResource extends BaseServerResource
-        implements BlobResource {
+public class JeeBlobServerResource extends BaseServerResource implements BlobResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeBlobServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeBlobServerResource.class);
 
-    @Inject
-    EntityRepository entityRepository;
+  @Inject EntityRepository entityRepository;
 
-    @Inject
-    RoleRepository roleRepository;
+  @Inject RoleRepository roleRepository;
 
-    @Inject
-    WebTokenService webTokenService;
+  @Inject WebTokenService webTokenService;
 
-    @Inject
-    PubSubService pubSubService;
+  @Inject PubSubService pubSubService;
 
-    @Override
-    public Representation setBlob(Representation entity) {
-        try {
+  @Override
+  public Representation setBlob(Representation entity) {
+    try {
 
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
-
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return null;
-            }
-
-            String encoding = getQueryValue("encoding");
-
-            String authUserId = null;
-
-            boolean isWriteAccess = false;
-            boolean isMaster = false;
-            boolean isPublic = false;
-
-            try {
-                authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            } catch (Exception e) {
-                // do nothing
-            }
-
-            if(entityId == null || entityId.isEmpty()) { // create a new Entity
-                entityType = getQueryValue(Constants.ENTITY_TYPE);
-
-                if(entityType == null) {
-                    return badRequest();
-                }
-                String entityJson = getQueryValue("entity");
-                try {
-                    JSONObject jsonObject = new JSONObject(entityJson);
-                    Map<String, Comparable> comparableMap = JSON.jsonToMap(jsonObject);
-
-                    List<EntityAction> entityActions = new LinkedList<>();
-                    if(linkName != null && linkFrom != null) {
-                        boolean isAuth = true;
-                        if( authUserId == null || ( !entityRepository.getACLWriteList(appId, namespace, linkFrom).contains(authUserId)
-                                && !isMaster() ) ) {
-                            isAuth = false;
-                        }
-                        if(linkFrom.equals(authUserId)) {
-                            isAuth = true;
-                        }
-                        if(entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
-                            isAuth = true;
-                        }
-                        if(!isAuth) {
-                            return unauthorized();
-                        }
-                        entityActions.add(ImmutableBacklinkAction.builder()
-                                .linkName(linkName)
-                                .entityId(linkFrom)
-                                .build());
-                    } else if(authUserId != null && linkName != null && linkTo != null) {
-                        if( authUserId == null || !entityRepository.getACLWriteList(appId, namespace, linkTo).contains(authUserId)
-                                && !isMaster()) {
-                            return unauthorized();
-                        }
-                        entityActions.add(ImmutableLinkAction.builder()
-                                .linkName(linkName)
-                                .entityId(linkFrom)
-                                .build());
-                    }
-
-                    if(encoding != null && encoding.equals("base64")) {
-                        String base64 = entity.getText();
-                        byte[] bytes = BaseEncoding.base64().decode(base64);
-                        InputStream inputStream = ByteSource.wrap(bytes).openStream();
-                        JSONObject entityJSONObject = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
-                                aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
-                                blobName, inputStream, new EntityMetadataBuilder()
-                                        .uniqueProperties(uniqueProperties)
-                                        .build());
-                        String entityId = entityJSONObject.getString(Constants.RESERVED_FIELD_ENTITY_ID);
-                        if(entityJSONObject != null && entityId != null){
-                            pubSubService.updated(appId, namespace, entityType, entityId);
-                            setStatus(Status.SUCCESS_CREATED);
-                            return created(entityJSONObject);
-                        } else {
-                            return badRequest();
-                        }
-                    } else {
-                        if (MediaType.MULTIPART_FORM_DATA.equals(
-                                entity.getMediaType(), true)) {
-                            Request restletRequest = getRequest();
-                            HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
-                            ServletFileUpload upload = new ServletFileUpload();
-                            FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
-                            while (fileIterator.hasNext()) {
-                                FileItemStream item = fileIterator.next();
-                                String fieldName = item.getFieldName();
-                                String name = item.getName();
-                                if(item.isFormField()) {
-                                } else {
-                                    CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-                                    JSONObject wrappedEntityJSON = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
-                                            aclRead, aclWrite, publicRead, publicWrite, new LinkedList<>(), entityActions,
-                                            blobName, countingInputStream, new EntityMetadataBuilder()
-                                                    .uniqueProperties(uniqueProperties)
-                                                    .build());
-                                    JSONObject entityJSON = wrappedEntityJSON.getJSONObject("entity");
-                                    String entityId = entityJSON.getString(Constants.RESERVED_FIELD_ENTITY_ID);
-                                    if(wrappedEntityJSON != null && entityId != null){
-                                        pubSubService.updated(appId, namespace, entityType, entityId);
-                                        return created(wrappedEntityJSON);
-                                    } else {
-                                        return badRequest();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    return badRequest();
-                }
-            } else if (entityId != null) {
-                Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
-                List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
-                        ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
-
-                if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
-                    isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
-                }
-
-                if (isMaster()) {
-                    isMaster = true;
-                } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
-                    isWriteAccess = true;
-                } else if (authUserId != null) {
-                    List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
-                    for (Role role : roles) {
-                        if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
-                            isWriteAccess = true;
-                        }
-                    }
-                }
-
-                if (isMaster || isWriteAccess || isPublic) {
-                    // TODO: Compress stream
-                    if(encoding != null && encoding.equals("base64")) {
-                        String base64 = entity.getText();
-                        byte[] bytes = BaseEncoding.base64().decode(base64);
-                        InputStream inputStream = ByteSource.wrap(bytes).openStream();
-                        if (entityRepository.createEntityBlob(appId, namespace, entityType, entityId, blobName, inputStream)) {
-                            pubSubService.updated(appId, namespace, entityType, entityId);
-                            setStatus(Status.SUCCESS_CREATED);
-                        } else {
-                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                        }
-                    } else {
-                        if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(
-                                entity.getMediaType(), true)) {
-                            Request restletRequest = getRequest();
-                            HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
-                            ServletFileUpload upload = new ServletFileUpload();
-                            FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
-                            while (fileIterator.hasNext()) {
-                                FileItemStream item = fileIterator.next();
-                                String fieldName = item.getFieldName();
-                                String name = item.getName();
-                                if(item.isFormField()) {
-                                } else {
-                                    CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-                                    if (entityRepository.createEntityBlob(appId, namespace, entityType, entityId, blobName, countingInputStream)) {
-                                        pubSubService.updated(appId, namespace, entityType, entityId);
-                                        setStatus(Status.SUCCESS_CREATED);
-                                    } else {
-                                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                                    }
-                                }
-                            }
-                        } else if(entity != null && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
-                            InputStream inputStream = entity.getStream();
-                            CountingInputStream countingInputStream = new CountingInputStream(inputStream);
-                            if (entityRepository.createEntityBlob(appId, namespace, entityType, entityId, blobName, countingInputStream)) {
-                                pubSubService.updated(appId, namespace, entityType, entityId);
-                                setStatus(Status.SUCCESS_CREATED);
-                            } else {
-                                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                            }
-                        }
-
-                    }
-
-                } else {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                }
-            } else {
-                return badRequest();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+      if (entity == null || entity.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return null;
-    }
+      }
 
-    @Override
-    public Representation updateBlob(Representation entity) {
-        return setBlob(entity);
-    }
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return null;
+      }
 
-    @Override
-    public void deleteBlob(Representation entity) {
+      String encoding = getQueryValue("encoding");
+
+      String authUserId = null;
+
+      boolean isWriteAccess = false;
+      boolean isMaster = false;
+      boolean isPublic = false;
+
+      try {
+        authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+      } catch (Exception e) {
+        // do nothing
+      }
+
+      if (entityId == null || entityId.isEmpty()) { // create a new Entity
+        entityType = getQueryValue(Constants.ENTITY_TYPE);
+
+        if (entityType == null) {
+          return badRequest();
+        }
+        String entityJson = getQueryValue("entity");
         try {
+          JSONObject jsonObject = new JSONObject(entityJson);
+          Map<String, Comparable> comparableMap = JSON.jsonToMap(jsonObject);
 
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return;
+          List<EntityAction> entityActions = new LinkedList<>();
+          if (linkName != null && linkFrom != null) {
+            boolean isAuth = true;
+            if (authUserId == null
+                || (!entityRepository
+                        .getACLWriteList(appId, namespace, linkFrom)
+                        .contains(authUserId)
+                    && !isMaster())) {
+              isAuth = false;
             }
-
-            String authUserId = null;
-
-            boolean isWriteAccess = false;
-            boolean isMaster = false;
-            boolean isPublic = false;
-
-            try {
-                authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            } catch (Exception e) {
-                // do nothing
+            if (linkFrom.equals(authUserId)) {
+              isAuth = true;
             }
-
-            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
-            List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
-                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
-
-            if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
-                isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+            if (entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
+              isAuth = true;
             }
-
-            if (isMaster()) {
-                isMaster = true;
-            } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
-                isWriteAccess = true;
-            } else if (authUserId != null) {
-                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
-                for (Role role : roles) {
-                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
-                        isWriteAccess = true;
-                    }
-                }
+            if (!isAuth) {
+              return unauthorized();
             }
+            entityActions.add(
+                ImmutableBacklinkAction.builder().linkName(linkName).entityId(linkFrom).build());
+          } else if (authUserId != null && linkName != null && linkTo != null) {
+            if (authUserId == null
+                || !entityRepository.getACLWriteList(appId, namespace, linkTo).contains(authUserId)
+                    && !isMaster()) {
+              return unauthorized();
+            }
+            entityActions.add(
+                ImmutableLinkAction.builder().linkName(linkName).entityId(linkFrom).build());
+          }
 
-            if (isMaster || isWriteAccess || isPublic) {
-                if (entityRepository.deleteEntityBlob(appId, namespace, entityType, entityId, blobName)) {
+          if (encoding != null && encoding.equals("base64")) {
+            String base64 = entity.getText();
+            byte[] bytes = BaseEncoding.base64().decode(base64);
+            InputStream inputStream = ByteSource.wrap(bytes).openStream();
+            JSONObject entityJSONObject =
+                entityService.createEntity(
+                    getApp(),
+                    namespace,
+                    entityType,
+                    comparableMap,
+                    aclRead,
+                    aclWrite,
+                    publicRead,
+                    publicWrite,
+                    new LinkedList<>(),
+                    entityActions,
+                    blobName,
+                    inputStream,
+                    new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+            String entityId = entityJSONObject.getString(Constants.RESERVED_FIELD_ENTITY_ID);
+            if (entityJSONObject != null && entityId != null) {
+              pubSubService.updated(appId, namespace, entityType, entityId);
+              setStatus(Status.SUCCESS_CREATED);
+              return created(entityJSONObject);
+            } else {
+              return badRequest();
+            }
+          } else {
+            if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+              Request restletRequest = getRequest();
+              HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
+              ServletFileUpload upload = new ServletFileUpload();
+              FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+              while (fileIterator.hasNext()) {
+                FileItemStream item = fileIterator.next();
+                String fieldName = item.getFieldName();
+                String name = item.getName();
+                if (item.isFormField()) {
+                } else {
+                  CountingInputStream countingInputStream =
+                      new CountingInputStream(item.openStream());
+                  JSONObject wrappedEntityJSON =
+                      entityService.createEntity(
+                          getApp(),
+                          namespace,
+                          entityType,
+                          comparableMap,
+                          aclRead,
+                          aclWrite,
+                          publicRead,
+                          publicWrite,
+                          new LinkedList<>(),
+                          entityActions,
+                          blobName,
+                          countingInputStream,
+                          new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+                  JSONObject entityJSON = wrappedEntityJSON.getJSONObject("entity");
+                  String entityId = entityJSON.getString(Constants.RESERVED_FIELD_ENTITY_ID);
+                  if (wrappedEntityJSON != null && entityId != null) {
                     pubSubService.updated(appId, namespace, entityType, entityId);
-                    setStatus(Status.SUCCESS_OK);
+                    return created(wrappedEntityJSON);
+                  } else {
+                    return badRequest();
+                  }
+                }
+              }
+            }
+          }
+        } catch (Exception e) {
+          return badRequest();
+        }
+      } else if (entityId != null) {
+        Map<String, Comparable> map =
+            entityRepository.getEntity(appId, namespace, entityType, entityId);
+        List<EntityStub> aclWriteList =
+            map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
+                : new LinkedList<>();
+
+        if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
+          isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+        }
+
+        if (isMaster()) {
+          isMaster = true;
+        } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
+          isWriteAccess = true;
+        } else if (authUserId != null) {
+          List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
+          for (Role role : roles) {
+            if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
+              isWriteAccess = true;
+            }
+          }
+        }
+
+        if (isMaster || isWriteAccess || isPublic) {
+          // TODO: Compress stream
+          if (encoding != null && encoding.equals("base64")) {
+            String base64 = entity.getText();
+            byte[] bytes = BaseEncoding.base64().decode(base64);
+            InputStream inputStream = ByteSource.wrap(bytes).openStream();
+            if (entityRepository.createEntityBlob(
+                appId, namespace, entityType, entityId, blobName, inputStream)) {
+              pubSubService.updated(appId, namespace, entityType, entityId);
+              setStatus(Status.SUCCESS_CREATED);
+            } else {
+              setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            }
+          } else {
+            if (entity != null
+                && MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+              Request restletRequest = getRequest();
+              HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
+              ServletFileUpload upload = new ServletFileUpload();
+              FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+              while (fileIterator.hasNext()) {
+                FileItemStream item = fileIterator.next();
+                String fieldName = item.getFieldName();
+                String name = item.getName();
+                if (item.isFormField()) {
                 } else {
+                  CountingInputStream countingInputStream =
+                      new CountingInputStream(item.openStream());
+                  if (entityRepository.createEntityBlob(
+                      appId, namespace, entityType, entityId, blobName, countingInputStream)) {
+                    pubSubService.updated(appId, namespace, entityType, entityId);
+                    setStatus(Status.SUCCESS_CREATED);
+                  } else {
                     setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                  }
                 }
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+              }
+            } else if (entity != null
+                && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
+              InputStream inputStream = entity.getStream();
+              CountingInputStream countingInputStream = new CountingInputStream(inputStream);
+              if (entityRepository.createEntityBlob(
+                  appId, namespace, entityType, entityId, blobName, countingInputStream)) {
+                pubSubService.updated(appId, namespace, entityType, entityId);
+                setStatus(Status.SUCCESS_CREATED);
+              } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+              }
             }
+          }
 
-        } catch (Exception e) {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+        } else {
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         }
+      } else {
+        return badRequest();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+    return null;
+  }
 
-    @Override
-    public Representation getBlob(Representation entity) {
-        try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
+  @Override
+  public Representation updateBlob(Representation entity) {
+    return setBlob(entity);
+  }
 
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return null;
-            }
+  @Override
+  public void deleteBlob(Representation entity) {
+    try {
 
-            String authUserId = null;
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return;
+      }
 
-            boolean isWriteAccess = false;
-            boolean isMaster = false;
-            boolean isPublic = false;
+      String authUserId = null;
 
-            try {
-                authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            } catch (Exception e) {
-                // do nothing
-            }
+      boolean isWriteAccess = false;
+      boolean isMaster = false;
+      boolean isPublic = false;
 
-            Map<String, Comparable> map = entityRepository.getEntity(appId, namespace, entityType, entityId);
-            List<EntityStub> aclWriteList = map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
-                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE) : new LinkedList<>();
+      try {
+        authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+      } catch (Exception e) {
+        // do nothing
+      }
 
-            if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
-                isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
-            }
+      Map<String, Comparable> map =
+          entityRepository.getEntity(appId, namespace, entityType, entityId);
+      List<EntityStub> aclWriteList =
+          map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+              ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
+              : new LinkedList<>();
 
-            if (isMaster()) {
-                isMaster = true;
-            } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
-                isWriteAccess = true;
-            } else if (authUserId != null) {
-                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
-                for (Role role : roles) {
-                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
-                        isWriteAccess = true;
-                    }
-                }
-            }
+      if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
+        isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+      }
 
-            String encoding = getQueryValue("encoding");
-
-            if (isMaster || isWriteAccess || isPublic) {
-                InputStream is = entityRepository.getEntityBlob(appId, namespace, entityType, entityId, blobName);
-
-                if(encoding != null && encoding.equals("base64")) {
-                    if (is == null) {
-                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                        return null;
-                    } else {
-                        String base64 = BaseEncoding.base64().encode(ByteStreams.toByteArray(is));
-                        Representation representation = new StringRepresentation(base64);
-                        setStatus(Status.SUCCESS_OK);
-                        return representation;
-                    }
-                } else {
-                    if (is == null) {
-                        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                        return null;
-                    } else {
-                        Representation representation = new InputRepresentation(is);
-                        representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
-                        //representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
-                        setStatus(Status.SUCCESS_OK);
-                        return representation;
-                    }
-                }
-
-
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            }
-
-        } catch (Exception e) {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+      if (isMaster()) {
+        isMaster = true;
+      } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
+        isWriteAccess = true;
+      } else if (authUserId != null) {
+        List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
+        for (Role role : roles) {
+          if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
+            isWriteAccess = true;
+          }
         }
+      }
+
+      if (isMaster || isWriteAccess || isPublic) {
+        if (entityRepository.deleteEntityBlob(appId, namespace, entityType, entityId, blobName)) {
+          pubSubService.updated(appId, namespace, entityType, entityId);
+          setStatus(Status.SUCCESS_OK);
+        } else {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+      } else {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      }
+
+    } catch (Exception e) {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+  }
+
+  @Override
+  public Representation getBlob(Representation entity) {
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
+      }
+
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return null;
+      }
+
+      String authUserId = null;
+
+      boolean isWriteAccess = false;
+      boolean isMaster = false;
+      boolean isPublic = false;
+
+      try {
+        authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+      } catch (Exception e) {
+        // do nothing
+      }
+
+      Map<String, Comparable> map =
+          entityRepository.getEntity(appId, namespace, entityType, entityId);
+      List<EntityStub> aclWriteList =
+          map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+              ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
+              : new LinkedList<>();
+
+      if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
+        isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+      }
+
+      if (isMaster()) {
+        isMaster = true;
+      } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
+        isWriteAccess = true;
+      } else if (authUserId != null) {
+        List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
+        for (Role role : roles) {
+          if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
+            isWriteAccess = true;
+          }
+        }
+      }
+
+      String encoding = getQueryValue("encoding");
+
+      if (isMaster || isWriteAccess || isPublic) {
+        InputStream is =
+            entityRepository.getEntityBlob(appId, namespace, entityType, entityId, blobName);
+
+        if (encoding != null && encoding.equals("base64")) {
+          if (is == null) {
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            return null;
+          } else {
+            String base64 = BaseEncoding.base64().encode(ByteStreams.toByteArray(is));
+            Representation representation = new StringRepresentation(base64);
+            setStatus(Status.SUCCESS_OK);
+            return representation;
+          }
+        } else {
+          if (is == null) {
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            return null;
+          } else {
+            Representation representation = new InputRepresentation(is);
+            representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+            // representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
+            setStatus(Status.SUCCESS_OK);
+            return representation;
+          }
+        }
+
+      } else {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      }
+
+    } catch (Exception e) {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+    return null;
+  }
 }

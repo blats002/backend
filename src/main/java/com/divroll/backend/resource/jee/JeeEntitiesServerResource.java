@@ -51,227 +51,237 @@ import java.util.Map;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeEntitiesServerResource extends BaseServerResource
-        implements EntitiesResource {
+public class JeeEntitiesServerResource extends BaseServerResource implements EntitiesResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeEntitiesServerResource.class);
-    private static final Integer DEFAULT_LIMIT = 100;
+  private static final Logger LOG = LoggerFactory.getLogger(JeeEntitiesServerResource.class);
+  private static final Integer DEFAULT_LIMIT = 100;
 
-    @Inject
-    UserRepository userRepository;
+  @Inject UserRepository userRepository;
 
-    @Inject
-    RoleRepository roleRepository;
+  @Inject RoleRepository roleRepository;
 
-    @Inject
-    EntityRepository entityRepository;
+  @Inject EntityRepository entityRepository;
 
-    @Inject
-    WebTokenService webTokenService;
+  @Inject WebTokenService webTokenService;
 
-    @Inject
-    PubSubService pubSubService;
+  @Inject PubSubService pubSubService;
 
-    @Inject
-    @Named("defaultFunctionStore")
-    String defaultFunctionStore;
+  @Inject
+  @Named("defaultFunctionStore")
+  String defaultFunctionStore;
 
-    @Inject
-    @Named("defaultUserStore")
-    String defaultUserStore;
+  @Inject
+  @Named("defaultUserStore")
+  String defaultUserStore;
 
-    @Inject
-    @Named("defaultRoleStore")
-    String defaultRoleStore;
+  @Inject
+  @Named("defaultRoleStore")
+  String defaultRoleStore;
 
-    @Inject
-    EntityService entityService;
+  @Inject EntityService entityService;
 
-    @Override
-    public Representation createEntity(Representation entity) {
-        try {
-            if (!isAuthorized()) {
-                return unauthorized();
-            }
-            if (entity == null || entity.isEmpty()) {
-                return badRequest();
-            }
-            String dir = appId;
-            if (dir != null) {
-                JSONObject jsonObject = new JSONObject(entity.getText());
-                JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
+  @Override
+  public Representation createEntity(Representation entity) {
+    try {
+      if (!isAuthorized()) {
+        return unauthorized();
+      }
+      if (entity == null || entity.isEmpty()) {
+        return badRequest();
+      }
+      String dir = appId;
+      if (dir != null) {
+        JSONObject jsonObject = new JSONObject(entity.getText());
+        JSONObject entityJSONObject = jsonObject.getJSONObject("entity");
 
-                if (entityJSONObject == null) {
-                    return badRequest();
-                }
-
-                String authUserId = null;
-                try {
-                    authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
-                } catch (Exception e) {
-                    // do nothing
-                }
-
-                List<EntityAction> entityActions = new LinkedList<>();
-                if(linkName != null && linkFrom != null) {
-                    boolean isAuth = true;
-                    if( authUserId == null || ( !entityRepository.getACLWriteList(appId, namespace, linkFrom).contains(authUserId)
-                            && !isMaster() ) ) {
-                        isAuth = false;
-                    }
-                    if(linkFrom.equals(authUserId)) {
-                        isAuth = true;
-                    }
-                    if(entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
-                        isAuth = true;
-                    }
-                    if(!isAuth) {
-                        return unauthorized();
-                    }
-                    entityActions.add(ImmutableBacklinkAction.builder()
-                            .linkName(linkName)
-                            .entityId(linkFrom)
-                            .build());
-                } else if(authUserId != null && linkName != null && linkTo != null) {
-                    if( authUserId == null || !entityRepository.getACLWriteList(appId, namespace, linkTo).contains(authUserId)
-                            && !isMaster()) {
-                        return unauthorized();
-                    }
-                    entityActions.add(ImmutableLinkAction.builder()
-                            .linkName(linkName)
-                            .entityId(linkFrom)
-                            .build());
-                }
-
-                Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
-                JSONObject response = entityService.createEntity(getApp(), namespace, entityType, comparableMap,
-                        aclRead, aclWrite, publicRead, publicWrite, actions, entityActions, new EntityMetadataBuilder()
-                                .uniqueProperties(uniqueProperties)
-                                .build());
-                if(entityType.equals(defaultUserStore)) {
-                    response.remove(Constants.RESERVED_FIELD_PASSWORD);
-                }
-                return created(response);
-            }
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            return badRequest(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return serverError();
+        if (entityJSONObject == null) {
+          return badRequest();
         }
-        return null;
-    }
 
-    @Override
-    public Representation getEntities() {
+        String authUserId = null;
         try {
-            if (!isAuthorized()) {
-                return unauthorized();
-            }
-
-            int skipValue = 0;
-            int limitValue = DEFAULT_LIMIT;
-
-            if (skip != null && limit != null) {
-                skipValue = skip;
-                limitValue = limit;
-            }
-
-            if (isMaster()) {
-                try {
-                    List<Map<String, Comparable>> entityObjs
-                            = entityRepository.listEntities(appId, namespace, entityType, null,
-                            skipValue, limitValue, sort, true, filters);
-                    JSONObject responseBody = new JSONObject();
-                    JSONObject entitiesJSONObject = new JSONObject();
-                    entitiesJSONObject.put("results", entityObjs);
-                    entitiesJSONObject.put("skip", skipValue);
-                    entitiesJSONObject.put("limit", limitValue);
-                    responseBody.put("entities", entitiesJSONObject);
-                    return success(responseBody);
-                } catch (Exception e) {
-                    return serverError();
-                }
-            } else {
-
-                String authUserId = null;
-
-                try {
-                    authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
-                } catch (Exception e) {
-                    // do nothing
-                }
-
-                try {
-                    List<Map<String, Comparable>> entityObjs = entityRepository.listEntities(appId, namespace, entityType,
-                            authUserId, skipValue, limitValue, sort, false, filters);
-
-                    JSONObject responseBody = new JSONObject();
-                    JSONObject entitiesJSONObject = new JSONObject();
-                    entitiesJSONObject.put("results", entityObjs);
-                    entitiesJSONObject.put("skip", skipValue);
-                    entitiesJSONObject.put("limit", limitValue);
-                    responseBody.put("entities", entitiesJSONObject);
-
-                    return success(responseBody);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return serverError();
-                }
-            }
-
-        } catch (EntityRemovedInDatabaseException e) {
-            e.printStackTrace();
-            return notFound();
+          authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
         } catch (Exception e) {
-            e.printStackTrace();
-            return serverError();
+          // do nothing
         }
-    }
 
-    @Override
-    public Representation deleteEntities() {
-        try {
-            if(isMaster()) {
-                boolean status = entityRepository.deleteEntities(appId, namespace, entityType);
-                if(status) {
-                    pubSubService.deletedAll(appId, namespace, entityType);
-                    return success();
-                } else {
-                    return badRequest();
-                }
-            } else {
-                return unauthorized();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return serverError();
-        }
-    }
-
-    @Override
-    public Representation updateEntities(Representation representation) {
-        if(!isMaster()) {
+        List<EntityAction> entityActions = new LinkedList<>();
+        if (linkName != null && linkFrom != null) {
+          boolean isAuth = true;
+          if (authUserId == null
+              || (!entityRepository.getACLWriteList(appId, namespace, linkFrom).contains(authUserId)
+                  && !isMaster())) {
+            isAuth = false;
+          }
+          if (linkFrom.equals(authUserId)) {
+            isAuth = true;
+          }
+          if (entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
+            isAuth = true;
+          }
+          if (!isAuth) {
             return unauthorized();
+          }
+          entityActions.add(
+              ImmutableBacklinkAction.builder().linkName(linkName).entityId(linkFrom).build());
+        } else if (authUserId != null && linkName != null && linkTo != null) {
+          if (authUserId == null
+              || !entityRepository.getACLWriteList(appId, namespace, linkTo).contains(authUserId)
+                  && !isMaster()) {
+            return unauthorized();
+          }
+          entityActions.add(
+              ImmutableLinkAction.builder().linkName(linkName).entityId(linkFrom).build());
         }
-        try {
-            boolean updated = entityRepository.updateProperty(appId, namespace, entityType, propertyName,
-                    new EntityMetadataBuilder()
-                            .uniqueProperties(uniqueProperties)
-                            .build());
-            if(updated) {
-                return success();
-            } else {
-                return badRequest();
-            }
-        } catch (IllegalArgumentException e) {
-            return badRequest(e.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return serverError();
-        }
-    }
 
+        Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
+        JSONObject response =
+            entityService.createEntity(
+                getApp(),
+                namespace,
+                entityType,
+                comparableMap,
+                aclRead,
+                aclWrite,
+                publicRead,
+                publicWrite,
+                actions,
+                entityActions,
+                new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+        if (entityType.equals(defaultUserStore)) {
+          response.remove(Constants.RESERVED_FIELD_PASSWORD);
+        }
+        return created(response);
+      }
+    } catch (IllegalArgumentException e) {
+      e.printStackTrace();
+      return badRequest(e.getMessage());
+    } catch (Exception e) {
+      e.printStackTrace();
+      return serverError();
+    }
+    return null;
+  }
+
+  @Override
+  public Representation getEntities() {
+    try {
+      if (!isAuthorized()) {
+        return unauthorized();
+      }
+
+      int skipValue = 0;
+      int limitValue = DEFAULT_LIMIT;
+
+      if (skip != null && limit != null) {
+        skipValue = skip;
+        limitValue = limit;
+      }
+
+      if (isMaster()) {
+        try {
+          List<Map<String, Comparable>> entityObjs =
+              entityRepository.listEntities(
+                  appId, namespace, entityType, null, skipValue, limitValue, sort, true, filters);
+          JSONObject responseBody = new JSONObject();
+          JSONObject entitiesJSONObject = new JSONObject();
+          entitiesJSONObject.put("results", entityObjs);
+          entitiesJSONObject.put("skip", skipValue);
+          entitiesJSONObject.put("limit", limitValue);
+          responseBody.put("entities", entitiesJSONObject);
+          return success(responseBody);
+        } catch (Exception e) {
+          return serverError();
+        }
+      } else {
+
+        String authUserId = null;
+
+        try {
+          authUserId = webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
+        } catch (Exception e) {
+          // do nothing
+        }
+
+        try {
+          List<Map<String, Comparable>> entityObjs =
+              entityRepository.listEntities(
+                  appId,
+                  namespace,
+                  entityType,
+                  authUserId,
+                  skipValue,
+                  limitValue,
+                  sort,
+                  false,
+                  filters);
+
+          JSONObject responseBody = new JSONObject();
+          JSONObject entitiesJSONObject = new JSONObject();
+          entitiesJSONObject.put("results", entityObjs);
+          entitiesJSONObject.put("skip", skipValue);
+          entitiesJSONObject.put("limit", limitValue);
+          responseBody.put("entities", entitiesJSONObject);
+
+          return success(responseBody);
+        } catch (Exception e) {
+          e.printStackTrace();
+          return serverError();
+        }
+      }
+
+    } catch (EntityRemovedInDatabaseException e) {
+      e.printStackTrace();
+      return notFound();
+    } catch (Exception e) {
+      e.printStackTrace();
+      return serverError();
+    }
+  }
+
+  @Override
+  public Representation deleteEntities() {
+    try {
+      if (isMaster()) {
+        boolean status = entityRepository.deleteEntities(appId, namespace, entityType);
+        if (status) {
+          pubSubService.deletedAll(appId, namespace, entityType);
+          return success();
+        } else {
+          return badRequest();
+        }
+      } else {
+        return unauthorized();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return serverError();
+    }
+  }
+
+  @Override
+  public Representation updateEntities(Representation representation) {
+    if (!isMaster()) {
+      return unauthorized();
+    }
+    try {
+      boolean updated =
+          entityRepository.updateProperty(
+              appId,
+              namespace,
+              entityType,
+              propertyName,
+              new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+      if (updated) {
+        return success();
+      } else {
+        return badRequest();
+      }
+    } catch (IllegalArgumentException e) {
+      return badRequest(e.getMessage());
+    } catch (Exception e) {
+      e.printStackTrace();
+      return serverError();
+    }
+  }
 }

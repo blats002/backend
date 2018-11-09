@@ -27,11 +27,13 @@ package com.divroll.functions;
  * @since 0-SNAPSHOT
  */
 public class CustomCodeException extends Exception {
-	private static final long serialVersionUID = 1L;
-	public CustomCodeException() {
-		super();
-	}
-	public CustomCodeException(String message){
-		super(message);
-	}
+  private static final long serialVersionUID = 1L;
+
+  public CustomCodeException() {
+    super();
+  }
+
+  public CustomCodeException(String message) {
+    super(message);
+  }
 }

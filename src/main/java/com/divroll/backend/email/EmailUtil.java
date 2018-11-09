@@ -32,7 +32,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
-//import javax.mail.Message;
+// import javax.mail.Message;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -41,46 +41,53 @@ import java.util.Date;
  */
 public class EmailUtil {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(EmailUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(EmailUtil.class);
 
-    /**
-     * Utility method to send simple HTML email
-     * @param session
-     * @param toEmail
-     * @param subject
-     * @param body
-     */
-    public static void sendEmail(Session session, String toEmail, String fromEmail, String fromName, String subject, String body)
-            throws MessagingException, UnsupportedEncodingException {
-       System.out.println("*** Sending email via SMTP ***");
+  /**
+   * Utility method to send simple HTML email
+   *
+   * @param session
+   * @param toEmail
+   * @param subject
+   * @param body
+   */
+  public static void sendEmail(
+      Session session,
+      String toEmail,
+      String fromEmail,
+      String fromName,
+      String subject,
+      String body)
+      throws MessagingException, UnsupportedEncodingException {
+    System.out.println("*** Sending email via SMTP ***");
 
-        MimeMessage msg = new MimeMessage(session);
-        //set message headers
-        msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
-        msg.addHeader("format", "flowed");
-        msg.addHeader("Content-Transfer-Encoding", "8bit");
+    MimeMessage msg = new MimeMessage(session);
+    // set message headers
+    msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
+    msg.addHeader("format", "flowed");
+    msg.addHeader("Content-Transfer-Encoding", "8bit");
 
-        msg.setFrom(new InternetAddress(fromEmail, fromName));
-        msg.setReplyTo(InternetAddress.parse(fromEmail, false));
-        msg.setSubject(subject, "UTF-8");
-        msg.setText(body, "UTF-8");
-        msg.setSentDate(new Date());
-        msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
-        LOG.info("Message is ready");
+    msg.setFrom(new InternetAddress(fromEmail, fromName));
+    msg.setReplyTo(InternetAddress.parse(fromEmail, false));
+    msg.setSubject(subject, "UTF-8");
+    msg.setText(body, "UTF-8");
+    msg.setSentDate(new Date());
+    msg.setRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
+    LOG.info("Message is ready");
 
-        Transport.send(msg);
-        LOG.info("EMail Sent Successfully");
-//        System.out.println("*** Sending email via Postmark ***");
-//        ApiClient client = Postmark.getApiClient("");
-//        Message message = new Message("***REMOVED***", "***REMOVED***", "Hello from Postmark!", "Hello message body");
-//        try {
-//            MessageResponse response = client.deliverMessage(message);
-//        } catch (PostmarkException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+    Transport.send(msg);
+    LOG.info("EMail Sent Successfully");
+    //        System.out.println("*** Sending email via Postmark ***");
+    //        ApiClient client = Postmark.getApiClient("");
+    //        Message message = new Message("***REMOVED***",
+    // "***REMOVED***", "Hello from Postmark!", "Hello message body");
+    //        try {
+    //            MessageResponse response = client.deliverMessage(message);
+    //        } catch (PostmarkException e) {
+    //            e.printStackTrace();
+    //        } catch (IOException e) {
+    //            e.printStackTrace();
+    //        }
 
-    }
+  }
 }

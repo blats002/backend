@@ -31,9 +31,9 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface BackupResource {
-    @Post
-    void restore(Representation entity);
+  @Post
+  void restore(Representation entity);
 
-    @Get
-    Representation backup(Representation entity);
+  @Get
+  Representation backup(Representation entity);
 }

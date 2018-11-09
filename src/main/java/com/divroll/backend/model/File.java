@@ -35,47 +35,47 @@ import java.io.PrintStream;
 @XStreamAlias("file")
 public class File {
 
-    private String url;
-    private String name;
-    private String etag;
+  private String url;
+  private String name;
+  private String etag;
 
-    public File() {}
+  public File() {}
 
-    public File(String url, String name) {
-        setUrl(url);
-        setName(name);
-    }
+  public File(String url, String name) {
+    setUrl(url);
+    setName(name);
+  }
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
+  public void setUrl(String url) {
+    this.url = url;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void toStream(OutputStream outputStream) {
-        JSONObject fileObject = new JSONObject();
-        fileObject.put("url", getUrl());
-        fileObject.put("name", getName());
-        final PrintStream printStream = new PrintStream(outputStream);
-        printStream.print(fileObject.toJSONString());
-        printStream.close();
-    }
+  public void toStream(OutputStream outputStream) {
+    JSONObject fileObject = new JSONObject();
+    fileObject.put("url", getUrl());
+    fileObject.put("name", getName());
+    final PrintStream printStream = new PrintStream(outputStream);
+    printStream.print(fileObject.toJSONString());
+    printStream.close();
+  }
 
-    public String getEtag() {
-        return etag;
-    }
+  public String getEtag() {
+    return etag;
+  }
 
-    public void setEtag(String etag) {
-        this.etag = etag;
-    }
+  public void setEtag(String etag) {
+    this.etag = etag;
+  }
 }

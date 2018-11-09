@@ -33,10 +33,12 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface FileResource {
-    @Post
-    File createFile(Representation entity);
-    @Delete
-    void deleteFile(Representation entity);
-    @Get
-    Representation getFile(Representation entity);
+  @Post
+  File createFile(Representation entity);
+
+  @Delete
+  void deleteFile(Representation entity);
+
+  @Get
+  Representation getFile(Representation entity);
 }

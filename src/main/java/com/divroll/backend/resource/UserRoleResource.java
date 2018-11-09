@@ -36,19 +36,21 @@ import org.restlet.resource.Post;
  */
 @Api(value = "User", description = "User Role link resource")
 public interface UserRoleResource {
-    @ApiOperation(value = "", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "user role link created"),
-            @ApiResponse(code = 400, message = "bad request"),
-            @ApiResponse(code = 401, message = "unauthorized access")})
-    @Post
-    void createUserRoleLink(Representation entity);
+  @ApiOperation(value = "", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 201, message = "user role link created"),
+    @ApiResponse(code = 400, message = "bad request"),
+    @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @Post
+  void createUserRoleLink(Representation entity);
 
-    @ApiOperation(value = "", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "deleted"),
-            @ApiResponse(code = 400, message = "bad request"),
-            @ApiResponse(code = 401, message = "unauthorized access")})
-    @Delete
-    void deleteUserRoleLink(Representation entity);
+  @ApiOperation(value = "", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "deleted"),
+    @ApiResponse(code = 400, message = "bad request"),
+    @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @Delete
+  void deleteUserRoleLink(Representation entity);
 }

@@ -37,16 +37,19 @@ import org.restlet.resource.Put;
 @Api(value = "Application", description = "Application resource")
 public interface ApplicationResource {
 
-    @ApiOperation(value = "getEnvironment a new application", tags = "application")
-    @ApiResponses({@ApiResponse(code = 200, message = "the application", response = Application.class),})
-    @Post
-    Application createApp(Application rootDTO);
+  @ApiOperation(value = "getEnvironment a new application", tags = "application")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "the application", response = Application.class),
+  })
+  @Post
+  Application createApp(Application rootDTO);
 
-    @ApiOperation(value = "update a existing application", tags = "application")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the updated application"),
-            @ApiResponse(code = 404, message = "application not found"),
-            @ApiResponse(code = 401, message = "unauthorized access")})
-    @Put
-    Application updateApp(Application entity);
+  @ApiOperation(value = "update a existing application", tags = "application")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "the updated application"),
+    @ApiResponse(code = 404, message = "application not found"),
+    @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @Put
+  Application updateApp(Application entity);
 }

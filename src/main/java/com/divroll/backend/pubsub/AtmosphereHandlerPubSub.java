@@ -39,22 +39,23 @@ import java.io.IOException;
  * @since 0-SNAPSHOT
  */
 @Singleton
-@AtmosphereHandlerService(path = "/{applicationId}/{topic}",
-        interceptors = {
-                AtmosphereResourceLifecycleInterceptor.class,
-                //AuthenticationInterceptor.class,
-                TrackMessageSizeInterceptor.class,
-                BroadcastOnPostAtmosphereInterceptor.class,
-                SuspendTrackerInterceptor.class},
-        broadcaster = SimpleBroadcaster.class)
+@AtmosphereHandlerService(
+    path = "/{applicationId}/{topic}",
+    interceptors = {
+      AtmosphereResourceLifecycleInterceptor.class,
+      // AuthenticationInterceptor.class,
+      TrackMessageSizeInterceptor.class,
+      BroadcastOnPostAtmosphereInterceptor.class,
+      SuspendTrackerInterceptor.class
+    },
+    broadcaster = SimpleBroadcaster.class)
 public class AtmosphereHandlerPubSub extends AtmosphereHandlerAdapter {
 
-    @Override
-    public void onStateChange(AtmosphereResourceEvent event) throws IOException {
-        if (event.isSuspended()) {
-            String message = event.getMessage() == null ? null : event.getMessage().toString();
-            event.getResource().write(message);
-        }
+  @Override
+  public void onStateChange(AtmosphereResourceEvent event) throws IOException {
+    if (event.isSuspended()) {
+      String message = event.getMessage() == null ? null : event.getMessage().toString();
+      event.getResource().write(message);
     }
-
+  }
 }

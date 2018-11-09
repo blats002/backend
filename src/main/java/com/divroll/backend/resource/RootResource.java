@@ -35,9 +35,8 @@ import org.restlet.resource.Get;
  */
 @Api(value = "Default", description = "Default Resource")
 public interface RootResource {
-    @ApiOperation(value = "retrieve server info", tags = "server")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the server info")})
-    @Get("json")
-    public Server represent();
+  @ApiOperation(value = "retrieve server info", tags = "server")
+  @ApiResponses({@ApiResponse(code = 200, message = "the server info")})
+  @Get("json")
+  public Server represent();
 }

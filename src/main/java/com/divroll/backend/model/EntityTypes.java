@@ -33,34 +33,35 @@ import java.util.List;
  */
 @XStreamAlias("entityTypes")
 public class EntityTypes {
-    @XStreamImplicit(itemFieldName = "results")
-    private List<EntityType> results;
-    private long skip;
-    private long limit;
+  @XStreamImplicit(itemFieldName = "results")
+  private List<EntityType> results;
 
-    public EntityTypes() {}
+  private long skip;
+  private long limit;
 
-    public List<EntityType> getResults() {
-        return results;
-    }
+  public EntityTypes() {}
 
-    public void setResults(List<EntityType> results) {
-        this.results = results;
-    }
+  public List<EntityType> getResults() {
+    return results;
+  }
 
-    public long getSkip() {
-        return skip;
-    }
+  public void setResults(List<EntityType> results) {
+    this.results = results;
+  }
 
-    public void setSkip(long skip) {
-        this.skip = skip;
-    }
+  public long getSkip() {
+    return skip;
+  }
 
-    public long getLimit() {
-        return limit;
-    }
+  public void setSkip(long skip) {
+    this.skip = skip;
+  }
 
-    public void setLimit(long limit) {
-        this.limit = limit;
-    }
+  public long getLimit() {
+    return limit;
+  }
+
+  public void setLimit(long limit) {
+    this.limit = limit;
+  }
 }

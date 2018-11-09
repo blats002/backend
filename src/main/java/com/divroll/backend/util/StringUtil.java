@@ -36,48 +36,48 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public class StringUtil {
-    /**
-     * Generate a List from a comma separated value.
-     *
-     * @param csv
-     * @return
-     */
-    public static List<String> asList(String csv) {
-        List<String> result = new LinkedList<String>();
-        String[] array = csv.split(",");
-        result = Arrays.asList(array);
-        return result;
-    }
-    public static byte[] toByteArray(String s) {
-        return s.getBytes(StandardCharsets.UTF_8);
-    }
+  /**
+   * Generate a List from a comma separated value.
+   *
+   * @param csv
+   * @return
+   */
+  public static List<String> asList(String csv) {
+    List<String> result = new LinkedList<String>();
+    String[] array = csv.split(",");
+    result = Arrays.asList(array);
+    return result;
+  }
 
-    public static String fromByteArray(byte[] array) {
-        String s = new String(array, StandardCharsets.UTF_8);
-        return s;
-    }
+  public static byte[] toByteArray(String s) {
+    return s.getBytes(StandardCharsets.UTF_8);
+  }
 
-    public static String toString(InputStream is) {
-        BufferedReader br = null;
-        StringBuilder sb = new StringBuilder();
-        String line;
+  public static String fromByteArray(byte[] array) {
+    String s = new String(array, StandardCharsets.UTF_8);
+    return s;
+  }
+
+  public static String toString(InputStream is) {
+    BufferedReader br = null;
+    StringBuilder sb = new StringBuilder();
+    String line;
+    try {
+      br = new BufferedReader(new InputStreamReader(is));
+      while ((line = br.readLine()) != null) {
+        sb.append(line);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (br != null) {
         try {
-            br = new BufferedReader(new InputStreamReader(is));
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
+          br.close();
         } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+          e.printStackTrace();
         }
-        return sb.toString();
+      }
     }
-
+    return sb.toString();
+  }
 }

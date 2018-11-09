@@ -37,131 +37,138 @@ import java.util.List;
 @XStreamAlias("user")
 @ApiModel
 public class User {
-    @ApiModelProperty(required = false, value = "Entity Id")
-    private String entityId;
-    @ApiModelProperty(required = true, value = "Username")
-    private String username;
-    @ApiModelProperty(required = true, value = "Password")
-    private String password;
-    @ApiModelProperty(required = true, value = "Email")
-    private String email;
-    @ApiModelProperty(required = false, value = "Generated Authentication Token")
-    private String webToken;
-    @ApiModelProperty(required = false)
-    @XStreamImplicit(itemFieldName = "roles")
-    private List<Role> roles;
+  @ApiModelProperty(required = false, value = "Entity Id")
+  private String entityId;
 
+  @ApiModelProperty(required = true, value = "Username")
+  private String username;
 
-    @XStreamImplicit(itemFieldName = "aclRead")
-    @ApiModelProperty(required = false, value = "")
-    private List<EntityStub> aclRead;
-    @XStreamImplicit(itemFieldName = "aclWrite")
-    @ApiModelProperty(required = false, value = "")
-    private List<EntityStub> aclWrite;
-    @ApiModelProperty(required = false, value = "")
-    private Boolean publicRead;
-    @ApiModelProperty(required = false, value = "")
-    private Boolean publicWrite;
+  @ApiModelProperty(required = true, value = "Password")
+  private String password;
 
-    private String dateCreated;
-    private String dateUpdated;
+  @ApiModelProperty(required = true, value = "Email")
+  private String email;
 
-    public String getUsername() {
-        return username;
+  @ApiModelProperty(required = false, value = "Generated Authentication Token")
+  private String webToken;
+
+  @ApiModelProperty(required = false)
+  @XStreamImplicit(itemFieldName = "roles")
+  private List<Role> roles;
+
+  @XStreamImplicit(itemFieldName = "aclRead")
+  @ApiModelProperty(required = false, value = "")
+  private List<EntityStub> aclRead;
+
+  @XStreamImplicit(itemFieldName = "aclWrite")
+  @ApiModelProperty(required = false, value = "")
+  private List<EntityStub> aclWrite;
+
+  @ApiModelProperty(required = false, value = "")
+  private Boolean publicRead;
+
+  @ApiModelProperty(required = false, value = "")
+  private Boolean publicWrite;
+
+  private String dateCreated;
+  private String dateUpdated;
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getWebToken() {
+    return webToken;
+  }
+
+  public void setWebToken(String webToken) {
+    this.webToken = webToken;
+  }
+
+  public String getEntityId() {
+    return entityId;
+  }
+
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
+
+  public List<Role> getRoles() {
+    if (roles == null) {
+      roles = new LinkedList<Role>();
     }
+    return roles;
+  }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public void setRoles(List<Role> roles) {
+    this.roles = roles;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public List<EntityStub> getAclRead() {
+    return aclRead;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public void setAclRead(List<EntityStub> aclRead) {
+    this.aclRead = aclRead;
+  }
 
-    public String getWebToken() {
-        return webToken;
-    }
+  public List<EntityStub> getAclWrite() {
+    return aclWrite;
+  }
 
-    public void setWebToken(String webToken) {
-        this.webToken = webToken;
-    }
+  public void setAclWrite(List<EntityStub> aclWrite) {
+    this.aclWrite = aclWrite;
+  }
 
-    public String getEntityId() {
-        return entityId;
-    }
+  public Boolean getPublicRead() {
+    return publicRead;
+  }
 
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
+  public void setPublicRead(Boolean publicRead) {
+    this.publicRead = publicRead;
+  }
 
-    public List<Role> getRoles() {
-        if (roles == null) {
-            roles = new LinkedList<Role>();
-        }
-        return roles;
-    }
+  public Boolean getPublicWrite() {
+    return publicWrite;
+  }
 
-    public void setRoles(List<Role> roles) {
-        this.roles = roles;
-    }
+  public void setPublicWrite(Boolean publicWrite) {
+    this.publicWrite = publicWrite;
+  }
 
-    public List<EntityStub> getAclRead() {
-        return aclRead;
-    }
+  public String getEmail() {
+    return email;
+  }
 
-    public void setAclRead(List<EntityStub> aclRead) {
-        this.aclRead = aclRead;
-    }
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-    public List<EntityStub> getAclWrite() {
-        return aclWrite;
-    }
+  public String getDateCreated() {
+    return dateCreated;
+  }
 
-    public void setAclWrite(List<EntityStub> aclWrite) {
-        this.aclWrite = aclWrite;
-    }
+  public void setDateCreated(String dateCreated) {
+    this.dateCreated = dateCreated;
+  }
 
-    public Boolean getPublicRead() {
-        return publicRead;
-    }
+  public String getDateUpdated() {
+    return dateUpdated;
+  }
 
-    public void setPublicRead(Boolean publicRead) {
-        this.publicRead = publicRead;
-    }
-
-    public Boolean getPublicWrite() {
-        return publicWrite;
-    }
-
-    public void setPublicWrite(Boolean publicWrite) {
-        this.publicWrite = publicWrite;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(String dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public String getDateUpdated() {
-        return dateUpdated;
-    }
-
-    public void setDateUpdated(String dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
+  public void setDateUpdated(String dateUpdated) {
+    this.dateUpdated = dateUpdated;
+  }
 }

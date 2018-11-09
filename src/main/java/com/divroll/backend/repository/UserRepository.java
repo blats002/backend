@@ -35,30 +35,65 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface UserRepository {
-    String createUser(String instance, String namespace, String entityType, String username, String password,
-                      final Map<String,Comparable> comparableMap,
-                      String[] read, String[] write,
-                      final Boolean publicRead, final Boolean publicWrite, String[] roles, List<Action> actions,
-                      EntityClass linkedEntity, String linkName, String backlinkName);
+  String createUser(
+      String instance,
+      String namespace,
+      String entityType,
+      String username,
+      String password,
+      final Map<String, Comparable> comparableMap,
+      String[] read,
+      String[] write,
+      final Boolean publicRead,
+      final Boolean publicWrite,
+      String[] roles,
+      List<Action> actions,
+      EntityClass linkedEntity,
+      String linkName,
+      String backlinkName);
 
-    boolean updateUser(String instance, String namespace, String entityType, String entityId,
-                       String newUsername, String newPassword,
-                       final Map<String,Comparable> comparableMap,
-                       String[] read, String[] write,
-                       final Boolean publicRead, final Boolean publicWrite, String[] roles);
+  boolean updateUser(
+      String instance,
+      String namespace,
+      String entityType,
+      String entityId,
+      String newUsername,
+      String newPassword,
+      final Map<String, Comparable> comparableMap,
+      String[] read,
+      String[] write,
+      final Boolean publicRead,
+      final Boolean publicWrite,
+      String[] roles);
 
-    boolean updateUserPassword(String instance, String namespace, String entityType, String entityId, String newPassword);
+  boolean updateUserPassword(
+      String instance, String namespace, String entityType, String entityId, String newPassword);
 
-    boolean updateUser(String instance, String namespace, String entityType, String entityId, Map<String, Comparable> comparableMap,
-                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+  boolean updateUser(
+      String instance,
+      String namespace,
+      String entityType,
+      String entityId,
+      Map<String, Comparable> comparableMap,
+      final String[] read,
+      final String[] write,
+      final Boolean publicRead,
+      final Boolean publicWrite);
 
+  User getUser(String instance, String namespace, String entityType, String userID);
 
-    User getUser(String instance, String namespace, String entityType, String userID);
+  User getUserByUsername(String instance, String namespace, String entityType, String username);
 
-    User getUserByUsername(String instance, String namespace, String entityType, String username);
+  boolean deleteUser(String instance, String namespace, String entityType, String userID);
 
-    boolean deleteUser(String instance, String namespace, String entityType, String userID);
-
-    List<User> listUsers(String instance, String namespace, String entityType, String userIdRoleId,
-                         int skip, int limit, String sort, boolean isMasterkey, List<TransactionFilter> filters);
+  List<User> listUsers(
+      String instance,
+      String namespace,
+      String entityType,
+      String userIdRoleId,
+      int skip,
+      int limit,
+      String sort,
+      boolean isMasterkey,
+      List<TransactionFilter> filters);
 }

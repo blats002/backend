@@ -33,39 +33,38 @@ import java.nio.ByteBuffer;
  */
 public class ByteValue implements Serializable, Comparable<byte[]>, ACL {
 
-    private byte[] value;
+  private byte[] value;
 
-    // Read and write ACL
-    private String[] read;
-    private String[] write;
+  // Read and write ACL
+  private String[] read;
+  private String[] write;
 
-    public String[] getRead() {
-        return read;
-    }
+  public String[] getRead() {
+    return read;
+  }
 
-    public void setRead(String[] read) {
-        this.read = read;
-    }
+  public void setRead(String[] read) {
+    this.read = read;
+  }
 
-    public String[] getWrite() {
-        return write;
-    }
+  public String[] getWrite() {
+    return write;
+  }
 
-    public void setWrite(String[] write) {
-        this.write = write;
-    }
+  public void setWrite(String[] write) {
+    this.write = write;
+  }
 
-    public byte[] getValue() {
-        return value;
-    }
+  public byte[] getValue() {
+    return value;
+  }
 
-    public void setValue(byte[] value) {
-        this.value = value;
-    }
+  public void setValue(byte[] value) {
+    this.value = value;
+  }
 
-    @Override
-    public int compareTo(@NotNull byte[] o) {
-        return ByteBuffer.wrap(value).compareTo(ByteBuffer.wrap(o));
-    }
-
+  @Override
+  public int compareTo(@NotNull byte[] o) {
+    return ByteBuffer.wrap(value).compareTo(ByteBuffer.wrap(o));
+  }
 }

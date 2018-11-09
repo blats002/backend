@@ -44,48 +44,51 @@ import java.net.URL;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class DivrollBackendApplicationTest {
-    @Deployment
-    public static WebArchive createDeployment() {
+  @Deployment
+  public static WebArchive createDeployment() {
 
-        // Import Maven runtime dependencies
-        File[] files = Maven.resolver()
-                .loadPomFromFile("pom.xml")
-                .importRuntimeDependencies()
-                .resolve()
-                .withTransitivity()
-                .asFile();
-        // Create deploy file
-        WebArchive war = ShrinkWrap.create(WebArchive.class)
-                .addClass(DivrollBackendApplication.class)
-                .addAsLibraries(files);
+    // Import Maven runtime dependencies
+    File[] files =
+        Maven.resolver()
+            .loadPomFromFile("pom.xml")
+            .importRuntimeDependencies()
+            .resolve()
+            .withTransitivity()
+            .asFile();
+    // Create deploy file
+    WebArchive war =
+        ShrinkWrap.create(WebArchive.class)
+            .addClass(DivrollBackendApplication.class)
+            .addAsLibraries(files);
 
-        // Show the deploy structure
-        System.out.println(war.toString(true));
-        System.out.println("Returning WAR");
-        return war;
+    // Show the deploy structure
+    System.out.println(war.toString(true));
+    System.out.println("Returning WAR");
+    return war;
+  }
+
+  @Test
+  public void callServletToGetApplicationTest() throws Exception {
+    // String body = readAllAndClose(new
+    // URL("http://localhost:8080/domino/applications").openStream());
+    String body = readAllAndClose(new URL("http://localhost:8080/backend/").openStream());
+    System.out.println(body);
+    Assert.assertNotNull(body);
+  }
+
+  private String readAllAndClose(InputStream is) throws Exception {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try {
+      int read;
+      while ((read = is.read()) != -1) {
+        out.write(read);
+      }
+    } finally {
+      try {
+        is.close();
+      } catch (Exception ignored) {
+      }
     }
-
-    @Test
-    public void callServletToGetApplicationTest() throws Exception {
-        //String body = readAllAndClose(new URL("http://localhost:8080/domino/applications").openStream());
-        String body = readAllAndClose(new URL("http://localhost:8080/backend/").openStream());
-        System.out.println(body);
-        Assert.assertNotNull(body);
-    }
-
-    private String readAllAndClose(InputStream is) throws Exception {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            int read;
-            while ((read = is.read()) != -1) {
-                out.write(read);
-            }
-        } finally {
-            try {
-                is.close();
-            } catch (Exception ignored) {
-            }
-        }
-        return out.toString();
-    }
+    return out.toString();
+  }
 }

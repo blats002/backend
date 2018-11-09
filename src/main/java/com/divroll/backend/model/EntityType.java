@@ -33,23 +33,24 @@ import java.util.List;
  */
 @XStreamAlias("entityType")
 public class EntityType {
-    private String entityType;
-    @XStreamImplicit(itemFieldName = "propertyTypes")
-    private List<EntityPropertyType> propertyTypes;
+  private String entityType;
 
-    public String getEntityType() {
-        return entityType;
-    }
+  @XStreamImplicit(itemFieldName = "propertyTypes")
+  private List<EntityPropertyType> propertyTypes;
 
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
+  public String getEntityType() {
+    return entityType;
+  }
 
-    public List<EntityPropertyType> getPropertyTypes() {
-        return propertyTypes;
-    }
+  public void setEntityType(String entityType) {
+    this.entityType = entityType;
+  }
 
-    public void setPropertyTypes(List<EntityPropertyType> propertyTypes) {
-        this.propertyTypes = propertyTypes;
-    }
+  public List<EntityPropertyType> getPropertyTypes() {
+    return propertyTypes;
+  }
+
+  public void setPropertyTypes(List<EntityPropertyType> propertyTypes) {
+    this.propertyTypes = propertyTypes;
+  }
 }

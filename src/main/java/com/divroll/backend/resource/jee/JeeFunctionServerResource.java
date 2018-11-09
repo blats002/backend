@@ -32,53 +32,50 @@ import org.restlet.representation.Representation;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeFunctionServerResource extends BaseServerResource
-    implements FunctionResource {
+public class JeeFunctionServerResource extends BaseServerResource implements FunctionResource {
 
-    private Response response = new Response();
+  @Inject ApplicationService applicationService;
+  @Inject EntityRepository entityRepository;
+  private Response response = new Response();
 
-    public class Response {
-        private String body;
-        public void complete(int code) {
-            System.out.println("Completed " + code + " with body - " + body);
-        }
+  @Override
+  public Representation getMethod(Representation entity) {
+    //        AppEntityRepository appEntityRespository = new AppEntityRepository(entityRepository,
+    // appId, "User");
+    //        Object evaluated = eval(appEntityRespository, response,"var id = '1-2'; response.body
+    // = 'Hello world'; response.complete(200);");
+    //        return new StringRepresentation(evaluated.toString());
+    return null;
+  }
 
-        public String getBody() {
-            return body;
-        }
+  @Override
+  public Representation postMethod(Representation entity) {
+    return null;
+  }
 
-        public void setBody(String body) {
-            this.body = body;
-        }
+  @Override
+  public Representation putMethod(Representation entity) {
+    return null;
+  }
+
+  @Override
+  public Representation deleteMethod(Representation entity) {
+    return null;
+  }
+
+  public class Response {
+    private String body;
+
+    public void complete(int code) {
+      System.out.println("Completed " + code + " with body - " + body);
     }
 
-    @Inject
-    ApplicationService applicationService;
-
-    @Inject
-    EntityRepository entityRepository;
-
-    @Override
-    public Representation getMethod(Representation entity) {
-//        AppEntityRepository appEntityRespository = new AppEntityRepository(entityRepository, appId, "User");
-//        Object evaluated = eval(appEntityRespository, response,"var id = '1-2'; response.body = 'Hello world'; response.complete(200);");
-//        return new StringRepresentation(evaluated.toString());
-        return null;
+    public String getBody() {
+      return body;
     }
 
-    @Override
-    public Representation postMethod(Representation entity) {
-        return null;
+    public void setBody(String body) {
+      this.body = body;
     }
-
-    @Override
-    public Representation putMethod(Representation entity) {
-        return null;
-    }
-
-    @Override
-    public Representation deleteMethod(Representation entity) {
-        return null;
-    }
-
+  }
 }

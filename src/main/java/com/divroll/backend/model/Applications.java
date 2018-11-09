@@ -38,11 +38,12 @@ import java.util.List;
 public class Applications {
   @XStreamImplicit(itemFieldName = "results")
   private List<Application> results;
+
   private long skip;
   private long limit;
 
   public List<Application> getResults() {
-    if(results == null) {
+    if (results == null) {
       results = new LinkedList<>();
     }
     return results;

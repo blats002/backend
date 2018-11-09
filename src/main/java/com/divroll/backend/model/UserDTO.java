@@ -37,162 +37,168 @@ import java.util.List;
 @XStreamAlias("user")
 @ApiModel
 public class UserDTO {
-    @ApiModelProperty(required = false, value = "Entity Id")
-    private String entityId;
-    @ApiModelProperty(required = true, value = "Username")
-    private String username;
-    @ApiModelProperty(required = true, value = "Password")
-    private String password;
-    private String email;
-    @ApiModelProperty(required = false, value = "Generated Authentication Token")
-    private String webToken;
-    @ApiModelProperty(required = false)
-    @XStreamImplicit(itemFieldName = "roles")
-    private List<RoleDTO> roles;
+  @ApiModelProperty(required = false, value = "Entity Id")
+  private String entityId;
 
+  @ApiModelProperty(required = true, value = "Username")
+  private String username;
 
-    @XStreamImplicit(itemFieldName = "aclRead")
-    @ApiModelProperty(required = false, value = "")
-    private List<EntityStub> aclRead;
-    @XStreamImplicit(itemFieldName = "aclWrite")
-    @ApiModelProperty(required = false, value = "")
-    private List<EntityStub> aclWrite;
-    @ApiModelProperty(required = false, value = "")
-    private Boolean publicRead;
-    @ApiModelProperty(required = false, value = "")
-    private Boolean publicWrite;
+  @ApiModelProperty(required = true, value = "Password")
+  private String password;
 
-    private String dateCreated;
+  private String email;
 
-    private String dateUpdated;
+  @ApiModelProperty(required = false, value = "Generated Authentication Token")
+  private String webToken;
 
+  @ApiModelProperty(required = false)
+  @XStreamImplicit(itemFieldName = "roles")
+  private List<RoleDTO> roles;
 
-    public String getUsername() {
-        return username;
+  @XStreamImplicit(itemFieldName = "aclRead")
+  @ApiModelProperty(required = false, value = "")
+  private List<EntityStub> aclRead;
+
+  @XStreamImplicit(itemFieldName = "aclWrite")
+  @ApiModelProperty(required = false, value = "")
+  private List<EntityStub> aclWrite;
+
+  @ApiModelProperty(required = false, value = "")
+  private Boolean publicRead;
+
+  @ApiModelProperty(required = false, value = "")
+  private Boolean publicWrite;
+
+  private String dateCreated;
+
+  private String dateUpdated;
+
+  public static UserDTO convert(User user) {
+    if (user == null) {
+      return null;
     }
+    UserDTO userDTO = new UserDTO();
+    userDTO.setEntityId(user.getEntityId());
+    userDTO.setAclRead(user.getAclRead());
+    userDTO.setAclWrite(user.getAclWrite());
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    userDTO.setPassword(user.getPassword());
+    userDTO.setUsername(user.getUsername());
+    userDTO.setEmail(user.getEmail());
+    userDTO.setWebToken(user.getWebToken());
 
-    public String getPassword() {
-        return password;
-    }
+    userDTO.setPublicRead(user.getPublicRead());
+    userDTO.setPublicWrite(user.getPublicWrite());
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getWebToken() {
-        return webToken;
-    }
-
-    public void setWebToken(String webToken) {
-        this.webToken = webToken;
-    }
-
-    public String getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
-
-    public List<RoleDTO> getRoles() {
+    if (user.getRoles() != null) {
+      List<RoleDTO> roles = null;
+      for (Role role : user.getRoles()) {
         if (roles == null) {
-            roles = new LinkedList<RoleDTO>();
+          roles = new LinkedList<RoleDTO>();
         }
-        return roles;
+        roles.add(new RoleDTO(role.getEntityId()));
+      }
+      userDTO.setRoles(roles);
     }
+    return userDTO;
+  }
 
-    public void setRoles(List<RoleDTO> roles) {
-        this.roles = roles;
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getWebToken() {
+    return webToken;
+  }
+
+  public void setWebToken(String webToken) {
+    this.webToken = webToken;
+  }
+
+  public String getEntityId() {
+    return entityId;
+  }
+
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
+
+  public List<RoleDTO> getRoles() {
+    if (roles == null) {
+      roles = new LinkedList<RoleDTO>();
     }
+    return roles;
+  }
 
-    public List<EntityStub> getAclRead() {
-        return aclRead;
-    }
+  public void setRoles(List<RoleDTO> roles) {
+    this.roles = roles;
+  }
 
-    public void setAclRead(List<EntityStub> aclRead) {
-        this.aclRead = aclRead;
-    }
+  public List<EntityStub> getAclRead() {
+    return aclRead;
+  }
 
-    public List<EntityStub> getAclWrite() {
-        return aclWrite;
-    }
+  public void setAclRead(List<EntityStub> aclRead) {
+    this.aclRead = aclRead;
+  }
 
-    public void setAclWrite(List<EntityStub> aclWrite) {
-        this.aclWrite = aclWrite;
-    }
+  public List<EntityStub> getAclWrite() {
+    return aclWrite;
+  }
 
-    public Boolean getPublicRead() {
-        return publicRead;
-    }
+  public void setAclWrite(List<EntityStub> aclWrite) {
+    this.aclWrite = aclWrite;
+  }
 
-    public void setPublicRead(Boolean publicRead) {
-        this.publicRead = publicRead;
-    }
+  public Boolean getPublicRead() {
+    return publicRead;
+  }
 
-    public Boolean getPublicWrite() {
-        return publicWrite;
-    }
+  public void setPublicRead(Boolean publicRead) {
+    this.publicRead = publicRead;
+  }
 
-    public void setPublicWrite(Boolean publicWrite) {
-        this.publicWrite = publicWrite;
-    }
+  public Boolean getPublicWrite() {
+    return publicWrite;
+  }
 
-    public static UserDTO convert(User user) {
-        if(user == null) {
-            return null;
-        }
-        UserDTO userDTO = new UserDTO();
-        userDTO.setEntityId(user.getEntityId());
-        userDTO.setAclRead(user.getAclRead());
-        userDTO.setAclWrite(user.getAclWrite());
+  public void setPublicWrite(Boolean publicWrite) {
+    this.publicWrite = publicWrite;
+  }
 
-        userDTO.setPassword(user.getPassword());
-        userDTO.setUsername(user.getUsername());
-        userDTO.setEmail(user.getEmail());
-        userDTO.setWebToken(user.getWebToken());
+  public String getEmail() {
+    return email;
+  }
 
-        userDTO.setPublicRead(user.getPublicRead());
-        userDTO.setPublicWrite(user.getPublicWrite());
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-        if(user.getRoles() != null) {
-            List<RoleDTO> roles = null;
-            for(Role role : user.getRoles()) {
-                if(roles == null) {
-                    roles = new LinkedList<RoleDTO>();
-                }
-                roles.add(new RoleDTO(role.getEntityId()));
-            }
-            userDTO.setRoles(roles);
-        }
-        return userDTO;
-    }
+  public String getDateCreated() {
+    return dateCreated;
+  }
 
-    public String getEmail() {
-        return email;
-    }
+  public void setDateCreated(String dateCreated) {
+    this.dateCreated = dateCreated;
+  }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+  public String getDateUpdated() {
+    return dateUpdated;
+  }
 
-    public String getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(String dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public String getDateUpdated() {
-        return dateUpdated;
-    }
-
-    public void setDateUpdated(String dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
+  public void setDateUpdated(String dateUpdated) {
+    this.dateUpdated = dateUpdated;
+  }
 }

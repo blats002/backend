@@ -33,11 +33,12 @@ import java.io.IOException;
  * @since 0-SNAPSHOT
  */
 public class TestServlet extends HttpServlet {
-    public static final String MESSAGE = "hello";
-    private static final long serialVersionUID = 1L;
+  public static final String MESSAGE = "hello";
+  private static final long serialVersionUID = 1L;
 
-    @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.getWriter().append(MESSAGE);
-    }
+  @Override
+  protected void service(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    response.getWriter().append(MESSAGE);
+  }
 }

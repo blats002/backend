@@ -44,53 +44,47 @@ import java.util.logging.Logger;
  */
 public class TestCustomCode {
 
-	private static Logger LOGGER = Logger.getLogger(TestCustomCode.class.getName());
+  static String JAR_FILE =
+      "../customcode-sdk-java-example/target/customcode-sdk-java-example-0-SNAPSHOT.jar";
+  static int API_VERSION = 1;
+  static String USER = "adam";
+  private static Logger LOGGER = Logger.getLogger(TestCustomCode.class.getName());
 
-	static String JAR_FILE = "../customcode-sdk-java-example/target/customcode-sdk-java-example-0-SNAPSHOT.jar";
-	static int API_VERSION = 1;
-	static String USER = "adam";
-	
-    @Before
-    public void setUp() {
+  @Before
+  public void setUp() {}
 
-    }
+  @After
+  public void tearDown() {}
 
-    @After
-    public void tearDown() {
+  @Test
+  public void doTest() {}
 
+  @Test
+  public void testExecuteMainClass() throws Exception {
+    Map<String, String> params = new LinkedHashMap<String, String>();
+    CustomCodeRequest request =
+        new CustomCodeRequest(
+            MethodVerb.GET, "/test", params, "world".getBytes(), "hello_method", 0L);
+    File file = new File(JAR_FILE);
+    CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+    CustomCode customCode = new CustomCode(fileToBytes(file), future);
+    customCode.executeMainClass(request);
+    Map<String, ?> result = future.get();
+    System.out.println(JSONValue.toJSONString(future));
+  }
+
+  private byte[] fileToBytes(File file) {
+    byte[] b = new byte[(int) file.length()];
+    try {
+      FileInputStream fileInputStream = new FileInputStream(file);
+      fileInputStream.read(b);
+    } catch (FileNotFoundException e) {
+      LOGGER.info("File Not Found.");
+      e.printStackTrace();
+    } catch (IOException e1) {
+      LOGGER.info("Error Reading The File.");
+      e1.printStackTrace();
     }
-    
-    @Test
-    public void doTest() {
-    	
-    }
-    
-    @Test
-    public void testExecuteMainClass() throws Exception {
-    	Map<String, String> params = new LinkedHashMap<String, String>();
-    	CustomCodeRequest request = new CustomCodeRequest
-    			(MethodVerb.GET, "/test", params, "world".getBytes(), "hello_method", 0L);
-    	File file = new File(JAR_FILE);
-		CompletableFuture<Map<String,?>> future = new CompletableFuture<Map<String,?>>();
-		CustomCode customCode = new CustomCode(fileToBytes(file), future);
-    	customCode.executeMainClass(request);
-		Map<String,?> result = future.get();
-		System.out.println(JSONValue.toJSONString(future));
-    }
-    
-    private byte[] fileToBytes(File file){
-    	byte[] b = new byte[(int) file.length()];
-    	try {
-    		FileInputStream fileInputStream = new FileInputStream(file);
-    		fileInputStream.read(b);
-    	} catch (FileNotFoundException e) {
-			LOGGER.info("File Not Found.");
-    		e.printStackTrace();
-    	}
-    	catch (IOException e1) {
-			LOGGER.info("Error Reading The File.");
-    		e1.printStackTrace();
-    	}
-    	return b;
-    }
+    return b;
+  }
 }

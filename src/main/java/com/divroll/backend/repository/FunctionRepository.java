@@ -27,11 +27,14 @@ package com.divroll.backend.repository;
  * @since 0-SNAPSHOT
  */
 public interface FunctionRepository {
-    @Deprecated
-    String createFunction(String appId, String namespace, String functionName, String jar);
-    @Deprecated
-    boolean deleteFunction(String appId, String namespace, String functionName);
-    @Deprecated
-    byte[] retrieveFunction(String appId, String namespace, String functionName);
-    byte[] retrieveFunctionEntity(String appId, String namespace, String functionName);
+  @Deprecated
+  String createFunction(String appId, String namespace, String functionName, String jar);
+
+  @Deprecated
+  boolean deleteFunction(String appId, String namespace, String functionName);
+
+  @Deprecated
+  byte[] retrieveFunction(String appId, String namespace, String functionName);
+
+  byte[] retrieveFunctionEntity(String appId, String namespace, String functionName);
 }

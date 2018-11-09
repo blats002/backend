@@ -35,10 +35,13 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface ApplicationsResource {
-    @ApiOperation(value = "getEnvironment a new application", tags = "application")
-    @ApiResponses({@ApiResponse(code = 200, message = "the application", response = Application.class),})
-    @Post
-    Application createApp(Application rootDTO);
-    @Get
-    public Applications list();
+  @ApiOperation(value = "getEnvironment a new application", tags = "application")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "the application", response = Application.class),
+  })
+  @Post
+  Application createApp(Application rootDTO);
+
+  @Get
+  public Applications list();
 }

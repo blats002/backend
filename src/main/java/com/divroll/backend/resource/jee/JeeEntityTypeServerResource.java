@@ -34,26 +34,23 @@ import org.restlet.representation.Representation;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeEntityTypeServerResource extends BaseServerResource
-    implements EntityTypeResource {
+public class JeeEntityTypeServerResource extends BaseServerResource implements EntityTypeResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeEntityTypeServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeEntityTypeServerResource.class);
 
-    @Inject
-    EntityRepository entityRepository;
+  @Inject EntityRepository entityRepository;
 
-    @Override
-    public void deleteEntityType(Representation entity) {
-        try {
-             if(!isMaster()) {
-                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                 return;
-             }
-             entityRepository.deleteEntityType(appId, namespace, entityType);
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+  @Override
+  public void deleteEntityType(Representation entity) {
+    try {
+      if (!isMaster()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return;
+      }
+      entityRepository.deleteEntityType(appId, namespace, entityType);
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+  }
 }

@@ -30,14 +30,12 @@ import com.godaddy.logging.LoggerFactory;
  * @since 0-SNAPSHOT
  */
 public class ObjectLogger {
-    private static final Logger LOG
-            = LoggerFactory.getLogger(ObjectLogger.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ObjectLogger.class);
 
-    private ObjectLogger() {
-    }
+  private ObjectLogger() {}
 
-    public static Object log(Object object) {
-        LOG.with(object).info("Logging object");
-        return object;
-    }
+  public static Object log(Object object) {
+    LOG.with(object).info("Logging object");
+    return object;
+  }
 }

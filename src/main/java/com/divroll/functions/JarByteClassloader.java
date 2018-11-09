@@ -34,40 +34,40 @@ import java.util.jar.JarInputStream;
  * @since 0-SNAPSHOT
  */
 public class JarByteClassloader extends ClassLoader {
-	public byte[] bytes;
+  public byte[] bytes;
 
-	public JarByteClassloader(byte[] bytes) throws IOException {
-		// TODO Validate if the byte array passed is a Jar
-		//super(bytes.getClass().getClassLoader());
-		super(Thread.currentThread().getContextClassLoader());
-		this.bytes = bytes;
-	}
+  public JarByteClassloader(byte[] bytes) throws IOException {
+    // TODO Validate if the byte array passed is a Jar
+    // super(bytes.getClass().getClassLoader());
+    super(Thread.currentThread().getContextClassLoader());
+    this.bytes = bytes;
+  }
 
-	@Override
-    protected Class findClass(String name) throws ClassNotFoundException {
-		try {
-			JarInputStream jis = new JarInputStream(new ByteArrayInputStream(bytes)); 
-			JarEntry entry = jis.getNextJarEntry();
-			if (entry == null){ 
-				throw new ClassNotFoundException(name);
-			}
-			while (entry != null){
-				if (entry.getName().equals(name.replace('.', '/') + ".class")){
-					byte[] array = new byte[1024 * 10];
-					InputStream is = jis;
-					ByteArrayOutputStream out = new ByteArrayOutputStream(array.length);
-					int length = is.read(array);
-			        while (length > 0) {
-			        	out.write(array, 0, length);
-			        	length = is.read(array);
-			        }
-		         	return defineClass(name, out.toByteArray(), 0, out.size());
-				}
-				entry = jis.getNextJarEntry();
-			}			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null; 
-	}	
+  @Override
+  protected Class findClass(String name) throws ClassNotFoundException {
+    try {
+      JarInputStream jis = new JarInputStream(new ByteArrayInputStream(bytes));
+      JarEntry entry = jis.getNextJarEntry();
+      if (entry == null) {
+        throw new ClassNotFoundException(name);
+      }
+      while (entry != null) {
+        if (entry.getName().equals(name.replace('.', '/') + ".class")) {
+          byte[] array = new byte[1024 * 10];
+          InputStream is = jis;
+          ByteArrayOutputStream out = new ByteArrayOutputStream(array.length);
+          int length = is.read(array);
+          while (length > 0) {
+            out.write(array, 0, length);
+            length = is.read(array);
+          }
+          return defineClass(name, out.toByteArray(), 0, out.size());
+        }
+        entry = jis.getNextJarEntry();
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
 }

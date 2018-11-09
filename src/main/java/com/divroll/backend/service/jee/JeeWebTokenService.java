@@ -44,46 +44,44 @@ import java.util.Map;
  */
 public class JeeWebTokenService implements WebTokenService {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeWebTokenService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeWebTokenService.class);
 
-    @Inject
-    public JeeWebTokenService() {
-    }
+  @Inject
+  public JeeWebTokenService() {}
 
-    @Override
-    public String createToken(String secret, String userId) {
-        JWTSigner signer = new JWTSigner(secret);
-        HashMap<String, Object> claims = new HashMap<String, Object>();
-        claims.put(Constants.JWT_ID_KEY, String.valueOf(userId));
-        String token = signer.sign(claims);
-        //log.info("Generated token: " + token);
-        return token;
-    }
+  @Override
+  public String createToken(String secret, String userId) {
+    JWTSigner signer = new JWTSigner(secret);
+    HashMap<String, Object> claims = new HashMap<String, Object>();
+    claims.put(Constants.JWT_ID_KEY, String.valueOf(userId));
+    String token = signer.sign(claims);
+    // log.info("Generated token: " + token);
+    return token;
+  }
 
-    @Override
-    public Map<String, Comparable> readToken(String secret) {
-        return null;
-    }
+  @Override
+  public Map<String, Comparable> readToken(String secret) {
+    return null;
+  }
 
-    @Override
-    public String readUserIdFromToken(String secret, String token) {
-        String id = null;
-        try {
-            JWTVerifier verifier = new JWTVerifier(secret);
-            Map<String, Object> parsed = verifier.verify(token);
-            Object objectId = parsed.get(Constants.JWT_ID_KEY);
-            if (objectId instanceof String) {
-                id = String.valueOf((String) objectId);
-            }
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-        } catch (IOException e) {
-        } catch (SignatureException e) {
-        } catch (JWTVerifyException e) {
-        } catch (Exception e) {
-        }
-        return id;
+  @Override
+  public String readUserIdFromToken(String secret, String token) {
+    String id = null;
+    try {
+      JWTVerifier verifier = new JWTVerifier(secret);
+      Map<String, Object> parsed = verifier.verify(token);
+      Object objectId = parsed.get(Constants.JWT_ID_KEY);
+      if (objectId instanceof String) {
+        id = String.valueOf((String) objectId);
+      }
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    } catch (InvalidKeyException e) {
+    } catch (IOException e) {
+    } catch (SignatureException e) {
+    } catch (JWTVerifyException e) {
+    } catch (Exception e) {
     }
+    return id;
+  }
 }

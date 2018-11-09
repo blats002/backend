@@ -33,12 +33,15 @@ import org.restlet.resource.Put;
  * @since 0-SNAPSHOT
  */
 public interface FunctionResource {
-    @Get
-    Representation getMethod(Representation entity);
-    @Post
-    Representation postMethod(Representation entity);
-    @Put
-    Representation putMethod(Representation entity);
-    @Delete
-    Representation deleteMethod(Representation entity);
+  @Get
+  Representation getMethod(Representation entity);
+
+  @Post
+  Representation postMethod(Representation entity);
+
+  @Put
+  Representation putMethod(Representation entity);
+
+  @Delete
+  Representation deleteMethod(Representation entity);
 }

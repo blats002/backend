@@ -5,5 +5,4 @@ package com.divroll.backend.service;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface CloudCodeService {
-}
+public interface CloudCodeService {}

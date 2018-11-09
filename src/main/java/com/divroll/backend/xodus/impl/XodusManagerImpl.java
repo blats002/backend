@@ -46,47 +46,49 @@ import java.util.Map;
  */
 public class XodusManagerImpl implements XodusManager {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(XodusManagerImpl.class);
+  private static final Logger LOG = LoggerFactory.getLogger(XodusManagerImpl.class);
 
-    Map<String, Environment> environmentMap = new LinkedHashMap<>();
-    Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
-    VirtualFileSystem virtualFileSystem = null;
+  Map<String, Environment> environmentMap = new LinkedHashMap<>();
+  Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
+  VirtualFileSystem virtualFileSystem = null;
 
-    @Override
-    public Environment getEnvironment(String xodusRoot, String instance) {
-        Environment environment = environmentMap.get(xodusRoot + instance);
-        if (environment == null) {
-            Environment env = Environments.newInstance(xodusRoot + instance);
-            environmentMap.put(xodusRoot + instance, env);
-        }
-        Environment e = environmentMap.get(xodusRoot + instance);
-        return e;
+  @Override
+  public Environment getEnvironment(String xodusRoot, String instance) {
+    Environment environment = environmentMap.get(xodusRoot + instance);
+    if (environment == null) {
+      Environment env = Environments.newInstance(xodusRoot + instance);
+      environmentMap.put(xodusRoot + instance, env);
     }
+    Environment e = environmentMap.get(xodusRoot + instance);
+    return e;
+  }
 
-    @Override
-    public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir) {
-        PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
-        if (entityStore == null) {
-            final PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
-            store.executeInTransaction(new StoreTransactionalExecutable() {
-                @Override
-                public void execute(@NotNull StoreTransaction txn) {
-                    store.registerCustomPropertyType(txn, EmbeddedEntityIterable.class, EmbeddedEntityBinding.BINDING);
-                    store.registerCustomPropertyType(txn, EmbeddedArrayIterable.class, EmbeddedEntityBinding.BINDING);
-                }
-            });
-            entityStoreMap.put(xodusRoot + dir, store);
-        }
-        PersistentEntityStore p = entityStoreMap.get(xodusRoot + dir);
-        return p;
+  @Override
+  public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir) {
+    PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
+    if (entityStore == null) {
+      final PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
+      store.executeInTransaction(
+          new StoreTransactionalExecutable() {
+            @Override
+            public void execute(@NotNull StoreTransaction txn) {
+              store.registerCustomPropertyType(
+                  txn, EmbeddedEntityIterable.class, EmbeddedEntityBinding.BINDING);
+              store.registerCustomPropertyType(
+                  txn, EmbeddedArrayIterable.class, EmbeddedEntityBinding.BINDING);
+            }
+          });
+      entityStoreMap.put(xodusRoot + dir, store);
     }
+    PersistentEntityStore p = entityStoreMap.get(xodusRoot + dir);
+    return p;
+  }
 
-    @Override
-    public VirtualFileSystem getVirtualFileSystem(Environment env) {
-        if(virtualFileSystem == null) {
-            virtualFileSystem = new VirtualFileSystem(env);
-        }
-        return virtualFileSystem;
+  @Override
+  public VirtualFileSystem getVirtualFileSystem(Environment env) {
+    if (virtualFileSystem == null) {
+      virtualFileSystem = new VirtualFileSystem(env);
     }
+    return virtualFileSystem;
+  }
 }

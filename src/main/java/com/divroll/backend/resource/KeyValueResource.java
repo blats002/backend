@@ -33,15 +33,15 @@ import org.restlet.resource.Put;
  * @since 0-SNAPSHOT
  */
 public interface KeyValueResource {
-    @Get
-    Representation getValue();
+  @Get
+  Representation getValue();
 
-    @Post
-    Representation createValue(Representation entity);
+  @Post
+  Representation createValue(Representation entity);
 
-    @Put
-    Representation updateValue(Representation entity);
+  @Put
+  Representation updateValue(Representation entity);
 
-    @Delete
-    void deleteValue(Representation entity);
+  @Delete
+  void deleteValue(Representation entity);
 }

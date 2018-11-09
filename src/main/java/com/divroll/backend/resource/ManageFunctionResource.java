@@ -31,8 +31,9 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface ManageFunctionResource {
-    @Get
-    Function createFunction(Function entity);
-    @Delete
-    void removeFunction(Function entity);
+  @Get
+  Function createFunction(Function entity);
+
+  @Delete
+  void removeFunction(Function entity);
 }

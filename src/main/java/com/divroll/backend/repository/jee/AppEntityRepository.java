@@ -33,27 +33,27 @@ import java.util.Map;
  */
 public class AppEntityRepository {
 
-    private final EntityRepository repository;
-    private final String instance;
-    private final String namespace;
-    private final String entityType;
+  private final EntityRepository repository;
+  private final String instance;
+  private final String namespace;
+  private final String entityType;
 
+  public AppEntityRepository(
+      EntityRepository repository, String instance, String namespace, String entityType) {
+    this.repository = repository;
+    this.entityType = entityType;
+    this.instance = instance;
+    this.namespace = namespace;
+  }
 
-    public AppEntityRepository(EntityRepository repository, String instance, String namespace, String entityType) {
-        this.repository = repository;
-        this.entityType = entityType;
-        this.instance = instance;
-        this.namespace = namespace;
-    }
+  public Map<String, Comparable> getEntityById(String namespace, String entityId) {
+    return repository.getEntity(instance, namespace, entityType, entityId);
+  }
 
-    public Map<String,Comparable> getEntityById(String namespace, String entityId) {
-        return repository.getEntity(instance, namespace, entityType, entityId);
-    }
-
-    public boolean isExist(String namespace, String entityType, String propertyName, Comparable propertyValue) {
-        List<Map<String,Comparable>> entities = repository.getEntities(instance, namespace, entityType,
-                propertyName, propertyValue, 0, 1);
-        return !entities.isEmpty();
-    }
-
+  public boolean isExist(
+      String namespace, String entityType, String propertyName, Comparable propertyValue) {
+    List<Map<String, Comparable>> entities =
+        repository.getEntities(instance, namespace, entityType, propertyName, propertyValue, 0, 1);
+    return !entities.isEmpty();
+  }
 }

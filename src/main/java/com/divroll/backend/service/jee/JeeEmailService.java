@@ -39,45 +39,43 @@ import java.util.Properties;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+
 /**
- Outgoing Mail (EmailConfig) Server
- requires TLS or SSL: smtp.gmail.com (use authentication)
- Use Authentication: Yes
- Port for TLS/STARTTLS: 587
+ * Outgoing Mail (EmailConfig) Server requires TLS or SSL: smtp.gmail.com (use authentication) Use
+ * Authentication: Yes Port for TLS/STARTTLS: 587
  */
 public class JeeEmailService implements EmailService {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeEmailService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeEmailService.class);
 
-    @Override
-    public void sendEmail(EmailConfig config, String from, String password, String to, String subject, String htmlBody)
-            throws UnsupportedEncodingException, MessagingException {
-        LOG.info("Sending email...");
+  @Override
+  public void sendEmail(
+      EmailConfig config, String from, String password, String to, String subject, String htmlBody)
+      throws UnsupportedEncodingException, MessagingException {
+    LOG.info("Sending email...");
 
-        final String fromEmail = from;
-        final String toEmail = to;
+    final String fromEmail = from;
+    final String toEmail = to;
 
-        LOG.info("TLSEmail Start");
-        Properties props = new Properties();
-        props.put("mail.smtp.host", config.getSmtpHost()); //EmailConfig Host
-        props.put("mail.smtp.port", config.getTlsPort()); //TLS Port
-        props.put("mail.smtp.auth", "true"); //enable authentication
-        props.put("mail.smtp.starttls.enable", "true"); //enable STARTTLS
+    LOG.info("TLSEmail Start");
+    Properties props = new Properties();
+    props.put("mail.smtp.host", config.getSmtpHost()); // EmailConfig Host
+    props.put("mail.smtp.port", config.getTlsPort()); // TLS Port
+    props.put("mail.smtp.auth", "true"); // enable authentication
+    props.put("mail.smtp.starttls.enable", "true"); // enable STARTTLS
 
-        LOG.with(props).info("Logging email properties");
+    LOG.with(props).info("Logging email properties");
 
-        //create Authenticator object to pass in Session.getInstance argument
-        Authenticator auth = new Authenticator() {
-            //override the getPasswordAuthentication method
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(fromEmail, password);
-            }
+    // create Authenticator object to pass in Session.getInstance argument
+    Authenticator auth =
+        new Authenticator() {
+          // override the getPasswordAuthentication method
+          protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(fromEmail, password);
+          }
         };
-        Session session = Session.getInstance(props, auth);
+    Session session = Session.getInstance(props, auth);
 
-        EmailUtil.sendEmail(session, toEmail,fromEmail, fromEmail,
-                subject, htmlBody);
-    }
-
+    EmailUtil.sendEmail(session, toEmail, fromEmail, fromEmail, subject, htmlBody);
+  }
 }

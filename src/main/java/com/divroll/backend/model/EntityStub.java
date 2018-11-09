@@ -31,38 +31,38 @@ import org.jetbrains.annotations.NotNull;
  */
 @XStreamAlias("entity")
 public class EntityStub implements Comparable {
-    private String entityId;
-    private String entityType;
+  private String entityId;
+  private String entityType;
 
-    private EntityStub() {}
+  private EntityStub() {}
 
-    public EntityStub(String entityId) {
-        setEntityId(entityId);
-    }
+  public EntityStub(String entityId) {
+    setEntityId(entityId);
+  }
 
-    public EntityStub(String entityId, String entityType) {
-        setEntityId(entityId);
-        setEntityType(entityType);
-    }
+  public EntityStub(String entityId, String entityType) {
+    setEntityId(entityId);
+    setEntityType(entityType);
+  }
 
-    public String getEntityId() {
-        return entityId;
-    }
+  public String getEntityId() {
+    return entityId;
+  }
 
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
 
-    public String getEntityType() {
-        return entityType;
-    }
+  public String getEntityType() {
+    return entityType;
+  }
 
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
+  public void setEntityType(String entityType) {
+    this.entityType = entityType;
+  }
 
-    @Override
-    public int compareTo(@NotNull Object o) {
-        return 0;
-    }
+  @Override
+  public int compareTo(@NotNull Object o) {
+    return 0;
+  }
 }

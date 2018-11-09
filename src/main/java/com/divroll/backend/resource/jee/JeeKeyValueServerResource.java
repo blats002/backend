@@ -50,309 +50,333 @@ import java.util.List;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeKeyValueServerResource extends BaseServerResource
-        implements KeyValueResource {
+public class JeeKeyValueServerResource extends BaseServerResource implements KeyValueResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeKeyValueServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeKeyValueServerResource.class);
 
-    @Inject
-    KeyValueService keyValueService;
+  @Inject KeyValueService keyValueService;
 
-    @Inject
-    WebTokenService webTokenService;
+  @Inject WebTokenService webTokenService;
 
-    @Inject
-    XodusEnvStore store;
+  @Inject XodusEnvStore store;
 
-    @Override
-    public Representation getValue() {
-        try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-            if (authToken == null || authToken.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                return null;
-
-            }
-
-            String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            String uuidKey = "username:" + authUsername + ":uuid";
-            String authUUID = store.get(appId, authUsername, uuidKey, String.class);
-
-
-            String dir = appId;
-            if (dir != null) {
-                if (accept != null) {
-                    if (accept.equals(MediaType.APPLICATION_OCTET_STREAM) || accept.equals("application/octet-stream")) {
-                        ByteBuffer value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, ByteBuffer.class);
-                        if (value != null) {
-                            byte[] arr = new byte[value.remaining()];
-                            value.get(arr);
-                            Representation representation = new ByteArrayRepresentation(arr);
-                            representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
-                            setStatus(Status.SUCCESS_OK);
-                            return representation;
-                        }
-                    } else if (accept.equals(MediaType.APPLICATION_JSON)) {
-                        String value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
-                        if (value != null) {
-                            Representation representation = new JsonRepresentation(value);
-                            setStatus(Status.SUCCESS_OK);
-                            return representation;
-                        } else {
-                            return null;
-                        }
-                    } else {
-                        // default
-                        String value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
-                        if (value != null) {
-                            Representation representation = new StringRepresentation(value);
-                            setStatus(Status.SUCCESS_OK);
-                            return representation;
-                        } else {
-                            return null;
-                        }
-                    }
-                } else {
-                    // treat as String
-                    String value = keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
-                    boolean success = keyValueService.delete(appId, namespace, entityType, entityId, authUUID);
-                    if (success) {
-                        Representation representation = new StringRepresentation(value);
-                        setStatus(Status.SUCCESS_OK);
-                        return representation;
-                    } else {
-                        setStatus(Status.SERVER_ERROR_INTERNAL);
-                    }
-                }
-
-
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+  @Override
+  public Representation getValue() {
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
+      }
+      if (authToken == null || authToken.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return null;
+      }
+
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        return null;
+      }
+
+      String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+      String uuidKey = "username:" + authUsername + ":uuid";
+      String authUUID = store.get(appId, authUsername, uuidKey, String.class);
+
+      String dir = appId;
+      if (dir != null) {
+        if (accept != null) {
+          if (accept.equals(MediaType.APPLICATION_OCTET_STREAM)
+              || accept.equals("application/octet-stream")) {
+            ByteBuffer value =
+                keyValueService.get(
+                    appId, namespace, entityType, entityId, authUUID, ByteBuffer.class);
+            if (value != null) {
+              byte[] arr = new byte[value.remaining()];
+              value.get(arr);
+              Representation representation = new ByteArrayRepresentation(arr);
+              representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+              setStatus(Status.SUCCESS_OK);
+              return representation;
+            }
+          } else if (accept.equals(MediaType.APPLICATION_JSON)) {
+            String value =
+                keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
+            if (value != null) {
+              Representation representation = new JsonRepresentation(value);
+              setStatus(Status.SUCCESS_OK);
+              return representation;
+            } else {
+              return null;
+            }
+          } else {
+            // default
+            String value =
+                keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
+            if (value != null) {
+              Representation representation = new StringRepresentation(value);
+              setStatus(Status.SUCCESS_OK);
+              return representation;
+            } else {
+              return null;
+            }
+          }
+        } else {
+          // treat as String
+          String value =
+              keyValueService.get(appId, namespace, entityType, entityId, authUUID, String.class);
+          boolean success =
+              keyValueService.delete(appId, namespace, entityType, entityId, authUUID);
+          if (success) {
+            Representation representation = new StringRepresentation(value);
+            setStatus(Status.SUCCESS_OK);
+            return representation;
+          } else {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+          }
+        }
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+    return null;
+  }
 
-    @Override
-    public Representation createValue(Representation entity) {
-        JSONObject result = new JSONObject();
+  @Override
+  public Representation createValue(Representation entity) {
+    JSONObject result = new JSONObject();
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return null;
+      }
+      if (entity == null || entity.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+
+      String[] read = new String[] {};
+      String[] write = new String[] {};
+
+      if (aclRead != null) {
         try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            }
+          JSONArray jsonArray = JSONArray.parseArray(aclRead);
+          read = ACLHelper.onlyIds(jsonArray);
+        } catch (Exception e) {
+          // do nothing
+        }
+      }
 
-            String[] read = new String[]{};
-            String[] write = new String[]{};
+      if (aclWrite != null) {
+        try {
+          JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+          List<String> aclWriteList = new LinkedList<>();
+          for (int i = 0; i < jsonArray.size(); i++) {
+            aclWriteList.add(jsonArray.getString(i));
+          }
+          write = aclWriteList.toArray(new String[aclWriteList.size()]);
+        } catch (Exception e) {
+          // do nothing
+        }
+      }
 
-            if (aclRead != null) {
-                try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    read = ACLHelper.onlyIds(jsonArray);
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
+      String dir = appId;
+      if (dir != null) {
+        if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM)
+            || contentType.equals("application/octet-stream")) {
+          byte[] value = ByteStreams.toByteArray(entity.getStream());
+          boolean success =
+              keyValueService.putIfNotExists(
+                  appId,
+                  namespace,
+                  entityType,
+                  entityId,
+                  ByteBuffer.wrap(value),
+                  read,
+                  write,
+                  ByteBuffer.class);
+          if (success) {
+            setStatus(Status.SUCCESS_CREATED);
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          }
+        } else {
+          String value = entity.getText();
+          boolean success =
+              keyValueService.putIfNotExists(
+                  appId, namespace, entityType, entityId, value, read, write, String.class);
+          if (success) {
+            setStatus(Status.SUCCESS_CREATED);
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          }
+        }
+      }
+    } catch (ACLException e) {
+      e.printStackTrace();
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      return null;
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+    Representation representation = new JsonRepresentation(result.toJSONString());
+    return representation;
+  }
 
-            if (aclWrite != null) {
-                try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    List<String> aclWriteList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        aclWriteList.add(jsonArray.getString(i));
-                    }
-                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
+  @Override
+  public Representation updateValue(Representation entity) {
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return null;
+      }
+      if (entity == null || entity.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+      if (authToken == null || authToken.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return returnMissingAuthToken();
+      }
 
-            String dir = appId;
-            if (dir != null) {
-                if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM) || contentType.equals("application/octet-stream")) {
-                    byte[] value = ByteStreams.toByteArray(entity.getStream());
-                    boolean success = keyValueService.putIfNotExists(appId, namespace, entityType, entityId, ByteBuffer.wrap(value),
-                            read, write, ByteBuffer.class);
-                    if (success) {
-                        setStatus(Status.SUCCESS_CREATED);
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    }
-                } else {
-                    String value = entity.getText();
-                    boolean success = keyValueService.putIfNotExists(appId, namespace, entityType, entityId, value,
-                            read, write, String.class);
-                    if (success) {
-                        setStatus(Status.SUCCESS_CREATED);
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    }
-                }
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        return returnNull();
+      }
+
+      String[] read = new String[] {};
+      String[] write = new String[] {};
+
+      if (aclRead != null) {
+        try {
+          JSONArray jsonArray = JSONArray.parseArray(aclRead);
+          read = ACLHelper.onlyIds(jsonArray);
+        } catch (Exception e) {
+          // do nothing
+        }
+      }
+
+      if (aclWrite != null) {
+        try {
+          JSONArray jsonArray = JSONArray.parseArray(aclWrite);
+          List<String> aclWriteList = new LinkedList<>();
+          for (int i = 0; i < jsonArray.size(); i++) {
+            aclWriteList.add(jsonArray.getString(i));
+          }
+          write = aclWriteList.toArray(new String[aclWriteList.size()]);
+        } catch (Exception e) {
+          // do nothing
+        }
+      }
+
+      String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+      String uuidKey = "username:" + authUsername + ":uuid";
+      String authUUID = store.get(appId, authUsername, uuidKey, String.class);
+
+      String dir = appId;
+      if (dir != null) {
+        if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM)
+            || contentType.equals("application/octet-stream")) {
+          byte[] value = ByteStreams.toByteArray(entity.getStream());
+          boolean success =
+              keyValueService.put(
+                  appId,
+                  namespace,
+                  entityType,
+                  entityId,
+                  ByteBuffer.wrap(value),
+                  authUUID,
+                  read,
+                  write,
+                  ByteBuffer.class);
+          if (success) {
+            setStatus(Status.SUCCESS_NO_CONTENT);
+            return null;
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return null;
+          }
+        } else {
+          String value = entity.getText();
+          try {
+            // Try to put the value, if it throws then this is a unauthorized request
+            boolean success =
+                keyValueService.put(
+                    appId,
+                    namespace,
+                    entityType,
+                    entityId,
+                    value,
+                    authUUID,
+                    read,
+                    write,
+                    String.class);
+            if (success) {
+              setStatus(Status.SUCCESS_NO_CONTENT);
+              return null;
+            } else {
+              setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+              return null;
             }
-        } catch (ACLException e) {
-            e.printStackTrace();
+          } catch (ACLException e) {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+          }
         }
-        Representation representation = new JsonRepresentation(result.toJSONString());
-        return representation;
+      }
+
+    } catch (ACLException e) {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      return null;
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+    return new StringRepresentation("");
+  }
 
-    @Override
-    public Representation updateValue(Representation entity) {
+  @Override
+  public void deleteValue(Representation entity) {
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return;
+      }
+      if (entity == null || entity.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+      if (authToken == null || authToken.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return;
+      }
+
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        return;
+      }
+
+      String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+      String uuidKey = "username:" + authUsername + ":uuid";
+      String authUUID = store.get(appId, authUsername, uuidKey, String.class);
+
+      String dir = appId;
+      if (dir != null) {
         try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-            if (authToken == null || authToken.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return returnMissingAuthToken();
-            }
-
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                return returnNull();
-
-            }
-
-            String[] read = new String[]{};
-            String[] write = new String[]{};
-
-            if (aclRead != null) {
-                try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclRead);
-                    read = ACLHelper.onlyIds(jsonArray);
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
-
-            if (aclWrite != null) {
-                try {
-                    JSONArray jsonArray = JSONArray.parseArray(aclWrite);
-                    List<String> aclWriteList = new LinkedList<>();
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        aclWriteList.add(jsonArray.getString(i));
-                    }
-                    write = aclWriteList.toArray(new String[aclWriteList.size()]);
-                } catch (Exception e) {
-                    // do nothing
-                }
-            }
-
-            String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            String uuidKey = "username:" + authUsername + ":uuid";
-            String authUUID = store.get(appId, authUsername, uuidKey, String.class);
-
-            String dir = appId;
-            if (dir != null) {
-                if (contentType.equals(MediaType.APPLICATION_OCTET_STREAM) || contentType.equals("application/octet-stream")) {
-                    byte[] value = ByteStreams.toByteArray(entity.getStream());
-                    boolean success = keyValueService.put(appId, namespace, entityType, entityId, ByteBuffer.wrap(value), authUUID,
-                            read, write, ByteBuffer.class);
-                    if (success) {
-                        setStatus(Status.SUCCESS_NO_CONTENT);
-                        return null;
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                        return null;
-                    }
-                } else {
-                    String value = entity.getText();
-                    try {
-                        // Try to put the value, if it throws then this is a unauthorized request
-                        boolean success = keyValueService.put(appId, namespace, entityType, entityId, value, authUUID,
-                                read, write, String.class);
-                        if (success) {
-                            setStatus(Status.SUCCESS_NO_CONTENT);
-                            return null;
-                        } else {
-                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                            return null;
-                        }
-                    } catch (ACLException e) {
-                        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                        return null;
-                    }
-                }
-            }
-
+          // Try to put the value, if it throws then this is a unauthorized request
+          boolean success =
+              keyValueService.delete(appId, namespace, entityType, entityId, authUUID);
+          if (success) {
+            setStatus(Status.SUCCESS_OK);
+          } else {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+          }
         } catch (ACLException e) {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            return null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         }
-        return new StringRepresentation("");
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
-
-    @Override
-    public void deleteValue(Representation entity) {
-        try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
-            if (entity == null || entity.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-            if (authToken == null || authToken.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
-
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                return;
-
-            }
-
-            String authUsername = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-            String uuidKey = "username:" + authUsername + ":uuid";
-            String authUUID = store.get(appId, authUsername, uuidKey, String.class);
-
-
-            String dir = appId;
-            if (dir != null) {
-                try {
-                    // Try to put the value, if it throws then this is a unauthorized request
-                    boolean success = keyValueService.delete(appId, namespace, entityType, entityId, authUUID);
-                    if (success) {
-                        setStatus(Status.SUCCESS_OK);
-                    } else {
-                        setStatus(Status.SERVER_ERROR_INTERNAL);
-                    }
-                } catch (ACLException e) {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
-    }
-
+  }
 }
