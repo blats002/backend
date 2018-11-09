@@ -86,25 +86,13 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
     router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
-    router.attach(
-        ROOT_URI + "entities/{entityType}/properties/{propertyName}",
-        JeePropertyServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}/properties/{propertyName}", JeePropertyServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
-    router.attach(
-        ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}",
-        JeeBlobServerResource.class);
-    router.attach(
-        ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}",
-        JeePropertyServerResource.class);
-    router.attach(
-        ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}",
-        JeeLinkServerResource.class);
-    router.attach(
-        ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}",
-        JeeLinksServerResource.class);
-
+    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}", JeePropertyServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}", JeeLinkServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
     router.attach(ROOT_URI + "blobs/{blobName}", JeeBlobServerResource.class);
-
     router.attach(ROOT_URI + "files", JeeFileServerResource.class);
     router.attach(ROOT_URI + "files/{fileName}", JeeFileServerResource.class);
     router.attach(ROOT_URI + "files/{appId}/{fileName}", JeeFileServerResource.class);
@@ -112,8 +100,7 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "functions", JeeFunctionServerResource.class);
     // router.attach(ROOT_URI + "functions/{functionName}", JeeManageFunctionServerResource.class);
-    router.attach(
-        ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
+    router.attach(ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
