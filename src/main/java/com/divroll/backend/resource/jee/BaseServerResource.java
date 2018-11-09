@@ -413,6 +413,11 @@ public class BaseServerResource extends SelfInjectingServerResource {
         return null;
     }
 
+    protected Representation badRequest(String message) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return new StringRepresentation(message);
+    }
+
     protected Representation serverError() {
         setStatus(Status.SERVER_ERROR_INTERNAL);
         return null;

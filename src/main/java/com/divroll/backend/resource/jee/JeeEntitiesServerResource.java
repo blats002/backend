@@ -156,7 +156,7 @@ public class JeeEntitiesServerResource extends BaseServerResource
             }
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
-            return badRequest();
+            return badRequest(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return serverError();
@@ -266,6 +266,8 @@ public class JeeEntitiesServerResource extends BaseServerResource
             } else {
                 return badRequest();
             }
+        } catch (IllegalArgumentException e) {
+            return badRequest(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return serverError();

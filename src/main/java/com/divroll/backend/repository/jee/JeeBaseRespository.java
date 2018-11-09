@@ -27,12 +27,11 @@ import com.godaddy.logging.LoggerFactory;
 import jetbrains.exodus.entitystore.Entity;
 import jetbrains.exodus.entitystore.EntityIterable;
 import jetbrains.exodus.entitystore.StoreTransaction;
+import util.ComparableLinkedList;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -218,6 +217,42 @@ public abstract class JeeBaseRespository {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'"); // Quoted "Z" to indicate UTC, no timezone offset
         df.setTimeZone(tz);
         return df.format(new Date());
+    }
+
+    public static <T> void removeDuplicates(ComparableLinkedList<T> list) {
+        int size = list.size();
+        int out = 0;
+        {
+            final Set<T> encountered = new HashSet<T>();
+            for (int in = 0; in < size; in++) {
+                final T t = list.get(in);
+                final boolean first = encountered.add(t);
+                if (first) {
+                    list.set(out++, t);
+                }
+            }
+        }
+        while (out < size) {
+            list.remove(--size);
+        }
+    }
+
+    public static <T> void removeDuplicates(ArrayList<T> list) {
+        int size = list.size();
+        int out = 0;
+        {
+            final Set<T> encountered = new HashSet<T>();
+            for (int in = 0; in < size; in++) {
+                final T t = list.get(in);
+                final boolean first = encountered.add(t);
+                if (first) {
+                    list.set(out++, t);
+                }
+            }
+        }
+        while (out < size) {
+            list.remove(--size);
+        }
     }
 
 }

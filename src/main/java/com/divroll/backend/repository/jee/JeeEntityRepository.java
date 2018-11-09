@@ -41,7 +41,9 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
+import jetbrains.exodus.query.metadata.Index;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import scala.actors.threadpool.Arrays;
 import util.ComparableHashMap;
 import util.ComparableLinkedList;
@@ -127,7 +129,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     } else {
                         reference = txn.getAll(entityType).getFirst();
                     }
-                    //Entity reference = txn.getAll(entityType).getFirst();
                     ComparableHashMap finalMetadata = null;
                     if(reference != null) {
                         EmbeddedEntityIterable embeddedMetadata = (EmbeddedEntityIterable) reference.getProperty(metadataProperty);
@@ -137,14 +138,19 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     }
                     // Set new meta data for all entities
                     if(metadata.uniqueProperties() != null) {
-                        ComparableHashMap<String,ComparableLinkedList> metadata = new ComparableHashMap<String,ComparableLinkedList>();
-                        ComparableLinkedList<String> uniqueProperties = new ComparableLinkedList<String>();
-                        uniqueProperties.forEach(uniqueProperty -> {
-                            uniqueProperties.add(uniqueProperty);
-                        });
-                        metadata.put("uniqueProperties", uniqueProperties);
-                        finalMetadata.putAll(metadata);
-                        entity.setProperty(metadataProperty, Comparables.cast(finalMetadata));
+                        if(finalMetadata == null) {
+                            finalMetadata = new ComparableHashMap();
+                        }
+                        ComparableLinkedList<Comparable> uniqueProperties = new ComparableLinkedList<Comparable>();
+                        uniqueProperties.addAll(metadata.uniqueProperties());
+                        removeDuplicates(uniqueProperties);
+                        finalMetadata.put("uniqueProperties", uniqueProperties);
+                        entity.setProperty(metadataProperty, new EmbeddedEntityIterable(Comparables.cast(finalMetadata)));
+                    } else {
+                        if(finalMetadata == null) {
+                            finalMetadata = new ComparableHashMap();
+                        }
+                        entity.setProperty(metadataProperty, new EmbeddedEntityIterable(Comparables.cast(finalMetadata)));
                     }
                     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -328,7 +334,16 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         EmbeddedEntityIterable metadata = (EmbeddedEntityIterable) reference.getProperty(metadataProperty);
                         ComparableHashMap comparableHashMap = (ComparableHashMap) metadata.asObject();
                         uniquePropertyList = (ComparableLinkedList<Comparable>) comparableHashMap.get("uniqueProperties");
+                        if(uniquePropertyList == null) {
+                            uniquePropertyList = new ComparableLinkedList<>();
+                        }
                         uniquePropertyList.addAll(uniqueProperties);
+                        removeDuplicates(uniquePropertyList);
+                    }
+                    if(metadata != null && metadata.uniqueProperties() != null) {
+                        uniquePropertyList = new ComparableLinkedList<>();
+                        uniquePropertyList.addAll(uniqueProperties);
+                        removeDuplicates(uniquePropertyList);
                     }
 
                     if(uniquePropertyList != null) {
@@ -816,6 +831,51 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             entityStore.executeInTransaction(new StoreTransactionalExecutable() {
                 @Override
                 public void execute(@NotNull final StoreTransaction txn) {
+
+                    if(metadata != null && metadata.uniqueProperties() != null) {
+                        metadata.uniqueProperties().forEach(property -> {
+                            EntityIterable result = null;
+                            if(namespace != null && !namespace.isEmpty()) {
+                                result = txn.findWithProp(entityType, namespaceProperty).union(txn.find(entityType, namespaceProperty, namespace));
+                            } else {
+                                result = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+                            }
+                            Comparable previousVal = null;
+                            for(Entity entity : result) {
+                                Comparable propertyValue = entity.getProperty(property);
+                                if(propertyValue == null) {
+                                    continue;
+                                } else if(propertyValue instanceof String) {
+                                    if(previousVal != null) {
+                                        if(previousVal.equals(propertyValue)) {
+                                            throw new IllegalArgumentException("Found duplicated value on " + entity.getId());
+                                        }
+                                    }
+                                    previousVal = propertyValue;
+                                } else if(propertyValue instanceof Boolean) {
+                                    if(previousVal != null) {
+                                        if(previousVal.equals(propertyValue)) {
+                                            throw new IllegalArgumentException("Found duplicated value on " + entity.getId());
+                                        }
+                                    }
+                                    previousVal = propertyValue;
+                                } else if(propertyValue instanceof Number) {
+                                    if(previousVal != null) {
+                                        if(previousVal.equals(propertyValue)) {
+                                            throw new IllegalArgumentException("Found duplicated value on " + entity.getId());
+                                        }
+                                    }
+                                    previousVal = propertyValue;
+                                } else {
+                                    throw new IllegalArgumentException("Found invalid property value " + entity.getId());
+                                }
+                            }
+                        });
+
+
+
+                    }
+
                     Entity firstEntity;
                     if(namespace != null) {
                         firstEntity = txn.getAll(entityType).intersect(txn.find(entityType, namespaceProperty, namespace)).getFirst();
@@ -831,13 +891,37 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         ComparableHashMap comparableMetadata = null;
                         if(embeddedMetadata != null) {
                             comparableMetadata = ((ComparableHashMap) embeddedMetadata.asObject());
-                            finalUniqueProperties = (ComparableLinkedList<Comparable>) comparableMetadata.get("uniqueProperties");
-                            finalUniqueProperties.addAll(uniqueProperties);
-                            comparableMetadata.put(uniqueProperties, finalUniqueProperties);
+                            if(comparableMetadata != null) {
+                                //ComparableLinkedList comparableLinkedList = (ComparableLinkedList) comparableMetadata.get("uniqueProperties");
+                                finalUniqueProperties = new ComparableLinkedList<>();
+                                //finalUniqueProperties.addAll(comparableLinkedList);
+                                if(finalUniqueProperties != null) {
+                                    if(uniqueProperties == null) {
+                                        uniqueProperties = new ComparableLinkedList<>();
+                                    }
+                                    finalUniqueProperties.addAll(uniqueProperties);
+                                    removeDuplicates(finalUniqueProperties);
+                                    comparableMetadata.put("uniqueProperties", finalUniqueProperties);
+                                } else {
+                                    comparableMetadata.put("uniqueProperties", new EmbeddedArrayIterable(new ComparableLinkedList<>()));
+                                }
+                            } else {
+                                comparableMetadata = new ComparableHashMap();
+                                if(finalUniqueProperties == null) {
+                                    finalUniqueProperties = new ComparableLinkedList<>();
+                                }
+                                if(uniqueProperties == null) {
+                                    uniqueProperties = new ComparableLinkedList<>();
+                                }
+                                finalUniqueProperties.addAll(uniqueProperties);
+                                removeDuplicates(finalUniqueProperties);
+                                comparableMetadata.put("uniqueProperties", finalUniqueProperties);
+                            }
                         } else {
                             comparableMetadata = new ComparableHashMap();
                             finalUniqueProperties.addAll(uniqueProperties);
-                            comparableMetadata.put(uniqueProperties, finalUniqueProperties);
+                            removeDuplicates(finalUniqueProperties);
+                            comparableMetadata.put("uniqueProperties", finalUniqueProperties);
                         }
                         EntityIterable result = null;
                         if(namespace != null) {
@@ -847,7 +931,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
                         ComparableHashMap finalMetadata = comparableMetadata;
                         for(Entity entity : result) {
-                            entity.setProperty(metadataProperty, Comparables.cast(finalMetadata));
+                            entity.setProperty(metadataProperty, new EmbeddedEntityIterable(Comparables.cast(finalMetadata)));
                         }
                     } else {
                         new IllegalArgumentException("Type of entity does not exists");
