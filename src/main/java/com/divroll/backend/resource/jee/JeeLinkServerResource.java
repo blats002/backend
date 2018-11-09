@@ -231,9 +231,8 @@ public class JeeLinkServerResource extends BaseServerResource implements LinkRes
       Map<String, Comparable> map =
           entityRepository.getEntity(appId, namespace, entityType, entityId);
 
-      if (map != null) {
+      if (map == null) {
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-
       } else {
         List<EntityStub> aclWriteList =
             map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
