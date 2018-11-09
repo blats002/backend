@@ -34,35 +34,36 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class Function {
 
-    @ApiModelProperty(position = 0, required = false, value = "Application Id")
-    private String appId;
-    @ApiModelProperty(position = 1, required = true, value = "Unique function name")
-    private String functionName;
-    @ApiModelProperty(position = 2, required = false, value = "Base64 encoded Jar file")
-    private String jar;
+  @ApiModelProperty(position = 0, required = false, value = "Application Id")
+  private String appId;
 
-    public String getAppId() {
-        return appId;
-    }
+  @ApiModelProperty(position = 1, required = true, value = "Unique function name")
+  private String functionName;
 
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
+  @ApiModelProperty(position = 2, required = false, value = "Base64 encoded Jar file")
+  private String jar;
 
-    public String getFunctionName() {
-        return functionName;
-    }
+  public String getAppId() {
+    return appId;
+  }
 
-    public void setFunctionName(String functionName) {
-        this.functionName = functionName;
-    }
+  public void setAppId(String appId) {
+    this.appId = appId;
+  }
 
-    public String getJar() {
-        return jar;
-    }
+  public String getFunctionName() {
+    return functionName;
+  }
 
-    public void setJar(String jar) {
-        this.jar = jar;
-    }
+  public void setFunctionName(String functionName) {
+    this.functionName = functionName;
+  }
 
+  public String getJar() {
+    return jar;
+  }
+
+  public void setJar(String jar) {
+    this.jar = jar;
+  }
 }

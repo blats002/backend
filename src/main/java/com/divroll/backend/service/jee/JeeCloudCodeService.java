@@ -31,6 +31,5 @@ import com.godaddy.logging.LoggerFactory;
  * @since 0-SNAPSHOT
  */
 public class JeeCloudCodeService implements CloudCodeService {
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeCloudCodeService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeCloudCodeService.class);
 }

@@ -31,32 +31,36 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface XodusEnvStore {
-    public void put(String instance, String store, String key, String value);
+  public void put(String instance, String store, String key, String value);
 
-    public void put(String instance, String store, String key, Boolean value);
+  public void put(String instance, String store, String key, Boolean value);
 
-    public void put(String instance, String store, String key, Double value);
+  public void put(String instance, String store, String key, Double value);
 
-    public void put(String instance, String store, String key, Float value);
+  public void put(String instance, String store, String key, Float value);
 
-    public void put(String instance, String store, String key, Integer value);
+  public void put(String instance, String store, String key, Integer value);
 
-    public void put(String instance, String store, String key, Long value);
+  public void put(String instance, String store, String key, Long value);
 
-    public void put(String instance, String store, String key, Short value);
+  public void put(String instance, String store, String key, Short value);
 
-    public boolean put(String instance, String store, String key, ByteValue value);
+  public boolean put(String instance, String store, String key, ByteValue value);
 
-    public boolean putIfNotExists(String instance, String store, String key, ByteValue value);
+  public boolean putIfNotExists(String instance, String store, String key, ByteValue value);
 
-    public boolean batchPut(String instance, final String entityType, final Map<String, String> properties);
+  public boolean batchPut(
+      String instance, final String entityType, final Map<String, String> properties);
 
-    public <T> T get(String instance, String store, String key, final Class<T> clazz);
+  public <T> T get(String instance, String store, String key, final Class<T> clazz);
 
-    public boolean delete(String instance, String store, String key);
+  public boolean delete(String instance, String store, String key);
 
-    public boolean delete(String instance, String store, String... keys);
+  public boolean delete(String instance, String store, String... keys);
 
-    public boolean batchPutDelete(String instance, final String entityType, final Map<String, String> properties, final String... keys);
-
+  public boolean batchPutDelete(
+      String instance,
+      final String entityType,
+      final Map<String, String> properties,
+      final String... keys);
 }

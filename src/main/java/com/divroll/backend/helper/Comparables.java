@@ -33,30 +33,35 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class Comparables {
-    public static <V extends Comparable> ComparableLinkedList<Comparable> cast(List<V> comparableList) {
-        if(comparableList == null) {
-            return null;
-        }
-        if(comparableList.isEmpty()) {
-            return new ComparableLinkedList<Comparable>();
-        }
-        ComparableLinkedList<Comparable> casted = new ComparableLinkedList<Comparable>();
-        comparableList.forEach(comparable -> {
-            casted.add(comparable);
-        });
-        return casted;
+  public static <V extends Comparable> ComparableLinkedList<Comparable> cast(
+      List<V> comparableList) {
+    if (comparableList == null) {
+      return null;
     }
-    public static <K extends Comparable, V extends Comparable> ComparableHashMap<K,V> cast(Map<K,V> map) {
-        if(map == null) {
-            return null;
-        }
-        if(map.isEmpty()) {
-            return new ComparableHashMap<>();
-        }
-        ComparableHashMap<K, V> casted = new ComparableHashMap<>();
-        map.forEach((key,value) -> {
-            casted.put(key, value);
-        });
-        return casted;
+    if (comparableList.isEmpty()) {
+      return new ComparableLinkedList<Comparable>();
     }
+    ComparableLinkedList<Comparable> casted = new ComparableLinkedList<Comparable>();
+    comparableList.forEach(
+        comparable -> {
+          casted.add(comparable);
+        });
+    return casted;
+  }
+
+  public static <K extends Comparable, V extends Comparable> ComparableHashMap<K, V> cast(
+      Map<K, V> map) {
+    if (map == null) {
+      return null;
+    }
+    if (map.isEmpty()) {
+      return new ComparableHashMap<>();
+    }
+    ComparableHashMap<K, V> casted = new ComparableHashMap<>();
+    map.forEach(
+        (key, value) -> {
+          casted.put(key, value);
+        });
+    return casted;
+  }
 }

@@ -28,29 +28,35 @@ package com.divroll.backend.model;
  */
 public class EntityPropertyType {
 
-    public enum TYPE { OBJECT, ARRAY, BOOLEAN, STRING, NUMBER }
+  private String propertyName;
+  private TYPE propertyType;
 
-    private String propertyName;
-    private TYPE propertyType;
+  public EntityPropertyType(String propertyName, TYPE propertyType) {
+    setPropertyName(propertyName);
+    setPropertyType(propertyType);
+  }
 
-    public EntityPropertyType(String propertyName, TYPE propertyType) {
-        setPropertyName(propertyName);
-        setPropertyType(propertyType);
-    }
+  public String getPropertyName() {
+    return propertyName;
+  }
 
-    public String getPropertyName() {
-        return propertyName;
-    }
+  public void setPropertyName(String propertyName) {
+    this.propertyName = propertyName;
+  }
 
-    public void setPropertyName(String propertyName) {
-        this.propertyName = propertyName;
-    }
+  public TYPE getPropertyType() {
+    return propertyType;
+  }
 
-    public TYPE getPropertyType() {
-        return propertyType;
-    }
+  public void setPropertyType(TYPE propertyType) {
+    this.propertyType = propertyType;
+  }
 
-    public void setPropertyType(TYPE propertyType) {
-        this.propertyType = propertyType;
-    }
+  public enum TYPE {
+    OBJECT,
+    ARRAY,
+    BOOLEAN,
+    STRING,
+    NUMBER
+  }
 }

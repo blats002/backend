@@ -38,35 +38,32 @@ import org.quartz.StatefulJob;
  */
 public class EmailJob implements StatefulJob {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(EmailJob.class);
+  private static final Logger LOG = LoggerFactory.getLogger(EmailJob.class);
 
-    @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        LOG.info("EmailJob - execute " + jobExecutionContext);
-        try {
-            JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
+  @Override
+  public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    LOG.info("EmailJob - execute " + jobExecutionContext);
+    try {
+      JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
 
-            String smtpHost = (String) dataMap.get("smtpHost");
-            String tlsPort = (String) dataMap.get("tlsPort");
-            String fromEmail = (String) dataMap.get("fromEmail");
-            String password = (String) dataMap.get("password");
-            String toEmail = (String) dataMap.get("toEmail");
-            String subject = (String) dataMap.get("subject");
-            String htmlBody = (String) dataMap.get("htmlBody");
+      String smtpHost = (String) dataMap.get("smtpHost");
+      String tlsPort = (String) dataMap.get("tlsPort");
+      String fromEmail = (String) dataMap.get("fromEmail");
+      String password = (String) dataMap.get("password");
+      String toEmail = (String) dataMap.get("toEmail");
+      String subject = (String) dataMap.get("subject");
+      String htmlBody = (String) dataMap.get("htmlBody");
 
-            EmailService emailService = new JeeEmailService();
-            EmailConfig emailConfig = new EmailConfig();
-            emailConfig.setSmtpHost(smtpHost);
-            emailConfig.setTlsPort(tlsPort);
+      EmailService emailService = new JeeEmailService();
+      EmailConfig emailConfig = new EmailConfig();
+      emailConfig.setSmtpHost(smtpHost);
+      emailConfig.setTlsPort(tlsPort);
 
-            emailService.sendEmail(emailConfig, fromEmail, password,
-                    toEmail, subject, htmlBody);
+      emailService.sendEmail(emailConfig, fromEmail, password, toEmail, subject, htmlBody);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new JobExecutionException("error occurred in running the job", true);
-        }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new JobExecutionException("error occurred in running the job", true);
     }
-
+  }
 }

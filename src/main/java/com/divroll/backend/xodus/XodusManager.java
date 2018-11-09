@@ -31,9 +31,9 @@ import jetbrains.exodus.vfs.VirtualFileSystem;
  * @since 0-SNAPSHOT
  */
 public interface XodusManager {
-    public Environment getEnvironment(String xodusRoot, String instance);
+  public Environment getEnvironment(String xodusRoot, String instance);
 
-    public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir);
+  public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir);
 
-    public VirtualFileSystem getVirtualFileSystem(Environment env);
+  public VirtualFileSystem getVirtualFileSystem(Environment env);
 }

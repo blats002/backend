@@ -31,19 +31,18 @@ import java.util.Map;
  */
 public class ComparableMapBuilder {
 
-    Map<String,Comparable> map = new LinkedHashMap<>();
+  Map<String, Comparable> map = new LinkedHashMap<>();
 
-    public ComparableMapBuilder put(String key, Comparable value) {
-        map.put(key, value);
-        return this;
-    }
+  public static ComparableMapBuilder newBuilder() {
+    return new ComparableMapBuilder();
+  }
 
-    public Map<String,Comparable> build() {
-        return map;
-    }
+  public ComparableMapBuilder put(String key, Comparable value) {
+    map.put(key, value);
+    return this;
+  }
 
-    public static ComparableMapBuilder newBuilder() {
-        return new ComparableMapBuilder();
-    }
-
+  public Map<String, Comparable> build() {
+    return map;
+  }
 }

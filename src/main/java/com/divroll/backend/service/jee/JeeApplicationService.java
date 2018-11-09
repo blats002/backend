@@ -48,116 +48,132 @@ import java.util.Map;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeApplicationService
-        implements ApplicationService {
+public class JeeApplicationService implements ApplicationService {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeApplicationService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationService.class);
 
-    @Inject
-    @Named("masterStore")
-    String masterStore;
+  @Inject
+  @Named("masterStore")
+  String masterStore;
 
-    @Inject
-    XodusStore store;
+  @Inject XodusStore store;
 
-    @Override
-    public EntityId create(Application application) {
-        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
-        comparableMap.put(Constants.API_KEY, application.getApiKey());
-        comparableMap.put(Constants.APP_ID, application.getAppId());
-        if(application.getAppName() != null) {
-            comparableMap.put(Constants.APP_NAME, application.getAppName());
-        }
-        EntityId entityId = store.put(masterStore, null, Constants.ENTITYSTORE_APPLICATION, comparableMap);
-        return entityId;
+  @Override
+  public EntityId create(Application application) {
+    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+    comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
+    comparableMap.put(Constants.API_KEY, application.getApiKey());
+    comparableMap.put(Constants.APP_ID, application.getAppId());
+    if (application.getAppName() != null) {
+      comparableMap.put(Constants.APP_NAME, application.getAppName());
     }
+    EntityId entityId =
+        store.put(masterStore, null, Constants.ENTITYSTORE_APPLICATION, comparableMap);
+    return entityId;
+  }
 
-    @Override
-    public Application read(String applicationId) {
-        EntityId id = store.getFirstEntityId(masterStore, null, Constants.ENTITYSTORE_APPLICATION, Constants.APP_ID,
-                applicationId, String.class);
-        if (id != null) {
-            Map<String, Comparable> entityMap = store.get(masterStore, null, id.toString());
-            if (entityMap != null) {
-                Application application = new Application();
-                application.setAppId((String) entityMap.get(Constants.APP_ID));
-                application.setApiKey((String) entityMap.get(Constants.API_KEY));
-                application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
-                application.setAppName((String) entityMap.get(Constants.APP_NAME));
-                application.setCloudCode((String) entityMap.get("cloudCode"));
-                EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
-                        ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
-                if(embeddedEntityIterable != null) {
-                    JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
-                    Email emailConfg = new Email();
-                    emailConfg.fromJSONObject(jsonObject);
-                    application.setEmailConfig(emailConfg);
-                }
-                return application;
-            }
+  @Override
+  public Application read(String applicationId) {
+    EntityId id =
+        store.getFirstEntityId(
+            masterStore,
+            null,
+            Constants.ENTITYSTORE_APPLICATION,
+            Constants.APP_ID,
+            applicationId,
+            String.class);
+    if (id != null) {
+      Map<String, Comparable> entityMap = store.get(masterStore, null, id.toString());
+      if (entityMap != null) {
+        Application application = new Application();
+        application.setAppId((String) entityMap.get(Constants.APP_ID));
+        application.setApiKey((String) entityMap.get(Constants.API_KEY));
+        application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
+        application.setAppName((String) entityMap.get(Constants.APP_NAME));
+        application.setCloudCode((String) entityMap.get("cloudCode"));
+        EmbeddedEntityIterable embeddedEntityIterable =
+            (entityMap.get("emailConfig") != null
+                ? (EmbeddedEntityIterable) entityMap.get("emailConfig")
+                : null);
+        if (embeddedEntityIterable != null) {
+          JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
+          Email emailConfg = new Email();
+          emailConfg.fromJSONObject(jsonObject);
+          application.setEmailConfig(emailConfg);
         }
-        return null;
+        return application;
+      }
     }
+    return null;
+  }
 
-    @Override
-    public void update(Application application, String theMasterKey) {
-        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        comparableMap.put(Constants.APP_ID, application.getAppId());
-        comparableMap.put(Constants.API_KEY, application.getApiKey());
-        comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
-        if(application.getAppName() != null) {
-            comparableMap.put(Constants.APP_NAME, application.getAppName());
+  @Override
+  public void update(Application application, String theMasterKey) {
+    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+    comparableMap.put(Constants.APP_ID, application.getAppId());
+    comparableMap.put(Constants.API_KEY, application.getApiKey());
+    comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
+    if (application.getAppName() != null) {
+      comparableMap.put(Constants.APP_NAME, application.getAppName());
+    }
+    if (application.getEmailConfig() != null) {
+      JSONObject jsonObject = application.getEmailConfig().toJSONObject();
+      EmbeddedEntityIterable embeddedEntityIterable =
+          new EmbeddedEntityIterable(Comparables.cast(JSON.jsonToMap(jsonObject)));
+      comparableMap.put("emailConfig", embeddedEntityIterable);
+    }
+    if (application.getCloudCode() != null) {
+      comparableMap.put("cloudCode", application.getCloudCode());
+    }
+    EntityId entityId =
+        store.getFirstEntityId(
+            masterStore,
+            null,
+            Constants.ENTITYSTORE_APPLICATION,
+            Constants.MASTER_KEY,
+            theMasterKey,
+            String.class);
+    store.update(
+        masterStore, null, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
+  }
+
+  @Override
+  public void delete(String entityId) {
+    store.delete(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId);
+  }
+
+  @Override
+  public List<Application> list(List<TransactionFilter> filters, int skip, int limit) {
+    List<Application> apps = new LinkedList<>();
+    List<Map<String, Comparable>> list =
+        store.list(masterStore, null, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit);
+    for (Map entityMap : list) {
+      if (entityMap != null) {
+        Application application = new Application();
+        application.setAppId((String) entityMap.get(Constants.APP_ID));
+        application.setApiKey((String) entityMap.get(Constants.API_KEY));
+        application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
+        application.setAppName((String) entityMap.get(Constants.APP_NAME));
+        application.setCloudCode((String) entityMap.get("cloudCode"));
+        EmbeddedEntityIterable embeddedEntityIterable =
+            (entityMap.get("emailConfig") != null
+                ? (EmbeddedEntityIterable) entityMap.get("emailConfig")
+                : null);
+        if (embeddedEntityIterable != null) {
+          JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
+          Email emailConfg = new Email();
+          emailConfg.fromJSONObject(jsonObject);
+          application.setEmailConfig(emailConfg);
         }
-        if(application.getEmailConfig() != null) {
-            JSONObject jsonObject = application.getEmailConfig().toJSONObject();
-            EmbeddedEntityIterable embeddedEntityIterable = new EmbeddedEntityIterable(Comparables.cast(JSON.jsonToMap(jsonObject)));
-            comparableMap.put("emailConfig", embeddedEntityIterable);
-        }
-        if(application.getCloudCode() != null) {
-            comparableMap.put("cloudCode", application.getCloudCode());
-        }
-        EntityId entityId = store.getFirstEntityId(masterStore, null, Constants.ENTITYSTORE_APPLICATION,
-                Constants.MASTER_KEY, theMasterKey, String.class);
-        store.update(masterStore, null, Constants.ENTITYSTORE_APPLICATION, entityId.toString(), comparableMap);
+        apps.add(application);
+      }
     }
+    return apps;
+  }
 
-    @Override
-    public void delete(String entityId) {
-        store.delete(masterStore, Constants.ENTITYSTORE_APPLICATION, entityId);
-    }
-
-    @Override
-    public List<Application> list(List<TransactionFilter> filters, int skip, int limit) {
-        List<Application> apps = new LinkedList<>();
-        List<Map<String,Comparable>> list = store.list(masterStore, null, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit);
-        for(Map entityMap : list) {
-            if (entityMap != null) {
-                Application application = new Application();
-                application.setAppId((String) entityMap.get(Constants.APP_ID));
-                application.setApiKey((String) entityMap.get(Constants.API_KEY));
-                application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
-                application.setAppName((String) entityMap.get(Constants.APP_NAME));
-                application.setCloudCode((String) entityMap.get("cloudCode"));
-                EmbeddedEntityIterable embeddedEntityIterable = (entityMap.get("emailConfig") != null
-                        ? (EmbeddedEntityIterable) entityMap.get("emailConfig") : null);
-                if(embeddedEntityIterable != null) {
-                    JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
-                    Email emailConfg = new Email();
-                    emailConfg.fromJSONObject(jsonObject);
-                    application.setEmailConfig(emailConfg);
-                }
-                apps.add(application);
-            }
-        }
-        return apps;
-    }
-
-    @Deprecated
-    @Override
-    public void forceUpdate(Application application) {
-       throw new IllegalArgumentException("Not implemented");
-    }
-
+  @Deprecated
+  @Override
+  public void forceUpdate(Application application) {
+    throw new IllegalArgumentException("Not implemented");
+  }
 }

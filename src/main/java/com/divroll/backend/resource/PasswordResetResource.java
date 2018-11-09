@@ -31,8 +31,9 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface PasswordResetResource {
-    @Get("json")
-    void validateResetPassword(PasswordResetDTO entity);
-    @Post("json")
-    void resetPassword(PasswordResetDTO entity);
+  @Get("json")
+  void validateResetPassword(PasswordResetDTO entity);
+
+  @Post("json")
+  void resetPassword(PasswordResetDTO entity);
 }

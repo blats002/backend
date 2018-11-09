@@ -32,28 +32,32 @@ import org.immutables.value.Value;
 @Value.Style(visibility = Value.Style.ImplementationVisibility.PRIVATE)
 public interface Configuration {
 
-    String getXodusRoot();
-    String getDefaultUserStore();
-    String getDefaultRoleStore();
-    String getMasterStore();
-    String getFileStore();
+  String getXodusRoot();
 
-//    private final String xodusRoot;
-//    private final String defaultUserStore;
-//    private final String defaultRoleStore;
-//    private final String masterStore;
-//    private final String fileStore;
+  String getDefaultUserStore();
 
-//    public Configuration(String xodusRoot,
-//                         String defaultUserStore,
-//                         String defaultRoleStore,
-//                         String masterStore,
-//                         String fileStore) {
-//        this.xodusRoot = xodusRoot;
-//        this.defaultUserStore = defaultUserStore;
-//        this.defaultRoleStore = defaultRoleStore;
-//        this.masterStore = masterStore;
-//        this.fileStore = fileStore;
-//    }
+  String getDefaultRoleStore();
+
+  String getMasterStore();
+
+  String getFileStore();
+
+  //    private final String xodusRoot;
+  //    private final String defaultUserStore;
+  //    private final String defaultRoleStore;
+  //    private final String masterStore;
+  //    private final String fileStore;
+
+  //    public Configuration(String xodusRoot,
+  //                         String defaultUserStore,
+  //                         String defaultRoleStore,
+  //                         String masterStore,
+  //                         String fileStore) {
+  //        this.xodusRoot = xodusRoot;
+  //        this.defaultUserStore = defaultUserStore;
+  //        this.defaultRoleStore = defaultRoleStore;
+  //        this.masterStore = masterStore;
+  //        this.fileStore = fileStore;
+  //    }
 
 }

@@ -45,148 +45,192 @@ import java.util.UUID;
  * @since 0-SNAPSHOT
  */
 public class JeeApplicationServerResource extends BaseServerResource
-        implements ApplicationResource {
+    implements ApplicationResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeApplicationServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Inject
-    @Named("defaultRoleStore")
-    String defaultRoleStore;
+  @Inject
+  @Named("defaultRoleStore")
+  String defaultRoleStore;
 
-    @Inject
-    @Named("defaultUserStore")
-    String defaultUserStore;
+  @Inject
+  @Named("defaultUserStore")
+  String defaultUserStore;
 
-    @Inject
-    XodusStore store;
+  @Inject XodusStore store;
 
-    @Inject
-    UserRepository userRepository;
+  @Inject UserRepository userRepository;
 
-    @Inject
-    RoleRepository roleRepository;
+  @Inject RoleRepository roleRepository;
 
-    @Override
-    public Application updateApp(Application entity) {
-        try {
-            if ((masterKey == null || masterKey.isEmpty()) || (appId == null || appId.isEmpty())) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-            if(entity == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
-            String newApiKey = entity.getApiKey();
-            String newMasterKey = entity.getMasterKey();
-            Email email = entity.getEmailConfig();
-            String cloudCode = entity.getCloudCode();
-            Application app = applicationService.read(appId);
-            if (app != null) {
-                String encryptedMasterKey = app.getMasterKey();
-                if (BCrypt.checkpw(masterKey, encryptedMasterKey)) {
-
-                    if(newApiKey != null && !newApiKey.isEmpty()) {
-                        String hashApiKey = BCrypt.hashpw(newApiKey, BCrypt.gensalt());
-                        app.setApiKey(hashApiKey);
-                    }
-
-                    if(newMasterKey != null && !newMasterKey.isEmpty()) {
-                        String hashMasterkEy = BCrypt.hashpw(newMasterKey, BCrypt.gensalt());
-                        app.setMasterKey(hashMasterkEy);
-                    }
-
-                    if(email != null) {
-                        app.setEmailConfig(email);
-                    }
-
-                    if(cloudCode != null) {
-                        app.setCloudCode(cloudCode);
-                    }
-
-                    applicationService.update(app, encryptedMasterKey);
-
-                    setStatus(Status.SUCCESS_OK);
-                    return app;
-                } else {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                }
-            } else {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
+  @Override
+  public Application updateApp(Application entity) {
+    try {
+      if ((masterKey == null || masterKey.isEmpty()) || (appId == null || appId.isEmpty())) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
-    }
+      }
+      if (entity == null) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return null;
+      }
+      String newApiKey = entity.getApiKey();
+      String newMasterKey = entity.getMasterKey();
+      Email email = entity.getEmailConfig();
+      String cloudCode = entity.getCloudCode();
+      Application app = applicationService.read(appId);
+      if (app != null) {
+        String encryptedMasterKey = app.getMasterKey();
+        if (BCrypt.checkpw(masterKey, encryptedMasterKey)) {
 
-    @Override
-    public Application createApp(Application application) {
+          if (newApiKey != null && !newApiKey.isEmpty()) {
+            String hashApiKey = BCrypt.hashpw(newApiKey, BCrypt.gensalt());
+            app.setApiKey(hashApiKey);
+          }
 
-        if(appName == null) {
-            appName = getQueryValue("appName");
-        }
+          if (newMasterKey != null && !newMasterKey.isEmpty()) {
+            String hashMasterkEy = BCrypt.hashpw(newMasterKey, BCrypt.gensalt());
+            app.setMasterKey(hashMasterkEy);
+          }
 
-        if(appName == null) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return null;
-        }
+          if (email != null) {
+            app.setEmailConfig(email);
+          }
 
-        UserRootDTO rootDTO = application.getUser();
+          if (cloudCode != null) {
+            app.setCloudCode(cloudCode);
+          }
 
-        String appId = UUID.randomUUID().toString().replace("-", "");
-        String apiKey = UUID.randomUUID().toString().replace("-", "");
-        String masterKey = UUID.randomUUID().toString().replace("-", "");
+          applicationService.update(app, encryptedMasterKey);
 
-        application.setAppId(appId);
-        application.setApiKey(BCrypt.hashpw(apiKey, BCrypt.gensalt()));
-        application.setMasterKey(BCrypt.hashpw(masterKey, BCrypt.gensalt()));
-        if(appName != null && !appName.isEmpty()) {
-            application.setAppName(appName);
-        }
-
-        final EntityId id = applicationService.create(application);
-        if (id != null) {
-            if(rootDTO != null) {
-                if(beforeSave(application, ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, defaultRoleStore)) {
-                    String roleId = roleRepository.createRole(appId, namespace, defaultRoleStore, rootDTO.getRole(), null, null, false, false, actions);
-                    if(roleId != null) {
-                        afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, defaultUserStore);
-                    }
-                    if(beforeSave(application, ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore)) {
-                        String userId = userRepository.createUser(appId, namespace, defaultUserStore, rootDTO.getUsername(), rootDTO.getPassword(),
-                                null, null, null, false, false,
-                                new String[]{roleId}, actions,  null, null, null);
-                        if(userId != null) {
-                            afterSave(application, ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore);
-                        }
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    }
-                } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    return null;
-                }
-            }
-            if (application != null) {
-                application.setAppId(appId);
-                application.setApiKey(apiKey);
-                application.setMasterKey(masterKey);
-                application.setAppName(appName);
-                setStatus(Status.SUCCESS_CREATED);
-                return application;
-            }
+          setStatus(Status.SUCCESS_OK);
+          return app;
         } else {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         }
-        return null;
+      } else {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
 
+    return null;
+  }
+
+  @Override
+  public Application createApp(Application application) {
+
+    if (appName == null) {
+      appName = getQueryValue("appName");
+    }
+
+    if (appName == null) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
+    UserRootDTO rootDTO = application.getUser();
+
+    String appId = UUID.randomUUID().toString().replace("-", "");
+    String apiKey = UUID.randomUUID().toString().replace("-", "");
+    String masterKey = UUID.randomUUID().toString().replace("-", "");
+
+    application.setAppId(appId);
+    application.setApiKey(BCrypt.hashpw(apiKey, BCrypt.gensalt()));
+    application.setMasterKey(BCrypt.hashpw(masterKey, BCrypt.gensalt()));
+    if (appName != null && !appName.isEmpty()) {
+      application.setAppName(appName);
+    }
+
+    final EntityId id = applicationService.create(application);
+    if (id != null) {
+      if (rootDTO != null) {
+        if (beforeSave(
+            application,
+            ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(),
+            appId,
+            defaultRoleStore)) {
+          String roleId =
+              roleRepository.createRole(
+                  appId,
+                  namespace,
+                  defaultRoleStore,
+                  rootDTO.getRole(),
+                  null,
+                  null,
+                  false,
+                  false,
+                  actions);
+          if (roleId != null) {
+            afterSave(
+                application,
+                ComparableMapBuilder.newBuilder()
+                    .put("entityId", roleId)
+                    .put("name", rootDTO.getRole())
+                    .build(),
+                appId,
+                defaultUserStore);
+          }
+          if (beforeSave(
+              application,
+              ComparableMapBuilder.newBuilder()
+                  .put("username", rootDTO.getUsername())
+                  .put("password", rootDTO.getPassword())
+                  .build(),
+              appId,
+              defaultUserStore)) {
+            String userId =
+                userRepository.createUser(
+                    appId,
+                    namespace,
+                    defaultUserStore,
+                    rootDTO.getUsername(),
+                    rootDTO.getPassword(),
+                    null,
+                    null,
+                    null,
+                    false,
+                    false,
+                    new String[] {roleId},
+                    actions,
+                    null,
+                    null,
+                    null);
+            if (userId != null) {
+              afterSave(
+                  application,
+                  ComparableMapBuilder.newBuilder()
+                      .put("entityId", userId)
+                      .put("username", rootDTO.getUsername())
+                      .put("password", rootDTO.getPassword())
+                      .build(),
+                  appId,
+                  defaultUserStore);
+            }
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          }
+        } else {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return null;
+        }
+      }
+      if (application != null) {
+        application.setAppId(appId);
+        application.setApiKey(apiKey);
+        application.setMasterKey(masterKey);
+        application.setAppName(appName);
+        setStatus(Status.SUCCESS_CREATED);
+        return application;
+      }
+    } else {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+    return null;
+  }
 }

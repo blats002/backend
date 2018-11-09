@@ -33,49 +33,53 @@ import java.util.Map;
  */
 public class TriggerRequest {
 
-    private String entityType;
-    private Map<String, Comparable> entity;
-    private AppEntityRepository query;
-    private AppEmailService email;
+  private String entityType;
+  private Map<String, Comparable> entity;
+  private AppEntityRepository query;
+  private AppEmailService email;
 
-    private TriggerRequest() {}
+  private TriggerRequest() {}
 
-    public TriggerRequest(Map<String,Comparable> entity, String entityType, AppEntityRepository query, AppEmailService email) {
-        setEntity(entity);
-        setQuery(query);
-        setEntityType(entityType);
-        setEmail(email);
-    }
+  public TriggerRequest(
+      Map<String, Comparable> entity,
+      String entityType,
+      AppEntityRepository query,
+      AppEmailService email) {
+    setEntity(entity);
+    setQuery(query);
+    setEntityType(entityType);
+    setEmail(email);
+  }
 
-    public Map<String, Comparable> getEntity() {
-        return entity;
-    }
+  public Map<String, Comparable> getEntity() {
+    return entity;
+  }
 
-    public void setEntity(Map<String, Comparable> entity) {
-        this.entity = entity;
-    }
+  public void setEntity(Map<String, Comparable> entity) {
+    this.entity = entity;
+  }
 
-    public AppEntityRepository getQuery() {
-        return query;
-    }
+  public AppEntityRepository getQuery() {
+    return query;
+  }
 
-    public void setQuery(AppEntityRepository query) {
-        this.query = query;
-    }
+  public void setQuery(AppEntityRepository query) {
+    this.query = query;
+  }
 
-    public String getEntityType() {
-        return entityType;
-    }
+  public String getEntityType() {
+    return entityType;
+  }
 
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
+  public void setEntityType(String entityType) {
+    this.entityType = entityType;
+  }
 
-    public AppEmailService getEmail() {
-        return email;
-    }
+  public AppEmailService getEmail() {
+    return email;
+  }
 
-    public void setEmail(AppEmailService email) {
-        this.email = email;
-    }
+  public void setEmail(AppEmailService email) {
+    this.email = email;
+  }
 }

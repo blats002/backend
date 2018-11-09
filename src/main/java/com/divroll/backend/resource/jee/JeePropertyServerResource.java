@@ -36,55 +36,56 @@ import org.restlet.representation.Representation;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeePropertyServerResource extends BaseServerResource
-    implements PropertyResource {
+public class JeePropertyServerResource extends BaseServerResource implements PropertyResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeePropertyServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeePropertyServerResource.class);
 
-    @Inject
-    EntityRepository entityRepository;
+  @Inject EntityRepository entityRepository;
 
-    @Override
-    public void deleteProperty(Representation representation) {
-        if(propertyName == null) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return;
-        }
-        if(Keys.isReservedPropertyKey(propertyName)) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return;
-        }
-        if(isMaster()) {
-            boolean isDeleted = entityRepository.deleteProperty(appId, namespace, entityType, propertyName);
-            if(isDeleted) {
-                setStatus(Status.SUCCESS_OK);
-            } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-        } else {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-        }
+  @Override
+  public void deleteProperty(Representation representation) {
+    if (propertyName == null) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return;
     }
-
-    @Override
-    public Representation updateProperty(Representation entity) {
-        if(!isMaster()) {
-            return unauthorized();
-        }
-        try {
-            boolean updated = entityRepository.updateProperty(appId, namespace, entityType, propertyName,
-                    new EntityMetadataBuilder()
-                            .uniqueProperties(uniqueProperties)
-                            .build());
-            if(updated) {
-                setStatus(Status.SUCCESS_OK);
-            } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            }
-        } catch (Exception e) {
-            return serverError();
-        }
-        return null;
+    if (Keys.isReservedPropertyKey(propertyName)) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return;
     }
+    if (isMaster()) {
+      boolean isDeleted =
+          entityRepository.deleteProperty(appId, namespace, entityType, propertyName);
+      if (isDeleted) {
+        setStatus(Status.SUCCESS_OK);
+      } else {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+    } else {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+    }
+  }
+
+  @Override
+  public Representation updateProperty(Representation entity) {
+    if (!isMaster()) {
+      return unauthorized();
+    }
+    try {
+      boolean updated =
+          entityRepository.updateProperty(
+              appId,
+              namespace,
+              entityType,
+              propertyName,
+              new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+      if (updated) {
+        setStatus(Status.SUCCESS_OK);
+      } else {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+    } catch (Exception e) {
+      return serverError();
+    }
+    return null;
+  }
 }

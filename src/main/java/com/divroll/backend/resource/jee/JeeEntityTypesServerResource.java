@@ -41,43 +41,44 @@ import java.util.List;
 public class JeeEntityTypesServerResource extends BaseServerResource
     implements EntityTypesResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeEntityTypesServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeEntityTypesServerResource.class);
 
-    @Inject
-    XodusStore store;
+  @Inject XodusStore store;
 
-    @Override
-    public EntityTypes getEntityTypes() {
-        try {
-            EntityTypes entityTypes = new EntityTypes();
-            if(appId == null || appId.isEmpty()) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing App ID");
-                return null;
-            }
-            if(isMaster()) {
-                entityTypes.setLimit(0);
-                entityTypes.setSkip(0);
+  @Override
+  public EntityTypes getEntityTypes() {
+    try {
+      EntityTypes entityTypes = new EntityTypes();
+      if (appId == null || appId.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Missing App ID");
+        return null;
+      }
+      if (isMaster()) {
+        entityTypes.setLimit(0);
+        entityTypes.setSkip(0);
 
-                List<EntityType> entityTypeList = new LinkedList<>();
-                store.listEntityTypes(appId, null).forEach(s -> {
-                    EntityType entityType = new EntityType();
-                    entityType.setEntityType(s);
-                    entityType.setPropertyTypes(store.listPropertyTypes(appId, null, s));
-                    entityTypeList.add(entityType);
+        List<EntityType> entityTypeList = new LinkedList<>();
+        store
+            .listEntityTypes(appId, null)
+            .forEach(
+                s -> {
+                  EntityType entityType = new EntityType();
+                  entityType.setEntityType(s);
+                  entityType.setPropertyTypes(store.listPropertyTypes(appId, null, s));
+                  entityTypeList.add(entityType);
                 });
 
-                entityTypes.setResults(entityTypeList);
-                setStatus(Status.SUCCESS_OK);
-                return entityTypes;
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return null;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+        entityTypes.setResults(entityTypeList);
+        setStatus(Status.SUCCESS_OK);
+        return entityTypes;
+      } else {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+    return null;
+  }
 }

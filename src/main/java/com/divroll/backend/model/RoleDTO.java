@@ -33,21 +33,19 @@ import com.wordnik.swagger.annotations.ApiModel;
 @ApiModel
 public class RoleDTO {
 
-    private String entityId;
+  private String entityId;
 
-    public RoleDTO() {
-    }
+  public RoleDTO() {}
 
-    public RoleDTO(String entityId) {
-        setEntityId(entityId);
-    }
+  public RoleDTO(String entityId) {
+    setEntityId(entityId);
+  }
 
-    public String getEntityId() {
-        return entityId;
-    }
+  public String getEntityId() {
+    return entityId;
+  }
 
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
-
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
 }

@@ -36,18 +36,20 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 @RunWith(JUnit4.class)
-public class TransactionFilterParserTest extends TestCase{
+public class TransactionFilterParserTest extends TestCase {
 
-    private String TEST_DATA = "[\n" +
-            "  {\n" +
-            "    \"op\" : \"find\",\n" +
-            "    \"propertyName\" : \"fullName\",\n" +
-            "    \"value\" : \"John Smith\"\n" +
-            "  }  \n" +
-            "]";
-    @Test
-    public void test() {
-        System.out.println(TEST_DATA);
-        List<TransactionFilter> filterList = new TransactionFilterParser().parseQuery(TEST_DATA);
-    }
+  private String TEST_DATA =
+      "[\n"
+          + "  {\n"
+          + "    \"op\" : \"find\",\n"
+          + "    \"propertyName\" : \"fullName\",\n"
+          + "    \"value\" : \"John Smith\"\n"
+          + "  }  \n"
+          + "]";
+
+  @Test
+  public void test() {
+    System.out.println(TEST_DATA);
+    List<TransactionFilter> filterList = new TransactionFilterParser().parseQuery(TEST_DATA);
+  }
 }

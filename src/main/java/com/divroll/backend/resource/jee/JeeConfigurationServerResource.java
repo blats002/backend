@@ -37,50 +37,52 @@ import org.restlet.data.Status;
 public class JeeConfigurationServerResource extends BaseServerResource
     implements ConfigurationResource {
 
-    @Inject
-    @Named("masterToken")
-    String theMasterToken;
+  @Inject
+  @Named("masterToken")
+  String theMasterToken;
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Inject
-    @Named("defaultUserStore")
-    String defaultUserStore;
+  @Inject
+  @Named("defaultUserStore")
+  String defaultUserStore;
 
-    @Inject
-    @Named("defaultRoleStore")
-    String defaultRoleStore;
+  @Inject
+  @Named("defaultRoleStore")
+  String defaultRoleStore;
 
-    @Inject
-    @Named("masterStore")
-    String masterStore;
+  @Inject
+  @Named("masterStore")
+  String masterStore;
 
-    @Inject
-    @Named("fileStore")
-    String fileStore;
+  @Inject
+  @Named("fileStore")
+  String fileStore;
 
-    @Override
-    public Configuration getConfiguration() {
-        try {
-            if(theMasterToken != null
-                    && masterToken != null
-                    && BCrypt.checkpw(masterToken, theMasterToken)) {
-                Configuration configuration = new ConfigurationBuilder()
-                        .xodusRoot(xodusRoot)
-                        .defaultUserStore(defaultUserStore)
-                        .defaultRoleStore(defaultRoleStore)
-                        .masterStore(masterStore)
-                        .fileStore(fileStore).build();
-                setStatus(Status.SUCCESS_OK);
-                return configuration;
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            }
-        } catch (Exception e) {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
-        return null;
+  @Override
+  public Configuration getConfiguration() {
+    try {
+      if (theMasterToken != null
+          && masterToken != null
+          && BCrypt.checkpw(masterToken, theMasterToken)) {
+        Configuration configuration =
+            new ConfigurationBuilder()
+                .xodusRoot(xodusRoot)
+                .defaultUserStore(defaultUserStore)
+                .defaultRoleStore(defaultRoleStore)
+                .masterStore(masterStore)
+                .fileStore(fileStore)
+                .build();
+        setStatus(Status.SUCCESS_OK);
+        return configuration;
+      } else {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      }
+    } catch (Exception e) {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
+    return null;
+  }
 }

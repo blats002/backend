@@ -31,21 +31,20 @@ import org.dynjs.runtime.Runner;
  * @since 0-SNAPSHOT
  */
 public class ScriptRunner {
-    DynJS dynjs;
-    Config config;
+  DynJS dynjs;
+  Config config;
 
-    public ScriptRunner() {
-        config = new Config();
-        dynjs  = new DynJS(config);
-    }
+  public ScriptRunner() {
+    config = new Config();
+    dynjs = new DynJS(config);
+  }
 
-    public Object runScript(String source) {
-        Runner runner = dynjs.newRunner();
-        return runner.withSource(source).execute();
-    }
+  public Object runScript(String source) {
+    Runner runner = dynjs.newRunner();
+    return runner.withSource(source).execute();
+  }
 
-    public Object eval(String code) {
-        return dynjs.evaluate(code);
-    }
-
+  public Object eval(String code) {
+    return dynjs.evaluate(code);
+  }
 }

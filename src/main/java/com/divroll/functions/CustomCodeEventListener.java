@@ -29,6 +29,7 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface CustomCodeEventListener {
-	void onSuccess(Map<String, ?> result);
-	void onFailure(CustomCodeException ex);
+  void onSuccess(Map<String, ?> result);
+
+  void onFailure(CustomCodeException ex);
 }

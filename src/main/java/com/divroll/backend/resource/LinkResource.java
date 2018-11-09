@@ -32,12 +32,12 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface LinkResource {
-    @Post
-    void createLink(Representation entity);
+  @Post
+  void createLink(Representation entity);
 
-    @Delete
-    void deleteLink(Representation entity);
+  @Delete
+  void deleteLink(Representation entity);
 
-    @Get
-    Representation checkLink(Representation entity);
+  @Get
+  Representation checkLink(Representation entity);
 }

@@ -30,6 +30,6 @@ import org.restlet.resource.Delete;
  * @since 0-SNAPSHOT
  */
 public interface EntityTypeResource {
-    @Delete
-    void deleteEntityType(Representation entity);
+  @Delete
+  void deleteEntityType(Representation entity);
 }

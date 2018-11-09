@@ -52,135 +52,141 @@ import java.util.List;
  */
 public class DivrollBackendApplication extends Application {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(DivrollBackendApplication.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DivrollBackendApplication.class);
 
-    private static final String ROOT_URI = "/";
+  private static final String ROOT_URI = "/";
 
-    /**
-     * Creates a root Restlet that will receive all incoming calls.
-     */
-    @Override
-    public Restlet createInboundRoot() {
+  /** Creates a root Restlet that will receive all incoming calls. */
+  @Override
+  public Restlet createInboundRoot() {
 
-        LOG.info("Starting application");
+    LOG.info("Starting application");
 
-        Guice.createInjector(new GuiceConfigModule(this.getContext()),
-                new SelfInjectingServerResourceModule());
+    Guice.createInjector(
+        new GuiceConfigModule(this.getContext()), new SelfInjectingServerResourceModule());
 
-        configureConverters();
-        configureJobScheduler();
+    configureConverters();
+    configureJobScheduler();
 
-        Router router = new Router(getContext());
+    Router router = new Router(getContext());
 
-        router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
-        router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
-        router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
-        router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
-        router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
-        router.attach(ROOT_URI + "entities/users/login", JeeUserServerResource.class);
-        router.attach(ROOT_URI + "entities/users/resetPassword", JeePasswordResetServerResource.class);
-        router.attach(ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
-        router.attach(ROOT_URI + "entities/roles", JeeRolesServerReource.class);
-        router.attach(ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
-        router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}/properties/{propertyName}", JeePropertyServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}", JeePropertyServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}", JeeLinkServerResource.class);
-        router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
+    router.attach(
+        ROOT_URI + "applications/{appName}",
+        JeeApplicationServerResource.class); // TODO: Rename to directories
+    router.attach(
+        ROOT_URI + "applications",
+        JeeApplicationsServerResource.class); // TODO: Rename to directories
+    router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
+    router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
+    router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
+    router.attach(ROOT_URI + "entities/users/login", JeeUserServerResource.class);
+    router.attach(ROOT_URI + "entities/users/resetPassword", JeePasswordResetServerResource.class);
+    router.attach(ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
+    router.attach(ROOT_URI + "entities/roles", JeeRolesServerReource.class);
+    router.attach(ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
+    router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
+    router.attach(
+        ROOT_URI + "entities/{entityType}/properties/{propertyName}",
+        JeePropertyServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
+    router.attach(
+        ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}",
+        JeeBlobServerResource.class);
+    router.attach(
+        ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}",
+        JeePropertyServerResource.class);
+    router.attach(
+        ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}",
+        JeeLinkServerResource.class);
+    router.attach(
+        ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}",
+        JeeLinksServerResource.class);
 
-        router.attach(ROOT_URI + "blobs/{blobName}", JeeBlobServerResource.class);
+    router.attach(ROOT_URI + "blobs/{blobName}", JeeBlobServerResource.class);
 
-        router.attach(ROOT_URI + "files", JeeFileServerResource.class);
-        router.attach(ROOT_URI + "files/{fileName}", JeeFileServerResource.class);
-        router.attach(ROOT_URI + "files/{appId}/{fileName}", JeeFileServerResource.class);
-        router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
-        router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
-        router.attach(ROOT_URI + "functions", JeeFunctionServerResource.class);
-        //router.attach(ROOT_URI + "functions/{functionName}", JeeManageFunctionServerResource.class);
-        router.attach(ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
-        router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
-        router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
+    router.attach(ROOT_URI + "files", JeeFileServerResource.class);
+    router.attach(ROOT_URI + "files/{fileName}", JeeFileServerResource.class);
+    router.attach(ROOT_URI + "files/{appId}/{fileName}", JeeFileServerResource.class);
+    router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
+    router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
+    router.attach(ROOT_URI + "functions", JeeFunctionServerResource.class);
+    // router.attach(ROOT_URI + "functions/{functionName}", JeeManageFunctionServerResource.class);
+    router.attach(
+        ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
+    router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
+    router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
-        router.attachDefault(JeeRootServerResource.class);
+    router.attachDefault(JeeRootServerResource.class);
 
-        attachSwaggerSpecification2(router);
+    attachSwaggerSpecification2(router);
 
-        CorsFilter corsFilter = new CorsFilter(getContext());
-        corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
-        corsFilter.setAllowedHeaders(Sets.newHashSet(
-                Constants.HEADER_MASTER_KEY,
-                Constants.HEADER_MASTER_KEY.toLowerCase(),
-                Constants.HEADER_API_KEY,
-                Constants.HEADER_API_KEY.toLowerCase(),
-                Constants.HEADER_APP_ID,
-                Constants.HEADER_APP_ID.toLowerCase(),
-                "X-Divroll-Namespace",
-                "X-Divroll-Namespace".toLowerCase(),
-                Constants.HEADER_AUTH_TOKEN,
-                Constants.HEADER_AUTH_TOKEN.toLowerCase(),
-                Constants.HEADER_ACCEPT,
-                Constants.HEADER_ACCEPT.toLowerCase(),
-                Constants.HEADER_ACL_READ,
-                Constants.HEADER_ACL_READ.toLowerCase(),
-                Constants.HEADER_ACL_WRITE,
-                Constants.HEADER_ACL_WRITE.toLowerCase(),
-                Constants.HEADER_CONTENT_TYPE,
-                Constants.HEADER_CONTENT_TYPE.toLowerCase()));
-        corsFilter.setAllowedCredentials(true);
+    CorsFilter corsFilter = new CorsFilter(getContext());
+    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
+    corsFilter.setAllowedHeaders(
+        Sets.newHashSet(
+            Constants.HEADER_MASTER_KEY,
+            Constants.HEADER_MASTER_KEY.toLowerCase(),
+            Constants.HEADER_API_KEY,
+            Constants.HEADER_API_KEY.toLowerCase(),
+            Constants.HEADER_APP_ID,
+            Constants.HEADER_APP_ID.toLowerCase(),
+            "X-Divroll-Namespace",
+            "X-Divroll-Namespace".toLowerCase(),
+            Constants.HEADER_AUTH_TOKEN,
+            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
+            Constants.HEADER_ACCEPT,
+            Constants.HEADER_ACCEPT.toLowerCase(),
+            Constants.HEADER_ACL_READ,
+            Constants.HEADER_ACL_READ.toLowerCase(),
+            Constants.HEADER_ACL_WRITE,
+            Constants.HEADER_ACL_WRITE.toLowerCase(),
+            Constants.HEADER_CONTENT_TYPE,
+            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
+    corsFilter.setAllowedCredentials(true);
 
-        corsFilter.setNext(router);
+    corsFilter.setNext(router);
 
-        return corsFilter;
+    return corsFilter;
+  }
+
+  private void configureConverters() {
+    List<ConverterHelper> converters = Engine.getInstance().getRegisteredConverters();
+    JacksonConverter jacksonConverter = null;
+    XStreamConverter xStreamConverter = null;
+    for (ConverterHelper converterHelper : converters) {
+      if (converterHelper instanceof JacksonConverter) {
+        jacksonConverter = (JacksonConverter) converterHelper;
+        break;
+      } else if (converterHelper instanceof XStreamConverter) {
+        xStreamConverter = (XStreamConverter) converterHelper;
+      }
     }
-
-
-    private void configureConverters() {
-        List<ConverterHelper> converters = Engine.getInstance()
-                .getRegisteredConverters();
-        JacksonConverter jacksonConverter = null;
-        XStreamConverter xStreamConverter = null;
-        for (ConverterHelper converterHelper : converters) {
-            if (converterHelper instanceof JacksonConverter) {
-                jacksonConverter = (JacksonConverter) converterHelper;
-                break;
-            } else if(converterHelper instanceof XStreamConverter) {
-                xStreamConverter = (XStreamConverter) converterHelper;
-            }
-        }
-        if (jacksonConverter != null) {
-            Engine.getInstance()
-                    .getRegisteredConverters().remove(jacksonConverter);
-        }
-        if(xStreamConverter != null) {
-        }
+    if (jacksonConverter != null) {
+      Engine.getInstance().getRegisteredConverters().remove(jacksonConverter);
     }
+    if (xStreamConverter != null) {}
+  }
 
-    /**
-     * Adds the "/swagger.json" path to the given router and attaches the
-     * {@link Restlet} that computes the Swagger documentation in the format
-     * defined by the swagger-spec project v2.0.
-     *
-     * @param router The router to update.
-     */
-    private void attachSwaggerSpecification2(Router router) {
-        Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(
-                this);
-        restlet.setBasePath("http://localhost:9999/");
-        restlet.attach(router, "/docs");
+  /**
+   * Adds the "/swagger.json" path to the given router and attaches the {@link Restlet} that
+   * computes the Swagger documentation in the format defined by the swagger-spec project v2.0.
+   *
+   * @param router The router to update.
+   */
+  private void attachSwaggerSpecification2(Router router) {
+    Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(this);
+    restlet.setBasePath("http://localhost:9999/");
+    restlet.attach(router, "/docs");
+  }
+
+  private void configureJobScheduler() {
+    try {
+      Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+      scheduler.start();
+      scheduler.resumeAll();
+    } catch (SchedulerException e) {
+      e.printStackTrace();
     }
-
-    private void configureJobScheduler() {
-        try {
-            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
-            scheduler.start();
-            scheduler.resumeAll();
-        } catch (SchedulerException e) {
-            e.printStackTrace();
-        }
-    }
-
+  }
 }

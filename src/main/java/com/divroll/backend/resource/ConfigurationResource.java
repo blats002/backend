@@ -30,6 +30,6 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface ConfigurationResource {
-    @Get
-    Configuration getConfiguration();
+  @Get
+  Configuration getConfiguration();
 }

@@ -27,7 +27,7 @@ package com.divroll.backend.model;
  * @since 0-SNAPSHOT
  */
 public interface ACL {
-    public String[] getRead();
+  public String[] getRead();
 
-    public String[] getWrite();
+  public String[] getWrite();
 }

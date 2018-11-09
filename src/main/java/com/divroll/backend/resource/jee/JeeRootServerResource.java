@@ -36,31 +36,29 @@ import org.restlet.resource.Get;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeRootServerResource extends SelfInjectingServerResource
-        implements RootResource {
+public class JeeRootServerResource extends SelfInjectingServerResource implements RootResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeRootServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeRootServerResource.class);
 
-    @Inject
-    @Named("app")
-    String appName;
+  @Inject
+  @Named("app")
+  String appName;
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Inject
-    @Named("defaultUserStore")
-    String defaultUserStore;
+  @Inject
+  @Named("defaultUserStore")
+  String defaultUserStore;
 
-    @Get("json")
-    public Server represent() {
-        Server server = new Server();
-        server.setName(appName);
-        server.setXodusRoot(xodusRoot);
-        server.setdefaultUserStore(defaultUserStore);
-        setStatus(Status.SUCCESS_OK);
-        return server;
-    }
+  @Get("json")
+  public Server represent() {
+    Server server = new Server();
+    server.setName(appName);
+    server.setXodusRoot(xodusRoot);
+    server.setdefaultUserStore(defaultUserStore);
+    setStatus(Status.SUCCESS_OK);
+    return server;
+  }
 }

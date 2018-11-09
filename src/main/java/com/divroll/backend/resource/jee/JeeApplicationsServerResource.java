@@ -46,137 +46,177 @@ import java.util.UUID;
  * @since 0-SNAPSHOT
  */
 public class JeeApplicationsServerResource extends BaseServerResource
-        implements ApplicationsResource {
+    implements ApplicationsResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeApplicationsServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationsServerResource.class);
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Inject
-    UserRepository userRepository;
+  @Inject UserRepository userRepository;
 
-    @Inject
-    RoleRepository roleRepository;
+  @Inject RoleRepository roleRepository;
 
-    @Inject
-    @Named("defaultRoleStore")
-    String defaultRoleStore;
+  @Inject
+  @Named("defaultRoleStore")
+  String defaultRoleStore;
 
-    @Inject
-    @Named("defaultUserStore")
-    String defaultUserStore;
+  @Inject
+  @Named("defaultUserStore")
+  String defaultUserStore;
 
-    @Inject
-    @Named("masterToken")
-    String theMasterToken;
+  @Inject
+  @Named("masterToken")
+  String theMasterToken;
 
-    @Inject
-    ApplicationService applicationService;
+  @Inject ApplicationService applicationService;
 
-    @Override
-    public Applications list() {
-        try {
-            // TODO: Add auth
-            if(theMasterToken != null
-                    && masterToken != null
-                    && BCrypt.checkpw(masterToken, theMasterToken)) {
-                List<Application> results = applicationService.list(filters, skip, limit);
-                Applications applications = new Applications();
-                applications.setSkip(skip);
-                applications.setLimit(limit);
-                applications.setResults(results);
-                setStatus(Status.SUCCESS_OK);
-                return applications;
-            } else if(isMaster()) {
-                Applications applications = new Applications();
-                Application application = applicationService.read(appId);
-                applications.getResults().add(application);
-                applications.setSkip(skip);
-                applications.setLimit(1L);
-                setStatus(Status.SUCCESS_OK);
-                return applications;
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-            }
-        } catch (Exception e) {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
-        return null;
+  @Override
+  public Applications list() {
+    try {
+      // TODO: Add auth
+      if (theMasterToken != null
+          && masterToken != null
+          && BCrypt.checkpw(masterToken, theMasterToken)) {
+        List<Application> results = applicationService.list(filters, skip, limit);
+        Applications applications = new Applications();
+        applications.setSkip(skip);
+        applications.setLimit(limit);
+        applications.setResults(results);
+        setStatus(Status.SUCCESS_OK);
+        return applications;
+      } else if (isMaster()) {
+        Applications applications = new Applications();
+        Application application = applicationService.read(appId);
+        applications.getResults().add(application);
+        applications.setSkip(skip);
+        applications.setLimit(1L);
+        setStatus(Status.SUCCESS_OK);
+        return applications;
+      } else {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      }
+    } catch (Exception e) {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+    return null;
+  }
+
+  @Override
+  public Application createApp(Application application) {
+
+    if (appName == null) {
+      appName = getQueryValue("appName");
     }
 
-    @Override
-    public Application createApp(Application application) {
+    if (appName == null) {
+      if (application == null) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return null;
+      }
+      appName = application.getAppName();
+      if (appName == null) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return null;
+      }
+    }
 
-        if(appName == null) {
-            appName = getQueryValue("appName");
-        }
+    UserRootDTO rootDTO = application.getUser();
 
-        if(appName == null) {
-            if(application == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
+    String appId = UUID.randomUUID().toString().replace("-", "");
+    String apiKey = UUID.randomUUID().toString().replace("-", "");
+    String masterKey = UUID.randomUUID().toString().replace("-", "");
+
+    application.setAppId(appId);
+    application.setApiKey(BCrypt.hashpw(apiKey, BCrypt.gensalt()));
+    application.setMasterKey(BCrypt.hashpw(masterKey, BCrypt.gensalt()));
+    if (appName != null && !appName.isEmpty()) {
+      application.setAppName(appName);
+    }
+
+    final EntityId id = applicationService.create(application);
+    if (id != null) {
+      // Application app =  applicationService.read(id.toString());
+
+      if (rootDTO != null) {
+        if (beforeSave(
+            ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(),
+            appId,
+            defaultRoleStore)) {
+          String roleId =
+              roleRepository.createRole(
+                  appId,
+                  namespace,
+                  defaultRoleStore,
+                  rootDTO.getRole(),
+                  null,
+                  null,
+                  false,
+                  false,
+                  actions);
+          if (roleId != null) {
+            afterSave(
+                ComparableMapBuilder.newBuilder()
+                    .put("entityId", roleId)
+                    .put("name", rootDTO.getRole())
+                    .build(),
+                appId,
+                defaultUserStore);
+          }
+          if (beforeSave(
+              ComparableMapBuilder.newBuilder()
+                  .put("username", rootDTO.getUsername())
+                  .put("password", rootDTO.getPassword())
+                  .build(),
+              appId,
+              defaultUserStore)) {
+            String userId =
+                userRepository.createUser(
+                    appId,
+                    namespace,
+                    defaultUserStore,
+                    rootDTO.getUsername(),
+                    rootDTO.getPassword(),
+                    null,
+                    null,
+                    null,
+                    false,
+                    false,
+                    new String[] {roleId},
+                    actions,
+                    null,
+                    null,
+                    null);
+            if (userId != null) {
+              afterSave(
+                  ComparableMapBuilder.newBuilder()
+                      .put("entityId", userId)
+                      .put("username", rootDTO.getUsername())
+                      .put("password", rootDTO.getPassword())
+                      .build(),
+                  appId,
+                  defaultUserStore);
             }
-            appName = application.getAppName();
-            if(appName == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return null;
-            }
-        }
-
-        UserRootDTO rootDTO = application.getUser();
-
-        String appId = UUID.randomUUID().toString().replace("-", "");
-        String apiKey = UUID.randomUUID().toString().replace("-", "");
-        String masterKey = UUID.randomUUID().toString().replace("-", "");
-
-        application.setAppId(appId);
-        application.setApiKey(BCrypt.hashpw(apiKey, BCrypt.gensalt()));
-        application.setMasterKey(BCrypt.hashpw(masterKey, BCrypt.gensalt()));
-        if(appName != null && !appName.isEmpty()) {
-            application.setAppName(appName);
-        }
-
-        final EntityId id = applicationService.create(application);
-        if (id != null) {
-            //Application app =  applicationService.read(id.toString());
-
-            if(rootDTO != null) {
-                if(beforeSave(ComparableMapBuilder.newBuilder().put("name", rootDTO.getRole()).build(), appId, defaultRoleStore)) {
-                    String roleId = roleRepository.createRole(appId, namespace, defaultRoleStore, rootDTO.getRole(), null, null, false, false, actions);
-                    if(roleId != null) {
-                        afterSave(ComparableMapBuilder.newBuilder().put("entityId", roleId).put("name", rootDTO.getRole()).build(), appId, defaultUserStore);
-                    }
-                    if(beforeSave(ComparableMapBuilder.newBuilder().put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore)) {
-                        String userId = userRepository.createUser(appId, namespace, defaultUserStore, rootDTO.getUsername(), rootDTO.getPassword(),
-                                null, null, null, false, false,
-                                new String[]{roleId}, actions, null, null, null);
-                        if(userId != null) {
-                            afterSave(ComparableMapBuilder.newBuilder().put("entityId", userId).put("username", rootDTO.getUsername()).put("password", rootDTO.getPassword()).build(), appId, defaultUserStore);
-                        }
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    }
-                } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                }
-            }
-
-
-            if (application != null) {
-                application.setAppId(appId);
-                application.setApiKey(apiKey);
-                application.setMasterKey(masterKey);
-                application.setAppName(appName);
-                setStatus(Status.SUCCESS_CREATED);
-                return application;
-            }
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          }
         } else {
-            setStatus(Status.SERVER_ERROR_INTERNAL);
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        return null;
-    }
+      }
 
+      if (application != null) {
+        application.setAppId(appId);
+        application.setApiKey(apiKey);
+        application.setMasterKey(masterKey);
+        application.setAppName(appName);
+        setStatus(Status.SUCCESS_CREATED);
+        return application;
+      }
+    } else {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+    return null;
+  }
 }

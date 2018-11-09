@@ -35,20 +35,30 @@ import java.util.Map;
 @Value.Immutable
 @Value.Style(visibility = Value.Style.ImplementationVisibility.PRIVATE)
 public interface EntityClass {
-    @Nullable String entityType();
-    Map<String, Comparable> comparableMap();
-    @Nullable
-    @Value.Default
-    default String[] read() {
-        return null;
-    }
-    @Nullable
-    @Value.Default
-    default String[] write() {
-        return null;
-    }
-    Boolean publicRead();
-    Boolean publicWrite();
-    @Nullable String blobName();
-    @Nullable InputStream blob();
+  @Nullable
+  String entityType();
+
+  Map<String, Comparable> comparableMap();
+
+  @Nullable
+  @Value.Default
+  default String[] read() {
+    return null;
+  }
+
+  @Nullable
+  @Value.Default
+  default String[] write() {
+    return null;
+  }
+
+  Boolean publicRead();
+
+  Boolean publicWrite();
+
+  @Nullable
+  String blobName();
+
+  @Nullable
+  InputStream blob();
 }

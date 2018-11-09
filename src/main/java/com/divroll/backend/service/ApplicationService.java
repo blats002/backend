@@ -33,16 +33,15 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface ApplicationService {
-    EntityId create(Application user);
+  EntityId create(Application user);
 
-    Application read(String appId);
+  Application read(String appId);
 
-    void update(Application application, String masterKey);
+  void update(Application application, String masterKey);
 
-    void delete(String id);
+  void delete(String id);
 
-    List<Application> list(List<TransactionFilter> filters, int skip, int limit);
+  List<Application> list(List<TransactionFilter> filters, int skip, int limit);
 
-    void forceUpdate(Application application);
-
+  void forceUpdate(Application application);
 }

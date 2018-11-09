@@ -39,32 +39,36 @@ import java.util.List;
  */
 public class JeeSchemaService implements SchemaService {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeSchemaService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeSchemaService.class);
 
-    @Inject
-    XodusStore store;
+  @Inject XodusStore store;
 
-    @Override
-    public List<EntityType> listSchemas(String appId, String namespace) {
-        List<EntityType> entityTypeList = new LinkedList<>();
-        store.listEntityTypes(appId, namespace).forEach(s -> {
-            EntityType entityType = new EntityType();
-            entityType.setEntityType(s);
-            entityType.setPropertyTypes(store.listPropertyTypes(appId, namespace, s));
-            entityTypeList.add(entityType);
-        });
-        return entityTypeList;
-    }
+  @Override
+  public List<EntityType> listSchemas(String appId, String namespace) {
+    List<EntityType> entityTypeList = new LinkedList<>();
+    store
+        .listEntityTypes(appId, namespace)
+        .forEach(
+            s -> {
+              EntityType entityType = new EntityType();
+              entityType.setEntityType(s);
+              entityType.setPropertyTypes(store.listPropertyTypes(appId, namespace, s));
+              entityTypeList.add(entityType);
+            });
+    return entityTypeList;
+  }
 
-    @Override
-    public List<EntityPropertyType> listPropertyTypes(String appId, String namespace, String entityType) {
-        List<EntityPropertyType> propertyTypes = new LinkedList<>();
-        listSchemas(appId, namespace).forEach(schema -> {
-            if(schema.getEntityType().equalsIgnoreCase(entityType)) {
+  @Override
+  public List<EntityPropertyType> listPropertyTypes(
+      String appId, String namespace, String entityType) {
+    List<EntityPropertyType> propertyTypes = new LinkedList<>();
+    listSchemas(appId, namespace)
+        .forEach(
+            schema -> {
+              if (schema.getEntityType().equalsIgnoreCase(entityType)) {
                 propertyTypes.addAll(schema.getPropertyTypes());
-            }
-        });
-        return propertyTypes;
-    }
+              }
+            });
+    return propertyTypes;
+  }
 }

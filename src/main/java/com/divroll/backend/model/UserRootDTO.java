@@ -34,36 +34,38 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class UserRootDTO {
 
-    @ApiModelProperty(required = true, value = "Username")
-    private String username;
-    @ApiModelProperty(required = true, value = "Password")
-    private String password;
-    @ApiModelProperty(required = true, value = "Role")
-    private String role;
+  @ApiModelProperty(required = true, value = "Username")
+  private String username;
 
-    public UserRootDTO() {}
+  @ApiModelProperty(required = true, value = "Password")
+  private String password;
 
-    public String getUsername() {
-        return username;
-    }
+  @ApiModelProperty(required = true, value = "Role")
+  private String role;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public UserRootDTO() {}
 
-    public String getPassword() {
-        return password;
-    }
+  public String getUsername() {
+    return username;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-    public String getRole() {
-        return role;
-    }
+  public String getPassword() {
+    return password;
+  }
 
-    public void setRole(String role) {
-        this.role = role;
-    }
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getRole() {
+    return role;
+  }
+
+  public void setRole(String role) {
+    this.role = role;
+  }
 }

@@ -27,28 +27,30 @@ package com.divroll.backend.trigger;
  * @since 0-SNAPSHOT
  */
 public class TriggerResponse {
-    private boolean success;
-    private String body;
-    public void success() {
-        this.success = true;
-    }
-    public void error() {
-        this.success = false;
-    }
+  private boolean success;
+  private String body;
 
-    public boolean isSuccess() {
-        return success;
-    }
+  public void success() {
+    this.success = true;
+  }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+  public void error() {
+    this.success = false;
+  }
 
-    public String getBody() {
-        return body;
-    }
+  public boolean isSuccess() {
+    return success;
+  }
 
-    public void setBody(String body) {
-        this.body = body;
-    }
+  public void setSuccess(boolean success) {
+    this.success = success;
+  }
+
+  public String getBody() {
+    return body;
+  }
+
+  public void setBody(String body) {
+    this.body = body;
+  }
 }
