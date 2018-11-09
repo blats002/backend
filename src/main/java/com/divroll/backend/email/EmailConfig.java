@@ -28,31 +28,31 @@ package com.divroll.backend.email;
  */
 public class EmailConfig {
 
-    private String smtpHost;
-    private String tlsPort;
-    private String sslPort;
+  private String smtpHost;
+  private String tlsPort;
+  private String sslPort;
 
-    public String getSmtpHost() {
-        return smtpHost;
-    }
+  public String getSmtpHost() {
+    return smtpHost;
+  }
 
-    public void setSmtpHost(String smtpHost) {
-        this.smtpHost = smtpHost;
-    }
+  public void setSmtpHost(String smtpHost) {
+    this.smtpHost = smtpHost;
+  }
 
-    public String getTlsPort() {
-        return tlsPort;
-    }
+  public String getTlsPort() {
+    return tlsPort;
+  }
 
-    public void setTlsPort(String tlsPort) {
-        this.tlsPort = tlsPort;
-    }
+  public void setTlsPort(String tlsPort) {
+    this.tlsPort = tlsPort;
+  }
 
-    public String getSslPort() {
-        return sslPort;
-    }
+  public String getSslPort() {
+    return sslPort;
+  }
 
-    public void setSslPort(String sslPort) {
-        this.sslPort = sslPort;
-    }
+  public void setSslPort(String sslPort) {
+    this.sslPort = sslPort;
+  }
 }

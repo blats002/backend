@@ -35,32 +35,33 @@ import java.util.List;
 @XStreamAlias("roles")
 @ApiModel
 public class Roles {
-    @XStreamImplicit(itemFieldName = "results")
-    private List<Role> results;
-    private long skip;
-    private long limit;
+  @XStreamImplicit(itemFieldName = "results")
+  private List<Role> results;
 
-    public List<Role> getResults() {
-        return results;
-    }
+  private long skip;
+  private long limit;
 
-    public void setResults(List<Role> results) {
-        this.results = results;
-    }
+  public List<Role> getResults() {
+    return results;
+  }
 
-    public long getSkip() {
-        return skip;
-    }
+  public void setResults(List<Role> results) {
+    this.results = results;
+  }
 
-    public void setSkip(long skip) {
-        this.skip = skip;
-    }
+  public long getSkip() {
+    return skip;
+  }
 
-    public long getLimit() {
-        return limit;
-    }
+  public void setSkip(long skip) {
+    this.skip = skip;
+  }
 
-    public void setLimit(long limit) {
-        this.limit = limit;
-    }
+  public long getLimit() {
+    return limit;
+  }
+
+  public void setLimit(long limit) {
+    this.limit = limit;
+  }
 }

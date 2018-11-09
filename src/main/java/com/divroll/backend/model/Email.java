@@ -30,61 +30,59 @@ import org.json.JSONObject;
  */
 public class Email {
 
-    private String emailHost;
-    private String emailPort;
-    private String emailAddress;
-    private String password;
+  private String emailHost;
+  private String emailPort;
+  private String emailAddress;
+  private String password;
 
-    public String getEmailHost() {
-        return emailHost;
+  public String getEmailHost() {
+    return emailHost;
+  }
+
+  public void setEmailHost(String emailHost) {
+    this.emailHost = emailHost;
+  }
+
+  public String getEmailPort() {
+    return emailPort;
+  }
+
+  public void setEmailPort(String emailPort) {
+    this.emailPort = emailPort;
+  }
+
+  public String getEmailAddress() {
+    return emailAddress;
+  }
+
+  public void setEmailAddress(String emailAddress) {
+    this.emailAddress = emailAddress;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public JSONObject toJSONObject() {
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("emailHost", emailHost);
+    jsonObject.put("emailPort", emailPort);
+    jsonObject.put("emailAddress", emailAddress);
+    jsonObject.put("password", password);
+    return jsonObject;
+  }
+
+  public void fromJSONObject(JSONObject jsonObject) {
+    if (jsonObject == null) {
+      return;
     }
-
-    public void setEmailHost(String emailHost) {
-        this.emailHost = emailHost;
-    }
-
-    public String getEmailPort() {
-        return emailPort;
-    }
-
-    public void setEmailPort(String emailPort) {
-        this.emailPort = emailPort;
-    }
-
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public JSONObject toJSONObject() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("emailHost", emailHost);
-        jsonObject.put("emailPort", emailPort);
-        jsonObject.put("emailAddress", emailAddress);
-        jsonObject.put("password", password);
-        return jsonObject;
-    }
-
-    public void fromJSONObject(JSONObject jsonObject) {
-        if(jsonObject == null) {
-            return;
-        }
-        setEmailHost(jsonObject.getString("emailHost"));
-        setEmailPort(jsonObject.getString("emailPort"));
-        setEmailAddress(jsonObject.getString("emailAddress"));
-        setPassword(jsonObject.getString("password"));
-    }
-
-
+    setEmailHost(jsonObject.getString("emailHost"));
+    setEmailPort(jsonObject.getString("emailPort"));
+    setEmailAddress(jsonObject.getString("emailAddress"));
+    setPassword(jsonObject.getString("password"));
+  }
 }

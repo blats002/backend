@@ -32,6 +32,12 @@ import java.io.UnsupportedEncodingException;
  * @since 0-SNAPSHOT
  */
 public interface EmailService {
-    void sendEmail(EmailConfig smtpConfig, String from, String password, String to, String subject, String htmlBody)
-            throws UnsupportedEncodingException, MessagingException;
+  void sendEmail(
+      EmailConfig smtpConfig,
+      String from,
+      String password,
+      String to,
+      String subject,
+      String htmlBody)
+      throws UnsupportedEncodingException, MessagingException;
 }

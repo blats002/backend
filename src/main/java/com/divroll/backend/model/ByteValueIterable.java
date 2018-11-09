@@ -39,60 +39,55 @@ import java.io.ObjectOutputStream;
  */
 public class ByteValueIterable implements ByteIterable {
 
-    private final long offset;
-    private final int length;
-    private ByteValue byteValue;
-    private byte[] bytes;
+  private final long offset;
+  private final int length;
+  private ByteValue byteValue;
+  private byte[] bytes;
 
-    public ByteValueIterable(ByteValue byteValue) {
-        byte[] bytes = toByteArray(byteValue);
-        this.bytes = bytes;
-        this.byteValue = byteValue;
-        this.offset = 0L;
-        this.length = (int) bytes.length;
+  public ByteValueIterable(ByteValue byteValue) {
+    byte[] bytes = toByteArray(byteValue);
+    this.bytes = bytes;
+    this.byteValue = byteValue;
+    this.offset = 0L;
+    this.length = (int) bytes.length;
+  }
+
+  @Override
+  public ByteIterator iterator() {
+    return new ArrayByteIterable(bytes).iterator();
+  }
+
+  @Override
+  public byte[] getBytesUnsafe() {
+    return bytes;
+  }
+
+  @Override
+  public int getLength() {
+    return length;
+  }
+
+  @NotNull
+  @Override
+  public ByteIterable subIterable(int offset, int length) {
+    throw new UnsupportedOperationException("subIterable");
+  }
+
+  @Override
+  public int compareTo(@NotNull ByteIterable o) {
+    return ByteIterableUtil.compare(this, o);
+  }
+
+  protected byte[] toByteArray(Object object) {
+    try {
+      try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+          ObjectOutput out = new ObjectOutputStream(bos)) {
+        out.writeObject(object);
+        return bos.toByteArray();
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-
-    @Override
-    public ByteIterator iterator() {
-        return new ArrayByteIterable(bytes).iterator();
-    }
-
-    @Override
-    public byte[] getBytesUnsafe() {
-        return bytes;
-    }
-
-    @Override
-    public int getLength() {
-        return length;
-    }
-
-    @NotNull
-    @Override
-    public ByteIterable subIterable(int offset, int length) {
-        throw new UnsupportedOperationException("subIterable");
-    }
-
-    @Override
-    public int compareTo(@NotNull ByteIterable o) {
-        return ByteIterableUtil.compare(this, o);
-    }
-
-
-    protected byte[] toByteArray(Object object) {
-        try {
-            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                 ObjectOutput out = new ObjectOutputStream(bos)) {
-                out.writeObject(object);
-                return bos.toByteArray();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    ;
-
+    return null;
+  };
 }

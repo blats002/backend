@@ -32,26 +32,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 0-SNAPSHOT
  */
 public abstract class SelfInjectingServerResource extends ServerResource {
-    @Inject
-    private static volatile MembersInjector theMembersInjector;
-    private final AtomicBoolean injected = new AtomicBoolean(false);
+  @Inject private static volatile MembersInjector theMembersInjector;
+  private final AtomicBoolean injected = new AtomicBoolean(false);
 
-    protected void doInit() {
-        ensureInjected(theMembersInjector);
-    }
+  protected void doInit() {
+    ensureInjected(theMembersInjector);
+  }
 
-    @Inject
-    private void injected() { // NOPMD
-        injected.set(true);
-    }
+  @Inject
+  private void injected() { // NOPMD
+    injected.set(true);
+  }
 
-    void ensureInjected(MembersInjector membersInjector) {
-        if (injected.compareAndSet(false, true)) {
-            membersInjector.injectMembers(this);
-        }
+  void ensureInjected(MembersInjector membersInjector) {
+    if (injected.compareAndSet(false, true)) {
+      membersInjector.injectMembers(this);
     }
+  }
 
-    public interface MembersInjector {
-        void injectMembers(Object object);
-    }
+  public interface MembersInjector {
+    void injectMembers(Object object);
+  }
 }

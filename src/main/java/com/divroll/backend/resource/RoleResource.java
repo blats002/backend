@@ -37,26 +37,36 @@ import org.restlet.resource.Put;
  */
 @Api(value = "Role", description = "Role resource")
 public interface RoleResource {
-    @ApiOperation(value = "retrieve a role", tags = "role")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the role"),
-            @ApiResponse(code = 404, message = "role not found"),
-            @ApiResponse(code = 401, message = "unauthorized access or missing Appliation ID/API Key headers pair")})
-    @Get
-    Role getRole();
+  @ApiOperation(value = "retrieve a role", tags = "role")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "the role"),
+    @ApiResponse(code = 404, message = "role not found"),
+    @ApiResponse(
+        code = 401,
+        message = "unauthorized access or missing Appliation ID/API Key headers pair")
+  })
+  @Get
+  Role getRole();
 
-    @ApiOperation(value = "update existing role", tags = "role")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "user updated"),
-            @ApiResponse(code = 400, message = "bad request"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")})
-    @Put
-    Role updateRole(Role entity);
+  @ApiOperation(value = "update existing role", tags = "role")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "user updated"),
+    @ApiResponse(code = 400, message = "bad request"),
+    @ApiResponse(
+        code = 401,
+        message =
+            "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")
+  })
+  @Put
+  Role updateRole(Role entity);
 
-    @ApiOperation(value = "delete existing role", tags = "role")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "user deleted"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key/Master Key headers")})
-    @Delete
-    void deleteRole(Role entity);
+  @ApiOperation(value = "delete existing role", tags = "role")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "user deleted"),
+    @ApiResponse(
+        code = 401,
+        message = "unauthorized access, missing Application ID/API Key/Master Key headers")
+  })
+  @Delete
+  void deleteRole(Role entity);
 }

@@ -32,18 +32,17 @@ import com.google.inject.Provides;
  */
 public class SelfInjectingServerResourceModule extends AbstractModule {
 
-    @Override
-    protected final void configure() {
-        requestStaticInjection(SelfInjectingServerResource.class);
-    }
+  @Override
+  protected final void configure() {
+    requestStaticInjection(SelfInjectingServerResource.class);
+  }
 
-    @Provides
-    SelfInjectingServerResource.MembersInjector membersInjector(final Injector injector) {
-        return new SelfInjectingServerResource.MembersInjector() {
-            public void injectMembers(Object object) {
-                injector.injectMembers(object);
-            }
-        };
-    }
-
+  @Provides
+  SelfInjectingServerResource.MembersInjector membersInjector(final Injector injector) {
+    return new SelfInjectingServerResource.MembersInjector() {
+      public void injectMembers(Object object) {
+        injector.injectMembers(object);
+      }
+    };
+  }
 }

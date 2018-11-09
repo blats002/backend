@@ -30,6 +30,6 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface LinksResource {
-    @Get
-    Representation getLinks(Representation entity);
+  @Get
+  Representation getLinks(Representation entity);
 }

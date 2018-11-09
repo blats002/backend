@@ -35,42 +35,46 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class EntityIterables {
-    public static JSONObject toJSONObject(EmbeddedEntityIterable embeddedEntityIterable) {
-        if(embeddedEntityIterable != null) {
-            Map<String, Comparable> comparableMap = (Map<String, Comparable>) embeddedEntityIterable.asObject();
-            JSONObject jsonObject = new JSONObject();
-            comparableMap.forEach((key,value)->{
-                if(value instanceof EmbeddedArrayIterable) {
-                    JSONObject jso = toJSONObject((EmbeddedEntityIterable) value);
-                    jsonObject.put(key, jso);
-                } else if(value instanceof EmbeddedEntityIterable) {
-                    JSONArray jsa = toJSONArray((EmbeddedArrayIterable) value);
-                    jsonObject.put(key, jsa);
-                } else {
-                    jsonObject.put(key, value);
-                }
-            });
-            return jsonObject;
-        }
-        return null;
+  public static JSONObject toJSONObject(EmbeddedEntityIterable embeddedEntityIterable) {
+    if (embeddedEntityIterable != null) {
+      Map<String, Comparable> comparableMap =
+          (Map<String, Comparable>) embeddedEntityIterable.asObject();
+      JSONObject jsonObject = new JSONObject();
+      comparableMap.forEach(
+          (key, value) -> {
+            if (value instanceof EmbeddedArrayIterable) {
+              JSONObject jso = toJSONObject((EmbeddedEntityIterable) value);
+              jsonObject.put(key, jso);
+            } else if (value instanceof EmbeddedEntityIterable) {
+              JSONArray jsa = toJSONArray((EmbeddedArrayIterable) value);
+              jsonObject.put(key, jsa);
+            } else {
+              jsonObject.put(key, value);
+            }
+          });
+      return jsonObject;
     }
-    public static JSONArray toJSONArray(EmbeddedArrayIterable embeddedArrayIterable) {
-        if(embeddedArrayIterable != null) {
-            List<Comparable> comparableList = embeddedArrayIterable.asObject();
-            JSONArray jsonArray = new JSONArray();
-            comparableList.forEach(value -> {
-                if(value instanceof EmbeddedArrayIterable) {
-                    JSONArray jso = toJSONArray((EmbeddedArrayIterable) value);
-                    jsonArray.put(jso);
-                } else if(value instanceof EmbeddedEntityIterable) {
-                    JSONObject jsa = toJSONObject((EmbeddedEntityIterable) value);
-                    jsonArray.put(jsa);
-                } else {
-                    jsonArray.put(value);
-                }
-            });
-            return jsonArray;
-        }
-        return null;
+    return null;
+  }
+
+  public static JSONArray toJSONArray(EmbeddedArrayIterable embeddedArrayIterable) {
+    if (embeddedArrayIterable != null) {
+      List<Comparable> comparableList = embeddedArrayIterable.asObject();
+      JSONArray jsonArray = new JSONArray();
+      comparableList.forEach(
+          value -> {
+            if (value instanceof EmbeddedArrayIterable) {
+              JSONArray jso = toJSONArray((EmbeddedArrayIterable) value);
+              jsonArray.put(jso);
+            } else if (value instanceof EmbeddedEntityIterable) {
+              JSONObject jsa = toJSONObject((EmbeddedEntityIterable) value);
+              jsonArray.put(jsa);
+            } else {
+              jsonArray.put(value);
+            }
+          });
+      return jsonArray;
     }
+    return null;
+  }
 }

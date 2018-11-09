@@ -33,101 +33,105 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @XStreamAlias("application")
 @ApiModel
 public class Application {
-    @ApiModelProperty(position = 0, required = false, value = "Auto-generated id")
-    private String appId;
-    @ApiModelProperty(required = true, value = "Generated Application Key")
-    private String apiKey;
-    @ApiModelProperty(required = true, value = "Generated Master Key")
-    private String masterKey;
-    private String appName;
-    @ApiModelProperty(required = false, value = "Email configuration")
-    private Email emailConfig;
+  @ApiModelProperty(position = 0, required = false, value = "Auto-generated id")
+  private String appId;
 
-    @ApiModelProperty(required = false, value = "Cloud code")
-    private String cloudCode;
+  @ApiModelProperty(required = true, value = "Generated Application Key")
+  private String apiKey;
 
-    private String dateCreated;
-    private String dateUpdated;
+  @ApiModelProperty(required = true, value = "Generated Master Key")
+  private String masterKey;
 
-    private UserRootDTO user;
+  private String appName;
 
-    public String getId() {
-        return appId;
-    }
+  @ApiModelProperty(required = false, value = "Email configuration")
+  private Email emailConfig;
 
-    public void setId(String id) {
-        this.appId = id;
-    }
+  @ApiModelProperty(required = false, value = "Cloud code")
+  private String cloudCode;
 
-    public String getAppId() {
-        return appId;
-    }
+  private String dateCreated;
+  private String dateUpdated;
 
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
+  private UserRootDTO user;
 
-    public String getApiKey() {
-        return apiKey;
-    }
+  public String getId() {
+    return appId;
+  }
 
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
+  public void setId(String id) {
+    this.appId = id;
+  }
 
-    public String getMasterKey() {
-        return masterKey;
-    }
+  public String getAppId() {
+    return appId;
+  }
 
-    public void setMasterKey(String masterKey) {
-        this.masterKey = masterKey;
-    }
+  public void setAppId(String appId) {
+    this.appId = appId;
+  }
 
-    public String getAppName() {
-        return appName;
-    }
+  public String getApiKey() {
+    return apiKey;
+  }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
+  public void setApiKey(String apiKey) {
+    this.apiKey = apiKey;
+  }
 
-    public void setEmailConfig(Email emailConfig) {
-        this.emailConfig = emailConfig;
-    }
+  public String getMasterKey() {
+    return masterKey;
+  }
 
-    public Email getEmailConfig() {
-        return emailConfig;
-    }
+  public void setMasterKey(String masterKey) {
+    this.masterKey = masterKey;
+  }
 
-    public UserRootDTO getUser() {
-        return user;
-    }
+  public String getAppName() {
+    return appName;
+  }
 
-    public void setUser(UserRootDTO user) {
-        this.user = user;
-    }
+  public void setAppName(String appName) {
+    this.appName = appName;
+  }
 
-    public String getCloudCode() {
-        return this.cloudCode;
-    }
+  public Email getEmailConfig() {
+    return emailConfig;
+  }
 
-    public void setCloudCode(String cloudCode) {
-        this.cloudCode = cloudCode;
-    }
+  public void setEmailConfig(Email emailConfig) {
+    this.emailConfig = emailConfig;
+  }
 
-    public String getDateCreated() {
-        return dateCreated;
-    }
+  public UserRootDTO getUser() {
+    return user;
+  }
 
-    public void setDateCreated(String dateCreated) {
-        this.dateCreated = dateCreated;
-    }
+  public void setUser(UserRootDTO user) {
+    this.user = user;
+  }
 
-    public String getDateUpdated() {
-        return dateUpdated;
-    }
+  public String getCloudCode() {
+    return this.cloudCode;
+  }
 
-    public void setDateUpdated(String dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
+  public void setCloudCode(String cloudCode) {
+    this.cloudCode = cloudCode;
+  }
+
+  public String getDateCreated() {
+    return dateCreated;
+  }
+
+  public void setDateCreated(String dateCreated) {
+    this.dateCreated = dateCreated;
+  }
+
+  public String getDateUpdated() {
+    return dateUpdated;
+  }
+
+  public void setDateUpdated(String dateUpdated) {
+    this.dateUpdated = dateUpdated;
+  }
 }

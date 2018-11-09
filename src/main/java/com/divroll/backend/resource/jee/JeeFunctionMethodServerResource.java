@@ -50,233 +50,259 @@ import java.util.concurrent.CompletableFuture;
 public class JeeFunctionMethodServerResource extends BaseServerResource
     implements FunctionMethodResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeApplicationServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
 
-    @Inject
-    FunctionRepository functionRepository;
+  @Inject FunctionRepository functionRepository;
 
-    String functionName;
-    String methodName;
+  String functionName;
+  String methodName;
 
+  @Override
+  protected void doInit() {
+    super.doInit();
+    functionName = getAttribute("functionName");
+    methodName = getAttribute("methodName");
+  }
 
-    @Override
-    protected void doInit() {
-        super.doInit();
-        functionName = getAttribute("functionName");
-        methodName = getAttribute("methodName");
+  private byte[] getJar(String appId, String functionName) {
+    byte[] jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
+    return jarBytes;
+  }
+
+  private void customCodeGet(
+      byte[] jarBytes,
+      String path,
+      Map<String, String> params,
+      byte[] body,
+      String methodName,
+      int counter,
+      CompletableFuture<Map<String, ?>> future) {
+    CustomCodeRequest request =
+        new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(jarBytes, future);
+    customCode.executeMainClass(request);
+  }
+
+  private void customCodePost(
+      byte[] jarBytes,
+      String path,
+      Map<String, String> params,
+      byte[] body,
+      String methodName,
+      int counter,
+      CompletableFuture<Map<String, ?>> future) {
+    CustomCodeRequest request =
+        new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(jarBytes, future);
+    customCode.executeMainClass(request);
+  }
+
+  private void customCodePut(
+      byte[] jarBytes,
+      String path,
+      Map<String, String> params,
+      byte[] body,
+      String methodName,
+      int counter,
+      CompletableFuture<Map<String, ?>> future) {
+    CustomCodeRequest request =
+        new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(jarBytes, future);
+    customCode.executeMainClass(request);
+  }
+
+  private void customCodeDelete(
+      byte[] jarBytes,
+      String path,
+      Map<String, String> params,
+      byte[] body,
+      String methodName,
+      int counter,
+      CompletableFuture<Map<String, ?>> future) {
+    CustomCodeRequest request =
+        new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(jarBytes, future);
+    customCode.executeMainClass(request);
+  }
+
+  protected String stackTraceToString(Throwable e) {
+    StringBuilder sb = new StringBuilder();
+    for (StackTraceElement element : e.getStackTrace()) {
+      sb.append(element.toString());
+      sb.append("\n");
     }
+    return sb.toString();
+  }
 
-    private byte[] getJar(String appId, String functionName) {
-        byte[] jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
-        return  jarBytes;
+  @Override
+  public Representation getMethod(Representation entity) {
+    if (!isAuthorized()) {
+      return unauthorized();
     }
-
-    private void customCodeGet(byte[] jarBytes, String path, Map<String,String> params, byte[] body, String methodName, int counter, CompletableFuture<Map<String, ?>> future) {
-        CustomCodeRequest request = new CustomCodeRequest
-                (MethodVerb.GET, path, params, body, methodName, counter);
-        CustomCode customCode = new CustomCode(jarBytes, future);
-        customCode.executeMainClass(request);
+    LOG.info("Function Name: " + functionName);
+    LOG.info("Function Method: " + methodName);
+    byte[] jarBytes = getJar(appId, functionName);
+    if (jarBytes == null) {
+      return notFound();
     }
-
-    private void customCodePost(byte[] jarBytes, String path, Map<String,String> params, byte[] body, String methodName, int counter, CompletableFuture<Map<String, ?>> future) {
-        CustomCodeRequest request = new CustomCodeRequest
-                (MethodVerb.POST, path, params, body, methodName, counter);
-        CustomCode customCode = new CustomCode(jarBytes, future);
-        customCode.executeMainClass(request);
+    byte[] content = null;
+    try {
+      InputStream is = entity.getStream();
+      content = ByteStreams.toByteArray(is);
+    } catch (Exception e) {
     }
-
-    private void customCodePut(byte[] jarBytes, String path, Map<String,String> params, byte[] body, String methodName, int counter, CompletableFuture<Map<String, ?>> future) {
-        CustomCodeRequest request = new CustomCodeRequest
-                (MethodVerb.PUT, path, params, body, methodName, counter);
-        CustomCode customCode = new CustomCode(jarBytes, future);
-        customCode.executeMainClass(request);
+    try {
+      if (jarBytes != null) {
+        String path = "";
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        customCodeGet(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
+        Map<String, ?> futureResult = future.get();
+        if (futureResult != null) {
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        }
+        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+      } else {
+        return notFound();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return internalError(stackTraceToString(e));
     }
+    return null;
+  }
 
-    private void customCodeDelete(byte[] jarBytes, String path, Map<String,String> params, byte[] body, String methodName, int counter, CompletableFuture<Map<String, ?>> future) {
-        CustomCodeRequest request = new CustomCodeRequest
-                (MethodVerb.DELETE, path, params, body, methodName, counter);
-        CustomCode customCode = new CustomCode(jarBytes, future);
-        customCode.executeMainClass(request);
+  @Override
+  public Representation postMethod(Representation entity) {
+    if (!isAuthorized()) {
+      return unauthorized();
     }
-
-    protected String stackTraceToString(Throwable e) {
-        StringBuilder sb = new StringBuilder();
-        for (StackTraceElement element : e.getStackTrace()) {
-            sb.append(element.toString());
-            sb.append("\n");
-        }
-        return sb.toString();
+    LOG.info("Function Name: " + functionName);
+    LOG.info("Function Method: " + methodName);
+    byte[] jarBytes = getJar(appId, functionName);
+    if (jarBytes == null) {
+      return notFound();
     }
-
-    @Override
-    public Representation getMethod(Representation entity) {
-        if(!isAuthorized()) {
-            return unauthorized();
-        }
-        LOG.info("Function Name: " + functionName);
-        LOG.info("Function Method: " + methodName);
-        byte[] jarBytes = getJar(appId, functionName);
-        if(jarBytes == null) {
-            return notFound();
-        }
-        byte[] content = null;
-        try {
-            InputStream is = entity.getStream();
-            content = ByteStreams.toByteArray(is);
-        } catch (Exception e) {
-        }
-        try {
-            if(jarBytes != null) {
-                String path = "";
-                CompletableFuture<Map<String,?>> future = new CompletableFuture<Map<String,?>>();
-                customCodeGet(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
-                Map<String,?> futureResult = future.get();
-                if(futureResult != null) {
-                    byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
-                    HttpServletResponse response = ServletUtils.getResponse(getResponse());
-                    response.setHeader("Content-Length", toStream.length + "");
-                    response.setHeader("Access-Control-Allow-Origin", "*");
-                    response.getOutputStream().write(toStream);
-                    response.getOutputStream().flush();
-                    response.getOutputStream().close();
-                }
-                LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
-            } else {
-                return notFound();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return internalError(stackTraceToString(e));
-        }
-        return null;
+    byte[] content = null;
+    try {
+      InputStream is = entity.getStream();
+      content = ByteStreams.toByteArray(is);
+    } catch (Exception e) {
     }
-
-    @Override
-    public Representation postMethod(Representation entity) {
-        if(!isAuthorized()) {
-            return unauthorized();
+    try {
+      if (jarBytes != null) {
+        String path = "";
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        customCodePost(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
+        Map<String, ?> futureResult = future.get();
+        if (futureResult != null) {
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
         }
-        LOG.info("Function Name: " + functionName);
-        LOG.info("Function Method: " + methodName);
-        byte[] jarBytes = getJar(appId, functionName);
-        if(jarBytes == null) {
-            return notFound();
-        }
-        byte[] content = null;
-        try {
-            InputStream is = entity.getStream();
-            content = ByteStreams.toByteArray(is);
-        } catch (Exception e) {
-        }
-        try {
-            if(jarBytes != null) {
-                String path = "";
-                CompletableFuture<Map<String,?>> future = new CompletableFuture<Map<String,?>>();
-                customCodePost(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
-                Map<String,?> futureResult = future.get();
-                if(futureResult != null) {
-                    byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
-                    HttpServletResponse response = ServletUtils.getResponse(getResponse());
-                    response.setHeader("Content-Length", toStream.length + "");
-                    response.setHeader("Access-Control-Allow-Origin", "*");
-                    response.getOutputStream().write(toStream);
-                    response.getOutputStream().flush();
-                    response.getOutputStream().close();
-                }
-                LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
-            } else {
-                return notFound();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return internalError(stackTraceToString(e));
-        }
-        return null;
+        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+      } else {
+        return notFound();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return internalError(stackTraceToString(e));
     }
+    return null;
+  }
 
-    @Override
-    public Representation putMethod(Representation entity) {
-        if(!isAuthorized()) {
-            return unauthorized();
-        }
-        LOG.info("Function Name: " + functionName);
-        LOG.info("Function Method: " + methodName);
-        byte[] jarBytes = getJar(appId, functionName);
-        if(jarBytes == null) {
-            return notFound();
-        }
-        byte[] content = null;
-        try {
-            InputStream is = entity.getStream();
-            content = ByteStreams.toByteArray(is);
-        } catch (Exception e) {
-        }
-        try {
-            if(jarBytes != null) {
-                String path = "";
-                CompletableFuture<Map<String,?>> future = new CompletableFuture<Map<String,?>>();
-                customCodePut(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
-                Map<String,?> futureResult = future.get();
-                if(futureResult != null) {
-                    byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
-                    HttpServletResponse response = ServletUtils.getResponse(getResponse());
-                    response.setHeader("Content-Length", toStream.length + "");
-                    response.setHeader("Access-Control-Allow-Origin", "*");
-                    response.getOutputStream().write(toStream);
-                    response.getOutputStream().flush();
-                    response.getOutputStream().close();
-                }
-                LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
-            } else {
-                return notFound();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return internalError(stackTraceToString(e));
-        }
-        return null;    }
-
-    @Override
-    public Representation deleteMethod(Representation entity) {
-        if(!isAuthorized()) {
-            return unauthorized();
-        }
-        LOG.info("Function Name: " + functionName);
-        LOG.info("Function Method: " + methodName);
-        byte[] jarBytes = getJar(appId, functionName);
-        if(jarBytes == null) {
-            return notFound();
-        }
-        byte[] content = null;
-        try {
-            InputStream is = entity.getStream();
-            content = ByteStreams.toByteArray(is);
-        } catch (Exception e) {
-        }
-        try {
-            if(jarBytes != null) {
-                String path = "";
-                CompletableFuture<Map<String,?>> future = new CompletableFuture<Map<String,?>>();
-                customCodeDelete(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
-                Map<String,?> futureResult = future.get();
-                if(futureResult != null) {
-                    byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
-                    HttpServletResponse response = ServletUtils.getResponse(getResponse());
-                    response.setHeader("Content-Length", toStream.length + "");
-                    response.setHeader("Access-Control-Allow-Origin", "*");
-                    response.getOutputStream().write(toStream);
-                    response.getOutputStream().flush();
-                    response.getOutputStream().close();
-                }
-                LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
-            } else {
-                return notFound();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return internalError(stackTraceToString(e));
-        }
-        return null;
+  @Override
+  public Representation putMethod(Representation entity) {
+    if (!isAuthorized()) {
+      return unauthorized();
     }
+    LOG.info("Function Name: " + functionName);
+    LOG.info("Function Method: " + methodName);
+    byte[] jarBytes = getJar(appId, functionName);
+    if (jarBytes == null) {
+      return notFound();
+    }
+    byte[] content = null;
+    try {
+      InputStream is = entity.getStream();
+      content = ByteStreams.toByteArray(is);
+    } catch (Exception e) {
+    }
+    try {
+      if (jarBytes != null) {
+        String path = "";
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        customCodePut(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
+        Map<String, ?> futureResult = future.get();
+        if (futureResult != null) {
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        }
+        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+      } else {
+        return notFound();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return internalError(stackTraceToString(e));
+    }
+    return null;
+  }
+
+  @Override
+  public Representation deleteMethod(Representation entity) {
+    if (!isAuthorized()) {
+      return unauthorized();
+    }
+    LOG.info("Function Name: " + functionName);
+    LOG.info("Function Method: " + methodName);
+    byte[] jarBytes = getJar(appId, functionName);
+    if (jarBytes == null) {
+      return notFound();
+    }
+    byte[] content = null;
+    try {
+      InputStream is = entity.getStream();
+      content = ByteStreams.toByteArray(is);
+    } catch (Exception e) {
+    }
+    try {
+      if (jarBytes != null) {
+        String path = "";
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        customCodeDelete(jarBytes, path, new LinkedHashMap<>(), content, methodName, 0, future);
+        Map<String, ?> futureResult = future.get();
+        if (futureResult != null) {
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        }
+        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+      } else {
+        return notFound();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return internalError(stackTraceToString(e));
+    }
+    return null;
+  }
 }

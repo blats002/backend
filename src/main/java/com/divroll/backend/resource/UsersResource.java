@@ -37,19 +37,23 @@ import org.restlet.resource.Post;
  */
 @Api(value = "Users", description = "Users resource")
 public interface UsersResource {
-    @ApiOperation(value = "create a new user", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "user created"),
-            @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair")})
-    @Post
-    UserDTO createUser(UserDTO entity);
+  @ApiOperation(value = "create a new user", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 201, message = "user created"),
+    @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
+    @ApiResponse(
+        code = 401,
+        message = "unauthorized access, missing Application ID/API Key headers pair")
+  })
+  @Post
+  UserDTO createUser(UserDTO entity);
 
-    @ApiOperation(value = "list users", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "success list users"),
-            @ApiResponse(code = 400, message = "bad request"),
-            @ApiResponse(code = 401, message = "unauthorized access")})
-    @Get
-    Users listUsers();
+  @ApiOperation(value = "list users", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "success list users"),
+    @ApiResponse(code = 400, message = "bad request"),
+    @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @Get
+  Users listUsers();
 }

@@ -37,26 +37,37 @@ import org.restlet.resource.Put;
  */
 @Api(value = "User", description = "User resource")
 public interface UserResource {
-    @ApiOperation(value = "retrieve a webToken of user", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "the updated application"),
-            @ApiResponse(code = 404, message = "user not found"),
-            @ApiResponse(code = 401, message = "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair")})
-    @Get
-    UserDTO getUser();
+  @ApiOperation(value = "retrieve a webToken of user", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "the updated application"),
+    @ApiResponse(code = 404, message = "user not found"),
+    @ApiResponse(
+        code = 401,
+        message =
+            "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair")
+  })
+  @Get
+  UserDTO getUser();
 
-    @ApiOperation(value = "update existing user", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "user updated"),
-            @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")})
-    @Put
-    UserDTO updateUser(UserDTO entity);
+  @ApiOperation(value = "update existing user", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "user updated"),
+    @ApiResponse(code = 400, message = "bad request, no payload or username already exists"),
+    @ApiResponse(
+        code = 401,
+        message =
+            "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")
+  })
+  @Put
+  UserDTO updateUser(UserDTO entity);
 
-    @ApiOperation(value = "delete existing user", tags = "user")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "user deleted"),
-            @ApiResponse(code = 401, message = "unauthorized access, missing Application ID/API Key/Master Key headers")})
-    @Delete
-    void deleteUser(UserDTO entity);
+  @ApiOperation(value = "delete existing user", tags = "user")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "user deleted"),
+    @ApiResponse(
+        code = 401,
+        message = "unauthorized access, missing Application ID/API Key/Master Key headers")
+  })
+  @Delete
+  void deleteUser(UserDTO entity);
 }

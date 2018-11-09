@@ -36,62 +36,61 @@ import java.util.List;
  */
 public class EmbeddedArrayIterable implements Serializable, ByteIterable {
 
-    private byte[] bytes;
+  private byte[] bytes;
 
-    public EmbeddedArrayIterable(List<Comparable> objects) {
-        bytes = serialize(objects);
+  public EmbeddedArrayIterable(List<Comparable> objects) {
+    bytes = serialize(objects);
+  }
+
+  public static byte[] serialize(Object obj) {
+    try {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      ObjectOutputStream os = new ObjectOutputStream(out);
+      os.writeObject(obj);
+      return out.toByteArray();
+    } catch (IOException e) {
     }
+    return null;
+  }
 
-    @Override
-    public ByteIterator iterator() {
-        return new ArrayByteIterable(bytes).iterator();
+  public static Comparable deserialize(byte[] data) {
+    try {
+      ByteArrayInputStream in = new ByteArrayInputStream(data);
+      ObjectInputStream is = new ObjectInputStream(in);
+      return (Comparable) is.readObject();
+    } catch (IOException e) {
+    } catch (ClassNotFoundException e) {
     }
+    return null;
+  }
 
-    @Override
-    public byte[] getBytesUnsafe() {
-        return bytes;
-    }
+  @Override
+  public ByteIterator iterator() {
+    return new ArrayByteIterable(bytes).iterator();
+  }
 
-    @Override
-    public int getLength() {
-        return bytes.length;
-    }
+  @Override
+  public byte[] getBytesUnsafe() {
+    return bytes;
+  }
 
-    @NotNull
-    @Override
-    public ByteIterable subIterable(int offset, int length) {
-        return null;
-    }
+  @Override
+  public int getLength() {
+    return bytes.length;
+  }
 
-    @Override
-    public int compareTo(@NotNull ByteIterable o) {
-        return 0;
-    }
+  @NotNull
+  @Override
+  public ByteIterable subIterable(int offset, int length) {
+    return null;
+  }
 
-    public List<Comparable> asObject() {
-        return (List<Comparable>) deserialize(bytes);
-    }
+  @Override
+  public int compareTo(@NotNull ByteIterable o) {
+    return 0;
+  }
 
-    public static byte[] serialize(Object obj) {
-        try {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ObjectOutputStream os = new ObjectOutputStream(out);
-            os.writeObject(obj);
-            return out.toByteArray();
-        } catch (IOException e) {
-        }
-        return null;
-    }
-    public static Comparable deserialize(byte[] data) {
-        try {
-            ByteArrayInputStream in = new ByteArrayInputStream(data);
-            ObjectInputStream is = new ObjectInputStream(in);
-            return (Comparable) is.readObject();
-        } catch (IOException e) {
-        } catch (ClassNotFoundException e) {
-        }
-        return null;
-    }
-
-
+  public List<Comparable> asObject() {
+    return (List<Comparable>) deserialize(bytes);
+  }
 }

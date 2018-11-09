@@ -33,16 +33,15 @@ import org.restlet.resource.Put;
  * @since 0-SNAPSHOT
  */
 public interface EntitiesResource {
-    @Post
-    Representation createEntity(Representation representation);
+  @Post
+  Representation createEntity(Representation representation);
 
-    @Get
-    Representation getEntities();
+  @Get
+  Representation getEntities();
 
-    @Delete
-    Representation deleteEntities();
+  @Delete
+  Representation deleteEntities();
 
-    @Put
-    Representation updateEntities(Representation representation);
-
+  @Put
+  Representation updateEntities(Representation representation);
 }

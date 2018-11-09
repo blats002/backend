@@ -29,5 +29,5 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface ServerInfoService {
-    public Map getServerInfo();
+  public Map getServerInfo();
 }

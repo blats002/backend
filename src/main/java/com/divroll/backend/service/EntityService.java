@@ -37,22 +37,51 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface EntityService {
-    JSONObject createEntity(Application application, String namespace, String entityType,
-                            Map<String, Comparable> comparableMap,
-                            String aclRead, String aclWrite,
-                            Boolean publicRead, Boolean publicWrite, List<Action> actions, List<EntityAction> entityActions, EntityMetadata metadata) throws Exception;
+  JSONObject createEntity(
+      Application application,
+      String namespace,
+      String entityType,
+      Map<String, Comparable> comparableMap,
+      String aclRead,
+      String aclWrite,
+      Boolean publicRead,
+      Boolean publicWrite,
+      List<Action> actions,
+      List<EntityAction> entityActions,
+      EntityMetadata metadata)
+      throws Exception;
 
-    JSONObject createEntity(Application application, String namespace, String entityType,
-                            Map<String, Comparable> comparableMap,
-                            String aclRead, String aclWrite,
-                            Boolean publicRead, Boolean publicWrite,
-                            List<Action> actions, List<EntityAction> entityActions, String blobName, InputStream blobStream, EntityMetadata metadata) throws Exception;
-    
-    boolean beforeSave(Application application, String namespace,
-                       Map<String, Comparable> entity, String appId, String entityType);
+  JSONObject createEntity(
+      Application application,
+      String namespace,
+      String entityType,
+      Map<String, Comparable> comparableMap,
+      String aclRead,
+      String aclWrite,
+      Boolean publicRead,
+      Boolean publicWrite,
+      List<Action> actions,
+      List<EntityAction> entityActions,
+      String blobName,
+      InputStream blobStream,
+      EntityMetadata metadata)
+      throws Exception;
 
-    boolean afterSave(Application application, String namespace, Map<String, Comparable> entity,
-                      String appId, String entityType);
-    void validateSchema(String appId, String namespace, String entityType, Map<String,Comparable> comparableMap)
-            throws IllegalArgumentException;
+  boolean beforeSave(
+      Application application,
+      String namespace,
+      Map<String, Comparable> entity,
+      String appId,
+      String entityType);
+
+  boolean afterSave(
+      Application application,
+      String namespace,
+      Map<String, Comparable> entity,
+      String appId,
+      String entityType);
+
+  void validateSchema(
+      String appId, String namespace, String entityType, Map<String, Comparable> comparableMap)
+      throws IllegalArgumentException;
 }

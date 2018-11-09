@@ -29,10 +29,11 @@ import com.divroll.functions.CustomCodeException;
  * @since 0-SNAPSHOT
  */
 public class EntryPointClassNotFound extends CustomCodeException {
-	public EntryPointClassNotFound(){
-		super();
-	}
-	public EntryPointClassNotFound(String mainClass){
-		super("Entry point class '" + mainClass + "' not found" );
-	}	
+  public EntryPointClassNotFound() {
+    super();
+  }
+
+  public EntryPointClassNotFound(String mainClass) {
+    super("Entry point class '" + mainClass + "' not found");
+  }
 }

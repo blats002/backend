@@ -37,19 +37,21 @@ import org.restlet.resource.Post;
  */
 @Api(value = "Roles", description = "Roles resource")
 public interface RolesResource {
-    @ApiOperation(value = "", tags = "role")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "role created"),
-            @ApiResponse(code = 400, message = "bad request"),
-            @ApiResponse(code = 401, message = "unauthorized access")})
-    @Post
-    Role createRole(Role entity);
+  @ApiOperation(value = "", tags = "role")
+  @ApiResponses({
+    @ApiResponse(code = 201, message = "role created"),
+    @ApiResponse(code = 400, message = "bad request"),
+    @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @Post
+  Role createRole(Role entity);
 
-    @ApiOperation(value = "", tags = "role")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "success"),
-            @ApiResponse(code = 400, message = "bad request"),
-            @ApiResponse(code = 401, message = "unauthorized access")})
-    @Get
-    Roles getRoles();
+  @ApiOperation(value = "", tags = "role")
+  @ApiResponses({
+    @ApiResponse(code = 200, message = "success"),
+    @ApiResponse(code = 400, message = "bad request"),
+    @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @Get
+  Roles getRoles();
 }

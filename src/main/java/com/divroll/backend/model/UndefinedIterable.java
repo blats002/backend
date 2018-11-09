@@ -36,35 +36,35 @@ import java.io.Serializable;
 @Deprecated
 public class UndefinedIterable implements Serializable, ByteIterable {
 
-    private byte[] bytes;
+  private byte[] bytes;
 
-    public UndefinedIterable() {
-        bytes = "null".getBytes();
-    }
+  public UndefinedIterable() {
+    bytes = "null".getBytes();
+  }
 
-    @Override
-    public ByteIterator iterator() {
-        return new ArrayByteIterable(bytes).iterator();
-    }
+  @Override
+  public ByteIterator iterator() {
+    return new ArrayByteIterable(bytes).iterator();
+  }
 
-    @Override
-    public byte[] getBytesUnsafe() {
-        return bytes;
-    }
+  @Override
+  public byte[] getBytesUnsafe() {
+    return bytes;
+  }
 
-    @Override
-    public int getLength() {
-        return bytes.length;
-    }
+  @Override
+  public int getLength() {
+    return bytes.length;
+  }
 
-    @NotNull
-    @Override
-    public ByteIterable subIterable(int offset, int length) {
-        return null;
-    }
+  @NotNull
+  @Override
+  public ByteIterable subIterable(int offset, int length) {
+    return null;
+  }
 
-    @Override
-    public int compareTo(@NotNull ByteIterable o) {
-        return 0;
-    }
+  @Override
+  public int compareTo(@NotNull ByteIterable o) {
+    return 0;
+  }
 }

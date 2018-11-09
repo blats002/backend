@@ -33,37 +33,38 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @XStreamAlias("user")
 @ApiModel
 public class PasswordResetDTO {
-    @ApiModelProperty(required = true, value = "Username")
-    private String username;
-    @ApiModelProperty(required = true, value = "Password")
-    private String password;
-    @ApiModelProperty(required = true, value = "New Password")
-    private String newPassword;
+  @ApiModelProperty(required = true, value = "Username")
+  private String username;
 
-    public PasswordResetDTO() {
-    }
+  @ApiModelProperty(required = true, value = "Password")
+  private String password;
 
-    public String getUsername() {
-        return username;
-    }
+  @ApiModelProperty(required = true, value = "New Password")
+  private String newPassword;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public PasswordResetDTO() {}
 
-    public String getNewPassword() {
-        return newPassword;
-    }
+  public String getUsername() {
+    return username;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public void setUsername(String username) {
+    this.username = username;
+  }
 
-    public void setNewPassword(String newPassword) {
-        this.newPassword = newPassword;
-    }
+  public String getNewPassword() {
+    return newPassword;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public void setNewPassword(String newPassword) {
+    this.newPassword = newPassword;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
 }

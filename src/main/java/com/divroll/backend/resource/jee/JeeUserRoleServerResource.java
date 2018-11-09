@@ -42,125 +42,135 @@ import org.restlet.representation.Representation;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeUserRoleServerResource extends BaseServerResource implements
-        UserRoleResource {
+public class JeeUserRoleServerResource extends BaseServerResource implements UserRoleResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeUserRoleServerResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JeeUserRoleServerResource.class);
 
+  @Inject
+  @Named("defaultUserStore")
+  String defaultUserStore;
 
-    @Inject
-    @Named("defaultUserStore")
-    String defaultUserStore;
+  @Inject UserRepository userRepository;
 
-    @Inject
-    UserRepository userRepository;
+  @Inject RoleRepository roleRepository;
 
-    @Inject
-    RoleRepository roleRepository;
+  @Inject WebTokenService webTokenService;
 
-    @Inject
-    WebTokenService webTokenService;
+  @Inject PubSubService pubSubService;
 
-    @Inject
-    PubSubService pubSubService;
-
-    @Override
-    public void createUserRoleLink(Representation entity) {
-        try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
-            if (entity == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return;
-            }
-
-            Application app = applicationService.read(appId);
-            if (app != null) {
-                String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                Role role = roleRepository.getRole(appId,  namespace, defaultUserStore, roleId);
-                User user = userRepository.getUser(appId,  namespace, defaultUserStore, userId);
-                User authUser = userRepository.getUser(appId,  namespace, defaultUserStore, authUserId);
-                if (authUser == null || user == null || role == null) {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    return;
-                }
-                if (isUserAuthForRole(user, role)) {
-                    boolean success = roleRepository.linkRole(appId, namespace, defaultUserStore, role.getEntityId(), user.getEntityId());
-                    if (success) {
-                        pubSubService.linked(appId, namespace, defaultUserStore, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
-                        setStatus(Status.SUCCESS_CREATED);
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    }
-                } else {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                }
-            } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_APPLICATION_NOT_FOUND);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+  @Override
+  public void createUserRoleLink(Representation entity) {
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return;
-    }
-
-    @Override
-    public void deleteUserRoleLink(Representation entity) {
-        try {
-            if (!isAuthorized()) {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                return;
-            }
-            if (entity == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return;
-            }
-
-            Application app = applicationService.read(appId);
-            if (app != null) {
-                String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
-                Role role = roleRepository.getRole(appId, namespace, defaultUserStore, roleId);
-                User user = userRepository.getUser(appId, namespace, defaultUserStore, userId);
-                User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId);
-                if (authUser == null || user == null || role == null) {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    return;
-                }
-                if (isUserAuthForRole(user, role)) {
-                    boolean success = roleRepository.unlinkRole(appId,  namespace, defaultUserStore, role.getEntityId(), user.getEntityId());
-                    if (success) {
-                        pubSubService.unlinked(appId,  namespace, defaultUserStore, Constants.ROLE_NAME, role.getEntityId(), user.getEntityId());
-                        setStatus(Status.SUCCESS_CREATED);
-                    } else {
-                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                    }
-                } else {
-                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                }
-            } else {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_APPLICATION_NOT_FOUND);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            setStatus(Status.SERVER_ERROR_INTERNAL);
-        }
+      }
+      if (entity == null) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return;
-    }
+      }
 
-    private boolean isUserAuthForRole(User user, Role role) {
-        try {
-            boolean isLinked = roleRepository.isLinked(appId,  namespace, defaultUserStore, role.getEntityId(), user.getEntityId());
-            return isLinked;
-        } catch (Exception e) {
-
+      Application app = applicationService.read(appId);
+      if (app != null) {
+        String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+        Role role = roleRepository.getRole(appId, namespace, defaultUserStore, roleId);
+        User user = userRepository.getUser(appId, namespace, defaultUserStore, userId);
+        User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId);
+        if (authUser == null || user == null || role == null) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return;
         }
-        return false;
-    }
+        if (isUserAuthForRole(user, role)) {
+          boolean success =
+              roleRepository.linkRole(
+                  appId, namespace, defaultUserStore, role.getEntityId(), user.getEntityId());
+          if (success) {
+            pubSubService.linked(
+                appId,
+                namespace,
+                defaultUserStore,
+                Constants.ROLE_NAME,
+                role.getEntityId(),
+                user.getEntityId());
+            setStatus(Status.SUCCESS_CREATED);
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          }
+        } else {
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        }
+      } else {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_APPLICATION_NOT_FOUND);
+      }
 
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+    return;
+  }
+
+  @Override
+  public void deleteUserRoleLink(Representation entity) {
+    try {
+      if (!isAuthorized()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return;
+      }
+      if (entity == null) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return;
+      }
+
+      Application app = applicationService.read(appId);
+      if (app != null) {
+        String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+        Role role = roleRepository.getRole(appId, namespace, defaultUserStore, roleId);
+        User user = userRepository.getUser(appId, namespace, defaultUserStore, userId);
+        User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId);
+        if (authUser == null || user == null || role == null) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return;
+        }
+        if (isUserAuthForRole(user, role)) {
+          boolean success =
+              roleRepository.unlinkRole(
+                  appId, namespace, defaultUserStore, role.getEntityId(), user.getEntityId());
+          if (success) {
+            pubSubService.unlinked(
+                appId,
+                namespace,
+                defaultUserStore,
+                Constants.ROLE_NAME,
+                role.getEntityId(),
+                user.getEntityId());
+            setStatus(Status.SUCCESS_CREATED);
+          } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          }
+        } else {
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        }
+      } else {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST, Constants.ERROR_APPLICATION_NOT_FOUND);
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      setStatus(Status.SERVER_ERROR_INTERNAL);
+    }
+    return;
+  }
+
+  private boolean isUserAuthForRole(User user, Role role) {
+    try {
+      boolean isLinked =
+          roleRepository.isLinked(
+              appId, namespace, defaultUserStore, role.getEntityId(), user.getEntityId());
+      return isLinked;
+    } catch (Exception e) {
+
+    }
+    return false;
+  }
 }

@@ -37,90 +37,93 @@ import java.util.List;
 @ApiModel
 public class Role {
 
-    private String entityId;
-    private String name;
-    @XStreamImplicit(itemFieldName = "aclRead")
-    @ApiModelProperty(required = false, value = "")
-    private List<EntityStub> aclRead;
-    @XStreamImplicit(itemFieldName = "aclWrite")
-    @ApiModelProperty(required = false, value = "")
-    private List<EntityStub> aclWrite;
-    @ApiModelProperty(required = false, value = "")
-    private Boolean publicRead;
-    @ApiModelProperty(required = false, value = "")
-    private Boolean publicWrite;
+  private String entityId;
+  private String name;
 
-    private String dateCreated;
-    private String dateUpdated;
+  @XStreamImplicit(itemFieldName = "aclRead")
+  @ApiModelProperty(required = false, value = "")
+  private List<EntityStub> aclRead;
 
-    public Role() {
-    }
+  @XStreamImplicit(itemFieldName = "aclWrite")
+  @ApiModelProperty(required = false, value = "")
+  private List<EntityStub> aclWrite;
 
-    public Role(String entityId) {
-        setEntityId(entityId);
-    }
+  @ApiModelProperty(required = false, value = "")
+  private Boolean publicRead;
 
-    public String getEntityId() {
-        return entityId;
-    }
+  @ApiModelProperty(required = false, value = "")
+  private Boolean publicWrite;
 
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
+  private String dateCreated;
+  private String dateUpdated;
 
-    public String getName() {
-        return name;
-    }
+  public Role() {}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public Role(String entityId) {
+    setEntityId(entityId);
+  }
 
-    public List<EntityStub> getAclRead() {
-        return aclRead;
-    }
+  public String getEntityId() {
+    return entityId;
+  }
 
-    public void setAclRead(List<EntityStub> aclRead) {
-        this.aclRead = aclRead;
-    }
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
 
-    public List<EntityStub> getAclWrite() {
-        return aclWrite;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setAclWrite(List<EntityStub> aclWrite) {
-        this.aclWrite = aclWrite;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public Boolean getPublicRead() {
-        return publicRead;
-    }
+  public List<EntityStub> getAclRead() {
+    return aclRead;
+  }
 
-    public void setPublicRead(Boolean publicRead) {
-        this.publicRead = publicRead;
-    }
+  public void setAclRead(List<EntityStub> aclRead) {
+    this.aclRead = aclRead;
+  }
 
-    public Boolean getPublicWrite() {
-        return publicWrite;
-    }
+  public List<EntityStub> getAclWrite() {
+    return aclWrite;
+  }
 
-    public void setPublicWrite(Boolean publicWrite) {
-        this.publicWrite = publicWrite;
-    }
+  public void setAclWrite(List<EntityStub> aclWrite) {
+    this.aclWrite = aclWrite;
+  }
 
-    public String getDateCreated() {
-        return dateCreated;
-    }
+  public Boolean getPublicRead() {
+    return publicRead;
+  }
 
-    public void setDateCreated(String dateCreated) {
-        this.dateCreated = dateCreated;
-    }
+  public void setPublicRead(Boolean publicRead) {
+    this.publicRead = publicRead;
+  }
 
-    public String getDateUpdated() {
-        return dateUpdated;
-    }
+  public Boolean getPublicWrite() {
+    return publicWrite;
+  }
 
-    public void setDateUpdated(String dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
+  public void setPublicWrite(Boolean publicWrite) {
+    this.publicWrite = publicWrite;
+  }
+
+  public String getDateCreated() {
+    return dateCreated;
+  }
+
+  public void setDateCreated(String dateCreated) {
+    this.dateCreated = dateCreated;
+  }
+
+  public String getDateUpdated() {
+    return dateUpdated;
+  }
+
+  public void setDateUpdated(String dateUpdated) {
+    this.dateUpdated = dateUpdated;
+  }
 }

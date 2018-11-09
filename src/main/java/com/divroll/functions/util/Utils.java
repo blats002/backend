@@ -30,37 +30,37 @@ import java.util.logging.Logger;
  * @since 0-SNAPSHOT
  */
 public class Utils {
-	private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
-	/**
-	 * Create a temporary file for the jar bytes
-	 * 
-	 * @param bytes
-	 * @return
-	 */
-	public static File createFileFromBytes(byte[] bytes) {
-		String tempFileName = "myjar.jar"; // FIXME make file name generated as GUID
-        try {
-		    FileOutputStream fileOuputStream = new FileOutputStream(tempFileName); 
-		    fileOuputStream.write(bytes);
-		    fileOuputStream.flush();
-		    fileOuputStream.close();
-        }catch(Exception e){
-            LOGGER.info(e.getMessage());
-        }
-        return new File(tempFileName);
-	}
-    public static byte[] fileToBytes(File file){
-    	byte[] b = new byte[(int) file.length()];
-    	try {
-    		FileInputStream fileInputStream = new FileInputStream(file);
-    		fileInputStream.read(b);
-    	} catch (FileNotFoundException e) {
-    		LOGGER.info(e.getMessage());
-    	}
-    	catch (IOException e1)
-    	{
-    		LOGGER.info("Error reading the file.");
-    	}
-    	return b;
-    }	
+  private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
+
+  /**
+   * Create a temporary file for the jar bytes
+   *
+   * @param bytes
+   * @return
+   */
+  public static File createFileFromBytes(byte[] bytes) {
+    String tempFileName = "myjar.jar"; // FIXME make file name generated as GUID
+    try {
+      FileOutputStream fileOuputStream = new FileOutputStream(tempFileName);
+      fileOuputStream.write(bytes);
+      fileOuputStream.flush();
+      fileOuputStream.close();
+    } catch (Exception e) {
+      LOGGER.info(e.getMessage());
+    }
+    return new File(tempFileName);
+  }
+
+  public static byte[] fileToBytes(File file) {
+    byte[] b = new byte[(int) file.length()];
+    try {
+      FileInputStream fileInputStream = new FileInputStream(file);
+      fileInputStream.read(b);
+    } catch (FileNotFoundException e) {
+      LOGGER.info(e.getMessage());
+    } catch (IOException e1) {
+      LOGGER.info("Error reading the file.");
+    }
+    return b;
+  }
 }

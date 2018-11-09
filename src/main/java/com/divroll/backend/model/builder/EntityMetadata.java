@@ -8,5 +8,6 @@ import java.util.List;
 @Value.Immutable
 @Value.Style(visibility = Value.Style.ImplementationVisibility.PRIVATE)
 public interface EntityMetadata {
-    @Nullable List<String> uniqueProperties();
+  @Nullable
+  List<String> uniqueProperties();
 }

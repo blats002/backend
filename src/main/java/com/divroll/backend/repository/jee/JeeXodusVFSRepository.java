@@ -46,156 +46,166 @@ import java.util.UUID;
  */
 public class JeeXodusVFSRepository implements FileStore {
 
-    @Inject
-    @Named("fileStore")
-    String fileStore;
+  @Inject
+  @Named("fileStore")
+  String fileStore;
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Inject
-    XodusManager manager;
+  @Inject XodusManager manager;
 
-    @Override
-    public com.divroll.backend.model.File put(String appId, String namespace, String name, byte[] array) {
-        final com.divroll.backend.model.File[] createdFile = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, appId);
-        final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
-        env.executeInTransaction(new TransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final Transaction txn) {
-                String filePrefix = UUID.randomUUID().toString().replace("-", "");
-                String fileName = filePrefix + "-" + name;
-                final File file = vfs.createFile(txn, fileName);
-                try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
-                    output.write(array);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    createdFile[0] = new com.divroll.backend.model.File();
-                    createdFile[0].setName(fileName);
-                }
+  @Override
+  public com.divroll.backend.model.File put(
+      String appId, String namespace, String name, byte[] array) {
+    final com.divroll.backend.model.File[] createdFile = {null};
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+        new TransactionalExecutable() {
+          @Override
+          public void execute(@NotNull final Transaction txn) {
+            String filePrefix = UUID.randomUUID().toString().replace("-", "");
+            String fileName = filePrefix + "-" + name;
+            final File file = vfs.createFile(txn, fileName);
+            try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
+              output.write(array);
+            } catch (IOException e) {
+              e.printStackTrace();
+            } finally {
+              createdFile[0] = new com.divroll.backend.model.File();
+              createdFile[0].setName(fileName);
             }
+          }
         });
-        //vfs.shutdown();
-        //env.close();
-        return createdFile[0];
-    }
+    // vfs.shutdown();
+    // env.close();
+    return createdFile[0];
+  }
 
-    @Override
-    public com.divroll.backend.model.File put(String appId, String namespace, String name, InputStream is) {
-        final com.divroll.backend.model.File[] createdFile = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, appId);
-        final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
-        env.executeInTransaction(new TransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final Transaction txn) {
-                String filePrefix = UUID.randomUUID().toString().replace("-", "");
-                String fileName = filePrefix + "-" + name;
-                final File file = vfs.createFile(txn, fileName);
-                try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
-                    output.write(ByteStreams.toByteArray(is));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    createdFile[0] = new com.divroll.backend.model.File();
-                    createdFile[0].setName(fileName);
-                }
+  @Override
+  public com.divroll.backend.model.File put(
+      String appId, String namespace, String name, InputStream is) {
+    final com.divroll.backend.model.File[] createdFile = {null};
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+        new TransactionalExecutable() {
+          @Override
+          public void execute(@NotNull final Transaction txn) {
+            String filePrefix = UUID.randomUUID().toString().replace("-", "");
+            String fileName = filePrefix + "-" + name;
+            final File file = vfs.createFile(txn, fileName);
+            try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
+              output.write(ByteStreams.toByteArray(is));
+            } catch (IOException e) {
+              e.printStackTrace();
+            } finally {
+              createdFile[0] = new com.divroll.backend.model.File();
+              createdFile[0].setName(fileName);
             }
+          }
         });
-        //vfs.shutdown();
-        //env.close();
-        return createdFile[0];    }
+    // vfs.shutdown();
+    // env.close();
+    return createdFile[0];
+  }
 
-    @Override
-    public com.divroll.backend.model.File unmodifiedPut(String appId, String namespace, String name, InputStream is) {
-        throw new IllegalArgumentException("Not yet implemented");
-    }
+  @Override
+  public com.divroll.backend.model.File unmodifiedPut(
+      String appId, String namespace, String name, InputStream is) {
+    throw new IllegalArgumentException("Not yet implemented");
+  }
 
-    @Override
-    public com.divroll.backend.model.File unmodifiedPut(String appId, String namespace, String name, byte[] array) {
-        throw new IllegalArgumentException("Not yet implemented");
-    }
+  @Override
+  public com.divroll.backend.model.File unmodifiedPut(
+      String appId, String namespace, String name, byte[] array) {
+    throw new IllegalArgumentException("Not yet implemented");
+  }
 
-    @Override
-    public void get(String appId, String namespace, String name, OutputStream os) {
-        final Environment env = manager.getEnvironment(xodusRoot, appId);
-        final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
-        env.executeInTransaction(new TransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final Transaction txn) {
-                File file = vfs.createFile(txn, name);
-                InputStream input = vfs.readFile(txn, file);
-                try {
-                    ByteStreams.copy(input, os);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+  @Override
+  public void get(String appId, String namespace, String name, OutputStream os) {
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+        new TransactionalExecutable() {
+          @Override
+          public void execute(@NotNull final Transaction txn) {
+            File file = vfs.createFile(txn, name);
+            InputStream input = vfs.readFile(txn, file);
+            try {
+              ByteStreams.copy(input, os);
+            } catch (IOException e) {
+              e.printStackTrace();
             }
+          }
         });
-        //vfs.shutdown();
-        //env.close();
-    }
+    // vfs.shutdown();
+    // env.close();
+  }
 
-    @Override
-    public InputStream getStream(String appId, String namespace, String name) {
-        final InputStream[] input = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, appId);
-        final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
-        env.executeInTransaction(new TransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final Transaction txn) {
-                File file = vfs.openFile(txn, name, false);
-                input[0] = vfs.readFile(txn, file);
+  @Override
+  public InputStream getStream(String appId, String namespace, String name) {
+    final InputStream[] input = {null};
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+        new TransactionalExecutable() {
+          @Override
+          public void execute(@NotNull final Transaction txn) {
+            File file = vfs.openFile(txn, name, false);
+            input[0] = vfs.readFile(txn, file);
+          }
+        });
+    vfs.shutdown();
+    // env.close();
+    return input[0];
+  }
+
+  @Override
+  public byte[] get(String appId, String namespace, String name) {
+    final byte[][] targetArray = {null};
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+        new TransactionalExecutable() {
+          @Override
+          public void execute(@NotNull final Transaction txn) {
+            File file = vfs.openFile(txn, name, false);
+            InputStream input = vfs.readFile(txn, file);
+            try {
+              targetArray[0] = ByteStreams.toByteArray(input);
+            } catch (IOException e) {
+              e.printStackTrace();
             }
+          }
         });
-        vfs.shutdown();
-        //env.close();
-        return input[0];
-    }
+    // vfs.shutdown();
+    // env.close();
+    return targetArray[0];
+  }
 
-    @Override
-    public byte[] get(String appId, String namespace, String name) {
-        final byte[][] targetArray = {null};
-        final Environment env = manager.getEnvironment(xodusRoot, appId);
-        final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
-        env.executeInTransaction(new TransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final Transaction txn) {
-                File file = vfs.openFile(txn, name, false);
-                InputStream input = vfs.readFile(txn, file);
-                try {
-                    targetArray[0] = ByteStreams.toByteArray(input);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+  @Override
+  public boolean delete(String appId, String namespace, String name) {
+    final boolean[] success = new boolean[1];
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+        new TransactionalExecutable() {
+          @Override
+          public void execute(@NotNull final Transaction txn) {
+            vfs.deleteFile(txn, name);
+            success[0] = true;
+          }
         });
-        //vfs.shutdown();
-        //env.close();
-        return targetArray[0];
-    }
+    // vfs.shutdown();
+    // env.close();
+    return success[0];
+  }
 
-    @Override
-    public boolean delete(String appId, String namespace, String name) {
-        final boolean[] success = new boolean[1];
-        final Environment env = manager.getEnvironment(xodusRoot, appId);
-        final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
-        env.executeInTransaction(new TransactionalExecutable() {
-            @Override
-            public void execute(@NotNull final Transaction txn) {
-                vfs.deleteFile(txn, name);
-                success[0] = true;
-            }
-        });
-        //vfs.shutdown();
-        //env.close();
-        return success[0];
-    }
-
-    @Override
-    public boolean isExist(String appId, String namespace, String name) {
-        throw new IllegalArgumentException("Not yet implemented");
-    }
+  @Override
+  public boolean isExist(String appId, String namespace, String name) {
+    throw new IllegalArgumentException("Not yet implemented");
+  }
 }

@@ -39,54 +39,50 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public class JSON {
-    private JSON() {
-    }
-    public static Map<String, Comparable> jsonToMap(JSONObject json) throws JSONException {
-        Map<String, Comparable> retMap = new ComparableHashMap<String, Comparable>();
-        if(json != JSONObject.NULL) {
-            retMap = toMap(json);
-        }
-        return retMap;
-    }
+  private JSON() {}
 
-    public static Map<String, Comparable> toMap(JSONObject object) throws JSONException {
-        Map<String, Comparable> map = new ComparableHashMap<String, Comparable>();
-        Iterator<String> keysItr = object.keys();
-        while(keysItr.hasNext()) {
-            String key = keysItr.next();
-            Object value = object.get(key);
-            if(value instanceof JSONArray) {
-                List<Comparable> valueList = toList((JSONArray) value);
-                EmbeddedArrayIterable iterable = new EmbeddedArrayIterable(valueList);
-                map.put(key, iterable);
-            }
-            else if(value instanceof JSONObject) {
-                Map<String, Comparable> valueMap = toMap((JSONObject) value);
-                EmbeddedEntityIterable iterable = new EmbeddedEntityIterable(Comparables.cast(valueMap));
-                map.put(key, iterable);
-            }
-            else if(value != JSONObject.NULL) {
-                map.put(key, (Comparable) value);
-            }
-        }
-        return map;
+  public static Map<String, Comparable> jsonToMap(JSONObject json) throws JSONException {
+    Map<String, Comparable> retMap = new ComparableHashMap<String, Comparable>();
+    if (json != JSONObject.NULL) {
+      retMap = toMap(json);
     }
+    return retMap;
+  }
 
-    public static List<Comparable> toList(JSONArray array) throws JSONException {
-        List<Comparable> list = new ComparableLinkedList<>();
-        for(int i = 0; i < array.length(); i++) {
-            Object value = array.get(i);
-            if(value instanceof JSONArray) {
-                List<Comparable> valueList = toList((JSONArray) value);
-                value = new EmbeddedArrayIterable(valueList);
-            }
-            else if(value instanceof JSONObject) {
-                Map<String, Comparable> valueMap = toMap((JSONObject) value);
-                value = new EmbeddedEntityIterable(Comparables.cast(valueMap));
-            }
-            list.add((Comparable) value);
-        }
-        return list;
+  public static Map<String, Comparable> toMap(JSONObject object) throws JSONException {
+    Map<String, Comparable> map = new ComparableHashMap<String, Comparable>();
+    Iterator<String> keysItr = object.keys();
+    while (keysItr.hasNext()) {
+      String key = keysItr.next();
+      Object value = object.get(key);
+      if (value instanceof JSONArray) {
+        List<Comparable> valueList = toList((JSONArray) value);
+        EmbeddedArrayIterable iterable = new EmbeddedArrayIterable(valueList);
+        map.put(key, iterable);
+      } else if (value instanceof JSONObject) {
+        Map<String, Comparable> valueMap = toMap((JSONObject) value);
+        EmbeddedEntityIterable iterable = new EmbeddedEntityIterable(Comparables.cast(valueMap));
+        map.put(key, iterable);
+      } else if (value != JSONObject.NULL) {
+        map.put(key, (Comparable) value);
+      }
     }
+    return map;
+  }
 
+  public static List<Comparable> toList(JSONArray array) throws JSONException {
+    List<Comparable> list = new ComparableLinkedList<>();
+    for (int i = 0; i < array.length(); i++) {
+      Object value = array.get(i);
+      if (value instanceof JSONArray) {
+        List<Comparable> valueList = toList((JSONArray) value);
+        value = new EmbeddedArrayIterable(valueList);
+      } else if (value instanceof JSONObject) {
+        Map<String, Comparable> valueMap = toMap((JSONObject) value);
+        value = new EmbeddedEntityIterable(Comparables.cast(valueMap));
+      }
+      list.add((Comparable) value);
+    }
+    return list;
+  }
 }

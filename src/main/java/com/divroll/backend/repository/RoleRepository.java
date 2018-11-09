@@ -34,29 +34,62 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface RoleRepository {
-    String createRole(String instance, String namespace, String entityType, String roleName, String[] read, String[] write,
-                      final Boolean publicRead, final Boolean publicWrite, List<Action> actions);
+  String createRole(
+      String instance,
+      String namespace,
+      String entityType,
+      String roleName,
+      String[] read,
+      String[] write,
+      final Boolean publicRead,
+      final Boolean publicWrite,
+      List<Action> actions);
 
-    boolean updateRole(String instance, String namespace, String entityType, String entityId, String newRoleName,
-                       final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+  boolean updateRole(
+      String instance,
+      String namespace,
+      String entityType,
+      String entityId,
+      String newRoleName,
+      final String[] read,
+      final String[] write,
+      final Boolean publicRead,
+      final Boolean publicWrite);
 
-    boolean updateRole(String instance, String namespace, String entityType, String entityId, Map<String, Comparable> comparableMap,
-                         final String[] read, final String[] write, final Boolean publicRead, final Boolean publicWrite);
+  boolean updateRole(
+      String instance,
+      String namespace,
+      String entityType,
+      String entityId,
+      Map<String, Comparable> comparableMap,
+      final String[] read,
+      final String[] write,
+      final Boolean publicRead,
+      final Boolean publicWrite);
 
+  Role getRole(String instance, String namespace, String entityType, String entityId);
 
-    Role getRole(String instance, String namespace, String entityType, String entityId);
+  boolean deleteRole(String instance, String namespace, String entityType, String roleID);
 
-    boolean deleteRole(String instance, String namespace, String entityType, String roleID);
+  boolean linkRole(
+      String instance, String namespace, String entityType, String roleID, String userID);
 
-    boolean linkRole(String instance, String namespace, String entityType, String roleID, String userID);
+  boolean unlinkRole(
+      String instance, String namespace, String entityType, String roleID, String userID);
 
-    boolean unlinkRole(String instance, String namespace, String entityType, String roleID, String userID);
+  boolean isLinked(
+      String instance, String namespace, String entityType, String roleID, String userID);
 
-    boolean isLinked(String instance, String namespace, String entityType, String roleID, String userID);
+  List<Role> listRoles(
+      String instance,
+      String namespace,
+      String entityType,
+      String userIdRoleId,
+      int skip,
+      int limit,
+      String sort,
+      boolean isMasterKey,
+      List<TransactionFilter> filters);
 
-    List<Role> listRoles(String instance, String namespace, String entityType, String userIdRoleId,
-                         int skip, int limit, String sort, boolean isMasterKey, List<TransactionFilter> filters);
-
-    List<Role> getRolesOfEntity(String instance, String namespace, String entityId);
-
+  List<Role> getRolesOfEntity(String instance, String namespace, String entityId);
 }

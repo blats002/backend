@@ -43,59 +43,73 @@ import java.util.Map;
  */
 public class JeeFunctionRepository implements FunctionRepository {
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Inject
-    @Named("masterStore")
-    String masterStore;
+  @Inject
+  @Named("masterStore")
+  String masterStore;
 
-    @Inject
-    XodusStore store;
+  @Inject XodusStore store;
 
-    @Inject
-    EntityRepository entityRepository;
+  @Inject EntityRepository entityRepository;
 
-    @Override
-    public String createFunction(String appId, String namespace, String functionName, String jar) {
-        Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-        comparableMap.put("appId", appId);
-        comparableMap.put("functionName", functionName);
-        comparableMap.put("jar", jar);
-        EntityId entityId = store.putIfNotExists(masterStore,  namespace, Constants.ENTITYSTORE_FUNCTION, comparableMap, "functionName");
-        return entityId.toString();
+  @Override
+  public String createFunction(String appId, String namespace, String functionName, String jar) {
+    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+    comparableMap.put("appId", appId);
+    comparableMap.put("functionName", functionName);
+    comparableMap.put("jar", jar);
+    EntityId entityId =
+        store.putIfNotExists(
+            masterStore, namespace, Constants.ENTITYSTORE_FUNCTION, comparableMap, "functionName");
+    return entityId.toString();
+  }
+
+  @Override
+  public boolean deleteFunction(String appId, String namespace, String functionName) {
+    try {
+      store.delete(masterStore, Constants.ENTITYSTORE_FUNCTION, "functionName", functionName);
+      return true;
+    } catch (Exception e) {
+      return false;
     }
+  }
 
-    @Override
-    public boolean deleteFunction(String appId, String namespace, String functionName) {
-        try {
-            store.delete(masterStore, Constants.ENTITYSTORE_FUNCTION, "functionName", functionName);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+  @Override
+  public byte[] retrieveFunction(String appId, String namespace, String functionName) {
+    EntityId entityId =
+        store.getFirstEntityId(
+            masterStore,
+            namespace,
+            Constants.ENTITYSTORE_FUNCTION,
+            "functionName",
+            functionName,
+            String.class);
+    Map<String, Comparable> comparableMap = store.get(masterStore, namespace, entityId);
+    String jar = (String) comparableMap.get("jar");
+    return Base64.base64ToByteArray(jar);
+  }
 
-    @Override
-    public byte[] retrieveFunction(String appId, String namespace, String functionName) {
-        EntityId entityId = store.getFirstEntityId(masterStore,  namespace, Constants.ENTITYSTORE_FUNCTION, "functionName", functionName, String.class);
-        Map<String, Comparable> comparableMap = store.get(masterStore,  namespace, entityId);
-        String jar = (String) comparableMap.get("jar");
-        return Base64.base64ToByteArray(jar);
+  @Override
+  public byte[] retrieveFunctionEntity(String appId, String namespace, String functionName) {
+    byte[] jarBytes = null;
+    System.out.println("appId = " + appId);
+    InputStream is =
+        entityRepository.getFirstEntityBlob(
+            appId,
+            namespace,
+            Constants.ENTITYSTORE_FUNCTION,
+            "functionName",
+            functionName,
+            String.class,
+            "jar");
+    try {
+      jarBytes = ByteStreams.toByteArray(is);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
-    @Override
-    public byte[] retrieveFunctionEntity(String appId, String namespace, String functionName) {
-        byte[] jarBytes = null;
-        System.out.println("appId = " + appId);
-        InputStream is = entityRepository.getFirstEntityBlob(appId, namespace, Constants.ENTITYSTORE_FUNCTION,
-                "functionName", functionName, String.class, "jar");
-        try {
-            jarBytes = ByteStreams.toByteArray(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return jarBytes;
-    }
+    return jarBytes;
+  }
 }

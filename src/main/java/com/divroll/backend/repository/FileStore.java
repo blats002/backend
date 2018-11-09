@@ -32,13 +32,21 @@ import java.io.OutputStream;
  * @since 1.0
  */
 public interface FileStore {
-    File put(String appId, String namespace, String name, byte[] array);
-    File put(String appId, String namespace, String name, InputStream is);
-    File unmodifiedPut(String appId, String namespace, String name, InputStream is);
-    File unmodifiedPut(String appId, String namespace, String name, byte[] array);
-    void get(String appId, String namespace, String name, OutputStream os);
-    InputStream getStream(String appId, String namespace, String name);
-    byte[] get(String appId, String namespace, String name);
-    boolean delete(String appId, String namespace, String name);
-    boolean isExist(String appId, String namespace, String name);
+  File put(String appId, String namespace, String name, byte[] array);
+
+  File put(String appId, String namespace, String name, InputStream is);
+
+  File unmodifiedPut(String appId, String namespace, String name, InputStream is);
+
+  File unmodifiedPut(String appId, String namespace, String name, byte[] array);
+
+  void get(String appId, String namespace, String name, OutputStream os);
+
+  InputStream getStream(String appId, String namespace, String name);
+
+  byte[] get(String appId, String namespace, String name);
+
+  boolean delete(String appId, String namespace, String name);
+
+  boolean isExist(String appId, String namespace, String name);
 }

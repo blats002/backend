@@ -46,87 +46,85 @@ import java.io.File;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeBackupServerResource extends BaseServerResource
-        implements BackupResource {
+public class JeeBackupServerResource extends BaseServerResource implements BackupResource {
 
-    private static final Logger LOG
-            = LoggerFactory.getLogger(JeeBackupServerResource.class);
-    private static final String FILE_TO_UPLOAD = "file";
+  private static final Logger LOG = LoggerFactory.getLogger(JeeBackupServerResource.class);
+  private static final String FILE_TO_UPLOAD = "file";
 
-    @Inject
-    @Named("xodusRoot")
-    String xodusRoot;
+  @Inject
+  @Named("xodusRoot")
+  String xodusRoot;
 
-    @Override
-    public void restore(Representation entity) {
-//        if (!isAuthorized()) {
-//            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-//            return;
-//        }
-        if (isMaster()) {
-            if (entity == null) {
-                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                return;
-            }
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return;
-            }
-            if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-                try {
-                    DiskFileItemFactory factory = new DiskFileItemFactory();
-                    factory.setSizeThreshold(1000240);
-                    RestletFileUpload upload = new RestletFileUpload(factory);
-                    FileItemIterator fileIterator = upload.getItemIterator(entity);
-                    while (fileIterator.hasNext()) {
-                        FileItemStream fi = fileIterator.next();
-                        if (fi.getFieldName().equals(FILE_TO_UPLOAD)) {
-                            byte[] byteArray = ByteStreams.toByteArray(fi.openStream());
-                            // TODO unzip it to folder
-                        }
-                    }
-                } catch (Exception e) {
-                    setStatus(Status.SERVER_ERROR_INTERNAL);
-                }
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
-            }
-        } else {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-        }
+  @Override
+  public void restore(Representation entity) {
+    //        if (!isAuthorized()) {
+    //            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+    //            return;
+    //        }
+    if (isMaster()) {
+      if (entity == null) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return;
-    }
-
-    @Override
-    public Representation backup(Representation entity) {
-//        if (!isAuthorized()) {
-//            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-//            return null;
-//        }
-        if (isMaster()) {
-            Application app = applicationService.read(appId);
-            if (app == null) {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-                return null;
+      }
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return;
+      }
+      if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+        try {
+          DiskFileItemFactory factory = new DiskFileItemFactory();
+          factory.setSizeThreshold(1000240);
+          RestletFileUpload upload = new RestletFileUpload(factory);
+          FileItemIterator fileIterator = upload.getItemIterator(entity);
+          while (fileIterator.hasNext()) {
+            FileItemStream fi = fileIterator.next();
+            if (fi.getFieldName().equals(FILE_TO_UPLOAD)) {
+              byte[] byteArray = ByteStreams.toByteArray(fi.openStream());
+              // TODO unzip it to folder
             }
-            try {
-                String folderPath = xodusRoot + appId;
-                String zipPath = xodusRoot + appId + ".zip";
-                ZipUtil.pack(new File(folderPath), new File(zipPath));
-                File zipFile = new File(zipPath);
-                Representation representation = new FileRepresentation(zipFile, MediaType.APPLICATION_ZIP);
-                Disposition disposition = new Disposition(Disposition.TYPE_ATTACHMENT);
-                disposition.setFilename(appId); // TODO: Not working
-                representation.setDisposition(disposition);
-                return representation;
-            } catch (Exception e) {
-                e.printStackTrace();
-                setStatus(Status.SERVER_ERROR_INTERNAL);
-            }
-        } else {
-            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+          }
+        } catch (Exception e) {
+          setStatus(Status.SERVER_ERROR_INTERNAL);
         }
-        return null;
+      } else {
+        setStatus(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+      }
+    } else {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
     }
+    return;
+  }
+
+  @Override
+  public Representation backup(Representation entity) {
+    //        if (!isAuthorized()) {
+    //            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+    //            return null;
+    //        }
+    if (isMaster()) {
+      Application app = applicationService.read(appId);
+      if (app == null) {
+        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        return null;
+      }
+      try {
+        String folderPath = xodusRoot + appId;
+        String zipPath = xodusRoot + appId + ".zip";
+        ZipUtil.pack(new File(folderPath), new File(zipPath));
+        File zipFile = new File(zipPath);
+        Representation representation = new FileRepresentation(zipFile, MediaType.APPLICATION_ZIP);
+        Disposition disposition = new Disposition(Disposition.TYPE_ATTACHMENT);
+        disposition.setFilename(appId); // TODO: Not working
+        representation.setDisposition(disposition);
+        return representation;
+      } catch (Exception e) {
+        e.printStackTrace();
+        setStatus(Status.SERVER_ERROR_INTERNAL);
+      }
+    } else {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+    }
+    return null;
+  }
 }

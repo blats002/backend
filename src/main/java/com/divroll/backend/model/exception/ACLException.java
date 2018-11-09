@@ -26,5 +26,4 @@ package com.divroll.backend.model.exception;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class ACLException extends RuntimeException {
-}
+public class ACLException extends RuntimeException {}
