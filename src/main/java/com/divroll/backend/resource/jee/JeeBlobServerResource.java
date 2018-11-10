@@ -30,10 +30,13 @@ import com.divroll.backend.model.Role;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
+import com.divroll.backend.model.builder.CreateOption;
+import com.divroll.backend.model.builder.CreateOptionBuilder;
 import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.resource.BlobResource;
+import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;
@@ -46,6 +49,8 @@ import com.google.inject.Inject;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.Request;
 import org.restlet.data.MediaType;
@@ -165,6 +170,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
                     publicWrite,
                     new LinkedList<>(),
                     entityActions,
+                    null,
                     blobName,
                     inputStream,
                     new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
@@ -178,6 +184,13 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
             }
           } else {
             if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+
+              String writeOver = getQueryValue("writeOver");
+              CreateOption.CREATE_OPTION createOption = null;
+              if(writeOver != null) {
+                createOption = CreateOption.CREATE_OPTION.SET_BLOB_ON_PROPERTY_EQUALS;
+              }
+
               Request restletRequest = getRequest();
               HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
               ServletFileUpload upload = new ServletFileUpload();
@@ -202,6 +215,10 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
                           publicWrite,
                           new LinkedList<>(),
                           entityActions,
+                          new CreateOptionBuilder()
+                                  .createOption(createOption)
+                                  .referencePropertyName(writeOver)
+                                  .build(),
                           blobName,
                           countingInputStream,
                           new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());

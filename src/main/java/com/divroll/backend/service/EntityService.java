@@ -24,6 +24,7 @@ package com.divroll.backend.service;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
+import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityMetadata;
 import org.json.JSONObject;
 
@@ -37,6 +38,8 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface EntityService {
+
+
   JSONObject createEntity(
       Application application,
       String namespace,
@@ -48,6 +51,7 @@ public interface EntityService {
       Boolean publicWrite,
       List<Action> actions,
       List<EntityAction> entityActions,
+      CreateOption createOption,
       EntityMetadata metadata)
       throws Exception;
 
@@ -62,6 +66,7 @@ public interface EntityService {
       Boolean publicWrite,
       List<Action> actions,
       List<EntityAction> entityActions,
+      CreateOption createOption,
       String blobName,
       InputStream blobStream,
       EntityMetadata metadata)

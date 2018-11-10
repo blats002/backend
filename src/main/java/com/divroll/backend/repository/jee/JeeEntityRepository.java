@@ -30,6 +30,7 @@ import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.BacklinkAction;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.LinkAction;
+import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.model.builder.EntityMetadata;
@@ -88,6 +89,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       EntityClass entityClass,
       List<Action> actions,
       List<EntityAction> entityActions,
+      CreateOption createOption,
       final EntityMetadata metadata) {
     final String[] entityId = {null};
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -99,10 +101,33 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
               Entity first = null;
 
+              Entity entityToUpdate = null;
+
               if(namespace != null) {
                   first = txn.find(entityType, namespaceProperty, namespace).getFirst();
               } else {
-                  first = txn.getAll(entityType).minus(txn.find(entityType, namespaceProperty, namespace)).getFirst();
+                  first = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty)).getFirst();
+              }
+
+              if(createOption != null) {
+                CreateOption.CREATE_OPTION createOp = createOption.createOption();
+                if(createOp != null && createOp.equals(CreateOption.CREATE_OPTION.SET_BLOB_ON_PROPERTY_EQUALS)) {
+                  String propertyName = createOption.referencePropertyName();
+                  Comparable propertyValue = entityClass.comparableMap().get(propertyName);
+                  if(namespace != null) {
+                    EntityIterable result = txn.find(entityType, propertyName, propertyValue).intersect(txn.find(entityType, namespaceProperty, namespace));
+                    if(result.size() > 1) {
+                        throw new IllegalArgumentException("Multiple entities found");
+                    }
+                    entityToUpdate = result.getFirst();
+                  } else {
+                    EntityIterable result = txn.find(entityType, propertyName, propertyValue).minus(txn.findWithProp(entityType, namespaceProperty));
+                      if(result.size() > 1) {
+                          throw new IllegalArgumentException("Multiple entities found");
+                      }
+                    entityToUpdate = result.getFirst();
+                  }
+                }
               }
 
               List<String> uniqueList = new LinkedList<>();
@@ -151,9 +176,14 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 throw new IllegalArgumentException("Duplicate value(s) found");
               }
 
-              final Entity entity = txn.newEntity(entityType);
+              Entity entity = txn.newEntity(entityType);
+              if(entityToUpdate != null) {
+                entity = entityToUpdate;
+              }
+              Entity finalEntity = entity;
+
               if (namespace != null && !namespace.isEmpty()) {
-                entity.setProperty(namespaceProperty, namespace);
+                finalEntity.setProperty(namespaceProperty, namespace);
               }
 
               ComparableLinkedList<Comparable> uProperties = new ComparableLinkedList<>();
@@ -163,7 +193,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   metaDataHashMap = new ComparableHashMap();
               }
               metaDataHashMap.put("uniqueProperties", uProperties);
-              entity.setProperty(metadataProperty, new EmbeddedEntityIterable(metaDataHashMap));
+              finalEntity.setProperty(metadataProperty, new EmbeddedEntityIterable(metaDataHashMap));
 
               Iterator<String> it = entityClass.comparableMap().keySet().iterator();
               while (it.hasNext()) {
@@ -174,7 +204,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                       && !key.equals(Constants.RESERVED_FIELD_PUBLICWRITE)
                       && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                       && !key.equals(Constants.RESERVED_FIELD_ACL_READ)) {
-                    entity.deleteProperty(key);
+                    finalEntity.deleteProperty(key);
                   }
                 } else {
                   if (!key.equals(metadataProperty)
@@ -187,13 +217,13 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     //                                if(value instanceof EmbeddedEntityIterable) {
                     //                                    LOG.info(value.toString());
                     //                                }
-                    entity.setProperty(key, value);
+                    finalEntity.setProperty(key, value);
                   }
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
-              entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+              finalEntity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+              finalEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
               if (entityClass.read() != null) {
                 List<String> aclRead = Arrays.asList(entityClass.read());
@@ -203,7 +233,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     EntityId userorRoleEntityId = txn.toEntityId(userOrRoleId);
                     Entity userOrRoleEntity = txn.getEntity(userorRoleEntityId);
                     if (userOrRoleEntity != null) {
-                      entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
+                      finalEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                     }
                   }
                 }
@@ -217,25 +247,25 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     EntityId userEntityId = txn.toEntityId(userId);
                     Entity userOrRoleEntity = txn.getEntity(userEntityId);
                     if (userOrRoleEntity != null) {
-                      entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
+                      finalEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                     }
                   }
                 }
               }
 
               if (entityClass.publicRead() != null) {
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, entityClass.publicRead());
+                finalEntity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, entityClass.publicRead());
               } else {
-                entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                finalEntity.deleteProperty(Constants.RESERVED_FIELD_PUBLICREAD);
               }
 
               if (entityClass.publicWrite() != null) {
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, entityClass.publicWrite());
+                finalEntity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, entityClass.publicWrite());
               } else {
-                entity.deleteProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+                finalEntity.deleteProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
               }
 
-              entityId[0] = entity.getId().toString();
+              entityId[0] = finalEntity.getId().toString();
 
               Map<String, Comparable> eMap = new LinkedHashMap<>(entityClass.comparableMap());
               eMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId[0]);
@@ -256,9 +286,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                             (key, value) -> {
                               linkedEntity.setProperty(key, value);
                             });
-                        entity.addLink(linkName, linkedEntity);
+                        finalEntity.addLink(linkName, linkedEntity);
                         if (backLinkName != null && !backLinkName.isEmpty()) {
-                          linkedEntity.addLink(backLinkName, entity);
+                          linkedEntity.addLink(backLinkName, finalEntity);
                         }
 
                         Action next = action.next().get();
@@ -293,7 +323,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         String linkName = linkAction.linkName();
                         if (targetId != null && linkName != null) {
                           EntityId targetEntityId = txn.toEntityId(targetId);
-                          entity.addLink(linkName, txn.getEntity(targetEntityId));
+                          finalEntity.addLink(linkName, txn.getEntity(targetEntityId));
                         }
                       } else if (action instanceof BacklinkAction) {
                         BacklinkAction backlinkAction = (BacklinkAction) action;
@@ -302,14 +332,14 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         if (targetId != null && linkName != null) {
                           EntityId sourceEntityId = txn.toEntityId(targetId);
                           Entity source = txn.getEntity(sourceEntityId);
-                          source.addLink(linkName, entity);
+                          source.addLink(linkName, finalEntity);
                         }
                       }
                     });
               }
 
               if (entityClass.blobName() != null && entityClass.blob() != null) {
-                entity.setBlob(entityClass.blobName(), entityClass.blob());
+                finalEntity.setBlob(entityClass.blobName(), entityClass.blob());
               }
             }
           });
@@ -833,7 +863,37 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     return success[0];
   }
 
-  @Override
+    @Override
+    public boolean createEntityBlob(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue, String blobKey, InputStream is) {
+        final boolean[] success = {false};
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(
+                    new StoreTransactionalExecutable() {
+                        @Override
+                        public void execute(@NotNull final StoreTransaction txn) {
+                            EntityIterable result = txn.find(entityType, propertyName, propertyValue);
+                            if(namespace != null) {
+                                result = txn.find(entityType, propertyName, propertyValue).intersect(txn.find(entityType, namespaceProperty, namespace));
+                            } else {
+                                result = txn.find(entityType, propertyName, propertyValue).minus(txn.findWithProp(entityType, namespaceProperty));
+                            }
+                            if(!result.isEmpty() && result.size() > 1) {
+                                throw new IllegalArgumentException("Multiple entities found");
+                            }
+                            final Entity entity = result.getFirst();
+                            entity.setBlob(blobKey, is);
+                            entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+                            success[0] = true;
+                        }
+                    });
+        } finally {
+            //// entityStore.close();
+        }
+        return success[0];
+    }
+
+    @Override
   public boolean deleteEntityBlob(
       String instance, String namespace, String entityType, String entityId, String blobKey) {
     final boolean[] success = {false};
