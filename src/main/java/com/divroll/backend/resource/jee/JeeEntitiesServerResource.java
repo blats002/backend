@@ -26,6 +26,7 @@ import com.divroll.backend.helper.JSON;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
+import com.divroll.backend.model.builder.CreateOptionBuilder;
 import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
@@ -147,6 +148,10 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
                 publicWrite,
                 actions,
                 entityActions,
+                new CreateOptionBuilder()
+                        .createOption(null)
+                        .referencePropertyName(null)
+                        .build(),
                 new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
         if (entityType.equals(defaultUserStore)) {
           response.remove(Constants.RESERVED_FIELD_PASSWORD);

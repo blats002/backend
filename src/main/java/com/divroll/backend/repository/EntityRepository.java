@@ -23,9 +23,11 @@ package com.divroll.backend.repository;
 
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
+import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityMetadata;
 import com.divroll.backend.model.filter.TransactionFilter;
+import util.ComparableLinkedList;
 
 import java.io.InputStream;
 import java.util.List;
@@ -45,6 +47,7 @@ public interface EntityRepository {
       EntityClass entityClass,
       List<Action> actions,
       List<EntityAction> entityActions,
+      CreateOption createOption,
       final EntityMetadata metadata);
 
   boolean updateEntity(
@@ -147,6 +150,15 @@ public interface EntityRepository {
       String entityId,
       String blobKey,
       InputStream is);
+
+  boolean createEntityBlob(
+          String instance,
+          String namespace,
+          String entityType,
+          String propertyName,
+          Comparable propertyValue,
+          String blobKey,
+          InputStream is);
 
   boolean deleteEntityBlob(
       String instance, String namespace, String entityType, String entityId, String blobKey);
