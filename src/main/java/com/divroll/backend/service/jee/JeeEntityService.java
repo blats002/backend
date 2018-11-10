@@ -28,9 +28,7 @@ import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
-import com.divroll.backend.model.builder.EntityClassBuilder;
-import com.divroll.backend.model.builder.EntityMetadata;
-import com.divroll.backend.model.builder.EntityMetadataBuilder;
+import com.divroll.backend.model.builder.*;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
@@ -45,6 +43,7 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.entitystore.Entity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mozilla.javascript.*;
@@ -101,6 +100,7 @@ public class JeeEntityService implements EntityService {
       Boolean publicWrite,
       List<Action> actions,
       List<EntityAction> entityActions,
+      CreateOption createOption,
       EntityMetadata metadata)
       throws Exception {
     return createEntity(
@@ -114,6 +114,7 @@ public class JeeEntityService implements EntityService {
         publicWrite,
         actions,
         entityActions,
+        createOption,
         null,
         null,
         metadata);
@@ -131,6 +132,7 @@ public class JeeEntityService implements EntityService {
       Boolean publicWrite,
       List<Action> actions,
       List<EntityAction> entityActions,
+      CreateOption createOption,
       String blobName,
       InputStream blobStream,
       EntityMetadata metadata)
@@ -298,6 +300,10 @@ public class JeeEntityService implements EntityService {
                       .build(),
                   actions,
                   entityActions,
+                      new CreateOptionBuilder()
+                              .createOption(null)
+                              .referencePropertyName(null)
+                              .build(),
                   new EntityMetadataBuilder()
                       .uniqueProperties(
                           Arrays.asList(new String[] {Constants.RESERVED_FIELD_FUNCTION_NAME}))
@@ -330,6 +336,7 @@ public class JeeEntityService implements EntityService {
                       .build(),
                   actions,
                   entityActions,
+                  createOption,
                   metadata);
           JSONObject entityObject = new JSONObject();
           entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
