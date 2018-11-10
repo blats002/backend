@@ -131,7 +131,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   uniqueList
                     .forEach(
                         property -> {
-                          if (!entityClass.comparableMap().keySet().contains(property)) {
+                          if ( (metadata.uniqueProperties() != null && !metadata.uniqueProperties().isEmpty())
+                                  && !entityClass.comparableMap().keySet().contains(property)) {
                             throw new IllegalArgumentException("Invalid unique property name");
                           }
 
@@ -1079,6 +1080,72 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
   @Override
+  public boolean updateProperty(String instance, String namespace, String entityType, String entityId, String propertyName,
+                                Comparable propertyValue, EntityMetadata update) {
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+    final boolean[] success = {false};
+    try{
+      entityStore.executeInTransaction(new StoreTransactionalExecutable() {
+        @Override
+        public void execute(@NotNull StoreTransaction txn) {
+          Entity entity;
+          Entity firstEntity;
+          if (namespace != null) {
+            firstEntity =
+                    txn.getAll(entityType)
+                            .intersect(txn.find(entityType, namespaceProperty, namespace))
+                            .getFirst();
+            entity = txn.getEntity(txn.toEntityId(entityId));
+          } else {
+            firstEntity = txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty)).getFirst();
+            entity = txn.getEntity(txn.toEntityId(entityId));
+          }
+          List<String> uniquePropList = new LinkedList<>();
+          if (firstEntity != null) {
+            Comparable metadata = firstEntity.getProperty(metadataProperty);
+            if(metadata != null) {
+              EmbeddedEntityIterable embeddedEntityIterable = (EmbeddedEntityIterable) metadata;
+              ComparableHashMap comparableHashMap = (ComparableHashMap) embeddedEntityIterable.asObject();
+              if(comparableHashMap.get("uniqueProperties") != null) {
+                ComparableLinkedList comparableLinkedList = (ComparableLinkedList) comparableHashMap.get("uniqueProperties");
+                comparableLinkedList.forEach(property -> {
+                  uniquePropList.add((String) property);
+                });
+              }
+            }
+          }
+          if(!uniquePropList.isEmpty()) {
+            uniquePropList.forEach(property -> {
+              if(namespace != null) {
+                EntityIterable result = txn.find(entityType, propertyName, propertyValue)
+                        .intersect(txn.findWithProp(entityType, namespace));
+                if(!result.isEmpty()) {
+                  throw new IllegalArgumentException("Duplicate value found");
+                }
+              } else {
+                EntityIterable result = txn.find(entityType, propertyName, propertyValue)
+                        .minus(txn.findWithProp(entityType, namespace));
+                if(!result.isEmpty()) {
+                  throw new IllegalArgumentException("Duplicate value found");
+                }
+              }
+            });
+          }
+
+          if(!isReservedProperty(propertyName)) {
+            entity.setProperty(propertyName, propertyValue);
+          } else {
+            throw new IllegalArgumentException("Cannot modify " + propertyName + " property");
+          }
+
+        }
+      });
+    } finally{
+    }
+    return success[0];
+  }
+
+  @Override
   public List<Map<String, Comparable>> getEntities(
       String instance,
       String namespace,
@@ -1193,6 +1260,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             public void execute(@NotNull final StoreTransaction txn) {
               EntityId idOfEntity = txn.toEntityId(entityId);
               Entity entity = txn.getEntity(idOfEntity);
+
+              entity.getLinkNames().forEach(linkName -> {
+                Entity linked = entity.getLink(linkName);
+                entity.deleteLink(linkName, linked);
+              });
+
               success[0] = entity.delete();
             }
           });
@@ -1222,6 +1295,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               }
               final boolean[] hasError = {false};
               for (Entity entity : result) {
+
+                entity.getLinkNames().forEach(linkName -> {
+                  Entity linked = entity.getLink(linkName);
+                  entity.deleteLink(linkName, linked);
+                });
+
                 if (!entity.delete()) {
                   hasError[0] = true;
                 }
@@ -1242,6 +1321,20 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
       PersistentEntityStoreImpl storeImp = (PersistentEntityStoreImpl) entityStore;
+
+      storeImp.executeInTransaction(new StoreTransactionalExecutable() {
+        @Override
+        public void execute(@NotNull StoreTransaction txn) {
+            EntityIterable result = txn.getAll(entityType);
+            for(Entity entity : result) {
+              entity.getLinkNames().forEach(linkName -> {
+                Entity linked = entity.getLink(linkName);
+                entity.deleteLink(linkName, linked);
+              });
+            }
+        }
+      });
+
       storeImp.deleteEntityType(entityType);
       success[0] = true;
     } finally {

@@ -366,4 +366,9 @@ public abstract class JeeBaseRespository {
     df.setTimeZone(tz);
     return df.format(new Date());
   }
+
+  protected boolean isReservedProperty(String propertyName) {
+    return false;
+  }
+
 }
