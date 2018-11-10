@@ -35,6 +35,8 @@ import java.io.*;
  */
 public class EmbeddedEntityIterable implements Serializable, ByteIterable {
 
+  private static final long serialVersionUID = 9074087750155200888L;
+
   private byte[] bytes;
 
   public EmbeddedEntityIterable(Comparable object) {

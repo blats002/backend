@@ -164,6 +164,15 @@ public interface EntityRepository {
       String propertyName,
       EntityMetadata update);
 
+    boolean updateProperty(
+            String instance,
+            String namespace,
+            String entityType,
+            String entityId,
+            String propertyName,
+            Comparable propertyValue,
+            EntityMetadata update);
+
   List<Map<String, Comparable>> getEntities(
       String instance,
       String namespace,

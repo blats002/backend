@@ -50,8 +50,7 @@ public class AppEntityRepository {
     return repository.getEntity(instance, namespace, entityType, entityId);
   }
 
-  public boolean isExist(
-      String namespace, String entityType, String propertyName, Comparable propertyValue) {
+  public boolean isExist(String entityType, String propertyName, Comparable propertyValue) {
     List<Map<String, Comparable>> entities =
         repository.getEntities(instance, namespace, entityType, propertyName, propertyValue, 0, 1);
     return !entities.isEmpty();
