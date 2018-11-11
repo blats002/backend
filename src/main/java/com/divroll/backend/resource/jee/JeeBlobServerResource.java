@@ -133,7 +133,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
                     && !isMaster())) {
               isAuth = false;
             }
-            if (linkFrom.equals(authUserId)) {
+            if (authUserId != null && linkFrom.equals(authUserId)) {
               isAuth = true;
             }
             if (entityRepository.isPublicWrite(appId, namespace, linkFrom)) {
@@ -235,6 +235,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
             }
           }
         } catch (Exception e) {
+          e.printStackTrace();
           return badRequest();
         }
       } else if (entityId != null) {
