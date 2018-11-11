@@ -172,13 +172,23 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         });
               }
 
-              if (iterable[0] != null && !iterable[0].isEmpty()) {
-                throw new IllegalArgumentException("Duplicate value(s) found");
+              if(entityToUpdate != null) {
+                  if(iterable[0] != null && !iterable[0].isEmpty()
+                          && !iterable[0].getFirst().getId().equals(entityToUpdate.getId())) {
+                      throw new IllegalArgumentException("Duplicate entities found " + iterable[0].size());
+                  }
+              } else {
+                  if (iterable[0] != null && !iterable[0].isEmpty()) {
+                      throw new IllegalArgumentException("Duplicate entities found " + iterable[0].size());
+                  }
               }
 
-              Entity entity = txn.newEntity(entityType);
+
+              Entity entity = null;
               if(entityToUpdate != null) {
-                entity = entityToUpdate;
+                  entity = entityToUpdate;
+              } else {
+                  entity = txn.newEntity(entityType);
               }
               Entity finalEntity = entity;
 
