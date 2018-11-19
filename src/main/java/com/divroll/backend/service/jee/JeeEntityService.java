@@ -43,7 +43,6 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import jetbrains.exodus.entitystore.Entity;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mozilla.javascript.*;
@@ -53,6 +52,7 @@ import org.mozilla.javascript.ast.AstRoot;
 import org.mozilla.javascript.ast.Block;
 import org.mozilla.javascript.ast.FunctionNode;
 import scala.actors.threadpool.Arrays;
+import util.ComparableLinkedList;
 
 import java.io.InputStream;
 import java.util.*;
@@ -88,7 +88,67 @@ public class JeeEntityService implements EntityService {
 
   @Inject PubSubService pubSubService;
 
-  @Override
+    @Override
+    public EntityACL retrieveEntityACLWriteList(Application application,
+                                                   String namespace,
+                                                   String entityType,
+                                                   String propertyName,
+                                                   Comparable propertyValue) {
+      LOG.info("nameSpace=" + namespace);
+      LOG.info("entityType=" + entityType);
+      LOG.info("propertyName=" + propertyName);
+      LOG.info("propertyValue=" + propertyValue);
+        List<Map<String,Comparable>> comparableMaps = entityRepository.getEntities(application.getAppId(), namespace, entityType, propertyName, propertyValue);
+        ObjectLogger.log(comparableMaps);
+
+        final List<String> aclWriteListResult = new LinkedList<>();
+        final List<String> aclReadListResult = new LinkedList<>();
+        Boolean publicRead = null;
+        Boolean publicWrite = null;
+
+        if(comparableMaps != null && !comparableMaps.isEmpty()) {
+            if(comparableMaps.size() == 1) {
+                Map comparableMap = comparableMaps.iterator().next();
+
+                // aclWrite
+                ComparableLinkedList<Comparable> aclWriteList
+                        = (ComparableLinkedList<Comparable>) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE);
+                aclWriteList.forEach(aclWrite -> {
+                    EntityStub entityStub = (EntityStub) aclWrite;
+                    aclWriteListResult.add(entityStub.getEntityId());
+                });
+
+                // aclRead
+                ComparableLinkedList<Comparable> aclReadList
+                      = (ComparableLinkedList<Comparable>) comparableMap.get(Constants.RESERVED_FIELD_ACL_READ);
+                aclReadList.forEach(aclWrite -> {
+                  EntityStub entityStub = (EntityStub) aclWrite;
+                  aclReadListResult.add(entityStub.getEntityId());
+                });
+
+                publicWrite =
+                        comparableMap.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null
+                                ? (Boolean) comparableMap.get(Constants.RESERVED_FIELD_PUBLICWRITE)
+                                : null;
+                publicRead = comparableMap.get(Constants.RESERVED_FIELD_PUBLICREAD) != null
+                        ? (Boolean) comparableMap.get(Constants.RESERVED_FIELD_PUBLICREAD)
+                        : null;
+
+                return new EntityACLBuilder()
+                        .read(aclReadListResult)
+                        .write(aclWriteListResult)
+                        .publicRead(publicRead)
+                        .publicWrite(publicWrite)
+                        .build();
+            } else {
+              throw new IllegalArgumentException("Multiple entities found error");
+            }
+        }
+        // no entities found
+        return null;
+    }
+
+    @Override
   public JSONObject createEntity(
       Application application,
       String namespace,
@@ -137,6 +197,23 @@ public class JeeEntityService implements EntityService {
       InputStream blobStream,
       EntityMetadata metadata)
       throws Exception {
+
+    LOG.with("application", application);
+    LOG.with("namespace", namespace);
+    LOG.with("entityType", entityType);
+    LOG.with("comparableMap", comparableMap);
+    LOG.with("aclRead", aclRead);
+    LOG.with("aclWrite", aclWrite);
+    LOG.with("publicRead", publicRead);
+    LOG.with("publicWrite", publicWrite);
+    LOG.with("publicWrite", publicWrite);
+    LOG.with("actions", actions);
+    LOG.with("entityActions", entityActions);
+    LOG.with("createOption", createOption);
+    LOG.with("blobName", blobName);
+    LOG.with("blobStream", blobStream);
+    LOG.with("metadata", metadata);
+
     JSONObject result = new JSONObject();
 
     String[] read = new String[] {};

@@ -621,7 +621,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
   @Override
-  public Map<String, Comparable> getEntity(
+  public Map<String, Comparable> getEntities(
       String instance, String namespace, final String entityType, final String entityId) {
     final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -703,7 +703,108 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     return comparableMap;
   }
 
-  @Override
+    @Override
+    public List<Map<String, Comparable>> getEntities(String instance,
+                                               String namespace,
+                                               String entityType,
+                                               String propertyName,
+                                               Comparable propertyValue) {
+        List<Map<String, Comparable>> entityList = new LinkedList<>();
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+        try {
+            entityStore.executeInTransaction(
+                    new StoreTransactionalExecutable() {
+                        @Override
+                        public void execute(@NotNull final StoreTransaction txn) {
+
+                            EntityIterable entities;
+                            if(namespace != null) {
+                                entities = txn.find(entityType, propertyName, propertyValue)
+                                        .intersect(txn.find(entityType, namespaceProperty, namespace));
+                            } else {
+                                entities = txn.find(entityType, propertyName, propertyValue)
+                                        .minus(txn.findWithProp(entityType, namespaceProperty));
+                            }
+
+                            if(entities != null && !entities.isEmpty()) {
+                                for(Entity entity : entities) {
+                                    Map<String,Comparable> comparableMap = new LinkedHashMap<>();
+                                    for (String property : entity.getPropertyNames()) {
+                                        Comparable value = entity.getProperty(property);
+                                        if (value != null) {
+                                            if (value instanceof EmbeddedEntityIterable) {
+                                                comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
+                                            } else if (value instanceof EmbeddedArrayIterable) {
+                                                comparableMap.put(
+                                                        property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
+                                            } else {
+                                                comparableMap.put(property, value);
+                                            }
+                                        }
+                                    }
+
+                                    List<EntityStub> aclRead = new LinkedList<>();
+                                    List<EntityStub> aclWrite = new LinkedList<>();
+
+                                    Comparable comparablePublicRead =
+                                            entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                                    Comparable comparablePublicWrite =
+                                            entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                                    Boolean publicRead = null;
+                                    Boolean publicWrite = null;
+
+                                    if (comparablePublicRead != null) {
+                                        publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                                    }
+
+                                    if (comparablePublicWrite != null) {
+                                        publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+                                    }
+
+                                    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
+                                        aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
+                                    }
+
+                                    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
+                                        aclWrite.add(
+                                                new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
+                                    }
+                                    comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.toString());
+                                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                                    comparableMap.put(
+                                            Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                                    comparableMap.put(
+                                            Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+
+                                    String dateCreated =
+                                            (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED)
+                                                    : null);
+                                    String dateUpdated =
+                                            (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED)
+                                                    : null);
+
+                                    comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                                    comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
+                                    entityList.add(comparableMap);
+                                }
+
+                            }
+                        }
+                    });
+        } finally {
+            //// entityStore.close();
+        }
+        return entityList;
+  }
+
+    @Override
   public List<String> getACLReadList(String instance, String namespace, String entityId) {
     final List<String> aclList = new LinkedList<>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);

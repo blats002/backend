@@ -19,10 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.repository.jee;
+package com.divroll.backend.model.builder;
 
-import com.divroll.backend.repository.EntityRepository;
+import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
+import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,28 +34,24 @@ import java.util.Map;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class AppEntityRepository {
+@Value.Immutable
+@Value.Style(visibility = Value.Style.ImplementationVisibility.PRIVATE)
+public interface EntityACL {
 
-  private final EntityRepository repository;
-  private final String instance;
-  private final String namespace;
-  private final String entityType;
-
-  public AppEntityRepository(
-      EntityRepository repository, String instance, String namespace, String entityType) {
-    this.repository = repository;
-    this.entityType = entityType;
-    this.instance = instance;
-    this.namespace = namespace;
+  @Nullable
+  @Value.Default
+  default List<String> read() {
+    return new LinkedList<>();
   }
 
-  public Map<String, Comparable> getEntityById(String namespace, String entityId) {
-    return repository.getEntities(instance, namespace, entityType, entityId);
+  @Nullable
+  @Value.Default
+  default List<String> write() {
+    return new LinkedList<>();
   }
 
-  public boolean isExist(String entityType, String propertyName, Comparable propertyValue) {
-    List<Map<String, Comparable>> entities =
-        repository.getEntities(instance, namespace, entityType, propertyName, propertyValue, 0, 1);
-    return !entities.isEmpty();
-  }
+  Boolean publicRead();
+
+  Boolean publicWrite();
+
 }

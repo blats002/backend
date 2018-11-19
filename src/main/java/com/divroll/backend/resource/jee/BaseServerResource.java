@@ -36,6 +36,7 @@ import com.divroll.backend.service.SchemaService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
+import com.google.common.escape.Escapers;
 import com.google.inject.Inject;
 import org.json.JSONArray;
 import org.mindrot.jbcrypt.BCrypt;
@@ -50,6 +51,7 @@ import org.restlet.util.Series;
 import scala.actors.threadpool.Arrays;
 
 import java.io.*;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -207,6 +209,16 @@ public class BaseServerResource extends SelfInjectingServerResource {
             ? headers.getFirstValue(Constants.HEADER_CONTENT_TYPE)
             : headers.getFirstValue(Constants.HEADER_CONTENT_TYPE.toLowerCase());
 
+      LOG.info("Captured aclWrite - " + aclWrite);
+      LOG.info("Captured aclRead  - " + aclRead);
+    try {
+      aclWrite = URLDecoder.decode(aclWrite, "UTF-8");
+      aclRead = URLDecoder.decode(aclRead, "UTF-8");
+    } catch (Exception e) {
+    }
+
+    LOG.info("Decoded captured aclWrite - " + aclWrite);
+    LOG.info("Decoded captured aclRead  - " + aclRead);
     appName = getAttribute("appName");
 
     try {
