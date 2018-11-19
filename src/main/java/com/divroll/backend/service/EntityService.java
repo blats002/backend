@@ -25,6 +25,7 @@ import com.divroll.backend.model.Application;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.builder.CreateOption;
+import com.divroll.backend.model.builder.EntityACL;
 import com.divroll.backend.model.builder.EntityMetadata;
 import org.json.JSONObject;
 
@@ -39,6 +40,11 @@ import java.util.Map;
  */
 public interface EntityService {
 
+  EntityACL retrieveEntityACLWriteList(Application application,
+                                       String namespace,
+                                       String entityType,
+                                       String propertyName,
+                                       Comparable propertyValue);
 
   JSONObject createEntity(
       Application application,
