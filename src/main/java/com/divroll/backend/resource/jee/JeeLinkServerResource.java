@@ -109,8 +109,18 @@ public class JeeLinkServerResource extends BaseServerResource implements LinkRes
       }
 
       if (isMaster || isWriteAccess || isPublic) {
+        Boolean bSet = false;
+        if(linkType != null) {
+          if(linkType.equals("set")) {
+            bSet = true;
+          } else if(linkType.equals("add")) {
+            bSet = false;
+          } else {
+            throw new IllegalArgumentException("Invalid linkType " + linkType);
+          }
+        }
         if (entityRepository.linkEntity(
-            appId, namespace, entityType, linkName, entityId, targetEntityId)) {
+            appId, namespace, entityType, linkName, entityId, targetEntityId, bSet)) {
           pubSubService.linked(appId, namespace, entityType, linkName, entityId, targetEntityId);
           setStatus(Status.SUCCESS_CREATED);
         } else {

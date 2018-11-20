@@ -1521,7 +1521,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       String entityType,
       final String linkName,
       final String sourceId,
-      final String targetId) {
+      final String targetId,
+      boolean bSet) {
     final boolean[] success = {false};
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
@@ -1537,7 +1538,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               sourceEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               targetEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
-              success[0] = sourceEntity.addLink(linkName, targetEntity);
+              if(bSet) {
+                  success[0] = sourceEntity.setLink(linkName, targetEntity);
+              } else {
+                  success[0] = sourceEntity.addLink(linkName, targetEntity);
+              }
+
             }
           });
     } finally {
