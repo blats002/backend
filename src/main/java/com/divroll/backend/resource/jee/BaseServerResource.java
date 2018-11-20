@@ -95,6 +95,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String targetEntityId;
   protected String linkFrom;
   protected String linkTo;
+  protected String linkType;
 
   protected String masterToken;
 
@@ -142,7 +143,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     linkFrom = getQueryValue("linkFrom");
     linkTo = getQueryValue("linkTo");
-
+    linkType = getQueryValue("linkType");
     username = getQueryValue(Constants.QUERY_USERNAME);
     sort = getQueryValue("sort");
 

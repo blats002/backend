@@ -108,7 +108,8 @@ public interface EntityRepository {
       String entityType,
       String linkName,
       String sourceId,
-      String targetId);
+      String targetId,
+      boolean bSet);
 
   boolean unlinkEntity(
       String instance,
