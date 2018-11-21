@@ -11,11 +11,36 @@
     <artifactId>roller</artifactId>
     <packaging>war</packaging>
     <version>1.0</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <name>roller</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <restletVersion>3.0-M1</restletVersion>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-bom</artifactId>
+                <version>1.11.453</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -48,6 +73,12 @@
             <groupId>org.restlet.jse</groupId>
             <artifactId>org.restlet.ext.json</artifactId>
             <version>${restletVersion}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.restlet.jse</groupId>
+                    <artifactId>org.restlet.lib.org.json</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.restlet.jee</groupId>
@@ -136,6 +167,21 @@
             <!--<artifactId>google-cloud-storage</artifactId>-->
             <!--<version>1.0.1</version>-->
         <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>com.amazonaws</groupId>-->
+            <!--<artifactId>aws-java-sdk-s3</artifactId>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-bundle</artifactId>
+            <version>1.11.452</version>
+            <!-- <version>1.11.172</version> -->
+        </dependency>
+        <dependency>
+            <groupId>com.divroll.backend</groupId>
+            <artifactId>backend-sdk-java</artifactId>
+            <version>0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>
@@ -184,8 +230,7 @@
                             <api_hoster></api_hoster>
                             <email></email>
                             <password></password>
-                            <!--<environment>roller2</environment>-->
-                            <environment>roller</environment>
+                            <environment></environment>
                             <!--<context>[specify the context if you need it]</context>-->
                             <!--<comment>[insert comment if you need it]</comment>-->
                         </configuration>
@@ -204,15 +249,6 @@
                                     <targetPath>WEB-INF</targetPath>
                                 </resource>
                             </webResources>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.1</version>
-                        <configuration>
-                            <source>1.7</source>
-                            <target>1.7</target>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -275,19 +311,19 @@
         </profile>
     </profiles>
     <repositories>
-        <repository>
-            <id>UK</id>
-            <name>UK Central</name>
-            <url>http://uk.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>maven-db4o</id>
-            <name>Db4o repository</name>
-            <url>https://source.db4o.com/maven/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-        </repository>
+        <!--<repository>-->
+            <!--<id>UK</id>-->
+            <!--<name>UK Central</name>-->
+            <!--<url>http://uk.maven.org/maven2</url>-->
+        <!--</repository>-->
+        <!--<repository>-->
+            <!--<id>maven-db4o</id>-->
+            <!--<name>Db4o repository</name>-->
+            <!--<url>https://source.db4o.com/maven/</url>-->
+            <!--<releases>-->
+                <!--<enabled>false</enabled>-->
+            <!--</releases>-->
+        <!--</repository>-->
         <repository>
             <id>maven-restlet</id>
             <name>Public online Restlet repository</name>

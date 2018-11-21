@@ -17,7 +17,12 @@ package com.divroll.core.rest.resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.backend.Divroll;
+import com.divroll.backend.DivrollEntities;
+import com.divroll.backend.DivrollEntity;
+import com.divroll.backend.filter.EqualQueryFilter;
 import com.divroll.core.rest.CloudFileRepresentation;
+import com.divroll.core.rest.WasabiFileRepresentation;
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.util.StringUtil;
@@ -47,6 +52,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -87,6 +93,7 @@ public class GaeRootServerResource extends BaseServerResource {
         Series<Header> series = (Series<Header>)getRequestAttributes().get("org.restlet.http.headers");
         acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
         cacheKey = getQueryValue("cachekey");
+        Divroll.initialize(serverUrl, appId, appKey, masterKey);
     }
 
     @Delete
@@ -172,7 +179,7 @@ public class GaeRootServerResource extends BaseServerResource {
                 }
 
                 LOG.info("Application ID: " + subdomain);
-                if(subdomain == null || subdomain.isEmpty()){
+                if( (subdomain == null || subdomain.isEmpty()) || !isValidSubdomain(subdomain)){
                     //subdomain = "404";
                     Representation responseEntity = new StringRepresentation(read404template());
                     responseEntity.setMediaType(MediaType.TEXT_HTML);
@@ -199,13 +206,17 @@ public class GaeRootServerResource extends BaseServerResource {
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 String completeFilePath = subdomain + "/" + p;
                 LOG.info("Complete File Path:       " + completeFilePath);
-                byte[] cachedBytes = cacheService.get(completeFilePath);
+                byte[] cachedBytes = null;
+                try{
+                    cachedBytes = cacheService.get(completeFilePath);
+                } catch (Exception e) {
+                }
                 Representation responseEntity = null;
                 if(cachedBytes != null) {
                     responseEntity = new ByteArrayRepresentation(cachedBytes);
                     responseEntity.setMediaType(processMediaType(completePath));
                 } else {
-                    responseEntity = new CloudFileRepresentation(
+                    responseEntity = new WasabiFileRepresentation(
                             completeFilePath,
                             processMediaType(path),
                             cacheService);
@@ -280,41 +291,54 @@ public class GaeRootServerResource extends BaseServerResource {
         return type;
     }
 
+    private boolean isValidSubdomain(String subdomain) {
+        final Boolean[] isValid = {false};
+        DivrollEntities entities = new DivrollEntities("Subdomain");
+        entities.query(new EqualQueryFilter("subdomain", subdomain));
+        entities.getEntities().forEach(divrollEntity -> {
+            String subDomain = String.valueOf(divrollEntity.getProperty("subdomain"));
+            if(subDomain != null && subDomain.equals(subDomain)) {
+                isValid[0] = true;
+            }
+        });
+        return isValid[0];
+    }
+
     // TODO: Convert to cloud code
     private String getStoredSubdomain(String host){
         LOG.info("Get stored subdomain: " + host);
-        String result = cacheService.getString("domain:" + host + ":subdomain");
+        String result = null;
+        try{
+            result = cacheService.getString("domain:" + host + ":subdomain");
+        } catch (Exception e) {
+        }
         if(result != null) {
             return result;
         }
         try {
-            HttpRequestFactory requestFactory =
-                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
-                        @Override
-                        public void initialize(HttpRequest request) {
-                            request.setParser(new JsonObjectParser(JSON_FACTORY));
-                        }
-                    });
-            JSONObject where = new JSONObject();
-            where.put("name", host);
-            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(getParseServerUrl() + "/classes/Domain");
-            url.put("where", where.toJSONString());
-            HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", getParseAppId());
-            request.getHeaders().set("X-Parse-REST-API-Key", getParseRestAPIkey());
-            request.getHeaders().set("X-Parse-Revocable-Session", "1");
-            request.setRequestMethod("GET");
-            com.google.api.client.http.HttpResponse response = request.execute();
-            String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-            LOG.info("Response: " + body);
-            JSONObject jsonBody = JSON.parseObject(body);
-            JSONArray array = jsonBody.getJSONArray("results");
-            if(!array.isEmpty()) {
-                JSONObject resultItem = (JSONObject) array.iterator().next();
-                JSONObject appPointer = resultItem.getJSONObject("appId");
-                result = getApplicationName(appPointer);
-                cacheService.putString("domain:" + host + ":subdomain", result);
+            String domain = null;
+            DivrollEntities entities = new DivrollEntities("Domain");
+            entities.query(new EqualQueryFilter("name", host));
+            final DivrollEntity[] entity = new DivrollEntity[1];
+            entities.getEntities().forEach(divrollEntity -> {
+                entity[0] = divrollEntity;
+            });
+            if(entity[0] != null) {
+                domain = String.valueOf(entity[0].getProperty("name"));
+                List<DivrollEntity> linked = entity[0].links("subdomain");
+                final String[] finalSubdomain = new String[1];
+                linked.forEach(divrollEntity -> {
+                    finalSubdomain[0] = String.valueOf(divrollEntity.getProperty("subdomain"));
+                });
+                result = finalSubdomain[0];
+                if(domain != null && result != null) {
+                    String cacheKey = "domain:" + host + ":subdomain" + "->" + result;
+                    cacheService.putString(cacheKey, result);
+                }
             }
+//            System.out.println("HOST: " + host);
+//            System.out.println("domain: " + domain);
+//            System.out.println("subdomain: " + result);
         } catch (Exception e) {
             LOG.debug("Error: " + e.getMessage());
             e.printStackTrace();
@@ -322,6 +346,7 @@ public class GaeRootServerResource extends BaseServerResource {
         return result;
     }
 
+    @Deprecated
     private String getApplicationName(JSONObject pointer) {
         String appName = null;
         try {

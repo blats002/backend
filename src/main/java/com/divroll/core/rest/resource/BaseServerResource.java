@@ -38,6 +38,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
             = LoggerFactory.getLogger(BaseServerResource.class);
 
     @Inject
+    @Named("divroll.appId")
+    protected String appId;
+
+    @Inject
+    @Named("divroll.appKey")
+    protected String appKey;
+
+    @Inject
+    @Named("divroll.masterKey")
+    protected String masterKey;
+
+    @Inject
+    @Named("divroll.serverUrl")
+    protected String serverUrl;
+
+    @Inject
     @Named("app.domain")
     protected String appDomain;
 
