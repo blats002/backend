@@ -1831,7 +1831,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     txn.findLinks(entityType, targetEntity, "aclRead")
                         .concat(txn.find(entityType, "publicRead", true));
                 if (filters != null && !filters.isEmpty()) {
-                  result = filter(entityType, result, filters, txn);
+                  EntityIterable filtered = filter(entityType, result, filters, txn);
+                  result = result.intersect(filtered);
                 }
                 if (sort != null) {
                   if (sort.startsWith("-")) {
