@@ -443,37 +443,42 @@ public class JeeEntityService implements EntityService {
       Map<String, Comparable> entity,
       String appId,
       String entityType) {
-    String cloudCode = application.getCloudCode();
-    LOG.info("Cloud Code : " + cloudCode);
-    List<JsFunction> jsFunctions = new LinkedList<>();
-    if (cloudCode != null && !cloudCode.isEmpty()) {
-      jsFunctions = parseJS(cloudCode);
-    }
-    final String[] beforeSaveExpr = {null};
-    jsFunctions.forEach(
-        jsFunction -> {
-          if (jsFunction.getFunctionName().equals("beforeSave")) {
-            beforeSaveExpr[0] = jsFunction.getExpression();
+      try{
+        String cloudCode = application.getCloudCode();
+        LOG.info("Cloud Code : " + cloudCode);
+        List<JsFunction> jsFunctions = new LinkedList<>();
+        if (cloudCode != null && !cloudCode.isEmpty()) {
+          jsFunctions = parseJS(cloudCode);
+        }
+        final String[] beforeSaveExpr = {null};
+        jsFunctions.forEach(
+                jsFunction -> {
+                  if (jsFunction.getFunctionName().equals("beforeSave")) {
+                    beforeSaveExpr[0] = jsFunction.getExpression();
+                  }
+                });
+        TriggerResponse response = new TriggerResponse();
+        if (beforeSaveExpr[0] != null && !beforeSaveExpr[0].isEmpty()) {
+          AppEntityRepository repository =
+                  new AppEntityRepository(entityRepository, appId, namespace, entityType);
+          AppEmailService emailService = null;
+          if (application != null && application.getEmailConfig() != null) {
+            Email emailConfig = application.getEmailConfig();
+            emailService = new AppEmailService(emailConfig);
           }
-        });
-    TriggerResponse response = new TriggerResponse();
-    if (beforeSaveExpr[0] != null && !beforeSaveExpr[0].isEmpty()) {
-      AppEntityRepository repository =
-          new AppEntityRepository(entityRepository, appId, namespace, entityType);
-      AppEmailService emailService = null;
-      if (application != null && application.getEmailConfig() != null) {
-        Email emailConfig = application.getEmailConfig();
-        emailService = new AppEmailService(emailConfig);
+          TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
+          Object evaluated = eval(request, response, beforeSaveExpr[0]);
+          response = (TriggerResponse) evaluated;
+          LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
+          LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
+          return response.isSuccess();
+        } else {
+          return true;
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
-      Object evaluated = eval(request, response, beforeSaveExpr[0]);
-      response = (TriggerResponse) evaluated;
-      LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
-      LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
-      return response.isSuccess();
-    } else {
-      return true;
-    }
+      return false;
   }
 
   @Override
@@ -483,39 +488,45 @@ public class JeeEntityService implements EntityService {
       Map<String, Comparable> entity,
       String appId,
       String entityType) {
-    String cloudCode = application.getCloudCode();
-    final String[] afterSaveExpr = {null};
-    LOG.info("Cloud Code : " + cloudCode);
-    List<JsFunction> jsFunctions = new LinkedList<>();
-    if (cloudCode != null && !cloudCode.isEmpty()) {
-      jsFunctions = parseJS(cloudCode);
-    }
-    final String[] beforeSaveExpr = {null};
-    jsFunctions.forEach(
-        jsFunction -> {
-          if (jsFunction.getFunctionName().equals("afterSave")) {
-            afterSaveExpr[0] = jsFunction.getExpression();
-          }
-        });
-    TriggerResponse response = new TriggerResponse();
 
-    if (afterSaveExpr[0] != null && !afterSaveExpr[0].isEmpty()) {
-      AppEntityRepository repository =
-          new AppEntityRepository(entityRepository, appId, namespace, entityType);
-      AppEmailService emailService = null;
-      if (application != null && application.getEmailConfig() != null) {
-        Email emailConfig = application.getEmailConfig();
-        emailService = new AppEmailService(emailConfig);
+      try{
+        String cloudCode = application.getCloudCode();
+        final String[] afterSaveExpr = {null};
+        LOG.info("Cloud Code : " + cloudCode);
+        List<JsFunction> jsFunctions = new LinkedList<>();
+        if (cloudCode != null && !cloudCode.isEmpty()) {
+          jsFunctions = parseJS(cloudCode);
+        }
+        final String[] beforeSaveExpr = {null};
+        jsFunctions.forEach(
+                jsFunction -> {
+                  if (jsFunction.getFunctionName().equals("afterSave")) {
+                    afterSaveExpr[0] = jsFunction.getExpression();
+                  }
+                });
+        TriggerResponse response = new TriggerResponse();
+
+        if (afterSaveExpr[0] != null && !afterSaveExpr[0].isEmpty()) {
+          AppEntityRepository repository =
+                  new AppEntityRepository(entityRepository, appId, namespace, entityType);
+          AppEmailService emailService = null;
+          if (application != null && application.getEmailConfig() != null) {
+            Email emailConfig = application.getEmailConfig();
+            emailService = new AppEmailService(emailConfig);
+          }
+          TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
+          Object evaluated = eval(request, response, afterSaveExpr[0]);
+          response = (TriggerResponse) evaluated;
+          LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
+          LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
+          return response.isSuccess();
+        } else {
+          return true;
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      TriggerRequest request = new TriggerRequest(entity, entityType, repository, emailService);
-      Object evaluated = eval(request, response, afterSaveExpr[0]);
-      response = (TriggerResponse) evaluated;
-      LOG.info("Evaluated: " + String.valueOf(((TriggerResponse) evaluated).isSuccess()));
-      LOG.info("Response Body: " + String.valueOf(((TriggerResponse) evaluated).getBody()));
-      return response.isSuccess();
-    } else {
-      return true;
-    }
+      return false;
   }
 
   protected Object eval(TriggerRequest request, TriggerResponse response, String expression) {
