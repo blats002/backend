@@ -28,10 +28,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -62,12 +60,13 @@ public class TestCustomCode {
   @Test
   public void testExecuteMainClass() throws Exception {
     Map<String, String> params = new LinkedHashMap<String, String>();
+    InputStream stream = new ByteArrayInputStream("world".getBytes(StandardCharsets.UTF_8));
     CustomCodeRequest request =
         new CustomCodeRequest(
-            MethodVerb.GET, "/test", params, "world".getBytes(), "hello_method", 0L);
+            MethodVerb.GET, "/test", params, stream, "hello_method", 0L);
     File file = new File(JAR_FILE);
     CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-    CustomCode customCode = new CustomCode(fileToBytes(file), future);
+    CustomCode customCode = new CustomCode(new FileInputStream(file), future);
     customCode.executeMainClass(request);
     Map<String, ?> result = future.get();
     System.out.println(JSONValue.toJSONString(future));

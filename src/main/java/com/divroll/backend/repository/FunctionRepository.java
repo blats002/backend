@@ -21,6 +21,8 @@
  */
 package com.divroll.backend.repository;
 
+import java.io.InputStream;
+
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
@@ -36,5 +38,5 @@ public interface FunctionRepository {
   @Deprecated
   byte[] retrieveFunction(String appId, String namespace, String functionName);
 
-  byte[] retrieveFunctionEntity(String appId, String namespace, String functionName);
+  InputStream retrieveFunctionEntity(String appId, String namespace, String functionName);
 }

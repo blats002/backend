@@ -93,8 +93,7 @@ public class JeeFunctionRepository implements FunctionRepository {
   }
 
   @Override
-  public byte[] retrieveFunctionEntity(String appId, String namespace, String functionName) {
-    byte[] jarBytes = null;
+  public InputStream retrieveFunctionEntity(String appId, String namespace, String functionName) {
     System.out.println("appId = " + appId);
     InputStream is =
         entityRepository.getFirstEntityBlob(
@@ -105,11 +104,6 @@ public class JeeFunctionRepository implements FunctionRepository {
             functionName,
             String.class,
             "jar");
-    try {
-      jarBytes = ByteStreams.toByteArray(is);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return jarBytes;
+    return is;
   }
 }

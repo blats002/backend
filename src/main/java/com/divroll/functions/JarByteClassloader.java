@@ -21,6 +21,8 @@
  */
 package com.divroll.functions;
 
+import com.google.common.io.ByteStreams;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,19 +36,20 @@ import java.util.jar.JarInputStream;
  * @since 0-SNAPSHOT
  */
 public class JarByteClassloader extends ClassLoader {
-  public byte[] bytes;
 
-  public JarByteClassloader(byte[] bytes) throws IOException {
+  public final InputStream is;
+
+  public JarByteClassloader(InputStream is) throws IOException {
     // TODO Validate if the byte array passed is a Jar
     // super(bytes.getClass().getClassLoader());
     super(Thread.currentThread().getContextClassLoader());
-    this.bytes = bytes;
+    this.is = is;
   }
 
   @Override
   protected Class findClass(String name) throws ClassNotFoundException {
     try {
-      JarInputStream jis = new JarInputStream(new ByteArrayInputStream(bytes));
+      JarInputStream jis = new JarInputStream(is);
       JarEntry entry = jis.getNextJarEntry();
       if (entry == null) {
         throw new ClassNotFoundException(name);
