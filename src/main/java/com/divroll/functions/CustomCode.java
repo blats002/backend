@@ -24,10 +24,12 @@ package com.divroll.functions;
 import com.divroll.backend.functions.customcode.CustomCodeMethod;
 import com.divroll.backend.functions.jar.JarEntryObject;
 import com.divroll.backend.functions.rest.CustomCodeRequest;
+import kotlin.Pair;
 import org.json.simple.JSONValue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -48,7 +50,7 @@ public class CustomCode {
   private static String MAIN_CLASS = "Main-Class";
   // private CustomCodeEventListener listener;
   private CompletableFuture<Map<String, ?>> future;
-  private byte[] jar;
+  private InputStream jar;
 
   public CustomCode() {}
 
@@ -57,7 +59,7 @@ public class CustomCode {
   //		this.jar = jar;
   //	}
 
-  public CustomCode(byte[] jar, CompletableFuture<Map<String, ?>> future) {
+  public CustomCode(InputStream jar, CompletableFuture<Map<String, ?>> future) {
     this.jar = jar;
     this.future = future;
   }
@@ -72,9 +74,10 @@ public class CustomCode {
     String classToLoad = null;
     String methodName = request.getMethodName();
     try {
-      classToLoad = extractMainClassManifest(jar);
+      Pair<String,JarInputStream> pair = extractMainClassManifest(jar);
+      classToLoad = pair.getFirst();
       LOGGER.info("Class to load: " + classToLoad);
-      JarByteClassloader loader = new JarByteClassloader(jar);
+      JarByteClassloader loader = new JarByteClassloader(pair.getSecond());
       Class c = loader.loadClass(classToLoad);
       Thread.currentThread().setContextClassLoader(loader);
       JarEntryObject jarEntry = (JarEntryObject) c.newInstance();
@@ -113,13 +116,14 @@ public class CustomCode {
   /**
    * Extracts the POM XML string from a jar bytes
    *
-   * @param bytes
+   * @param inputStream
    * @return the String represented pom.xml
    */
-  private String extractMainClassManifest(byte[] bytes) {
+  private Pair<String,JarInputStream> extractMainClassManifest(InputStream inputStream) {
     String mainClass = null;
+    JarInputStream jis = null;
     try {
-      JarInputStream jis = new JarInputStream(new ByteArrayInputStream(bytes));
+      jis = new JarInputStream(inputStream);
       final Manifest manifest = jis.getManifest();
       final Attributes mattr = manifest.getMainAttributes();
       for (Object a : mattr.keySet()) {
@@ -132,6 +136,6 @@ public class CustomCode {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return mainClass;
+    return new Pair<String,JarInputStream>(mainClass, jis);
   }
 }

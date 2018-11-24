@@ -21,12 +21,15 @@
  */
 package com.divroll.functions;
 
-import java.io.ByteArrayInputStream;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -34,19 +37,21 @@ import java.util.jar.JarInputStream;
  * @since 0-SNAPSHOT
  */
 public class JarByteClassloader extends ClassLoader {
-  public byte[] bytes;
 
-  public JarByteClassloader(byte[] bytes) throws IOException {
+  private static final Logger LOG = LoggerFactory.getLogger(JarByteClassloader.class);
+
+  public JarInputStream jis;
+
+  public JarByteClassloader(JarInputStream jarInputStream) throws IOException {
     // TODO Validate if the byte array passed is a Jar
     // super(bytes.getClass().getClassLoader());
     super(Thread.currentThread().getContextClassLoader());
-    this.bytes = bytes;
+    this.jis = jarInputStream;
   }
 
   @Override
   protected Class findClass(String name) throws ClassNotFoundException {
     try {
-      JarInputStream jis = new JarInputStream(new ByteArrayInputStream(bytes));
       JarEntry entry = jis.getNextJarEntry();
       if (entry == null) {
         throw new ClassNotFoundException(name);
