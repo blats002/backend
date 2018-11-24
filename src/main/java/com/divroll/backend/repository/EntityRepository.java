@@ -147,6 +147,8 @@ public interface EntityRepository {
   InputStream getEntityBlob(
       String instance, String namespace, String entityType, String entityId, String blobKey);
 
+  Long countEntityBlobSize(String instance, String namespace, String entityType, String entityId, String blobKey);
+
   boolean createEntityBlob(
       String instance,
       String namespace,

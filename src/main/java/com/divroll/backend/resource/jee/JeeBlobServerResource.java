@@ -456,8 +456,9 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
       String encoding = getQueryValue("encoding");
 
       if (isMaster || isWriteAccess || isPublic) {
+        Long count = entityRepository.countEntityBlobSize(appId, namespace, entityType, entityId, blobName);
         InputStream is =
-            entityRepository.getEntityBlob(appId, namespace, entityType, entityId, blobName);
+                entityRepository.getEntityBlob(appId, namespace, entityType, entityId, blobName);
 
         if (encoding != null && encoding.equals("base64")) {
           if (is == null) {
@@ -476,12 +477,12 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
           } else {
             Representation representation = new InputRepresentation(is);
             representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+            representation.setSize(count);
             // representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
             setStatus(Status.SUCCESS_OK);
             return representation;
           }
         }
-
       } else {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
       }
