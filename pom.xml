@@ -424,7 +424,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.divroll.functions</groupId>
+            <groupId>com.divroll.backend.functions</groupId>
             <artifactId>sdk</artifactId>
             <version>${customcode.version}</version>
             <!--<scope>provided</scope>-->

@@ -37,6 +37,7 @@ import org.restlet.representation.Representation;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,13 +65,13 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     methodName = getAttribute("methodName");
   }
 
-  private byte[] getJar(String appId, String functionName) {
-    byte[] jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
+  private InputStream getJar(String appId, String functionName) {
+    InputStream jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
     return jarBytes;
   }
 
   private void customCodeGet(
-      byte[] jarBytes,
+          InputStream jarBytes,
       String path,
       Map<String, String> params,
       byte[] body,
@@ -78,13 +79,13 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       int counter,
       CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
+        new CustomCodeRequest(MethodVerb.GET, path, params, new ByteArrayInputStream(body), methodName, counter);
     CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
 
   private void customCodePost(
-      byte[] jarBytes,
+          InputStream jarBytes,
       String path,
       Map<String, String> params,
       byte[] body,
@@ -92,13 +93,13 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       int counter,
       CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
+        new CustomCodeRequest(MethodVerb.POST, path, params, new ByteArrayInputStream(body), methodName, counter);
     CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
 
   private void customCodePut(
-      byte[] jarBytes,
+          InputStream jarBytes,
       String path,
       Map<String, String> params,
       byte[] body,
@@ -106,13 +107,13 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       int counter,
       CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
+        new CustomCodeRequest(MethodVerb.PUT, path, params, new ByteArrayInputStream(body), methodName, counter);
     CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
 
   private void customCodeDelete(
-      byte[] jarBytes,
+          InputStream jarBytes,
       String path,
       Map<String, String> params,
       byte[] body,
@@ -120,7 +121,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       int counter,
       CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
+        new CustomCodeRequest(MethodVerb.DELETE, path, params, new ByteArrayInputStream(body), methodName, counter);
     CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
@@ -141,7 +142,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     }
     LOG.info("Function Name: " + functionName);
     LOG.info("Function Method: " + methodName);
-    byte[] jarBytes = getJar(appId, functionName);
+    InputStream jarBytes = getJar(appId, functionName);
     if (jarBytes == null) {
       return notFound();
     }
@@ -184,7 +185,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     }
     LOG.info("Function Name: " + functionName);
     LOG.info("Function Method: " + methodName);
-    byte[] jarBytes = getJar(appId, functionName);
+    InputStream jarBytes = getJar(appId, functionName);
     if (jarBytes == null) {
       return notFound();
     }
@@ -227,7 +228,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     }
     LOG.info("Function Name: " + functionName);
     LOG.info("Function Method: " + methodName);
-    byte[] jarBytes = getJar(appId, functionName);
+    InputStream jarBytes = getJar(appId, functionName);
     if (jarBytes == null) {
       return notFound();
     }
@@ -270,7 +271,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     }
     LOG.info("Function Name: " + functionName);
     LOG.info("Function Method: " + methodName);
-    byte[] jarBytes = getJar(appId, functionName);
+    InputStream jarBytes = getJar(appId, functionName);
     if (jarBytes == null) {
       return notFound();
     }
