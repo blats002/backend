@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.functions;
+package com.divroll.backend.functions;
 
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.zip.ZipEntry;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

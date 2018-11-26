@@ -27,7 +27,6 @@ import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityMetadata;
 import com.divroll.backend.model.filter.TransactionFilter;
-import util.ComparableLinkedList;
 
 import java.io.InputStream;
 import java.util.List;

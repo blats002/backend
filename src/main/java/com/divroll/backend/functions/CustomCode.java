@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.functions;
+package com.divroll.backend.functions;
 
 import com.divroll.backend.functions.customcode.CustomCodeMethod;
 import com.divroll.backend.functions.jar.JarEntryObject;
@@ -27,7 +27,6 @@ import com.divroll.backend.functions.rest.CustomCodeRequest;
 import kotlin.Pair;
 import org.json.simple.JSONValue;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -85,6 +84,7 @@ public class CustomCode {
       for (CustomCodeMethod cc : methods) {
         String ccMethodName = cc.getMethodName();
         if (methodName.equals(ccMethodName)) {
+          // TODO: Throws NPE when CustomCodeResponse is null
           Map<String, ?> result = cc.execute(request).getResponseMap();
           if (result != null) {
             // listener.onSuccess(result); // TODO: remove this

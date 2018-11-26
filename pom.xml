@@ -122,6 +122,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-bom</artifactId>
+                <version>1.11.453</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -438,6 +445,33 @@
             <groupId>com.wildbit.java</groupId>
             <artifactId>postmark</artifactId>
             <version>1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-bundle</artifactId>
+            <version>1.11.452</version>
+        </dependency>
+        <dependency>
+            <groupId>com.divroll.backend</groupId>
+            <artifactId>backend-sdk-java</artifactId>
+            <version>0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.json</groupId>
+                    <artifactId>json</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.javadelight</groupId>
+            <artifactId>delight-fileupload</artifactId>
+            <version>0.0.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

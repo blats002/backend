@@ -36,7 +36,6 @@ import com.divroll.backend.service.SchemaService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
-import com.google.common.escape.Escapers;
 import com.google.inject.Inject;
 import org.json.JSONArray;
 import org.mindrot.jbcrypt.BCrypt;
