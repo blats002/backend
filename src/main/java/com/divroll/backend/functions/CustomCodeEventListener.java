@@ -19,48 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.functions.util;
+package com.divroll.backend.functions;
 
-import java.io.*;
-import java.util.logging.Logger;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class Utils {
-  private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
+public interface CustomCodeEventListener {
+  void onSuccess(Map<String, ?> result);
 
-  /**
-   * Create a temporary file for the jar bytes
-   *
-   * @param bytes
-   * @return
-   */
-  public static File createFileFromBytes(byte[] bytes) {
-    String tempFileName = "myjar.jar"; // FIXME make file name generated as GUID
-    try {
-      FileOutputStream fileOuputStream = new FileOutputStream(tempFileName);
-      fileOuputStream.write(bytes);
-      fileOuputStream.flush();
-      fileOuputStream.close();
-    } catch (Exception e) {
-      LOGGER.info(e.getMessage());
-    }
-    return new File(tempFileName);
-  }
-
-  public static byte[] fileToBytes(File file) {
-    byte[] b = new byte[(int) file.length()];
-    try {
-      FileInputStream fileInputStream = new FileInputStream(file);
-      fileInputStream.read(b);
-    } catch (FileNotFoundException e) {
-      LOGGER.info(e.getMessage());
-    } catch (IOException e1) {
-      LOGGER.info("Error reading the file.");
-    }
-    return b;
-  }
+  void onFailure(CustomCodeException ex);
 }

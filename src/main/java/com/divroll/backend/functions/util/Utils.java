@@ -19,21 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.functions.exception;
+package com.divroll.backend.functions.util;
 
-import com.divroll.functions.CustomCodeException;
+import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class EntryPointClassNotFound extends CustomCodeException {
-  public EntryPointClassNotFound() {
-    super();
+public class Utils {
+  private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
+
+  /**
+   * Create a temporary file for the jar bytes
+   *
+   * @param bytes
+   * @return
+   */
+  public static File createFileFromBytes(byte[] bytes) {
+    String tempFileName = "myjar.jar"; // FIXME make file name generated as GUID
+    try {
+      FileOutputStream fileOuputStream = new FileOutputStream(tempFileName);
+      fileOuputStream.write(bytes);
+      fileOuputStream.flush();
+      fileOuputStream.close();
+    } catch (Exception e) {
+      LOGGER.info(e.getMessage());
+    }
+    return new File(tempFileName);
   }
 
-  public EntryPointClassNotFound(String mainClass) {
-    super("Entry point class '" + mainClass + "' not found");
+  public static byte[] fileToBytes(File file) {
+    byte[] b = new byte[(int) file.length()];
+    try {
+      FileInputStream fileInputStream = new FileInputStream(file);
+      fileInputStream.read(b);
+    } catch (FileNotFoundException e) {
+      LOGGER.info(e.getMessage());
+    } catch (IOException e1) {
+      LOGGER.info("Error reading the file.");
+    }
+    return b;
   }
 }
