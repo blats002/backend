@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.functions;
+package com.divroll.backend.functions;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
