@@ -21,14 +21,17 @@
  */
 package com.divroll.backend.functions;
 
-import com.divroll.backend.functions.customcode.CustomCodeMethod;
-import com.divroll.backend.functions.jar.JarEntryObject;
-import com.divroll.backend.functions.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.method.CustomCodeMethod;
+import com.divroll.backend.customcode.jar.JarEntryObject;
+import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.google.common.io.ByteStreams;
+import com.google.common.reflect.ClassPath;
 import kotlin.Pair;
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.input.TeeInputStream;
 import org.json.simple.JSONValue;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -72,11 +75,31 @@ public class CustomCode {
     LOGGER.info("Execute main class");
     String classToLoad = null;
     String methodName = request.getMethodName();
-    try {
-      Pair<String,JarInputStream> pair = extractMainClassManifest(jar);
+
+    final ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+
+
+
+    try{
+
+      byte[] bytes = ByteStreams.toByteArray(jar);
+
+      Pair<String,JarInputStream> pair = extractMainClassManifest(new ByteArrayInputStream(bytes));
       classToLoad = pair.getFirst();
       LOGGER.info("Class to load: " + classToLoad);
-      JarByteClassloader loader = new JarByteClassloader(pair.getSecond());
+      //JarByteClassloader loader = new JarByteClassloader(pair.getSecond());
+      JarByteClassloader loader = new JarByteClassloader(new JarInputStream(new ByteArrayInputStream(bytes)));
+
+      ClassPath cp= ClassPath.from(loader);
+      for(ClassPath.ClassInfo info : cp.getAllClasses()) {
+        if(info.getName().contains("divroll")) {
+          System.out.println(info.getName());
+        }
+        if(info.getName().contains("")) {
+          System.out.println(info.getName());
+        }
+      }
+
       Class c = loader.loadClass(classToLoad);
       Thread.currentThread().setContextClassLoader(loader);
       JarEntryObject jarEntry = (JarEntryObject) c.newInstance();
@@ -93,7 +116,20 @@ public class CustomCode {
           LOGGER.info("Result: " + JSONValue.toJSONString(result));
         }
       }
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    } catch (InstantiationException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    } finally{
+      Thread.currentThread().setContextClassLoader(originalClassLoader);
+    }
 
+    /*
+    try {
     } catch (ClassNotFoundException e) {
       // listener.onFailure(new EntryPointClassNotFound(classToLoad));
       future.completeExceptionally(e);
@@ -110,7 +146,7 @@ public class CustomCode {
       // listener.onFailure(new CustomCodeException(e.getMessage()));
       future.completeExceptionally(e);
       e.printStackTrace();
-    }
+    }*/
   }
 
   /**
@@ -122,8 +158,10 @@ public class CustomCode {
   private Pair<String,JarInputStream> extractMainClassManifest(InputStream inputStream) {
     String mainClass = null;
     JarInputStream jis = null;
+    byte[] bytes = null;
     try {
-      jis = new JarInputStream(inputStream);
+      bytes = ByteStreams.toByteArray(inputStream);
+      jis = new JarInputStream(new ByteArrayInputStream(bytes));
       final Manifest manifest = jis.getManifest();
       final Attributes mattr = manifest.getMainAttributes();
       for (Object a : mattr.keySet()) {
@@ -136,6 +174,45 @@ public class CustomCode {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return new Pair<String,JarInputStream>(mainClass, jis);
+    try {
+      return new Pair<String,JarInputStream>(mainClass, new JarInputStream(new ByteArrayInputStream(bytes)));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
+
+  private byte[] getJar(String subdomain, String functionName) {
+    byte[] jarBytes = null;
+//    try {
+//      // TODO: Use masterKey
+//      Parse.initialize(parseAppId, parseRestApiKey, getParseUrl());
+//      ParseQuery<ParseObject> query = ParseQuery.getQuery("CustomCode");
+//      query.whereEqualTo("function", functionName)
+//              .whereEqualTo("appId", subdomain);
+//      List<ParseObject> results = query.find();
+//      ParseObject result = results.iterator().next();
+//      if(result != null) {
+//        ParseFile parseFile = result.getParseFile("jar");
+//        LOG.info("Filename: " + parseFile.getName());
+//        LOG.info("File URL: " + parseFile.getUrl());
+//        String url = parseFile.getUrl().replace("https://", "http://");
+//        parseFile.setUrl(url);
+//        LOG.info("Final File URL: " + parseFile.getUrl());
+//        jarBytes = parseFile.getData();
+//        LOG.info("Function: " + result.getString("function"));
+//        LOG.info("Jar size: " + jarBytes.length);
+//        //cacheService.put(subdomain + KEY_SPACE + functionName, jarBytes);
+//        return jarBytes;
+//      } else {
+//        LOG.info("Null parse object");
+//      }
+//      //
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+    return null;
+  }
+
+
 }
