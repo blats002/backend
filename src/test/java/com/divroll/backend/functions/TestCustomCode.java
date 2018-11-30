@@ -21,7 +21,8 @@
  */
 package com.divroll.backend.functions;
 
-import com.divroll.backend.functions.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.MethodVerb;
+import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import org.json.simple.JSONValue;
 import org.junit.After;
 import org.junit.Before;
