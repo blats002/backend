@@ -59,7 +59,7 @@
         <jettyVersion>9.4.12.RC2</jettyVersion>
 
         <godaddy.logging.version>1.2.5</godaddy.logging.version>
-        <customcode.version>0-SNAPSHOT</customcode.version>
+        <customcode.version>ZERO-SNAPSHOT</customcode.version>
 
     </properties>
 
@@ -457,7 +457,7 @@
                         <version>${jettyVersion}</version>
                         <configuration>
                             <httpConnector>
-                                <port>9999</port>
+                                <port>8080</port>
                             </httpConnector>
                         </configuration>
                     </plugin>
