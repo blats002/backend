@@ -22,18 +22,17 @@
 package com.divroll.backend.functions;
 
 /**
+ *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
+ * @version 1.0
+ * @since 1.0
  */
 public class CustomCodeException extends Exception {
-  private static final long serialVersionUID = 1L;
-
-  public CustomCodeException() {
-    super();
-  }
-
-  public CustomCodeException(String message) {
-    super(message);
-  }
+	private static final long serialVersionUID = 1L;
+	public CustomCodeException() {
+		super();
+	}
+	public CustomCodeException(String message){
+		super(message);
+	}
 }
