@@ -317,7 +317,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   }
 
   protected boolean isAuthorized() {
-    if (apiKey == null || apiKey.isEmpty()) {
+    if ( (apiKey == null || apiKey.isEmpty()) && masterKey.isEmpty()) {
       return false;
     }
     if (application != null) {
