@@ -24,12 +24,12 @@ package com.divroll.backend.functions;
 import java.util.Map;
 
 /**
+ *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
+ * @version 1.0
+ * @since 1.0
  */
 public interface CustomCodeEventListener {
-  void onSuccess(Map<String, ?> result);
-
-  void onFailure(CustomCodeException ex);
+	void onSuccess(Map<String, ?> result);
+	void onFailure(CustomCodeException ex);
 }

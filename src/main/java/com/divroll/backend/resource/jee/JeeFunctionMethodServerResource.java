@@ -22,12 +22,12 @@
 package com.divroll.backend.resource.jee;
 
 import com.alibaba.fastjson.JSON;
-import com.divroll.backend.customcode.MethodVerb;
-import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import com.divroll.backend.repository.FunctionRepository;
 import com.divroll.backend.resource.FunctionMethodResource;
 import com.divroll.backend.util.StringUtil;
 import com.divroll.backend.functions.CustomCode;
+import com.divroll.functions.MethodVerb;
+import com.divroll.functions.rest.CustomCodeRequest;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
@@ -39,6 +39,7 @@ import org.restlet.representation.Representation;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -78,10 +79,10 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       byte[] body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) {
+      CompletableFuture<Map<String, ?>> future) throws IOException {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.GET, path, params, new ByteArrayInputStream(body), methodName, counter);
-    CustomCode customCode = new CustomCode(jarBytes, future);
+        new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
     customCode.executeMainClass(request);
   }
 
@@ -92,10 +93,10 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       byte[] body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) {
+      CompletableFuture<Map<String, ?>> future) throws IOException {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.POST, path, params, new ByteArrayInputStream(body), methodName, counter);
-    CustomCode customCode = new CustomCode(jarBytes, future);
+        new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
     customCode.executeMainClass(request);
   }
 
@@ -106,10 +107,10 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       byte[] body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) {
+      CompletableFuture<Map<String, ?>> future) throws IOException {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.PUT, path, params, new ByteArrayInputStream(body), methodName, counter);
-    CustomCode customCode = new CustomCode(jarBytes, future);
+        new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
     customCode.executeMainClass(request);
   }
 
@@ -120,10 +121,10 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       byte[] body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) {
+      CompletableFuture<Map<String, ?>> future) throws IOException {
     CustomCodeRequest request =
-        new CustomCodeRequest(MethodVerb.DELETE, path, params, new ByteArrayInputStream(body), methodName, counter);
-    CustomCode customCode = new CustomCode(jarBytes, future);
+        new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
+    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
     customCode.executeMainClass(request);
   }
 

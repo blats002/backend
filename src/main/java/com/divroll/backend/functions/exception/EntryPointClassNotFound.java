@@ -24,16 +24,16 @@ package com.divroll.backend.functions.exception;
 import com.divroll.backend.functions.CustomCodeException;
 
 /**
+ *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
+ * @version 1.0
+ * @since 1.0
  */
 public class EntryPointClassNotFound extends CustomCodeException {
-  public EntryPointClassNotFound() {
-    super();
-  }
-
-  public EntryPointClassNotFound(String mainClass) {
-    super("Entry point class '" + mainClass + "' not found");
-  }
+	public EntryPointClassNotFound(){
+		super();
+	}
+	public EntryPointClassNotFound(String mainClass){
+		super("Entry point class '" + mainClass + "' not found" );
+	}	
 }
