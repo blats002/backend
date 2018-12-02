@@ -32,9 +32,9 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
-import com.divroll.functions.customcode.CustomCodeMethod;
-import com.divroll.functions.jar.JarEntryObject;
-import com.divroll.functions.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.method.CustomCodeMethod;
+import com.divroll.backend.customcode.jar.JarEntryObject;
+import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import org.json.simple.JSONValue;
 
 /**

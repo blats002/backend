@@ -26,8 +26,8 @@ import com.divroll.backend.repository.FunctionRepository;
 import com.divroll.backend.resource.FunctionMethodResource;
 import com.divroll.backend.util.StringUtil;
 import com.divroll.backend.functions.CustomCode;
-import com.divroll.functions.MethodVerb;
-import com.divroll.functions.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.MethodVerb;
+import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
@@ -76,7 +76,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           InputStream jarBytes,
       String path,
       Map<String, String> params,
-      byte[] body,
+      InputStream body,
       String methodName,
       int counter,
       CompletableFuture<Map<String, ?>> future) throws IOException {
@@ -90,7 +90,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           InputStream jarBytes,
       String path,
       Map<String, String> params,
-      byte[] body,
+          InputStream body,
       String methodName,
       int counter,
       CompletableFuture<Map<String, ?>> future) throws IOException {
@@ -104,7 +104,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           InputStream jarBytes,
       String path,
       Map<String, String> params,
-      byte[] body,
+          InputStream body,
       String methodName,
       int counter,
       CompletableFuture<Map<String, ?>> future) throws IOException {
@@ -118,7 +118,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           InputStream jarBytes,
       String path,
       Map<String, String> params,
-      byte[] body,
+          InputStream body,
       String methodName,
       int counter,
       CompletableFuture<Map<String, ?>> future) throws IOException {
@@ -149,10 +149,11 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       return notFound();
     }
     byte[] content = null;
+    InputStream is = null;
     try {
-      InputStream is = entity.getStream();
-      content = ByteStreams.toByteArray(is);
-    } catch (Exception e) {
+      is = entity.getStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
     try {
       if (jarBytes != null) {
@@ -165,7 +166,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           });
         }
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        customCodeGet(jarBytes, path, params, content, methodName, 0, future);
+        customCodeGet(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
@@ -189,9 +190,9 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
 
   @Override
   public Representation postMethod(Representation entity) {
-    if (!isAuthorized()) {
-      return unauthorized();
-    }
+//    if (!isAuthorized()) {
+//      return unauthorized();
+//    }
     LOG.info("Function Name: " + functionName);
     LOG.info("Function Method: " + methodName);
     InputStream jarBytes = getJar(appId, functionName);
@@ -199,10 +200,11 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       return notFound();
     }
     byte[] content = null;
+    InputStream is = null;
     try {
-      InputStream is = entity.getStream();
-      content = ByteStreams.toByteArray(is);
-    } catch (Exception e) {
+      is = entity.getStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
     try {
       if (jarBytes != null) {
@@ -215,7 +217,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           });
         }
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        customCodePost(jarBytes, path, params, content, methodName, 0, future);
+        customCodePost(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
@@ -249,10 +251,11 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       return notFound();
     }
     byte[] content = null;
+    InputStream is = null;
     try {
-      InputStream is = entity.getStream();
-      content = ByteStreams.toByteArray(is);
-    } catch (Exception e) {
+      is = entity.getStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
     try {
       if (jarBytes != null) {
@@ -265,7 +268,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           });
         }
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        customCodePut(jarBytes, path, params, content, methodName, 0, future);
+        customCodePut(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
@@ -299,10 +302,11 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
       return notFound();
     }
     byte[] content = null;
+    InputStream is = null;
     try {
-      InputStream is = entity.getStream();
-      content = ByteStreams.toByteArray(is);
-    } catch (Exception e) {
+      is = entity.getStream();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
     try {
       if (jarBytes != null) {
@@ -315,7 +319,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           });
         }
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        customCodeDelete(jarBytes, path, params, content, methodName, 0, future);
+        customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
