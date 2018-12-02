@@ -21,8 +21,9 @@
  */
 package com.divroll.backend.functions;
 
-import com.divroll.backend.customcode.MethodVerb;
-import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.divroll.functions.MethodVerb;
+import com.divroll.functions.rest.CustomCodeRequest;
+import com.google.common.io.ByteStreams;
 import org.json.simple.JSONValue;
 import org.junit.After;
 import org.junit.Before;
@@ -61,10 +62,10 @@ public class TestCustomCode {
     Map<String, String> params = new LinkedHashMap<String, String>();
     CustomCodeRequest request =
         new CustomCodeRequest(
-            MethodVerb.GET, "/test", params, new ByteArrayInputStream("world".getBytes()), "hello_method", 0L);
+            MethodVerb.GET, "/test", params, "world".getBytes(), "hello_method", 0L);
     File file = new File(JAR_FILE);
     CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-    CustomCode customCode = new CustomCode(new FileInputStream(file), future);
+    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(new FileInputStream(file)), future);
     customCode.executeMainClass(request);
     Map<String, ?> result = future.get();
     System.out.println(JSONValue.toJSONString(future));

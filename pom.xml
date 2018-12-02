@@ -59,7 +59,7 @@
         <jettyVersion>9.4.12.RC2</jettyVersion>
 
         <godaddy.logging.version>1.2.5</godaddy.logging.version>
-        <customcode.version>0-SNAPSHOT</customcode.version>
+        <customcode.version>ZERO-SNAPSHOT</customcode.version>
 
     </properties>
 
@@ -430,8 +430,14 @@
             <scope>provided</scope>
         </dependency>
 
+        <!--<dependency>-->
+            <!--<groupId>com.divroll.backend.customcode</groupId>-->
+            <!--<artifactId>sdk</artifactId>-->
+            <!--<version>${customcode.version}</version>-->
+            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
+        <!--</dependency>-->
         <dependency>
-            <groupId>com.divroll.backend.customcode</groupId>
+            <groupId>com.divroll.functions</groupId>
             <artifactId>sdk</artifactId>
             <version>${customcode.version}</version>
             <!--<scope>provided</scope>-->
@@ -459,6 +465,10 @@
                 <exclusion>
                     <groupId>org.json</groupId>
                     <artifactId>json</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.divroll.backend.customcode</groupId>
+                    <artifactId>sdk</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

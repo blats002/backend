@@ -21,9 +21,7 @@
  */
 package com.divroll.backend.functions;
 
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
-
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,47 +29,46 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 /**
+ *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
+ * @version 1.0
+ * @since 1.0
  */
 public class JarByteClassloader extends ClassLoader {
+	public byte[] bytes;
 
-  private static final Logger LOG = LoggerFactory.getLogger(JarByteClassloader.class);
+	public JarByteClassloader(byte[] bytes) throws IOException {
+		// TODO Validate if the byte array passed is a Jar
+		//super(bytes.getClass().getClassLoader());
+		super(Thread.currentThread().getContextClassLoader());
+		this.bytes = bytes;
+	}
 
-  public JarInputStream jis;
-
-  public JarByteClassloader(JarInputStream jarInputStream) throws IOException {
-    // TODO Validate if the byte array passed is a Jar
-    // super(bytes.getClass().getClassLoader());
-    super(Thread.currentThread().getContextClassLoader());
-    this.jis = jarInputStream;
-  }
-
-  @Override
-  protected Class findClass(String name) throws ClassNotFoundException {
-    try {
-      JarEntry entry = jis.getNextJarEntry();
-      if (entry == null) {
-        throw new ClassNotFoundException(name);
-      }
-      while (entry != null) {
-        if (entry.getName().equals(name.replace('.', '/') + ".class")) {
-          byte[] array = new byte[1024 * 10];
-          InputStream is = jis;
-          ByteArrayOutputStream out = new ByteArrayOutputStream(array.length);
-          int length = is.read(array);
-          while (length > 0) {
-            out.write(array, 0, length);
-            length = is.read(array);
-          }
-          return defineClass(name, out.toByteArray(), 0, out.size());
-        }
-        entry = jis.getNextJarEntry();
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
+	@Override
+    protected Class findClass(String name) throws ClassNotFoundException {
+		try {
+			JarInputStream jis = new JarInputStream(new ByteArrayInputStream(bytes)); 
+			JarEntry entry = jis.getNextJarEntry();
+			if (entry == null){ 
+				throw new ClassNotFoundException(name);
+			}
+			while (entry != null){
+				if (entry.getName().equals(name.replace('.', '/') + ".class")){
+					byte[] array = new byte[1024 * 10];
+					InputStream is = jis;
+					ByteArrayOutputStream out = new ByteArrayOutputStream(array.length);
+					int length = is.read(array);
+			        while (length > 0) {
+			        	out.write(array, 0, length);
+			        	length = is.read(array);
+			        }
+		         	return defineClass(name, out.toByteArray(), 0, out.size());
+				}
+				entry = jis.getNextJarEntry();
+			}			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null; 
+	}	
 }
