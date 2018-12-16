@@ -73,6 +73,10 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
       String username = getQueryValue(Constants.QUERY_USERNAME);
       String password = getQueryValue(Constants.QUERY_PASSWORD);
       Application app = applicationService.read(appId);
+
+      LOG.with("NAMESPACE", namespace);
+      System.out.println("NAMESPACE="+namespace);
+
       if (app == null) {
         return null;
       }
