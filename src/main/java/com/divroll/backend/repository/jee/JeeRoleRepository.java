@@ -437,7 +437,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));

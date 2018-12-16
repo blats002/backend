@@ -22,10 +22,7 @@
 package com.divroll.backend.resource;
 
 import org.restlet.representation.Representation;
-import org.restlet.resource.Delete;
-import org.restlet.resource.Get;
-import org.restlet.resource.Post;
-import org.restlet.resource.Put;
+import org.restlet.resource.*;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -44,4 +41,8 @@ public interface FunctionMethodResource {
 
   @Delete
   Representation deleteMethod(Representation entity);
+
+  @Options
+  void optionsMethod(Representation entity);
+
 }

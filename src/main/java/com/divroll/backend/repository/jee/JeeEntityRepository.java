@@ -507,7 +507,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(kind, namespaceProperty)
-                        .union(txn.find(kind, namespaceProperty, namespace));
+                        .intersect(txn.find(kind, namespaceProperty, namespace));
               } else {
                 result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
               }
@@ -604,7 +604,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(kind, namespaceProperty)
-                        .union(txn.find(kind, namespaceProperty, namespace));
+                        .intersect(txn.find(kind, namespaceProperty, namespace));
               } else {
                 result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
               }
@@ -1145,7 +1145,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                           if (namespace != null && !namespace.isEmpty()) {
                             result =
                                 txn.findWithProp(entityType, namespaceProperty)
-                                    .union(txn.find(entityType, namespaceProperty, namespace));
+                                    .intersect(txn.find(entityType, namespaceProperty, namespace));
                           } else {
                             result =
                                 txn.getAll(entityType)
@@ -1357,7 +1357,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
@@ -1479,7 +1479,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
@@ -1817,7 +1817,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));

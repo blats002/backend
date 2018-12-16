@@ -32,9 +32,12 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
 import org.json.simple.JSONValue;
+import org.restlet.Message;
 import org.restlet.data.Form;
+import org.restlet.data.Header;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.Representation;
+import org.restlet.util.Series;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +47,7 @@ import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -54,6 +58,7 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     implements FunctionMethodResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
+  private static final String HEADERS_KEY = "org.restlet.http.headers";
 
   @Inject FunctionRepository functionRepository;
 
@@ -172,7 +177,6 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
-          response.setHeader("Access-Control-Allow-Origin", "*");
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -223,7 +227,6 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
-          response.setHeader("Access-Control-Allow-Origin", "*");
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -274,7 +277,6 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
-          response.setHeader("Access-Control-Allow-Origin", "*");
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -325,7 +327,6 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
-          response.setHeader("Access-Control-Allow-Origin", "*");
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -340,4 +341,27 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     }
     return null;
   }
+
+  @Override
+  public void optionsMethod(Representation entity) {
+    getMessageHeaders(getResponse()).add("Access-Control-Allow-Origin", "*");
+    getMessageHeaders(getResponse()).add("Access-Control-Allow-Methods", "POST,OPTIONS");
+    getMessageHeaders(getResponse()).add("Access-Control-Allow-Headers", "Content-Type");
+    getMessageHeaders(getResponse()).add("Access-Control-Allow-Credentials", "true");
+    getMessageHeaders(getResponse()).add("Access-Control-Max-Age", "60");
+  }
+
+  @SuppressWarnings("unchecked")
+  static Series<Header> getMessageHeaders(Message message) {
+    ConcurrentMap<String, Object> attrs = message.getAttributes();
+    Series<Header> headers = (Series<Header>) attrs.get(HEADERS_KEY);
+    if (headers == null) {
+      headers = new Series<Header>(Header.class);
+      Series<Header> prev = (Series<Header>)
+              attrs.putIfAbsent(HEADERS_KEY, headers);
+      if (prev != null) { headers = prev; }
+    }
+    return headers;
+  }
+
 }
