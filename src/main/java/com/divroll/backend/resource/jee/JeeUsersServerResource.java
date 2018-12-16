@@ -147,6 +147,9 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
         return null;
       }
 
+      LOG.with("NAMESPACE", namespace);
+      System.out.println("NAMESPACE="+namespace);
+
       String[] read = new String[] {};
       String[] write = new String[] {};
 

@@ -550,7 +550,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
@@ -645,7 +645,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));

@@ -155,7 +155,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(kind, namespaceProperty)
-                        .union(txn.find(kind, namespaceProperty, namespace));
+                        .intersect(txn.find(kind, namespaceProperty, namespace));
                 result = result.intersect(txn.find(kind, uniqueProperty, uniqueValue));
               } else {
                 result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
@@ -432,7 +432,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(kind, namespaceProperty)
-                        .union(txn.find(kind, namespaceProperty, namespace));
+                        .intersect(txn.find(kind, namespaceProperty, namespace));
               } else {
                 result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
               }
@@ -462,7 +462,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
@@ -503,7 +503,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
@@ -542,7 +542,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               if (namespace != null && !namespace.isEmpty()) {
                 result =
                     txn.findWithProp(entityType, namespaceProperty)
-                        .union(txn.find(entityType, namespaceProperty, namespace));
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
