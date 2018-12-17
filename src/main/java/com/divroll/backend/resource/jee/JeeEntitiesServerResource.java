@@ -183,6 +183,11 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
         limitValue = limit;
       }
 
+      Long lCount = null;
+      if(count != null && Boolean.valueOf(count) == true) {
+        lCount = entityRepository.countEntities(appId, namespace, entityType, false, filters);
+      }
+
       if (isMaster()) {
         try {
           List<Map<String, Comparable>> entityObjs =
@@ -193,6 +198,9 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
           entitiesJSONObject.put("results", entityObjs);
           entitiesJSONObject.put("skip", skipValue);
           entitiesJSONObject.put("limit", limitValue);
+          if(lCount != null) {
+            entitiesJSONObject.put("count", lCount);
+          }
           responseBody.put("entities", entitiesJSONObject);
           return success(responseBody);
         } catch (Exception e) {
@@ -226,6 +234,9 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
           entitiesJSONObject.put("results", entityObjs);
           entitiesJSONObject.put("skip", skipValue);
           entitiesJSONObject.put("limit", limitValue);
+          if(lCount != null) {
+            entitiesJSONObject.put("count", lCount);
+          }
           responseBody.put("entities", entitiesJSONObject);
 
           return success(responseBody);

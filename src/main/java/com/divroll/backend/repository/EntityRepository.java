@@ -143,6 +143,13 @@ public interface EntityRepository {
       boolean isMasterKey,
       List<TransactionFilter> filters);
 
+  Long countEntities(
+          String instance,
+          String namespace,
+          String entityType,
+          boolean isMasterKey,
+          List<TransactionFilter> filters);
+
   InputStream getEntityBlob(
       String instance, String namespace, String entityType, String entityId, String blobKey);
 
