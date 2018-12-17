@@ -294,7 +294,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     String rolesString = getQueryValue("roles");
     if(rolesString != null) {
-      System.out.println(rolesString + "<-------------------------");
+      if(rolesString.startsWith("=")) {
+        rolesString = rolesString.replace("=", "");
+      }
       JSONArray jsonArray = new JSONArray(rolesString);
       if (jsonArray != null) {
         for (int i = 0; i < jsonArray.length(); i++) {

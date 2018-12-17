@@ -1832,7 +1832,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
               }
               if (isMasterKey) {
-                result = txn.getAll(entityType);
                 result = result.skip(skip).take(limit);
                 if (filters != null && !filters.isEmpty()) {
                   result = filter(entityType, result, filters, txn);
@@ -1958,6 +1957,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 if (entity.getType().equals(defaultUserStore)) {
                   comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
                 }
+                comparableMap.remove("nameSpace");
                 entities.add(comparableMap);
               }
             }
