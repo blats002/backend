@@ -139,6 +139,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 Entity roleEntity = txn.getEntity(roleEntityId);
                 if (roleEntity != null) {
                   entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                  roleEntity.addLink(Constants.USERS_LINKNAME, entity);
                 }
               }
 
@@ -318,9 +319,17 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   Entity roleEntity = txn.getEntity(roleEntityId);
                   if (roleEntity != null) {
                     entity.addLink(Constants.ROLE_LINKNAME, roleEntity);
+                    roleEntity.addLink(Constants.USERS_LINKNAME, entity);
                   }
                 }
               }
+
+              // Update missing role link
+              EntityIterable roleEntities = entity.getLinks(Constants.ROLE_LINKNAME);
+              for(Entity roleEntity : roleEntities) {
+                roleEntity.addLink(Constants.USERS_LINKNAME, entity);
+              }
+
               entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               success[0] = true;
             }
@@ -415,6 +424,12 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   }
                 }
                 entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
+
+              // Update missing role link
+              EntityIterable roleEntities = entity.getLinks(Constants.ROLE_LINKNAME);
+              for(Entity roleEntity : roleEntities) {
+                roleEntity.addLink(Constants.USERS_LINKNAME, entity);
               }
 
               entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
@@ -614,6 +629,18 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
             public void execute(@NotNull final StoreTransaction txn) {
               EntityId roleEntityId = txn.toEntityId(userID);
               Entity entity = txn.getEntity(roleEntityId);
+
+              entity.getLinkNames().forEach(linkName -> {
+                Entity linked = entity.getLink(linkName);
+                entity.deleteLink(linkName, linked);
+              });
+
+              // Delete Role links
+              EntityIterable roles = entity.getLinks(Constants.ROLE_LINKNAME);
+              for(Entity role : roles) {
+                role.deleteLink(Constants.USERS_LINKNAME, entity);
+              }
+
               success[0] = entity.delete();
             }
           });
@@ -633,6 +660,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
       int limit,
       final String sort,
       boolean isMasterKey,
+      List<String> roleNames,
       List<TransactionFilter> filters) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     final List<User> users = new LinkedList<>();
@@ -701,6 +729,18 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 if (filters != null && !filters.isEmpty()) {
                   result = filter(entityType, result, filters, txn);
                 }
+
+                if(roleNames != null && !roleNames.isEmpty()) {
+                  for(String roleName : roleNames){
+                    Entity roleEntity = txn.find(defaultRoleStore, "name", roleName).getFirst();
+                    EntityIterable entitiesWithGivenRole = roleEntity.getLinks(Constants.USERS_LINKNAME);
+//                    System.out.println("roleName=" + roleName);
+//                    System.out.println("roleId=" + roleEntity.getId());
+//                    System.out.println("entitiesWithGivenRole=" + entitiesWithGivenRole.count());
+                    result = result.intersect(entitiesWithGivenRole);
+                  }
+                }
+
                 if (sort != null) {
                   if (sort.startsWith("-")) {
                     String sortDescending = sort.substring(1);
