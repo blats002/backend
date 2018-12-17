@@ -1937,6 +1937,36 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
   @Override
+  public Long countEntities(String instance, String namespace, String entityType, boolean isMasterKey, List<TransactionFilter> filters) {
+    final Long[] count = {0L};
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+    try {
+      entityStore.executeInTransaction(
+          new StoreTransactionalExecutable() {
+            @Override
+            public void execute(@NotNull final StoreTransaction txn) {
+              EntityIterable result = null;
+              if (namespace != null && !namespace.isEmpty()) {
+                result =
+                    txn.findWithProp(entityType, namespaceProperty)
+                        .intersect(txn.find(entityType, namespaceProperty, namespace));
+              } else {
+                result =
+                    txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+              }
+              if (filters != null && !filters.isEmpty()) {
+                result = filter(entityType, result, filters, txn);
+              }
+              count[0] = result.count();
+            }
+          });
+    } finally {
+      //// entityStore.close();
+    }
+    return count[0];
+  }
+
+  @Override
   protected String getDefaultRoleStore() {
     return defaultRoleStore;
   }

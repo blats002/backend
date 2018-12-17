@@ -40,6 +40,7 @@ public class Users {
 
   private long skip;
   private long limit;
+  private long count;
 
   public List<UserDTO> getResults() {
     return results;
@@ -63,5 +64,13 @@ public class Users {
 
   public void setLimit(long limit) {
     this.limit = limit;
+  }
+
+  public long getCount() {
+    return count;
+  }
+
+  public void setCount(long count) {
+    this.count = count;
   }
 }
