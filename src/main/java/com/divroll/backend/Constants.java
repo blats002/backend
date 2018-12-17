@@ -46,6 +46,7 @@ public final class Constants {
   public static final String ROLE_ID = "roleId";
   public static final String ROLE_NAME = "name";
   public static final String ROLE_LINKNAME = "role"; // TODO add to app.properties file instead
+  public static final String USERS_LINKNAME = "users";
   public static final String WEBTOKEN = "webToken";
   public static final String QUERY_USERNAME = "username";
   public static final String QUERY_PASSWORD = "password";

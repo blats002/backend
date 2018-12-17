@@ -107,6 +107,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
                 limitValue,
                 sort,
                 false,
+                roles,
                 filters);
         Users users = new Users();
         users.setResults(DTOHelper.convert(results));
@@ -128,6 +129,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
                 limitValue,
                 null,
                 true,
+                roles,
                 filters);
         Users users = new Users();
         users.setResults(DTOHelper.convert(results));
