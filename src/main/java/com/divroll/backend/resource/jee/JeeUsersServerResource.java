@@ -84,6 +84,11 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
         return null;
       }
 
+      Long lCount = null;
+      if(count != null && Boolean.valueOf(count) == true) {
+        lCount = entityRepository.countEntities(appId, namespace, defaultUserStore, false, filters);
+      }
+
       if (!isMaster()) {
         String authUserId = null;
         try {
@@ -107,6 +112,9 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
         users.setResults(DTOHelper.convert(results));
         users.setLimit(Long.valueOf(limitValue));
         users.setSkip(Long.valueOf(skipValue));
+        if(lCount != null) {
+          users.setCount(lCount);
+        }
         setStatus(Status.SUCCESS_OK);
         return users;
       } else {
@@ -125,6 +133,9 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
         users.setResults(DTOHelper.convert(results));
         users.setLimit(Long.valueOf(skipValue));
         users.setSkip(Long.valueOf(limitValue));
+        if(lCount != null) {
+          users.setCount(lCount);
+        }
         setStatus(Status.SUCCESS_OK);
         return users;
       }

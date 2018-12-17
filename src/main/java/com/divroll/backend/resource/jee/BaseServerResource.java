@@ -83,6 +83,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String roleId;
   protected Integer skip = null;
   protected Integer limit = null;
+  protected String count = null;
   protected String sort;
   protected Boolean publicRead;
   protected Boolean publicWrite;
@@ -227,6 +228,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
     } catch (Exception e) {
       // do nothing
     }
+
+    count = getQueryValue(Constants.QUERY_COUNT);
 
     if (skip == null) {
       skip = 0;

@@ -51,6 +51,7 @@ public final class Constants {
   public static final String QUERY_PASSWORD = "password";
   public static final String QUERY_SKIP = "skip";
   public static final String QUERY_LIMIT = "limit";
+  public static final String QUERY_COUNT = "count";
   public static final String JWT_ID_KEY = "id";
   public static final String DEFAULT_CHARSET = "utf-8";
   public static final String ACL_ASTERISK = "*";
