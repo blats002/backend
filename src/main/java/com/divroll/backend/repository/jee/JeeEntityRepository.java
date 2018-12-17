@@ -26,6 +26,7 @@ import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.model.EmbeddedArrayIterable;
 import com.divroll.backend.model.EmbeddedEntityIterable;
 import com.divroll.backend.model.EntityStub;
+import com.divroll.backend.model.Role;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.BacklinkAction;
 import com.divroll.backend.model.action.EntityAction;
@@ -1847,9 +1848,32 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
               } else {
                 Entity targetEntity = txn.getEntity(txn.toEntityId(userIdRoleId));
-                result =
-                    txn.findLinks(entityType, targetEntity, "aclRead")
-                        .concat(txn.find(entityType, "publicRead", true));
+
+                List<Role> roles = new LinkedList<>();
+                for (Entity roleEntity : targetEntity.getLinks(Constants.ROLE_LINKNAME)) {
+                  Role role = new Role();
+                  role.setEntityId(roleEntity.getId().toString());
+                  role.setName((String) roleEntity.getProperty(Constants.ROLE_NAME));
+                  roles.add(role);
+                }
+
+                if(roles != null && !roles.isEmpty()) {
+                  result =
+                          txn.findLinks(entityType, targetEntity, "aclRead")
+                                  .concat(txn.find(entityType, "publicRead", true));
+                  for(Role role : roles) {
+                    Entity roleEntity = txn.getEntity(txn.toEntityId(role.getEntityId()));
+                    result =
+                            txn.findLinks(entityType, roleEntity, "aclRead")
+                                    .concat(txn.find(entityType, "publicRead", true));
+                  }
+                } else {
+                  result =
+                          txn.findLinks(entityType, targetEntity, "aclRead")
+                                  .concat(txn.find(entityType, "publicRead", true));
+                }
+
+
                 if (filters != null && !filters.isEmpty()) {
                   EntityIterable filtered = filter(entityType, result, filters, txn);
                   result = result.intersect(filtered);
