@@ -1523,6 +1523,14 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 Entity linked = entity.getLink(linkName);
                 entity.deleteLink(linkName, linked);
               });
+              if(entityType.equals(defaultUserStore)) {
+                // Delete Role links
+                EntityIterable roles = entity.getLinks(Constants.ROLE_LINKNAME);
+                for(Entity role : roles) {
+                  role.deleteLink(Constants.USERS_LINKNAME, entity);
+                }
+              }
+
             }
         }
       });

@@ -95,5 +95,6 @@ public interface UserRepository {
       int limit,
       String sort,
       boolean isMasterkey,
+      List<String> roleNames,
       List<TransactionFilter> filters);
 }

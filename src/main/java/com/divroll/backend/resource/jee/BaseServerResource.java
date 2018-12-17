@@ -112,6 +112,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
   @Inject EntityService entityService;
   private Application application;
 
+  protected List<String> roles;
+
   @Override
   protected void doInit() {
     super.doInit();
@@ -289,6 +291,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
         }
       }
     }
+
+    String rolesString = getQueryValue("roles");
+    if(rolesString != null) {
+      System.out.println(rolesString + "<-------------------------");
+      JSONArray jsonArray = new JSONArray(rolesString);
+      if (jsonArray != null) {
+        for (int i = 0; i < jsonArray.length(); i++) {
+          String roleName = jsonArray.getString(i);
+          if (roles == null) {
+            roles = new LinkedList<>();
+          }
+          roles.add(roleName);
+        }
+      }
+    }
+
   }
 
   protected Map<String, String> appProperties() {
