@@ -679,7 +679,6 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
               }
               if (isMasterKey) {
-                result = txn.getAll(entityType);
                 result = result.skip(skip).take(limit);
                 if (filters != null && !filters.isEmpty()) {
                   result = filter(entityType, result, filters, txn);
@@ -719,12 +718,15 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                             txn.findLinks(entityType, roleEntity, "aclRead")
                                     .concat(txn.find(entityType, "publicRead", true));
                   }
+
+                  System.out.println("COUNT NOT MASTER 5=" + result.size());
+
+
                 } else {
                   result =
                           txn.findLinks(entityType, targetEntity, "aclRead")
                                   .concat(txn.find(entityType, "publicRead", true));
                 }
-
 
                 if (filters != null && !filters.isEmpty()) {
                   result = filter(entityType, result, filters, txn);
@@ -751,7 +753,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   }
                 }
               }
+
               result = result.skip(skip).take(limit);
+
               for (Entity userEntity : result) {
                 User user = new User();
                 user.setEntityId((String) userEntity.getId().toString());
