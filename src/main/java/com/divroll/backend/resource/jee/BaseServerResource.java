@@ -90,6 +90,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   protected String propertyName;
 
+  protected String include;
   protected String linkName;
   protected String backlinkName;
   protected String targetEntityId;
@@ -113,6 +114,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   private Application application;
 
   protected List<String> roles;
+  protected List<String> includeLinks;
 
   @Override
   protected void doInit() {
@@ -305,6 +307,23 @@ public class BaseServerResource extends SelfInjectingServerResource {
             roles = new LinkedList<>();
           }
           roles.add(roleName);
+        }
+      }
+    }
+
+    include = getQueryValue("include");
+    if(include != null) {
+      includeLinks = new LinkedList<String>();
+
+      if(include != null && !include.isEmpty()) {
+        if (include.startsWith("[") && include.endsWith("]")) { // JSONArray
+          JSONArray jsonArray = new JSONArray(include);
+          for(int i=0;i<jsonArray.length();i++) {
+            String name = jsonArray.getString(i);
+            includeLinks.add(name);
+          }
+        } else {
+          includeLinks.add(include);
         }
       }
     }

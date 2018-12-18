@@ -91,7 +91,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
         String username =
             webTokenService.readUserIdFromToken(application.getMasterKey(), usernameWebToken);
         User userEntity =
-            userRepository.getUserByUsername(appId, namespace, defaultUserStore, username);
+            userRepository.getUserByUsername(appId, namespace, defaultUserStore, username, null);
         String newPassword =
             webTokenService.readUserIdFromToken(userEntity.getPassword(), passwordWebToken);
 
@@ -162,7 +162,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
         if (entity.getPassword() != null && !entity.getPassword().isEmpty()) {
           User userEntity =
               userRepository.getUserByUsername(
-                  appId, namespace, defaultUserStore, entity.getUsername());
+                  appId, namespace, defaultUserStore, entity.getUsername(), null);
           if (userEntity == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
           } else {
@@ -208,7 +208,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
         } else {
           User userEntity =
               userRepository.getUserByUsername(
-                  appId, namespace, defaultUserStore, entity.getUsername());
+                  appId, namespace, defaultUserStore, entity.getUsername(), null);
           if (userEntity == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
           } else {

@@ -80,9 +80,9 @@ public interface UserRepository {
       final Boolean publicRead,
       final Boolean publicWrite);
 
-  User getUser(String instance, String namespace, String entityType, String userID);
+  User getUser(String instance, String namespace, String entityType, String userID, List<String> includeLinks);
 
-  User getUserByUsername(String instance, String namespace, String entityType, String username);
+  User getUserByUsername(String instance, String namespace, String entityType, String username, List<String> includeLinks);
 
   boolean deleteUser(String instance, String namespace, String entityType, String userID);
 
@@ -96,5 +96,5 @@ public interface UserRepository {
       String sort,
       boolean isMasterkey,
       List<String> roleNames,
-      List<TransactionFilter> filters);
+      List<TransactionFilter> filters, List<String> includeLinks);
 }

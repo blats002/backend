@@ -21,6 +21,9 @@
  */
 package com.divroll.backend.repository.jee;
 
+import com.divroll.backend.Constants;
+import com.divroll.backend.helper.Comparables;
+import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -370,5 +373,151 @@ public abstract class JeeBaseRespository {
   protected boolean isReservedProperty(String propertyName) {
     return false;
   }
+
+  protected static CustomHashMap<String,Comparable> entityToMap(Entity entity) {
+    CustomHashMap<String,Comparable> comparableMap = new CustomHashMap<>();
+    for (String property : entity.getPropertyNames()) {
+      Comparable value = entity.getProperty(property);
+      if (value != null) {
+        if (value instanceof EmbeddedEntityIterable) {
+          comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
+        } else if (value instanceof EmbeddedArrayIterable) {
+          comparableMap.put(
+                  property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
+        } else {
+          comparableMap.put(property, value);
+        }
+      }
+    }
+
+    List<EntityStub> aclRead = new LinkedList<>();
+    List<EntityStub> aclWrite = new LinkedList<>();
+
+    Comparable comparablePublicRead =
+            entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+    Comparable comparablePublicWrite =
+            entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+    Boolean publicRead = null;
+    Boolean publicWrite = null;
+
+    if (comparablePublicRead != null) {
+      publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+    }
+
+    if (comparablePublicWrite != null) {
+      publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+    }
+
+    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
+      aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
+    }
+
+    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
+      aclWrite.add(
+              new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
+    }
+    comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.toString());
+    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+    comparableMap.put(
+            Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+    comparableMap.put(
+            Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
+    comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+    comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+
+    String dateCreated =
+            (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED)
+                    : null);
+    String dateUpdated =
+            (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED)
+                    : null);
+
+    comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+    comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+    return comparableMap;
+  }
+
+  protected static EntityDTO entityToEntityDTO(String entityType, Entity entity, String defaultUserStore) {
+
+    Map<String,Comparable> compMap = new LinkedHashMap<>();
+
+    for (String property : entity.getPropertyNames()) {
+      Comparable value = entity.getProperty(property);
+      if (value != null) {
+        if (value instanceof EmbeddedEntityIterable) {
+          compMap.put(property, ((EmbeddedEntityIterable) value).asObject());
+        } else if (value instanceof EmbeddedArrayIterable) {
+          compMap.put(
+                  property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
+        } else {
+          compMap.put(property, value);
+        }
+      }
+    }
+
+    List<EntityStub> aclRead = new LinkedList<>();
+    List<EntityStub> aclWrite = new LinkedList<>();
+
+    Comparable comparablePublicRead =
+            entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+    Comparable comparablePublicWrite =
+            entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+    Boolean publicRead = null;
+    Boolean publicWrite = null;
+
+    if (comparablePublicRead != null) {
+      publicRead = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+    }
+
+    if (comparablePublicWrite != null) {
+      publicWrite = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+    }
+
+    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
+      aclRead.add(new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
+    }
+
+    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
+      aclWrite.add(
+              new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
+    }
+
+    String dateCreated =
+            (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED)
+                    : null);
+    String dateUpdated =
+            (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED)
+                    : null);
+
+    EntityDTO entityDTO = new EntityDTO();
+    entityDTO.setEntityType(entityType);
+    entityDTO.setEntityId(entity.getId().toString());
+    entityDTO.setAclRead(aclRead);
+    entityDTO.setAclWrite(aclWrite);
+    entityDTO.setBlobNames(entity.getBlobNames());
+    entityDTO.setLinkNames(entity.getLinkNames());
+
+    entityDTO.setPublicWrite(publicWrite);
+    entityDTO.setPublicRead(publicRead);
+    entityDTO.setDateCreated(dateCreated);
+    entityDTO.setDateUpdated(dateUpdated);
+
+    compMap.remove(Constants.RESERVED_FIELD_METADATA);
+    if (entity.getType().equals(defaultUserStore)) {
+      compMap.remove(Constants.RESERVED_FIELD_PASSWORD);
+    }
+
+    entityDTO.setProperties(compMap);
+
+    return entityDTO;
+  }
+
 
 }

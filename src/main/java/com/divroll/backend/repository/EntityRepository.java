@@ -78,11 +78,11 @@ public interface EntityRepository {
       Class<T> clazz,
       String blobKey);
 
-  Map<String, Comparable> getEntities(
-      String instance, String namespace, String entityType, String entityId);
+  Map<String, Comparable> getEntity(
+      String instance, String namespace, String entityType, String entityId, List<String> includes);
 
-  List<Map<String, Comparable>> getEntities(
-          String instance, String namespace, String entityType, String propertyName, Comparable propertyValue);
+  List<Map<String, Comparable>> getEntity(
+          String instance, String namespace, String entityType, String propertyName, Comparable propertyValue, List<String> includes);
 
   List<String> getACLReadList(String instance, String namespace, String entityId);
 
@@ -204,5 +204,5 @@ public interface EntityRepository {
       String propertyName,
       Comparable propertyValue,
       int skip,
-      int limit);
+      int limit, List<String> includes);
 }

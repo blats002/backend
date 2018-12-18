@@ -23,10 +23,7 @@ package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.Comparables;
-import com.divroll.backend.model.EmbeddedArrayIterable;
-import com.divroll.backend.model.EmbeddedEntityIterable;
-import com.divroll.backend.model.EntityStub;
-import com.divroll.backend.model.Role;
+import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.BacklinkAction;
 import com.divroll.backend.model.action.EntityAction;
@@ -224,7 +221,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                       && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                       && !key.equals(Constants.RESERVED_FIELD_ACL_READ)
                       && !key.equals(Constants.RESERVED_FIELD_BLOBNAMES)
-                      && !key.equals(Constants.RESERVED_FIELD_LINKS)) {
+                      && !key.equals(Constants.RESERVED_FIELD_LINKNAMES)) {
                     //                                if(value instanceof EmbeddedEntityIterable) {
                     //                                    LOG.info(value.toString());
                     //                                }
@@ -561,7 +558,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               comparableMap.put(
                   Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
               comparableMap.put(
-                  Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                  Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
               comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
               comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
 
@@ -622,8 +619,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
   @Override
-  public Map<String, Comparable> getEntities(
-      String instance, String namespace, final String entityType, final String entityId) {
+  public Map<String, Comparable> getEntity(
+      String instance, String namespace, final String entityType, final String entityId, List<String> includes) {
     final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
@@ -681,7 +678,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               comparableMap.put(
                   Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
               comparableMap.put(
-                  Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                  Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
               comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
               comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
 
@@ -705,11 +702,11 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
     @Override
-    public List<Map<String, Comparable>> getEntities(String instance,
-                                               String namespace,
-                                               String entityType,
-                                               String propertyName,
-                                               Comparable propertyValue) {
+    public List<Map<String, Comparable>> getEntity(String instance,
+                                                   String namespace,
+                                                   String entityType,
+                                                   String propertyName,
+                                                   Comparable propertyValue, List<String> includes) {
         List<Map<String, Comparable>> entityList = new LinkedList<>();
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
         try {
@@ -777,7 +774,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                     comparableMap.put(
                                             Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
                                     comparableMap.put(
-                                            Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                                            Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
                                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                                     comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
 
@@ -793,7 +790,27 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                     comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
                                     comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
 
-                                    entityList.add(comparableMap);
+                                  if(includes != null && !includes.isEmpty()) {
+                                      ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                                      for(String include : includes) {
+                                      LinkDTO linkDTO = new LinkDTO();
+                                      linkDTO.setLinkName(include);
+                                      if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                                              || include.equals(Constants.RESERVED_FIELD_ACL_READ)
+                                              || include.equals(Constants.ROLE_LINKNAME)
+                                              || include.equals(Constants.USERS_LINKNAME)) {
+                                        continue;
+                                      }
+                                      EntityIterable linkedEntities = entity.getLinks(include);
+                                      for(Entity linkEntity : linkedEntities) {
+                                        EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
+                                        linkDTO.getEntities().add(entityDTO);
+                                      }
+                                      linkDTOS.add(linkDTO);
+                                    }
+                                    comparableMap.put("links", linkDTOS);
+                                  }
+                                  entityList.add(comparableMap);
                                 }
 
                             }
@@ -1345,7 +1362,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       String propertyName,
       Comparable propertyValue,
       int skip,
-      int limit) {
+      int limit, List<String> includes) {
     final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
@@ -1411,7 +1428,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 comparableMap.put(
                     Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
                 comparableMap.put(
-                    Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                    Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
                 comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
                 if (entity.getType().equals(defaultUserStore)) {
@@ -1691,7 +1708,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               comparableMap.put(
                   Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
               comparableMap.put(
-                  Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                  Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
               comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
               comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -1773,7 +1790,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 comparableMap.put(
                     Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
                 comparableMap.put(
-                    Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                    Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
                 comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -1938,7 +1955,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 comparableMap.put(
                     Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
                 comparableMap.put(
-                    Constants.RESERVED_FIELD_LINKS, Comparables.cast(entity.getLinkNames()));
+                    Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
                 comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
                 comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
 
@@ -2002,4 +2019,5 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   protected String getDefaultRoleStore() {
     return defaultRoleStore;
   }
+
 }
