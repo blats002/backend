@@ -57,33 +57,38 @@ public class DTOHelper {
       if (userDTOS == null) {
         userDTOS = new LinkedList<UserDTO>();
       }
-      UserDTO userDTO = new UserDTO();
-      userDTO.setEntityId(user.getEntityId());
-      userDTO.setAclRead(user.getAclRead());
-      userDTO.setAclWrite(user.getAclWrite());
+//
+//      UserDTO userDTO = new UserDTO();
+//      userDTO.setEntityId(user.getEntityId());
+//      userDTO.setAclRead(user.getAclRead());
+//      userDTO.setAclWrite(user.getAclWrite());
+//
+//      userDTO.setPassword(user.getPassword());
+//      userDTO.setUsername(user.getUsername());
+//      userDTO.setEmail(user.getEmail());
+//      userDTO.setWebToken(user.getWebToken());
+//
+//      userDTO.setPublicRead(user.getPublicRead());
+//      userDTO.setPublicWrite(user.getPublicWrite());
+//
+//      userDTO.setDateCreated(user.getDateCreated());
+//      userDTO.setDateUpdated(user.getDateUpdated());
+//
+//      if (user.getRoles() != null) {
+//        List<RoleDTO> roles = null;
+//        for (Role role : user.getRoles()) {
+//          if (roles == null) {
+//            roles = new LinkedList<>();
+//          }
+//          roles.add(new RoleDTO(role.getEntityId()));
+//        }
+//        userDTO.setRoles(roles);
+//        userDTOS.add(userDTO);
+//      }
 
-      userDTO.setPassword(user.getPassword());
-      userDTO.setUsername(user.getUsername());
-      userDTO.setEmail(user.getEmail());
-      userDTO.setWebToken(user.getWebToken());
+      UserDTO userDTO = UserDTO.convert(user);
+      userDTOS.add(userDTO);
 
-      userDTO.setPublicRead(user.getPublicRead());
-      userDTO.setPublicWrite(user.getPublicWrite());
-
-      userDTO.setDateCreated(user.getDateCreated());
-      userDTO.setDateUpdated(user.getDateUpdated());
-
-      if (user.getRoles() != null) {
-        List<RoleDTO> roles = null;
-        for (Role role : user.getRoles()) {
-          if (roles == null) {
-            roles = new LinkedList<>();
-          }
-          roles.add(new RoleDTO(role.getEntityId()));
-        }
-        userDTO.setRoles(roles);
-        userDTOS.add(userDTO);
-      }
     }
     return userDTOS;
   }
