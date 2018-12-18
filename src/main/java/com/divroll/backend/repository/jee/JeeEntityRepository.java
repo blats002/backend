@@ -1585,6 +1585,11 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               targetEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
               if(bSet) {
+                  Entity otherEntity = sourceEntity.getLink(linkName);
+                  if(otherEntity != null) {
+                    otherEntity.deleteLink(linkName, sourceEntity);
+                  }
+                  sourceEntity.deleteLink(linkName, targetEntity);
                   success[0] = sourceEntity.setLink(linkName, targetEntity);
               } else {
                   success[0] = sourceEntity.addLink(linkName, targetEntity);
