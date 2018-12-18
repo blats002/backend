@@ -36,7 +36,7 @@ public class Keys {
       return true;
     } else if (propertyKey.equals(Constants.RESERVED_FIELD_ACL_WRITE)) {
       return true;
-    } else if (propertyKey.equals(Constants.RESERVED_FIELD_LINKS)) {
+    } else if (propertyKey.equals(Constants.RESERVED_FIELD_LINKNAMES)) {
       return true;
     } else if (propertyKey.equals(Constants.RESERVED_FIELD_BLOBNAMES)) {
       return true;

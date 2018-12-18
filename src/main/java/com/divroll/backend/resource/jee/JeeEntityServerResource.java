@@ -97,7 +97,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
 
       if (isMaster()) {
         Map<String, Comparable> entityObj =
-            entityRepository.getEntities(appId, namespace, entityType, entityId);
+            entityRepository.getEntity(appId, namespace, entityType, entityId, includeLinks);
         if (entityObj != null) {
           setStatus(Status.SUCCESS_OK);
           JSONObject jsonObject = new JSONObject();
@@ -121,7 +121,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
         Boolean isAccess = false;
 
         Map<String, Comparable> entityObj =
-            entityRepository.getEntities(appId, namespace, entityType, entityId);
+            entityRepository.getEntity(appId, namespace, entityType, entityId, includeLinks);
         if (entityObj != null) {
           ObjectLogger.log(entityObj);
           List<EntityStub> aclReadList = (List<EntityStub>) (entityObj.get("aclRead"));
@@ -337,7 +337,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
         } else {
           if (!isMaster) {
             Map<String, Comparable> entityMap =
-                entityRepository.getEntities(appId, namespace, entityType, entityId);
+                entityRepository.getEntity(appId, namespace, entityType, entityId, includeLinks);
             String authUserId =
                 webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
             if (entityMap == null) {
@@ -515,9 +515,10 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
         return;
       }
+
       if (!isMaster()) {
         Map<String, Comparable> entityMap =
-            entityRepository.getEntities(appId, namespace, entityType, entityId);
+            entityRepository.getEntity(appId, namespace, entityType, entityId, includeLinks);
         String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
         if (entityMap == null) {
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

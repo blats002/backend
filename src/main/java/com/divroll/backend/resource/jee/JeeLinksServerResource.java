@@ -84,7 +84,7 @@ public class JeeLinksServerResource extends BaseServerResource implements LinksR
       }
 
       Map<String, Comparable> map =
-          entityRepository.getEntities(appId, namespace, entityType, entityId);
+          entityRepository.getEntity(appId, namespace, entityType, entityId, new LinkedList<>());
 
       if (map == null) {
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
