@@ -41,8 +41,6 @@ public class CustomMapJSONConverter implements Converter {
 
     @Override
     public boolean canConvert(Class type) {
-        System.out.println("type=" + type.getName());
-        //return LinkDTO.class.isAssignableFrom(type);
         if(LinkDTO.class.isAssignableFrom(type)) {
             return true;
         }
