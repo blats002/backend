@@ -26,6 +26,7 @@ import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.quartz.Scheduler;
@@ -34,6 +35,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.engine.Engine;
+import org.restlet.engine.application.CorsFilter;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
@@ -133,7 +135,6 @@ public class DivrollBackendApplication extends Application {
 //    corsFilter.setAllowedCredentials(true);
 //
 //    corsFilter.setNext(router);
-//
 //    return corsFilter;
     return router;
   }
