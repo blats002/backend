@@ -74,8 +74,8 @@ public class JeeUserRoleServerResource extends BaseServerResource implements Use
       if (app != null) {
         String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
         Role role = roleRepository.getRole(appId, namespace, defaultUserStore, roleId);
-        User user = userRepository.getUser(appId, namespace, defaultUserStore, userId);
-        User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId);
+        User user = userRepository.getUser(appId, namespace, defaultUserStore, userId, null);
+        User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId, null);
         if (authUser == null || user == null || role == null) {
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           return;
@@ -126,8 +126,8 @@ public class JeeUserRoleServerResource extends BaseServerResource implements Use
       if (app != null) {
         String authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
         Role role = roleRepository.getRole(appId, namespace, defaultUserStore, roleId);
-        User user = userRepository.getUser(appId, namespace, defaultUserStore, userId);
-        User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId);
+        User user = userRepository.getUser(appId, namespace, defaultUserStore, userId, null);
+        User authUser = userRepository.getUser(appId, namespace, defaultUserStore, authUserId, null);
         if (authUser == null || user == null || role == null) {
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           return;

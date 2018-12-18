@@ -249,7 +249,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
         }
       } else if (entityId != null) {
         Map<String, Comparable> map =
-            entityRepository.getEntities(appId, namespace, entityType, entityId);
+            entityRepository.getEntity(appId, namespace, entityType, entityId, null);
         List<EntityStub> aclWriteList =
             map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
                 ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
@@ -364,7 +364,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
       }
 
       Map<String, Comparable> map =
-          entityRepository.getEntities(appId, namespace, entityType, entityId);
+          entityRepository.getEntity(appId, namespace, entityType, entityId, null);
       List<EntityStub> aclWriteList =
           map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
               ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
@@ -430,7 +430,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
       }
 
       Map<String, Comparable> map =
-          entityRepository.getEntities(appId, namespace, entityType, entityId);
+          entityRepository.getEntity(appId, namespace, entityType, entityId, null);
       List<EntityStub> aclWriteList =
           map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
               ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)

@@ -98,7 +98,7 @@ public class JeeEntityService implements EntityService {
       LOG.info("entityType=" + entityType);
       LOG.info("propertyName=" + propertyName);
       LOG.info("propertyValue=" + propertyValue);
-        List<Map<String,Comparable>> comparableMaps = entityRepository.getEntities(application.getAppId(), namespace, entityType, propertyName, propertyValue);
+        List<Map<String,Comparable>> comparableMaps = entityRepository.getEntity(application.getAppId(), namespace, entityType, propertyName, propertyValue, null);
         ObjectLogger.log(comparableMaps);
 
         final List<String> aclWriteListResult = new LinkedList<>();

@@ -23,6 +23,7 @@ package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.repository.EntityRepository;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,12 +48,12 @@ public class AppEntityRepository {
   }
 
   public Map<String, Comparable> getEntityById(String namespace, String entityId) {
-    return repository.getEntities(instance, namespace, entityType, entityId);
+    return repository.getEntity(instance, namespace, entityType, entityId, new LinkedList<>());
   }
 
   public boolean isExist(String entityType, String propertyName, Comparable propertyValue) {
     List<Map<String, Comparable>> entities =
-        repository.getEntities(instance, namespace, entityType, propertyName, propertyValue, 0, 1);
+        repository.getEntities(instance, namespace, entityType, propertyName, propertyValue, 0, 1, new LinkedList<>());
     return !entities.isEmpty();
   }
 }

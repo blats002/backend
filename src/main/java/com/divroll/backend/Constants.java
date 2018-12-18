@@ -62,7 +62,8 @@ public final class Constants {
 
   public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
   public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";
-  public static final String RESERVED_FIELD_LINKS = "linkNames";
+  public static final String RESERVED_FIELD_LINKNAMES = "linkNames";
+  public static final String RESERVED_FIELD_LINK = "links";
   public static final String RESERVED_FIELD_ACL_READ = "aclRead";
   public static final String RESERVED_FIELD_ACL_WRITE = "aclWrite";
   public static final String RESERVED_FIELD_PUBLICWRITE = "publicWrite";
@@ -70,6 +71,7 @@ public final class Constants {
   public static final String RESERVED_FIELD_USERNAME = "username";
   public static final String RESERVED_FIELD_PASSWORD = "password";
   public static final String RESERVED_FIELD_FUNCTION_NAME = "functionName";
+  public static final String RESERVED_FIELD_METADATA = "metaData";
 
   public static final String RESERVED_FIELD_DATE_CREATED = "dateCreated";
   public static final String RESERVED_FIELD_DATE_UPDATED = "dateUpdated";

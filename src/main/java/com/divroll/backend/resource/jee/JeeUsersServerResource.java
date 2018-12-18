@@ -108,7 +108,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
                 sort,
                 false,
                 roles,
-                filters);
+                filters, includeLinks);
         Users users = new Users();
         users.setResults(DTOHelper.convert(results));
         users.setLimit(Long.valueOf(limitValue));
@@ -130,7 +130,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
                 null,
                 true,
                 roles,
-                filters);
+                filters, includeLinks);
         Users users = new Users();
         users.setResults(DTOHelper.convert(results));
         users.setLimit(Long.valueOf(skipValue));
@@ -220,7 +220,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
       String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
       User userEntity =
-          userRepository.getUserByUsername(appId, namespace, defaultUserStore, username);
+          userRepository.getUserByUsername(appId, namespace, defaultUserStore, username, null);
 
       String entityJson = getQueryValue("entity");
       LOG.with("entity", entityJson);

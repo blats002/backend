@@ -36,6 +36,7 @@ import java.util.List;
  */
 @XStreamAlias("user")
 @ApiModel
+//@XStreamConverter(value = CustomMapJSONConverter.class)
 public class UserDTO {
   @ApiModelProperty(required = false, value = "Entity Id")
   private String entityId;
@@ -73,6 +74,12 @@ public class UserDTO {
 
   private String dateUpdated;
 
+//  @XStreamImplicit(itemFieldName = "links")
+//  private Map<String, Map<String,Comparable>> links;
+
+  @XStreamImplicit(itemFieldName = "links")
+  private List<LinkDTO> links;
+
   public static UserDTO convert(User user) {
     if (user == null) {
       return null;
@@ -82,7 +89,7 @@ public class UserDTO {
     userDTO.setAclRead(user.getAclRead());
     userDTO.setAclWrite(user.getAclWrite());
 
-    userDTO.setPassword(user.getPassword());
+    userDTO.setPassword(null);
     userDTO.setUsername(user.getUsername());
     userDTO.setEmail(user.getEmail());
     userDTO.setWebToken(user.getWebToken());
@@ -100,6 +107,10 @@ public class UserDTO {
       }
       userDTO.setRoles(roles);
     }
+
+    List<LinkDTO> linkList = user.getLinks();
+    userDTO.setLinks(linkList);
+
     return userDTO;
   }
 
@@ -200,5 +211,13 @@ public class UserDTO {
 
   public void setDateUpdated(String dateUpdated) {
     this.dateUpdated = dateUpdated;
+  }
+
+  public List<LinkDTO> getLinks() {
+    return links;
+  }
+
+  public void setLinks(List<LinkDTO> links) {
+    this.links = links;
   }
 }

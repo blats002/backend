@@ -22,9 +22,7 @@
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
-import com.divroll.backend.model.EntityStub;
-import com.divroll.backend.model.Role;
-import com.divroll.backend.model.User;
+import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.filter.TransactionFilter;
@@ -37,6 +35,7 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
+import util.ComparableLinkedList;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -217,7 +216,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                         && !key.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                         && !key.equals(Constants.RESERVED_FIELD_ACL_READ)
                         && !key.equals(Constants.RESERVED_FIELD_BLOBNAMES)
-                        && !key.equals(Constants.RESERVED_FIELD_LINKS)) {
+                        && !key.equals(Constants.RESERVED_FIELD_LINKNAMES)) {
                       //                                if(value instanceof EmbeddedEntityIterable)
                       // {
                       //                                    LOG.info(value.toString());
@@ -444,7 +443,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
   }
 
   @Override
-  public User getUser(String instance, String namespace, String entityType, final String userID) {
+  public User getUser(String instance, String namespace, String entityType, final String userID, List<String> includeLinks) {
     final User[] entity = {null};
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
@@ -540,6 +539,27 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 user.setPublicWrite(publicWrite);
                 user.setPublicRead(publicRead);
 
+                if(includeLinks != null && !includeLinks.isEmpty()) {
+                  ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                  for(String include : includeLinks) {
+                    LinkDTO linkDTO = new LinkDTO();
+                    linkDTO.setLinkName(include);
+                    if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                            || include.equals(Constants.RESERVED_FIELD_ACL_READ)
+                            || include.equals(Constants.ROLE_LINKNAME)
+                            || include.equals(Constants.USERS_LINKNAME)) {
+                      continue;
+                    }
+                    EntityIterable linkedEntities = userEntity.getLinks(include);
+                    for(Entity linkEntity : linkedEntities) {
+                      EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
+                      linkDTO.getEntities().add(entityDTO);
+                    }
+                    linkDTOS.add(linkDTO);
+                  }
+                  user.setLinks(linkDTOS);
+                }
+
                 entity[0] = user;
               }
             }
@@ -552,7 +572,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
 
   @Override
   public User getUserByUsername(
-      String instance, String namespace, final String entityType, final String username) {
+      String instance, String namespace, final String entityType, final String username, List<String> includeLinks) {
     final User[] entity = {null};
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
@@ -606,6 +626,27 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
 
                 user.setDateCreated(dateCreated);
                 user.setDateUpdated(dateUpdated);
+
+                if(includeLinks != null && !includeLinks.isEmpty()) {
+                  ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                  for(String include : includeLinks) {
+                    LinkDTO linkDTO = new LinkDTO();
+                    linkDTO.setLinkName(include);
+                    if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                            || include.equals(Constants.RESERVED_FIELD_ACL_READ)
+                            || include.equals(Constants.ROLE_LINKNAME)
+                            || include.equals(Constants.USERS_LINKNAME)) {
+                      continue;
+                    }
+                    EntityIterable linkedEntities = userEntity.getLinks(include);
+                    for(Entity linkEntity : linkedEntities) {
+                      EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
+                      linkDTO.getEntities().add(entityDTO);
+                    }
+                    linkDTOS.add(linkDTO);
+                  }
+                  user.setLinks(linkDTOS);
+                }
 
                 entity[0] = user;
               }
@@ -661,7 +702,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
       final String sort,
       boolean isMasterKey,
       List<String> roleNames,
-      List<TransactionFilter> filters) {
+      List<TransactionFilter> filters, List<String> includeLinks) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     final List<User> users = new LinkedList<>();
     try {
@@ -832,7 +873,30 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   roles.add(role);
                 }
                 user.setRoles(roles);
+
+                if(includeLinks != null && !includeLinks.isEmpty()) {
+                  ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                  for(String include : includeLinks) {
+                    LinkDTO linkDTO = new LinkDTO();
+                    linkDTO.setLinkName(include);
+                    if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
+                            || include.equals(Constants.RESERVED_FIELD_ACL_READ)
+                            || include.equals(Constants.ROLE_LINKNAME)
+                            || include.equals(Constants.USERS_LINKNAME)) {
+                      continue;
+                    }
+                    EntityIterable linkedEntities = userEntity.getLinks(include);
+                    for(Entity linkEntity : linkedEntities) {
+                      EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
+                      linkDTO.getEntities().add(entityDTO);
+                    }
+                    linkDTOS.add(linkDTO);
+                  }
+                  user.setLinks(linkDTOS);
+                }
+
                 users.add(user);
+
               }
             }
           });
