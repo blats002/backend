@@ -100,6 +100,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   protected String masterToken;
 
+  protected String authTokenQuery;
+
   protected List<TransactionFilter> filters;
   protected List<Action> actions;
   protected String fileName;
@@ -327,6 +329,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
         }
       }
     }
+
+    authTokenQuery = getQueryValue("authToken");
 
   }
 
