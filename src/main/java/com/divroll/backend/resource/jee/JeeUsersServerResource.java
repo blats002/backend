@@ -96,50 +96,77 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
         } catch (Exception e) {
           // do nothing
         }
-        List<User> processedResults = new LinkedList<>();
-        List<User> results =
-            userRepository.listUsers(
-                appId,
-                namespace,
-                defaultUserStore,
-                authUserId,
-                skipValue,
-                limitValue,
-                sort,
-                false,
-                roles,
-                filters, includeLinks);
-        Users users = new Users();
-        users.setResults(DTOHelper.convert(results));
-        users.setLimit(Long.valueOf(limitValue));
-        users.setSkip(Long.valueOf(skipValue));
-        if(lCount != null) {
-          users.setCount(lCount);
+
+        if(authTokenQuery  != null) {
+            String queryUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authTokenQuery);
+            User user = userRepository.getUser(appId, namespace, defaultUserStore, queryUserId, includeLinks);
+            Users users = new Users();
+            users.setCount(1);
+            UserDTO userDTO = UserDTO.convert(user);
+            users.setResults(Arrays.asList(new UserDTO[]{userDTO}));
+            users.setSkip(0);
+            users.setLimit(1);
+            users.setCount(1);
+            return users;
+        } else {
+            List<User> processedResults = new LinkedList<>();
+            List<User> results =
+                    userRepository.listUsers(
+                            appId,
+                            namespace,
+                            defaultUserStore,
+                            authUserId,
+                            skipValue,
+                            limitValue,
+                            sort,
+                            false,
+                            roles,
+                            filters, includeLinks);
+            Users users = new Users();
+            users.setResults(DTOHelper.convert(results));
+            users.setLimit(Long.valueOf(limitValue));
+            users.setSkip(Long.valueOf(skipValue));
+            if(lCount != null) {
+                users.setCount(lCount);
+            }
+            setStatus(Status.SUCCESS_OK);
+            return users;
         }
-        setStatus(Status.SUCCESS_OK);
-        return users;
       } else {
-        List<User> results =
-            userRepository.listUsers(
-                appId,
-                namespace,
-                defaultUserStore,
-                null,
-                skipValue,
-                limitValue,
-                null,
-                true,
-                roles,
-                filters, includeLinks);
-        Users users = new Users();
-        users.setResults(DTOHelper.convert(results));
-        users.setLimit(Long.valueOf(skipValue));
-        users.setSkip(Long.valueOf(limitValue));
-        if(lCount != null) {
-          users.setCount(lCount);
-        }
-        setStatus(Status.SUCCESS_OK);
-        return users;
+          if(authTokenQuery  != null) {
+              String queryUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authTokenQuery);
+              User user = userRepository.getUser(appId, namespace, defaultUserStore, queryUserId, includeLinks);
+              Users users = new Users();
+              users.setCount(1);
+              UserDTO userDTO = UserDTO.convert(user);
+              users.setResults(Arrays.asList(new UserDTO[]{userDTO}));
+              users.setSkip(0);
+              users.setLimit(1);
+              users.setCount(1);
+              return users;
+          } else {
+              List<User> results =
+                      userRepository.listUsers(
+                              appId,
+                              namespace,
+                              defaultUserStore,
+                              null,
+                              skipValue,
+                              limitValue,
+                              null,
+                              true,
+                              roles,
+                              filters, includeLinks);
+              Users users = new Users();
+              users.setResults(DTOHelper.convert(results));
+              users.setLimit(Long.valueOf(skipValue));
+              users.setSkip(Long.valueOf(limitValue));
+              if(lCount != null) {
+                  users.setCount(lCount);
+              }
+              setStatus(Status.SUCCESS_OK);
+              return users;
+          }
       }
     } catch (Exception e) {
       e.printStackTrace();
