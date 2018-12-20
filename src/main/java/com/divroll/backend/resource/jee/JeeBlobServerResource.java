@@ -47,9 +47,11 @@ import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingInputStream;
 import com.google.inject.Inject;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.restlet.Request;
 import org.restlet.data.MediaType;
@@ -96,8 +98,6 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
         setStatus(Status.CLIENT_ERROR_NOT_FOUND);
         return null;
       }
-
-      String encoding = getQueryValue("encoding");
 
       String authUserId = null;
 
@@ -453,7 +453,6 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
         }
       }
 
-      String encoding = getQueryValue("encoding");
 
       if (isMaster || isWriteAccess || isPublic) {
         Long count = entityRepository.countEntityBlobSize(appId, namespace, entityType, entityId, blobName);

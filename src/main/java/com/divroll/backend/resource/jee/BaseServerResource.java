@@ -118,6 +118,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected List<String> roles;
   protected List<String> includeLinks;
 
+  protected String encoding;
+
   @Override
   protected void doInit() {
     super.doInit();
@@ -331,6 +333,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     }
 
     authTokenQuery = getQueryValue("authToken");
+    encoding = getQueryValue("contentEncoding");
 
   }
 

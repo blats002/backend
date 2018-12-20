@@ -109,34 +109,34 @@ public class DivrollBackendApplication extends Application {
 
     attachSwaggerSpecification2(router);
 
-//    CorsFilter corsFilter = new CorsFilter(getContext());
-//    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
-//    corsFilter.setSkippingResourceForCorsOptions(true);
-//    corsFilter.setAllowedHeaders(
-//        Sets.newHashSet(
-//            Constants.HEADER_MASTER_KEY,
-//            Constants.HEADER_MASTER_KEY.toLowerCase(),
-//            Constants.HEADER_API_KEY,
-//            Constants.HEADER_API_KEY.toLowerCase(),
-//            Constants.HEADER_APP_ID,
-//            Constants.HEADER_APP_ID.toLowerCase(),
-//            "X-Divroll-Namespace",
-//            "X-Divroll-Namespace".toLowerCase(),
-//            Constants.HEADER_AUTH_TOKEN,
-//            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
-//            Constants.HEADER_ACCEPT,
-//            Constants.HEADER_ACCEPT.toLowerCase(),
-//            Constants.HEADER_ACL_READ,
-//            Constants.HEADER_ACL_READ.toLowerCase(),
-//            Constants.HEADER_ACL_WRITE,
-//            Constants.HEADER_ACL_WRITE.toLowerCase(),
-//            Constants.HEADER_CONTENT_TYPE,
-//            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
-//    corsFilter.setAllowedCredentials(true);
-//
-//    corsFilter.setNext(router);
-//    return corsFilter;
-    return router;
+    CorsFilter corsFilter = new CorsFilter(getContext());
+    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
+    corsFilter.setSkippingResourceForCorsOptions(true);
+    corsFilter.setAllowedHeaders(
+        Sets.newHashSet(
+            Constants.HEADER_MASTER_KEY,
+            Constants.HEADER_MASTER_KEY.toLowerCase(),
+            Constants.HEADER_API_KEY,
+            Constants.HEADER_API_KEY.toLowerCase(),
+            Constants.HEADER_APP_ID,
+            Constants.HEADER_APP_ID.toLowerCase(),
+            "X-Divroll-Namespace",
+            "X-Divroll-Namespace".toLowerCase(),
+            Constants.HEADER_AUTH_TOKEN,
+            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
+            Constants.HEADER_ACCEPT,
+            Constants.HEADER_ACCEPT.toLowerCase(),
+            Constants.HEADER_ACL_READ,
+            Constants.HEADER_ACL_READ.toLowerCase(),
+            Constants.HEADER_ACL_WRITE,
+            Constants.HEADER_ACL_WRITE.toLowerCase(),
+            Constants.HEADER_CONTENT_TYPE,
+            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
+    corsFilter.setAllowedCredentials(true);
+
+    corsFilter.setNext(router);
+    return corsFilter;
+//    return router;
   }
 
   private void configureConverters() {
