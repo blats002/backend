@@ -26,6 +26,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Put;
@@ -47,7 +48,7 @@ public interface UserResource {
             "unauthorized access, wrong username/password pair or missing Appliation ID/API Key headers pair")
   })
   @Get
-  UserDTO getUser();
+  Representation getUser();
 
   @ApiOperation(value = "update existing user", tags = "user")
   @ApiResponses({
@@ -59,7 +60,7 @@ public interface UserResource {
             "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")
   })
   @Put
-  UserDTO updateUser(UserDTO entity);
+  Representation updateUser(UserDTO entity);
 
   @ApiOperation(value = "delete existing user", tags = "user")
   @ApiResponses({
