@@ -74,7 +74,7 @@ public class User {
   private String dateUpdated;
 
   @XStreamImplicit(itemFieldName = "links")
-  private List<LinkDTO> links;
+  private List<Link> links;
 
   public String getUsername() {
     return username;
@@ -175,11 +175,11 @@ public class User {
     this.dateUpdated = dateUpdated;
   }
 
-  public List<LinkDTO> getLinks() {
+  public List<Link> getLinks() {
     return links;
   }
 
-  public void setLinks(List<LinkDTO> links) {
+  public void setLinks(List<Link> links) {
     this.links = links;
   }
 }

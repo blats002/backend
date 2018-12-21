@@ -78,7 +78,7 @@ public class UserDTO {
 //  private Map<String, Map<String,Comparable>> links;
 
   @XStreamImplicit(itemFieldName = "links")
-  private List<LinkDTO> links;
+  private List<Link> links;
 
   public static UserDTO convert(User user) {
     if (user == null) {
@@ -108,7 +108,7 @@ public class UserDTO {
       userDTO.setRoles(roles);
     }
 
-    List<LinkDTO> linkList = user.getLinks();
+    List<Link> linkList = user.getLinks();
     userDTO.setLinks(linkList);
 
     return userDTO;
@@ -213,11 +213,11 @@ public class UserDTO {
     this.dateUpdated = dateUpdated;
   }
 
-  public List<LinkDTO> getLinks() {
+  public List<Link> getLinks() {
     return links;
   }
 
-  public void setLinks(List<LinkDTO> links) {
+  public void setLinks(List<Link> links) {
     this.links = links;
   }
 }

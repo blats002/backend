@@ -26,7 +26,6 @@ import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
-import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.quartz.Scheduler;
@@ -35,15 +34,11 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.engine.Engine;
-import org.restlet.engine.application.CorsFilter;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
-import org.restlet.ext.xstream.XstreamConverter;
 import org.restlet.routing.Router;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -77,6 +72,8 @@ public class DivrollBackendApplication extends Application {
     router.attach(
         ROOT_URI + "applications",
         JeeApplicationsServerResource.class); // TODO: Rename to directories
+
+
     router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
     router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
     router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
@@ -105,7 +102,10 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
-    router.attachDefault(JeeRootServerResource.class);
+
+
+
+      router.attachDefault(JeeRootServerResource.class);
 
     attachSwaggerSpecification2(router);
 

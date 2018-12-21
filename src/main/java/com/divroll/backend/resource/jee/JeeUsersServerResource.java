@@ -37,7 +37,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.xstream.XstreamRepresentation;
+import org.restlet.representation.Representation;
 import scala.actors.threadpool.Arrays;
 
 import java.util.LinkedList;
@@ -64,7 +67,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
   @Inject PubSubService pubSubService;
 
   @Override
-  public Users listUsers() {
+  public Representation listUsers() {
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -107,7 +110,10 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             users.setSkip(0);
             users.setLimit(1);
             users.setCount(1);
-            return users;
+            Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
+            String text = representation.getText();
+            System.out.println("--------------------->" + text);
+            return representation;
         } else {
             List<User> processedResults = new LinkedList<>();
             List<User> results =
@@ -130,7 +136,10 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
                 users.setCount(lCount);
             }
             setStatus(Status.SUCCESS_OK);
-            return users;
+            Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
+            String text = representation.getText();
+            System.out.println("--------------------->" + text);
+            return representation;
         }
       } else {
           if(authTokenQuery  != null) {
@@ -143,7 +152,10 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               users.setSkip(0);
               users.setLimit(1);
               users.setCount(1);
-              return users;
+              Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
+              String text = representation.getText();
+              System.out.println("--------------------->" + text);
+              return representation;
           } else {
               List<User> results =
                       userRepository.listUsers(
@@ -165,7 +177,10 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
                   users.setCount(lCount);
               }
               setStatus(Status.SUCCESS_OK);
-              return users;
+              Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
+              String text = representation.getText();
+              System.out.println("--------------------->" + text);
+              return representation;
           }
       }
     } catch (Exception e) {
@@ -281,8 +296,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
 
           if (otherEntityACLRead != null) {
               try {
-                  org.json.JSONArray jsonArray = new org.json.JSONArray(otherEntityACLRead);
-                  otherEntityRead = ACLHelper.onlyIds(jsonArray);
+                  otherEntityRead = ACLHelper.onlyIds(otherEntityACLRead);
               } catch (Exception e) {
                   // do nothing
               }
@@ -290,8 +304,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
 
           if (otherEntityACLWrite != null) {
               try {
-                  org.json.JSONArray jsonArray = new org.json.JSONArray(otherEntityACLWrite);
-                  otherEntityWrite = ACLHelper.onlyIds(jsonArray);
+                  otherEntityWrite = ACLHelper.onlyIds(otherEntityACLWrite);
               } catch (Exception e) {
                   // do nothing
               }
@@ -369,6 +382,14 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             for (Object roleId : Arrays.asList(roleArray)) {
               user.getRoles().add(new Role((String) roleId));
             }
+
+            if(otherEntityClass != null) {
+                List<String> linkNames = new LinkedList<String>();
+                linkNames.add(linkName);
+                User userWithLinks = userRepository.getUser(appId, namespace, defaultUserStore, entityId, linkNames);
+                user.setLinks(userWithLinks.getLinks());
+            }
+
             pubSubService.created(appId, namespace, defaultUserStore, entityId);
             setStatus(Status.SUCCESS_CREATED);
             return UserDTO.convert((User) ObjectLogger.log(user));
