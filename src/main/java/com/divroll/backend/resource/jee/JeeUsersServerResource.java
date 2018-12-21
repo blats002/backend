@@ -249,23 +249,64 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
       User userEntity =
           userRepository.getUserByUsername(appId, namespace, defaultUserStore, username, null);
 
-      String entityJson = getQueryValue("entity");
       LOG.with("entity", entityJson);
       String otherEntityType = getQueryValue("entityType");
       Map<String, Comparable> linkedEntityComparableMap = null;
       EntityClass otherEntityClass = null;
       if (entityJson != null) {
         JSONObject jsonObject = new JSONObject(entityJson);
+
+        Boolean otherEntityPublicRead = null;
+        Boolean otherEntityPublicWrite = null;
+
+        org.json.JSONArray otherEntityACLRead = null;
+        org.json.JSONArray otherEntityACLWrite = null;
+
+          try{
+              otherEntityACLRead = jsonObject.getJSONArray("aclRead");
+              otherEntityACLWrite = jsonObject.getJSONArray("aclWrite");
+          } catch (Exception e) {
+
+          }
+
+        try{
+            otherEntityPublicRead = jsonObject.getBoolean("publicRead");
+            otherEntityPublicWrite = jsonObject.getBoolean("publicWrite");
+        } catch (Exception e) {
+
+        }
+
+          String[] otherEntityRead = new String[] {};
+          String[] otherEntityWrite = new String[] {};
+
+          if (otherEntityACLRead != null) {
+              try {
+                  org.json.JSONArray jsonArray = new org.json.JSONArray(otherEntityACLRead);
+                  otherEntityRead = ACLHelper.onlyIds(jsonArray);
+              } catch (Exception e) {
+                  // do nothing
+              }
+          }
+
+          if (otherEntityACLWrite != null) {
+              try {
+                  org.json.JSONArray jsonArray = new org.json.JSONArray(otherEntityACLWrite);
+                  otherEntityWrite = ACLHelper.onlyIds(jsonArray);
+              } catch (Exception e) {
+                  // do nothing
+              }
+          }
+
         linkedEntityComparableMap = JSON.jsonToMap(jsonObject);
         otherEntityClass =
             new EntityClassBuilder()
-                .write(null)
-                .read(null)
+                .write(otherEntityWrite)
+                .read(otherEntityRead)
                 .blob(null)
                 .blobName(null)
                 .comparableMap(linkedEntityComparableMap)
-                .publicRead(false)
-                .publicWrite(false)
+                .publicRead(otherEntityPublicRead == null ? false : otherEntityPublicRead)
+                .publicWrite(otherEntityPublicWrite == null ? false : otherEntityPublicWrite)
                 .entityType(otherEntityType)
                 .build();
       }

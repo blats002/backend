@@ -97,6 +97,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String linkFrom;
   protected String linkTo;
   protected String linkType;
+  protected String entityJson;
 
   protected String masterToken;
 
@@ -334,6 +335,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     authTokenQuery = getQueryValue("authToken");
     encoding = getQueryValue("contentEncoding");
+    entityJson = getQueryValue("entity");
 
   }
 
