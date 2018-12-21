@@ -27,6 +27,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
@@ -55,5 +56,5 @@ public interface UsersResource {
     @ApiResponse(code = 401, message = "unauthorized access")
   })
   @Get
-  Users listUsers();
+  Representation listUsers();
 }

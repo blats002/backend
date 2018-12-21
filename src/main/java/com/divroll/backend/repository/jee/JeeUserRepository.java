@@ -571,10 +571,10 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 user.setPublicRead(publicRead);
 
                 if(includeLinks != null && !includeLinks.isEmpty()) {
-                  ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                  List<Link> links = new LinkedList<>();
                   for(String include : includeLinks) {
-                    LinkDTO linkDTO = new LinkDTO();
-                    linkDTO.setLinkName(include);
+                    Link link = new Link();
+                    link.setLinkName(include);
                     if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                             || include.equals(Constants.RESERVED_FIELD_ACL_READ)
                             || include.equals(Constants.ROLE_LINKNAME)
@@ -584,11 +584,12 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     EntityIterable linkedEntities = userEntity.getLinks(include);
                     for(Entity linkEntity : linkedEntities) {
                       EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
-                      linkDTO.getEntities().add(entityDTO);
+                      EntityStub entityStub = new EntityStub(entityDTO.getEntityId(), entityDTO.getEntityType());
+                      link.getEntities().add(entityStub);
                     }
-                    linkDTOS.add(linkDTO);
+                    links.add(link);
                   }
-                  user.setLinks(linkDTOS);
+                  user.setLinks(links);
                 }
 
                 entity[0] = user;
@@ -659,10 +660,10 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 user.setDateUpdated(dateUpdated);
 
                 if(includeLinks != null && !includeLinks.isEmpty()) {
-                  ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                  List<Link> links = new LinkedList<>();
                   for(String include : includeLinks) {
-                    LinkDTO linkDTO = new LinkDTO();
-                    linkDTO.setLinkName(include);
+                    Link link = new Link();
+                    link.setLinkName(include);
                     if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                             || include.equals(Constants.RESERVED_FIELD_ACL_READ)
                             || include.equals(Constants.ROLE_LINKNAME)
@@ -672,11 +673,12 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     EntityIterable linkedEntities = userEntity.getLinks(include);
                     for(Entity linkEntity : linkedEntities) {
                       EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
-                      linkDTO.getEntities().add(entityDTO);
+                      EntityStub entityStub = new EntityStub(entityDTO.getEntityId(), entityDTO.getEntityType());
+                      link.getEntities().add(entityStub);
                     }
-                    linkDTOS.add(linkDTO);
+                    links.add(link);
                   }
-                  user.setLinks(linkDTOS);
+                  user.setLinks(links);
                 }
 
                 entity[0] = user;
@@ -906,10 +908,10 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 user.setRoles(roles);
 
                 if(includeLinks != null && !includeLinks.isEmpty()) {
-                  ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                    List<Link> links = new LinkedList<>();
                   for(String include : includeLinks) {
-                    LinkDTO linkDTO = new LinkDTO();
-                    linkDTO.setLinkName(include);
+                    Link link = new Link();
+                    link.setLinkName(include);
                     if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                             || include.equals(Constants.RESERVED_FIELD_ACL_READ)
                             || include.equals(Constants.ROLE_LINKNAME)
@@ -919,15 +921,14 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     EntityIterable linkedEntities = userEntity.getLinks(include);
                     for(Entity linkEntity : linkedEntities) {
                       EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
-                      linkDTO.getEntities().add(entityDTO);
+                      EntityStub entityStub = new EntityStub(entityDTO.getEntityId(), entityDTO.getEntityType());
+                      link.getEntities().add(entityStub);
                     }
-                    linkDTOS.add(linkDTO);
+                    links.add(link);
                   }
-                  user.setLinks(linkDTOS);
+                  user.setLinks(links);
                 }
-
                 users.add(user);
-
               }
             }
           });

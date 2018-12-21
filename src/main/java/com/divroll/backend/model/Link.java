@@ -6,19 +6,19 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 @XStreamAlias("link")
 @ApiModel
 public class Link {
     private String linkName;
     @XStreamImplicit(itemFieldName = "entities")
-    private List<CustomHashMap<String,Comparable>> entities;
+    private List<EntityStub> entities;
 
     public Link() {}
 
-    public Link(String linkName, List<CustomHashMap<String,Comparable>> entities) {
+    public Link(String linkName, List<EntityStub> entities) {
         setLinkName(linkName);
         setEntities(entities);
     }
@@ -31,11 +31,14 @@ public class Link {
         this.linkName = linkName;
     }
 
-    public List<CustomHashMap<String,Comparable>> getEntities() {
+    public List<EntityStub> getEntities() {
+        if(entities == null) {
+            entities = new LinkedList<EntityStub>();
+        }
         return entities;
     }
 
-    public void setEntities(List<CustomHashMap<String,Comparable>> entities) {
+    public void setEntities(List<EntityStub> entities) {
         this.entities = entities;
     }
 }

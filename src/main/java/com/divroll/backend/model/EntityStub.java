@@ -23,6 +23,7 @@ package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>

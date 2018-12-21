@@ -38,7 +38,10 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.mindrot.jbcrypt.BCrypt;
+import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.xstream.XstreamRepresentation;
+import org.restlet.representation.Representation;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -64,7 +67,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
   @Inject PubSubService pubSubService;
 
   @Override
-  public UserDTO getUser() { // login
+  public Representation getUser() { // login
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -90,7 +93,11 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           }
           userEntity.setPassword(null);
           setStatus(Status.SUCCESS_OK);
-          return UserDTO.convert(userEntity);
+
+          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
+          String text = representation.getText();
+          System.out.println("--------------------->" + text);
+          return representation;
         } else {
           String authUserId = null;
           if (authToken != null) {
@@ -116,7 +123,10 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           }
           if (userEntity != null) {
             setStatus(Status.SUCCESS_OK);
-            return UserDTO.convert(userEntity);
+            Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
+            String text = representation.getText();
+            System.out.println("--------------------->" + text);
+            return representation;
           } else {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
           }
@@ -152,7 +162,12 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           user.setRoles(userEntity.getRoles());
           user.setLinks(userEntity.getLinks());
           setStatus(Status.SUCCESS_OK);
-          return UserDTO.convert(user);
+
+          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON,
+                  UserDTO.convert((User) ObjectLogger.log(user)));
+          String text = representation.getText();
+          System.out.println("--------------------->" + text);
+          return representation;
         } else {
           userEntity =
               userRepository.getUserByUsername(appId, namespace, defaultUserStore, username, includeLinks);
@@ -170,7 +185,11 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
             user.setPassword(null);
             user.setLinks(userEntity.getLinks());
             setStatus(Status.SUCCESS_OK);
-            return UserDTO.convert(user);
+
+            Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(user)));
+            String text = representation.getText();
+            System.out.println("--------------------->" + text);
+            return representation;
           } else {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
@@ -192,7 +211,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
   }
 
   @Override
-  public UserDTO updateUser(UserDTO entity) {
+  public Representation updateUser(UserDTO entity) {
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -334,7 +353,11 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           }
           pubSubService.updated(appId, namespace, defaultUserStore, userId);
           setStatus(Status.SUCCESS_OK);
-          return UserDTO.convert((User) ObjectLogger.log(resultUser));
+
+          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
+          String text = representation.getText();
+          System.out.println("--------------------->" + text);
+          return representation;
         } else {
           setStatus(Status.SERVER_ERROR_INTERNAL);
         }
@@ -409,7 +432,11 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
               }
               pubSubService.updated(appId, namespace, defaultUserStore, userId);
               setStatus(Status.SUCCESS_OK);
-              return UserDTO.convert((User) ObjectLogger.log(resultUser));
+
+              Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
+              String text = representation.getText();
+              System.out.println("--------------------->" + text);
+              return representation;
             } else {
               setStatus(Status.SERVER_ERROR_INTERNAL);
             }
