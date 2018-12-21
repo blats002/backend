@@ -193,9 +193,6 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
 
               if (linkedEntity != null && linkName != null) {
                 Entity otherEntity = txn.newEntity(linkedEntity.entityType());
-                //                        linkedEntity.comparableMap().forEach((key,value)->{
-                //
-                //                        });
                 if (namespace != null && !namespace.isEmpty()) {
                   otherEntity.setProperty(namespaceProperty, namespace);
                 }
@@ -226,8 +223,42 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   }
                 }
 
+                Entity otherEntityReference = txn.getAll(linkedEntity.entityType()).getFirst();
+                Comparable metaData = otherEntityReference.getProperty(Constants.RESERVED_FIELD_METADATA);
+                otherEntity.setProperty(Constants.RESERVED_FIELD_METADATA, metaData);
+
                 otherEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, entity);
                 otherEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, entity);
+
+                if(linkedEntity.write() != null) {
+                    String[] write = linkedEntity.write();
+                    Arrays.asList(write).forEach(entityId -> {
+                        EntityId idOfEntity = txn.toEntityId((String) entityId);
+                        Entity aclEntity = txn.getEntity(idOfEntity);
+                        if(aclEntity != null) {
+                            otherEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, aclEntity);
+                        }
+                    });
+                }
+
+                  if(linkedEntity.read() != null) {
+                      String[] read = linkedEntity.read();
+                      Arrays.asList(read).forEach(entityId -> {
+                          EntityId idOfEntity = txn.toEntityId((String) entityId);
+                          Entity aclEntity = txn.getEntity(idOfEntity);
+                          if(aclEntity != null) {
+                              otherEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, aclEntity);
+                          }
+                      });
+                  }
+
+                if(linkedEntity.publicRead() != null) {
+                    otherEntity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, linkedEntity.publicRead());
+                }
+
+                if(linkedEntity.publicWrite() != null) {
+                    otherEntity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, linkedEntity.publicWrite());
+                }
 
                 otherEntity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
                 otherEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
