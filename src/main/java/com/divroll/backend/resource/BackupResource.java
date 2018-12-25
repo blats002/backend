@@ -21,6 +21,9 @@
  */
 package com.divroll.backend.resource;
 
+import com.divroll.backend.model.Application;
+import com.wordnik.swagger.annotations.*;
+import org.restlet.representation.FileRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
@@ -31,9 +34,25 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface BackupResource {
+
+  @ApiOperation(value = "Restore database from Zip file", tags = "restore")
+  @ApiResponses({
+          @ApiResponse(code = 202, message = ""),
+  })
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "masterKey", value = "Master Key", required = true, dataType = "string", paramType = "query")
+  })
   @Post
   void restore(Representation entity);
 
+  @ApiOperation(value = "Backup and download database", tags = "backup")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "Zip file of the database", response = FileRepresentation.class),
+  })
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "masterKey", value = "Master Key", required = true, dataType = "string", paramType = "query")
+  })
   @Get
   Representation backup(Representation entity);
+
 }

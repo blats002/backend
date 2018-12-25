@@ -57,10 +57,6 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
 
   @Override
   public void restore(Representation entity) {
-    //        if (!isAuthorized()) {
-    //            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-    //            return;
-    //        }
     if (isMaster()) {
       if (entity == null) {
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -84,6 +80,7 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
               // TODO unzip it to folder
             }
           }
+          setStatus(Status.SUCCESS_ACCEPTED);
         } catch (Exception e) {
           setStatus(Status.SERVER_ERROR_INTERNAL);
         }
@@ -98,10 +95,6 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
 
   @Override
   public Representation backup(Representation entity) {
-    //        if (!isAuthorized()) {
-    //            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-    //            return null;
-    //        }
     if (isMaster()) {
       Application app = applicationService.read(appId);
       if (app == null) {
@@ -117,6 +110,7 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
         Disposition disposition = new Disposition(Disposition.TYPE_ATTACHMENT);
         disposition.setFilename(appId); // TODO: Not working
         representation.setDisposition(disposition);
+        setStatus(Status.SUCCESS_OK);
         return representation;
       } catch (Exception e) {
         e.printStackTrace();
