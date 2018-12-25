@@ -37,6 +37,8 @@ import org.restlet.engine.Engine;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
+import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
+import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 
 import java.util.List;
@@ -65,15 +67,13 @@ public class DivrollBackendApplication extends Application {
     configureJobScheduler();
 
     Router router = new Router(getContext());
+    router.attachDefault(JeeRootServerResource.class);
 
-    router.attach(
-        ROOT_URI + "applications/{appName}",
-        JeeApplicationServerResource.class); // TODO: Rename to directories
-    router.attach(
-        ROOT_URI + "applications",
-        JeeApplicationsServerResource.class); // TODO: Rename to directories
+//    attachSwaggerSpecification2(router);
+    attachSwaggerSpecification2(router);
 
-
+    router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
+    router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
     router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
     router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
     router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
@@ -101,13 +101,6 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
-
-
-
-
-      router.attachDefault(JeeRootServerResource.class);
-
-    attachSwaggerSpecification2(router);
 
 //    CorsFilter corsFilter = new CorsFilter(getContext());
 //    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
@@ -158,18 +151,6 @@ public class DivrollBackendApplication extends Application {
     };
   }
 
-  /**
-   * Adds the "/swagger.json" path to the given router and attaches the {@link Restlet} that
-   * computes the Swagger documentation in the format defined by the swagger-spec project v2.0.
-   *
-   * @param router The router to update.
-   */
-  private void attachSwaggerSpecification2(Router router) {
-    Swagger2SpecificationRestlet restlet = new Swagger2SpecificationRestlet(this);
-    restlet.setBasePath("http://localhost:9999/");
-    restlet.attach(router, "/docs");
-  }
-
   private void configureJobScheduler() {
     try {
       Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -179,4 +160,23 @@ public class DivrollBackendApplication extends Application {
       e.printStackTrace();
     }
   }
+
+  private void attachSwaggerSpecification1(Router router) {
+    SwaggerSpecificationRestlet swaggerSpecificationRestlet = new SwaggerSpecificationRestlet(
+            this);
+    swaggerSpecificationRestlet.setBasePath("http://localhost:8080/divroll/api-docs");
+    swaggerSpecificationRestlet.attach(router);
+  }
+
+  private void attachSwaggerSpecification2(Router router) {
+    Swagger2SpecificationRestlet swagger2SpecificationRestlet
+            = new Swagger2SpecificationRestlet(this);
+    swagger2SpecificationRestlet.setBasePath("http://localhost:8080/divroll/");
+    swagger2SpecificationRestlet.attach(router, "/docs");
+  }
+
+  private String getBasePath() {
+    return "http://localhost:8080/divroll/";
+  }
+
 }

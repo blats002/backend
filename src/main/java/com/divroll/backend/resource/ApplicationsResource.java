@@ -23,9 +23,7 @@ package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Applications;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.*;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
@@ -35,13 +33,16 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface ApplicationsResource {
-  @ApiOperation(value = "getEnvironment a new application", tags = "application")
+  @ApiOperation(value = "Create a new application", tags = "application")
   @ApiResponses({
     @ApiResponse(code = 200, message = "the application", response = Application.class),
   })
   @Post
   Application createApp(Application rootDTO);
 
-  @Get
+  @ApiOperation(value = "List applications", tags = "application")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "the application", response = Application.class),
+  })
   public Applications list();
 }
