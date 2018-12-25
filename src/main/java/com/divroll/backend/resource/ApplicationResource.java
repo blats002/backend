@@ -22,10 +22,7 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Application;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.*;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 
@@ -37,9 +34,12 @@ import org.restlet.resource.Put;
 @Api(value = "Application", description = "Application resource")
 public interface ApplicationResource {
 
-  @ApiOperation(value = "getEnvironment a new application", tags = "application")
+  @ApiOperation(value = "Create a new application", tags = "application")
   @ApiResponses({
     @ApiResponse(code = 200, message = "the application", response = Application.class),
+  })
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "masterKey", value = "Master Key", required = true, dataType = "string", paramType = "query")
   })
   @Post
   Application createApp(Application rootDTO);
@@ -49,6 +49,9 @@ public interface ApplicationResource {
     @ApiResponse(code = 200, message = "the updated application"),
     @ApiResponse(code = 404, message = "application not found"),
     @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "appName", value = "Applicatio name", required = true, dataType = "string", paramType = "query")
   })
   @Put
   Application updateApp(Application entity);

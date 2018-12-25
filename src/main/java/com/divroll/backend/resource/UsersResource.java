@@ -23,10 +23,7 @@ package com.divroll.backend.resource;
 
 import com.divroll.backend.model.UserDTO;
 import com.divroll.backend.model.Users;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.wordnik.swagger.annotations.*;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
@@ -54,6 +51,10 @@ public interface UsersResource {
     @ApiResponse(code = 200, message = "success list users"),
     @ApiResponse(code = 400, message = "bad request"),
     @ApiResponse(code = 401, message = "unauthorized access")
+  })
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "skip", value = "Skip", required = false, dataType = "integer", paramType = "query"),
+          @ApiImplicitParam(name = "limit", value = "Limit", required = false, dataType = "integer", paramType = "query"),
   })
   @Get
   Representation listUsers();
