@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -33,15 +34,20 @@ import org.restlet.resource.Put;
  * @since 0-SNAPSHOT
  */
 public interface KeyValueResource {
+
+  @ApiOperation(value = "Get value", tags = "key-value")
   @Get
   Representation getValue();
 
+  @ApiOperation(value = "Create value", tags = "key-value")
   @Post
   Representation createValue(Representation entity);
 
+  @ApiOperation(value = "Update value", tags = "key-value")
   @Put
   Representation updateValue(Representation entity);
 
+  @ApiOperation(value = "Delete value", tags = "key-value")
   @Delete
   void deleteValue(Representation entity);
 }

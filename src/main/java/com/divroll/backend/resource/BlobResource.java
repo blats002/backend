@@ -21,6 +21,8 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -32,16 +34,21 @@ import org.restlet.resource.Put;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Blob", description = "Blob resource")
 public interface BlobResource {
+  @ApiOperation(value = "Set blob property", tags = "blob")
   @Post
   Representation setBlob(Representation entity);
 
+  @ApiOperation(value = "Update blob property", tags = "blob")
   @Put
   Representation updateBlob(Representation entity);
 
+  @ApiOperation(value = "Delete blob property", tags = "blob")
   @Delete
   void deleteBlob(Representation entity);
 
+  @ApiOperation(value = "Get blob property", tags = "blob")
   @Get
   Representation getBlob(Representation entity);
 }

@@ -70,6 +70,14 @@ public class JeePropertyServerResource extends BaseServerResource implements Pro
     if (!isMaster()) {
       return unauthorized();
     }
+    if (propertyName == null) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+    if (Keys.isReservedPropertyKey(propertyName)) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
     try {
       boolean updated =
           entityRepository.updateProperty(

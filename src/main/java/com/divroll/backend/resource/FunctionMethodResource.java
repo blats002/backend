@@ -30,6 +30,7 @@ import org.restlet.resource.*;
  * @since 0-SNAPSHOT
  */
 public interface FunctionMethodResource {
+
   @Get
   Representation getMethod(Representation entity);
 

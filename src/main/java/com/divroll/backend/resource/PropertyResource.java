@@ -36,18 +36,21 @@ import org.restlet.resource.Put;
  */
 @Api(value = "Property", description = "Entity property resource")
 public interface PropertyResource {
-  @ApiOperation(value = "delete a entity property", tags = "property")
+  @ApiOperation(value = "Delete property for entity type", tags = "property")
   @ApiResponses({
-    @ApiResponse(code = 200, message = "user updated"),
-    @ApiResponse(code = 400, message = "bad request"),
-    @ApiResponse(
-        code = 401,
-        message =
-            "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")
+    @ApiResponse(code = 200, message = "property deleted"),
+    @ApiResponse(code = 400, message = "property name either null or is a reserved property"),
+    @ApiResponse(code = 401, message = "unauthorized access, missing or wrong Master Key")
   })
   @Delete
   void deleteProperty(Representation entity);
 
+  @ApiOperation(value = "Update property metadata", tags = "property")
+  @ApiResponses({
+          @ApiResponse(code = 200, message = "property metadata"),
+          @ApiResponse(code = 400, message = "property name either null or is a reserved property"),
+          @ApiResponse(code = 401, message = "unauthorized access, missing or wrong Master Key")
+  })
   @Put
   Representation updateProperty(Representation entity);
 }
