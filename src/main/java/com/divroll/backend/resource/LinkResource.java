@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -32,12 +33,16 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface LinkResource {
+
+  @ApiOperation(value = "Create a link", tags = "link")
   @Post
   void createLink(Representation entity);
 
+  @ApiOperation(value = "Delete a link", tags = "link")
   @Delete
   void deleteLink(Representation entity);
 
+  @ApiOperation(value = "Check if link exists", tags = "customcode")
   @Get
   Representation checkLink(Representation entity);
 }

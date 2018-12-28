@@ -22,6 +22,7 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.EntityTypes;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.resource.Get;
 
 /**
@@ -30,6 +31,7 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface EntityTypesResource {
+  @ApiOperation(value = "Get entity types", tags = "entity")
   @Get
   EntityTypes getEntityTypes();
 }

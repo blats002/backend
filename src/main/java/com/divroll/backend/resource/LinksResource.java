@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 
@@ -30,6 +31,7 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface LinksResource {
+  @ApiOperation(value = "Get linked entities", tags = "link")
   @Get
   Representation getLinks(Representation entity);
 }

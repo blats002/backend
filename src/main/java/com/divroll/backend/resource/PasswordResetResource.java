@@ -22,6 +22,7 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.PasswordResetDTO;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
@@ -31,9 +32,13 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface PasswordResetResource {
+
+  @ApiOperation(value = "Validate reset password token", tags = "user")
   @Get("json")
   void validateResetPassword(PasswordResetDTO entity);
 
+  @ApiOperation(value = "Generate reset password link", tags = "user")
   @Post("json")
   void resetPassword(PasswordResetDTO entity);
+
 }

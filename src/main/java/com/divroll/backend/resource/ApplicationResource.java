@@ -51,7 +51,7 @@ public interface ApplicationResource {
     @ApiResponse(code = 401, message = "unauthorized access")
   })
   @ApiImplicitParams({
-          @ApiImplicitParam(name = "appName", value = "Applicatio name", required = true, dataType = "string", paramType = "query")
+          @ApiImplicitParam(name = "appName", value = "Application name", required = true, dataType = "string", paramType = "query")
   })
   @Put
   Application updateApp(Application entity);

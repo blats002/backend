@@ -22,6 +22,7 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.File;
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -33,12 +34,17 @@ import org.restlet.resource.Post;
  * @since 0-SNAPSHOT
  */
 public interface FileResource {
+
+  @ApiOperation(value = "Create file", tags = "file")
   @Post
   File createFile(Representation entity);
 
+  @ApiOperation(value = "Delete file", tags = "file")
   @Delete
   void deleteFile(Representation entity);
 
+  @ApiOperation(value = "Get file", tags = "file")
   @Get
   Representation getFile(Representation entity);
+
 }

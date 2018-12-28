@@ -186,6 +186,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
             ? headers.getFirstValue(Constants.HEADER_MASTER_TOKEN)
             : headers.getFirstValue(Constants.HEADER_MASTER_TOKEN.toLowerCase());
 
+    if(masterToken == null) {
+      masterToken = getQueryValue("masterToken");
+    }
+
     if (appId == null) {
       appId = getQueryValue(Constants.APP_ID);
     }

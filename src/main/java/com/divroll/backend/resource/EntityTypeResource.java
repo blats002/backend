@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 
@@ -30,6 +31,7 @@ import org.restlet.resource.Delete;
  * @since 0-SNAPSHOT
  */
 public interface EntityTypeResource {
+  @ApiOperation(value = "Delete entity type", tags = "entity")
   @Delete
   void deleteEntityType(Representation entity);
 }

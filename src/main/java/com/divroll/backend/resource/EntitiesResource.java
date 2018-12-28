@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
@@ -33,15 +34,21 @@ import org.restlet.resource.Put;
  * @since 0-SNAPSHOT
  */
 public interface EntitiesResource {
+
+  @ApiOperation(value = "Create a new entity", tags = "entity")
   @Post
   Representation createEntity(Representation representation);
 
+  @ApiOperation(value = "Get entities", tags = "entity")
   @Get
   Representation getEntities();
 
+  @ApiOperation(value = "Delete all entities", tags = "entity")
   @Delete
   Representation deleteEntities();
 
+  @ApiOperation(value = "Update entity type metadata", tags = "entity")
   @Put
   Representation updateEntities(Representation representation);
+
 }
