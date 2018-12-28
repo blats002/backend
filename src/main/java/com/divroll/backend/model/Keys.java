@@ -42,7 +42,9 @@ public class Keys {
       return true;
     } else if (propertyKey.equals(Constants.RESERVED_FIELD_PUBLICREAD)) {
       return true;
-    } else if (propertyKey.equals(Constants.RESERVED_FIELD_ACL_WRITE)) {
+    } else if (propertyKey.equals(Constants.RESERVED_FIELD_PUBLICWRITE)) {
+      return true;
+    } else if (propertyKey.equals(Constants.RESERVED_FIELD_METADATA)) {
       return true;
     }
     return false;

@@ -42,7 +42,14 @@ public interface ApplicationsResource {
 
   @ApiOperation(value = "List applications", tags = "application")
   @ApiResponses({
-          @ApiResponse(code = 200, message = "the application", response = Application.class),
+          @ApiResponse(code = 200, message = "list of applications", response = Application.class),
   })
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "masterToken", value = "Master Token", required = true, dataType = "string", paramType = "query"),
+          @ApiImplicitParam(name = "masterKey", value = "Master Key", required = false, dataType = "string", paramType = "query"),
+          @ApiImplicitParam(name = "skip", value = "Skip", required = false, dataType = "integer", paramType = "query"),
+          @ApiImplicitParam(name = "limit", value = "Limit", required = false, dataType = "integer", paramType = "query"),
+  })
+  @Get
   public Applications list();
 }
