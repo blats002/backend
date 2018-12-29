@@ -110,91 +110,32 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>com.github.kongchen</groupId>-->
-                <!--<artifactId>swagger-maven-plugin</artifactId>-->
-                <!--<version>${swagger-maven-plugin-version}</version>-->
-                <!--<configuration>-->
-                    <!--<apiSources>-->
-                        <!--<apiSource>-->
-                            <!--<springmvc>true</springmvc>-->
-                            <!--<locations>-->
-                                <!--<location>com.divroll.backend</location>-->
-                            <!--</locations>-->
-                            <!--<schemes>-->
-                                <!--<scheme>http</scheme>-->
-                                <!--<scheme>https</scheme>-->
-                            <!--</schemes>-->
-                            <!--<host>www.example.com:8080</host>-->
-                            <!--<basePath>/api</basePath>-->
-                            <!--<info>-->
-                                <!--<title>Swagger Maven Plugin Sample</title>-->
-                                <!--<version>v1</version>-->
-                                <!--&lt;!&ndash; use markdown here because I'm using markdown for output,-->
-                                <!--if you need to use html or other markup language, you need to use your target language,-->
-                                 <!--and note escape your description for xml &ndash;&gt;-->
-                                <!--<description>-->
-                                    <!--This is a sample.-->
-                                <!--</description>-->
-                                <!--<termsOfService>-->
-                                    <!--http://www.github.com/kongchen/swagger-maven-plugin-->
-                                <!--</termsOfService>-->
-                                <!--<contact>-->
-                                    <!--<email>kongchen@gmail.com</email>-->
-                                    <!--<name>Kong Chen</name>-->
-                                    <!--<url>http://kongch.com</url>-->
-                                <!--</contact>-->
-                                <!--<license>-->
-                                    <!--<url>http://www.apache.org/licenses/LICENSE-2.0.html</url>-->
-                                    <!--<name>Apache 2.0</name>-->
-                                <!--</license>-->
-                            <!--</info>-->
-                            <!--<securityDefinitions>-->
-                                <!--<securityDefinition>-->
-                                    <!--<name>basicAuth</name>-->
-                                    <!--<type>basic</type>-->
-                                <!--</securityDefinition>-->
-                                <!--<securityDefinition>-->
-                                    <!--<json>/securityDefinition.json</json>-->
-                                <!--</securityDefinition>-->
-                            <!--</securityDefinitions>-->
-                            <!--&lt;!&ndash; Support classpath or file absolute path here.-->
-                            <!--1) classpath e.g: "classpath:/markdown.hbs", "classpath:/templates/hello.html"-->
-                            <!--2) file e.g: "${basedir}/src/main/resources/markdown.hbs",-->
-                                <!--"${basedir}/src/main/resources/template/hello.html" &ndash;&gt;-->
-                            <!--&lt;!&ndash;<templatePath>${basedir}/src/test/resources/strapdown.html.hbs</templatePath>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<outputPath>${basedir}/generated/document.html</outputPath>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<swaggerDirectory>${basedir}/generated/swagger-ui</swaggerDirectory>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<swaggerApiReader>com.wordnik.swagger.jaxrs.reader.DefaultJaxrsApiReader</swaggerApiReader>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<attachSwaggerArtifact>true</attachSwaggerArtifact>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<modelConverters>io.swagger.validator.BeanValidator</modelConverters>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<swaggerExtensions>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<swaggerExtension>com.example.VendorExtension</swaggerExtension>&ndash;&gt;-->
-                            <!--&lt;!&ndash;</swaggerExtensions>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<enabledObjectMapperFeatures>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<feature>com.fasterxml.jackson.databind.SerializationFeature.WRITE_ENUMS_USING_TO_STRING</feature>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<feature>com.fasterxml.jackson.core.JsonParser$Feature.ALLOW_NUMERIC_LEADING_ZEROS</feature>&ndash;&gt;-->
-                            <!--&lt;!&ndash;</enabledObjectMapperFeatures>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<disabledObjectMapperFeatures>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<feature>com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS</feature>&ndash;&gt;-->
-                            <!--&lt;!&ndash;</disabledObjectMapperFeatures>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<operationIdFormat>{{className}}_{{methodName}}_{{httpMethod}}</operationIdFormat>&ndash;&gt;-->
-                            <!--&lt;!&ndash;<externalDocs>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<description>Example external docs</description>&ndash;&gt;-->
-                                <!--&lt;!&ndash;<url>https://example.com/docs</url>&ndash;&gt;-->
-                            <!--&lt;!&ndash;</externalDocs>&ndash;&gt;-->
-                        <!--</apiSource>-->
-                    <!--</apiSources>-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>compile</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>generate</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.4</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                    <prefix>git</prefix>
+                    <verbose>false</verbose>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <format>json</format>
+                    <gitDescribe>
+                        <skip>false</skip>
+                        <always>false</always>
+                        <dirty>-dirty</dirty>
+                    </gitDescribe>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

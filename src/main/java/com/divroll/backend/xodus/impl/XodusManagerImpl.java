@@ -68,6 +68,7 @@ public class XodusManagerImpl implements XodusManager {
     PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
     if (entityStore == null) {
       final PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
+      //store.getConfig().setRefactoringHeavyLinks(true);
       store.executeInTransaction(
           new StoreTransactionalExecutable() {
             @Override
