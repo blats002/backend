@@ -34,6 +34,7 @@ import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
+import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 
@@ -203,7 +204,10 @@ public class JeeLinkServerResource extends BaseServerResource implements LinkRes
         }
       }
 
+    } catch (EntityRemovedInDatabaseException e) {
+      setStatus(Status.SERVER_ERROR_INTERNAL, "Entity does not exist or was removed");
     } catch (Exception e) {
+      e.printStackTrace();
       setStatus(Status.SERVER_ERROR_INTERNAL);
     }
   }

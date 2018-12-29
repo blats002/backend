@@ -72,6 +72,7 @@ public class DivrollBackendApplication extends Application {
 //    attachSwaggerSpecification2(router);
     attachSwaggerSpecification2(router);
 
+    router.attach(ROOT_URI + "version", JeeVersionServerResource.class);
     router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
     router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
     router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
