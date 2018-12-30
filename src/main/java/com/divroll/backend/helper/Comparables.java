@@ -21,9 +21,12 @@
  */
 package com.divroll.backend.helper;
 
+import com.divroll.backend.model.EmbeddedArrayIterable;
+import com.divroll.backend.model.EmbeddedEntityIterable;
 import util.ComparableHashMap;
 import util.ComparableLinkedList;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +47,13 @@ public class Comparables {
     ComparableLinkedList<Comparable> casted = new ComparableLinkedList<Comparable>();
     comparableList.forEach(
         comparable -> {
-          casted.add(comparable);
+          if (comparable instanceof EmbeddedEntityIterable) {
+            casted.add(((EmbeddedEntityIterable) comparable).asObject());
+          } else if (comparable instanceof EmbeddedArrayIterable) {
+            casted.add(cast(((EmbeddedArrayIterable) comparable).asObject()));
+          } else {
+            casted.add(comparable);
+          }
         });
     return casted;
   }
@@ -64,4 +73,5 @@ public class Comparables {
         });
     return casted;
   }
+
 }

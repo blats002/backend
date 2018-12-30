@@ -1928,7 +1928,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
                       } else if (value instanceof EmbeddedArrayIterable) {
                         comparableMap.put(
-                            property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
+                            property, Comparables.cast((((EmbeddedArrayIterable) value).asObject())));
                       } else {
                         comparableMap.put(property, value);
                       }
