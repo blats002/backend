@@ -140,6 +140,8 @@ public interface EntityRepository {
       int skip,
       int limit,
       String sort,
+      String linkName,
+      String linkedTo,
       boolean isMasterKey,
       List<TransactionFilter> filters);
 

@@ -31,10 +31,16 @@ import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.json.simple.JSONValue;
 import org.restlet.Message;
 import org.restlet.data.Form;
 import org.restlet.data.Header;
+import org.restlet.data.MediaType;
+import org.restlet.data.Status;
+import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.Representation;
 import org.restlet.util.Series;
@@ -206,7 +212,24 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+        if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+            try {
+                DiskFileItemFactory factory = new DiskFileItemFactory();
+                factory.setSizeThreshold(1000240);
+                RestletFileUpload upload = new RestletFileUpload(factory);
+                FileItemIterator fileIterator = upload.getItemIterator(entity);
+                while (fileIterator.hasNext()) {
+                    FileItemStream fi = fileIterator.next();
+                    byte[] bytes = ByteStreams.toByteArray(fi.openStream());
+                    is = new ByteArrayInputStream(bytes);
+                }
+            } catch (Exception e) {
+                setStatus(Status.SERVER_ERROR_INTERNAL);
+                return null;
+            }
+        } else {
+          is = entity.getStream();
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }

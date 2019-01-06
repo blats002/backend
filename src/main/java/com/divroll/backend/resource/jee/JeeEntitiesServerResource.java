@@ -192,7 +192,7 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
         try {
           List<Map<String, Comparable>> entityObjs =
               entityRepository.listEntities(
-                  appId, namespace, entityType, null, skipValue, limitValue, sort, true, filters);
+                  appId, namespace, entityType, null, skipValue, limitValue, sort, linkName, sourceEntityId, true, filters);
           JSONObject responseBody = new JSONObject();
           JSONObject entitiesJSONObject = new JSONObject();
           entitiesJSONObject.put("results", entityObjs);
@@ -226,6 +226,8 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
                   skipValue,
                   limitValue,
                   sort,
+                  linkName,
+                      sourceEntityId,
                   false,
                   filters);
 
