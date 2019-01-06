@@ -98,6 +98,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String linkTo;
   protected String linkType;
   protected String entityJson;
+  protected String sourceEntityId;
 
   protected String masterToken;
 
@@ -143,6 +144,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     propertyName = getAttribute("propertyName");
     linkName = getAttribute("linkName");
     targetEntityId = getAttribute("targetEntityId");
+    sourceEntityId = getQueryValue("sourceEntityId");
 
     if (linkName == null) {
       linkName = getQueryValue("linkName");
@@ -155,6 +157,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     linkType = getQueryValue("linkType");
     username = getQueryValue(Constants.QUERY_USERNAME);
     sort = getQueryValue("sort");
+
 
     Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 
