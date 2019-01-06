@@ -1835,6 +1835,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       int skip,
       int limit,
       String sort,
+      String linkName,
+      String linkedTo,
       boolean isMasterKey,
       List<TransactionFilter> filters) {
     final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
@@ -1907,6 +1909,17 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   EntityIterable filtered = filter(entityType, result, filters, txn);
                   result = result.intersect(filtered);
                 }
+
+                if(linkedTo != null) {
+                  EntityId targetId = txn.toEntityId(linkedTo);
+                  Entity target = txn.getEntity(targetId);
+                  EntityIterable linkedEntities = target.getLinks(linkName);
+                  EntityIterable all = txn.getAll(entityType);
+                  // Make sure to get only get linked entities of the required type
+                  EntityIterable filtered = all.intersect(linkedEntities);
+                  result = result.intersect(filtered);
+                }
+
                 if (sort != null) {
                   if (sort.startsWith("-")) {
                     String sortDescending = sort.substring(1);
