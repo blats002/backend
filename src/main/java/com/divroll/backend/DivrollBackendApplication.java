@@ -98,6 +98,8 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
+    router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodesMethodServerResource.class);
+    router.attach(ROOT_URI + "customCodes/{customCodeName}/{methodName}", JeeCustomCodeMethodServerResource.class);
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
