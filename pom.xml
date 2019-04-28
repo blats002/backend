@@ -62,6 +62,19 @@
         <customcode.version>0-SNAPSHOT</customcode.version>
         <swagger-maven-plugin-version>3.1.7</swagger-maven-plugin-version>
         <xodus.version>1.3.0</xodus.version>
+        <skipTests>true</skipTests>
+        <cargo.remote.username>admin</cargo.remote.username>
+        <cargo.remote.password>adminadmin</cargo.remote.password>
+        <cargo.remote.hostname>localhost</cargo.remote.hostname>
+
+        <payara.adminPort>4848</payara.adminPort>
+        <payara.username>admin</payara.username>
+        <payara.password></payara.password>
+        <payara.hostname></payara.hostname>
+        <payara.domainName>domain1</payara.domainName>
+        <payara.home>/root/payara5</payara.home>
+        <payara.domainDir>${payara.home}/glassfish/domains</payara.domainDir>
+
     </properties>
 
     <build>
@@ -136,6 +149,76 @@
                         <dirty>-dirty</dirty>
                     </gitDescribe>
                 </configuration>
+            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.cargo</groupId>-->
+<!--                <artifactId>cargo-maven2-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <container>-->
+<!--                        <containerId>glassfish-5x</containerId>-->
+<!--                        <type>remote</type>-->
+<!--                        <home>${payara.home}</home>-->
+<!--                    </container>-->
+<!--                    <configuration>-->
+<!--                        <type>existing</type>-->
+<!--                        <home>${payara.domainDir}</home>-->
+<!--                        <properties>-->
+<!--                            <cargo.remote.username>${payara.username}</cargo.remote.username>-->
+<!--                            <cargo.remote.password>${payara.password}</cargo.remote.password>-->
+<!--                            <cargo.glassfish.admin.port>${payara.adminPort}</cargo.glassfish.admin.port>-->
+<!--                            <cargo.hostname>${payara.hostname}</cargo.hostname>-->
+<!--                            <cargo.glassfish.domain.name>${payara.domainName}</cargo.glassfish.domain.name>-->
+<!--                        </properties>-->
+<!--                    </configuration>-->
+<!--                </configuration>-->
+<!--                &lt;!&ndash; provides JSR88 client API to deploy on Payara &ndash;&gt;-->
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>org.glassfish.main.deployment</groupId>-->
+<!--                        <artifactId>deployment-client</artifactId>-->
+<!--                        <version>5.0</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+<!--            </plugin>-->
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <configuration>
+                    <container>
+                        <containerId>glassfish5x</containerId>
+                        <type>remote</type>
+                    </container>
+                    <configuration>
+                        <type>runtime</type>
+                        <properties>
+                            <payara.username>${payara.username}</payara.username>
+                            <payara.password>${payara.password}</payara.password>
+                            <payara.hostname>${payara.hostname}</payara.hostname>
+                            <cargo.remote.username>${payara.username}</cargo.remote.username>
+                            <cargo.remote.password>${payara.password}</cargo.remote.password>
+                            <cargo.glassfish.admin.port>4848</cargo.glassfish.admin.port>
+                            <cargo.hostname>${payara.hostname}</cargo.hostname>
+                        </properties>
+                    </configuration>
+                    <deployables>
+                        <deployable>
+                            <groupId>${groupId}</groupId>
+                            <artifactId>${artifactId}</artifactId>
+                            <type>war</type>
+                            <properties>
+                                <context>test</context>
+                            </properties>
+                        </deployable>
+                    </deployables>
+                </configuration>
+                <!-- provides JSR88 client API to deploy on Payara Server -->
+                <dependencies>
+                    <dependency>
+                        <groupId>org.glassfish.main.deployment</groupId>
+                        <artifactId>deployment-client</artifactId>
+                        <version>5.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
