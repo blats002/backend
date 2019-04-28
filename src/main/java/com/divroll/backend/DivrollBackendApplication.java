@@ -26,6 +26,7 @@ import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.quartz.Scheduler;
@@ -40,7 +41,10 @@ import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
 import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
+import org.restlet.engine.application.CorsFilter;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -103,34 +107,34 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
-//    CorsFilter corsFilter = new CorsFilter(getContext());
-//    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
-//    corsFilter.setSkippingResourceForCorsOptions(true);
-//    corsFilter.setAllowedHeaders(
-//        Sets.newHashSet(
-//            Constants.HEADER_MASTER_KEY,
-//            Constants.HEADER_MASTER_KEY.toLowerCase(),
-//            Constants.HEADER_API_KEY,
-//            Constants.HEADER_API_KEY.toLowerCase(),
-//            Constants.HEADER_APP_ID,
-//            Constants.HEADER_APP_ID.toLowerCase(),
-//            "X-Divroll-Namespace",
-//            "X-Divroll-Namespace".toLowerCase(),
-//            Constants.HEADER_AUTH_TOKEN,
-//            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
-//            Constants.HEADER_ACCEPT,
-//            Constants.HEADER_ACCEPT.toLowerCase(),
-//            Constants.HEADER_ACL_READ,
-//            Constants.HEADER_ACL_READ.toLowerCase(),
-//            Constants.HEADER_ACL_WRITE,
-//            Constants.HEADER_ACL_WRITE.toLowerCase(),
-//            Constants.HEADER_CONTENT_TYPE,
-//            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
-//    corsFilter.setAllowedCredentials(true);
-//
-//    corsFilter.setNext(router);
-//    return corsFilter;
-    return router;
+    CorsFilter corsFilter = new CorsFilter(getContext());
+    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
+    corsFilter.setSkippingResourceForCorsOptions(true);
+    corsFilter.setAllowedHeaders(
+        Sets.newHashSet(
+            Constants.HEADER_MASTER_KEY,
+            Constants.HEADER_MASTER_KEY.toLowerCase(),
+            Constants.HEADER_API_KEY,
+            Constants.HEADER_API_KEY.toLowerCase(),
+            Constants.HEADER_APP_ID,
+            Constants.HEADER_APP_ID.toLowerCase(),
+            "X-Divroll-Namespace",
+            "X-Divroll-Namespace".toLowerCase(),
+            Constants.HEADER_AUTH_TOKEN,
+            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
+            Constants.HEADER_ACCEPT,
+            Constants.HEADER_ACCEPT.toLowerCase(),
+            Constants.HEADER_ACL_READ,
+            Constants.HEADER_ACL_READ.toLowerCase(),
+            Constants.HEADER_ACL_WRITE,
+            Constants.HEADER_ACL_WRITE.toLowerCase(),
+            Constants.HEADER_CONTENT_TYPE,
+            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
+    corsFilter.setAllowedCredentials(true);
+
+    corsFilter.setNext(router);
+    return corsFilter;
+//    return router;
   }
 
   private void configureConverters() {
