@@ -202,8 +202,8 @@ xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLS
   </build>
 <modules>
     <module>rest</module>
-    <module>customcode-registrations</module>
-    <module>customcode-sdk-java-example</module>
+<!--    <module>customcode-registrations</module>-->
+<!--    <module>customcode-sdk-java-example</module>-->
 </modules>
 
 </project>

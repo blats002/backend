@@ -49,7 +49,6 @@ public class RestApplication extends Application {
     router.attach(ROOT_URI + "websites/{subdomain}/custom_ssls/{domain}", SSLServerResource.class);
     router.attach(ROOT_URI + "files", CalculateFileSizeServerResource.class);
     router.attach(ROOT_URI + "migrate", CopyFromParseToGoogleCloudServerResource.class);
-    router.attach(ROOT_URI + "functions/{function_name}", FunctionServerResource.class);
     router.attachDefault(directory);
 
     CorsFilter corsFilter = new CorsFilter(getContext());
