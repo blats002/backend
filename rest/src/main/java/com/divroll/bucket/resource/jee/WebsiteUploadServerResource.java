@@ -102,7 +102,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 return null;
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            boolean isOk = clean(sessionToken, appObjectId);
+            boolean isOk = clean(authToken, appObjectId);
             if(isOk) {
                 return success();
             } else {
@@ -121,15 +121,15 @@ public class WebsiteUploadServerResource extends BaseServerResource
                 setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                 return null;
             }
-            if(!isQuotaAndMeterExists()) {
-                return createErrorResponse(Status.CLIENT_ERROR_NOT_FOUND);
-            }
-            if(isQuotaTraffic()) {
-                return createErrorResponse(new Status(509, "Bandwidth Limit Exceeded"));
-            }
-            if(isQuotaStorage()) {
-                return createErrorResponse(Status.SERVER_ERROR_INSUFFICIENT_STORAGE);
-            }
+//            if(!isQuotaAndMeterExists()) {
+//                return createErrorResponse(Status.CLIENT_ERROR_NOT_FOUND);
+//            }
+//            if(isQuotaTraffic()) {
+//                return createErrorResponse(new Status(509, "Bandwidth Limit Exceeded"));
+//            }
+//            if(isQuotaStorage()) {
+//                return createErrorResponse(Status.SERVER_ERROR_INSUFFICIENT_STORAGE);
+//            }
             if(subdomain == null || subdomain.isEmpty()) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
@@ -217,12 +217,12 @@ public class WebsiteUploadServerResource extends BaseServerResource
                             }
 
                             if(byteContent != null) {
-                                //String result = processFile(sessionToken, byteContent, getQueryValue("upload_type"), appObjectId);
+                                //String result = processFile(authToken, byteContent, getQueryValue("upload_type"), appObjectId);
                                 String filePath = qqPath;
                                 boolean isSuccess = false;
                                 JSONObject jsonObject = new JSONObject();
-                                //int status = writeFileToCloud(sessionToken, byteContent, name, filePath, appObjectId, userId);
-                                int status = writeFileToGoogleCloud(sessionToken, byteContent, name, filePath, subdomain, userId);
+                                //int status = writeFileToCloud(authToken, byteContent, name, filePath, appObjectId, userId);
+                                int status = writeFileToGoogleCloud(authToken, byteContent, name, filePath, subdomain, userId);
                                 //LOG.info("Write Status: " + status);
                                 final int bLength = byteContent.length;
                                 if(status == 200) {
@@ -318,7 +318,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                                         @Override
                                         public Integer call() throws Exception {
                                             try {
-//                                                int status =  writeFileToCloud(sessionToken, byteArray, filename, filePath, appId, userId);
+//                                                int status =  writeFileToCloud(authToken, byteArray, filename, filePath, appId, userId);
                                                 int status =  writeFileToGoogleCloud(sessionToken, byteArray, filename, filePath, subdomain, userId);
                                                 LOG.info("File Name: " + filename);
                                                 LOG.info("Application ID: " + appId);
@@ -742,7 +742,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                             .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                             .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
 //                            .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-//                            .header(X_PARSE_SESSION_TOKEN, sessionToken)
+//                            .header(X_PARSE_SESSION_TOKEN, authToken)
                             .header("Content-Type", "application/json")
                             .body(file.toJSONString())
                             .asString();
@@ -776,7 +776,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     Configuration.DIVROLL_PARSE_URL + "/classes/File")
                     .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                     .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
-                    //.header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    //.header(X_PARSE_SESSION_TOKEN, authToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             if(getRequest.getStatus() == 200){
@@ -841,7 +841,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                     .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
 //                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+//                    .header(X_PARSE_SESSION_TOKEN, authToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             String body = getRequest.getBody();
@@ -881,7 +881,7 @@ public class WebsiteUploadServerResource extends BaseServerResource
                     .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                     .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
 //                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-//                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+//                    .header(X_PARSE_SESSION_TOKEN, authToken)
                     .queryString("where", whereObject.toJSONString())
                     .asString();
             String body = getRequest.getBody();
@@ -947,7 +947,7 @@ Parse.Cloud.useMasterKey();
                 .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                 .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
 //                .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-//                .header(X_PARSE_SESSION_TOKEN, sessionToken)
+//                .header(X_PARSE_SESSION_TOKEN, authToken)
                 .queryString("where", whereObject.toJSONString())
                 .asString();
         String body = getRequest.getBody();

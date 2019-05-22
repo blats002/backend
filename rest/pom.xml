@@ -10,11 +10,23 @@
     <artifactId>puppet</artifactId>
     <packaging>war</packaging>
     <version>1.0</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <name>Divroll::Puppet</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <guava.version>18.0</guava.version>
         <xtend.version>2.9.1</xtend.version>
         <version.restlet>2.3.10</version.restlet> <!-- WARNING! DO NOT CHANGE THIS VERSION, CORS WILL NOT WORK -->
@@ -158,16 +170,16 @@
             <version>4.9.5</version>
         </dependency>
         <!-- Let's encrypt -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.57</version>
-        </dependency>
-        <dependency>
-            <groupId>com.divroll</groupId>
-            <artifactId>acme-client</artifactId>
-            <version>DIVROLL-SNAPSHOT</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.bouncycastle</groupId>-->
+<!--            <artifactId>bcprov-jdk15on</artifactId>-->
+<!--            <version>1.57</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.divroll</groupId>-->
+<!--            <artifactId>acme-client</artifactId>-->
+<!--            <version>DIVROLL-SNAPSHOT</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
@@ -199,6 +211,30 @@
             <artifactId>google-cloud-datastore</artifactId>
             <version>1.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-bundle</artifactId>
+            <version>1.11.452</version>
+            <!-- <version>1.11.172</version> -->
+        </dependency>
+        <dependency>
+            <groupId>com.divroll.backend</groupId>
+            <artifactId>backend-sdk-java</artifactId>
+            <version>0-SNAPSHOT</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.shredzone.acme4j</groupId>
+            <artifactId>acme4j-client</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.shredzone.acme4j</groupId>
+            <artifactId>acme4j-utils</artifactId>
+            <version>2.7</version>
+        </dependency>
+
         <!--<dependency>-->
             <!--<groupId>com.joyent.manta</groupId>-->
             <!--<artifactId>java-manta</artifactId>-->
@@ -283,8 +319,8 @@
                         <artifactId>maven-compiler-plugin</artifactId>
                         <version>3.1</version>
                         <configuration>
-                            <source>1.7</source>
-                            <target>1.7</target>
+                            <source>1.8</source>
+                            <target>1.8</target>
                         </configuration>
                     </plugin>
                     <!--plugin>

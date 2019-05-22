@@ -3,6 +3,8 @@ package com.divroll.bucket.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.divroll.backend.sdk.DivrollUser;
+import com.divroll.bucket.ClientTest;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.divroll.bucket.Configuration;
@@ -38,8 +40,8 @@ public class BaseServerResource extends ServerResource
     protected Map<String,String> headers = new LinkedHashMap<String,String>();
 
     protected String user = null;
-    protected String userId = null;
-    protected String sessionToken = null;
+    protected String userId = "1-1"; // test!!!!!!!!!!!!!!!!!
+    protected String authToken = null;
     protected String masterKey;
     protected String subdomain;
     protected String domain;
@@ -53,21 +55,20 @@ public class BaseServerResource extends ServerResource
         subdomain = getAttribute("subdomain");
         domain = getAttribute("domain");
         functioName = getAttribute("function_name");
+
+        authToken = getQueryValue("authToken");
+
         getHeaders();
         jelasticService = new JelasticService();
     }
 
-    protected String getUser(String sessionToken) {
+    protected String getUser(String authToken) {
         try {
-            HttpResponse<String> appGet = Unirest.get(Configuration.DIVROLL_PARSE_URL + Configuration.ME_URI)
-                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
-                    .asString();
-            LOG.info("Get User response: " + appGet.getBody());
-            JSONObject appResult = JSON.parseObject(appGet.getBody());
-            LOG.info("Retrieved User from token: " + appResult.getString("objectId"));
-            return appResult.toJSONString();
+            DivrollUser divrollUser = new DivrollUser();
+            divrollUser.setAuthToken(authToken);
+            divrollUser.retrieve();
+            String userId = divrollUser.getEntityId();
+            return userId;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,6 +91,8 @@ public class BaseServerResource extends ServerResource
         }
         //return headers;
     }
+
+    /*
     protected JSONObject getApplicationByUser(String subdomain, String userId) {
         try {
             JSONObject whereObject = new JSONObject();
@@ -125,72 +128,77 @@ public class BaseServerResource extends ServerResource
         }
         return null;
     }
-
+    */
     protected boolean hasMasterRole() {
-        boolean hasMasterRole = false;
-        if(masterKey != null
-                && !masterKey.isEmpty()
-                && masterKey.equals(Configuration.DIVROLL_MASTER_KEY)) {
-            hasMasterRole = true;
-        }
-        return hasMasterRole;
+//        boolean hasMasterRole = false;
+//        if(masterKey != null
+//                && !masterKey.isEmpty()
+//                && masterKey.equals(Configuration.DIVROLL_MASTER_KEY)) {
+//            hasMasterRole = true;
+//        }
+//        return hasMasterRole;
+        return false;
     }
 
     protected boolean hasUserRole() {
+        /*
         String headerField = X_PARSE_SESSION_TOKEN;
-        String sessionToken = headers.get(headerField.toLowerCase());
-        if(sessionToken == null || sessionToken.isEmpty()) {
-            sessionToken = headers.get(X_PARSE_SESSION_TOKEN);
+        String authToken = headers.get(headerField.toLowerCase());
+        if(authToken == null || authToken.isEmpty()) {
+            authToken = headers.get(X_PARSE_SESSION_TOKEN);
         }
         LOG.info(headerField);
-        this.sessionToken = sessionToken;
-        if(sessionToken != null) {
-            user = getUser(sessionToken);
+        this.authToken = authToken;
+        if(authToken != null) {
+            user = getUser(authToken);
             if(user != null) {
                 userId = JSONObject.parseObject(user).getString("objectId");
             }
         }
-        LOG.info("Session token: " + sessionToken);
+        LOG.info("Session token: " + authToken);
         LOG.info("User: " + user);
         LOG.info("User ID: " + userId);
         return user != null;
+        */
+        return true;
     }
 
     // TODO: Implement a better algo for this
-    protected boolean isQuotaAndMeterExists() {
-        Boolean isExist = false;
-        try {
-            JSONObject whereObject = new JSONObject();
-            whereObject.put("user", createPointer("_User", userId));
-            HttpResponse<String> quotaRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL +
-                    "/classes/Quota")
-                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
-                    .queryString("where", whereObject.toJSONString())
-                    .asString();
-            String body = quotaRequest.getBody();
-            JSONArray jsonArray = JSONObject.parseObject(body).getJSONArray("results");
-            if(!jsonArray.isEmpty()) {
-                HttpResponse<String> meterRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL +
-                        "/classes/Meter")
-                        .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                        .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                        .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
-                        .queryString("where", whereObject.toJSONString())
-                        .asString();
-                String meterResponseBody = meterRequest.getBody();
-                JSONArray jsonMeterArray = JSONObject.parseObject(meterResponseBody).getJSONArray("results");
-                if(!jsonMeterArray.isEmpty()) {
-                    isExist = true;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return isExist;
-    }
+//    protected boolean isQuotaAndMeterExists() {
+//        Boolean isExist = false;
+//        try {
+//            JSONObject whereObject = new JSONObject();
+//            whereObject.put("user", createPointer("_User", userId));
+//            HttpResponse<String> quotaRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL +
+//                    "/classes/Quota")
+//                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
+//                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
+//                    .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
+//                    .queryString("where", whereObject.toJSONString())
+//                    .asString();
+//            String body = quotaRequest.getBody();
+//            JSONArray jsonArray = JSONObject.parseObject(body).getJSONArray("results");
+//            if(!jsonArray.isEmpty()) {
+//                HttpResponse<String> meterRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL +
+//                        "/classes/Meter")
+//                        .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
+//                        .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
+//                        .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
+//                        .queryString("where", whereObject.toJSONString())
+//                        .asString();
+//                String meterResponseBody = meterRequest.getBody();
+//                JSONArray jsonMeterArray = JSONObject.parseObject(meterResponseBody).getJSONArray("results");
+//                if(!jsonMeterArray.isEmpty()) {
+//                    isExist = true;
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return isExist;
+//    }
 
+    /*
     protected boolean isQuotaExists() {
         Boolean isExist = false;
         try {
@@ -270,7 +278,7 @@ public class BaseServerResource extends ServerResource
                     "/classes/Quota")
                     .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                     .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .header(X_PARSE_SESSION_TOKEN, authToken)
                     .header("Content-Type", "application/json")
                     .body(jsonObject.toJSONString())
                     .asString();
@@ -312,7 +320,7 @@ public class BaseServerResource extends ServerResource
                     "/classes/Meter")
                     .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
                     .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
+                    .header(X_PARSE_SESSION_TOKEN, authToken)
                     .header("Content-Type", "application/json")
                     .body(jsonObject.toJSONString())
                     .asString();
@@ -419,6 +427,8 @@ public class BaseServerResource extends ServerResource
         return isQuota;
     }
 
+    */
+
     protected JSONObject createPointer(String className, String objectId) {
         JSONObject pointer = new JSONObject();
         pointer.put("__type", "Pointer");
@@ -427,22 +437,22 @@ public class BaseServerResource extends ServerResource
         return pointer;
     }
 
-    protected JSONObject getParseConfig() {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            HttpResponse<String> configRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL + Configuration.CONFIG_URI)
-                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
-                    .asString();
-            String body = configRequest.getBody();
-            JSONObject jso = JSONObject.parseObject(body);
-            jsonObject = jso;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return jsonObject;
-    }
+//    protected JSONObject getParseConfig() {
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            HttpResponse<String> configRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL + Configuration.CONFIG_URI)
+//                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
+//                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
+//                    .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
+//                    .asString();
+//            String body = configRequest.getBody();
+//            JSONObject jso = JSONObject.parseObject(body);
+//            jsonObject = jso;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return jsonObject;
+//    }
 
     protected Representation success() {
         JSONObject jsonObject = new JSONObject();

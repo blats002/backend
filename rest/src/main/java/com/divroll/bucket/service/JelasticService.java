@@ -22,9 +22,9 @@ public class JelasticService {
     private static final Logger LOG
             = Logger.getLogger(JelasticService.class.getName());
 
-    protected final static String CERTIFICATE_PATH_TEMPLATE = "/var/lib/nginx/ssl/DOMAIN_NAME.crt";
-    protected final static String PRIVATE_KEY_PATH_TEMPLATE = "/var/lib/nginx/ssl/DOMAIN_NAME.key";
-    protected final static String NGINX_CONF_PATH_TEMPLATE = "/var/lib/nginx/conf.d/DOMAIN_NAME.conf";
+    protected final static String CERTIFICATE_PATH_TEMPLATE = "/var/lib/jelastic/keys/DOMAIN_NAME.crt";
+    protected final static String PRIVATE_KEY_PATH_TEMPLATE = "/var/lib/jelastic/keys/DOMAIN_NAME.key";
+    protected final static String NGINX_CONF_PATH_TEMPLATE = "/etc/nginx/conf.d/DOMAIN_NAME.conf";
 
     public String getSession() {
         LOG.info("Authenticate user...");
@@ -128,7 +128,7 @@ public class JelasticService {
 
     private boolean validateNginx() {
         boolean isOK = false;
-        String HOSTER_URL = "https://app.divroll.space/";
+        String HOSTER_URL = "https://app.hidora.com/";
         String USER_EMAIL = Configuration.JELASTIC_USER_EMAIL;
         String USER_PASSWORD = Configuration.JELASTIC_USER_PASSWORD;
         String ENV_NAME = Configuration.JELASTIC_ENV_NAME;
@@ -163,7 +163,7 @@ public class JelasticService {
 
     private void reloadNginx() {
         LOG.info("Trying to reload Nginx");
-        String HOSTER_URL = "https://app.divroll.space/";
+        String HOSTER_URL = "https://app.hidora.com/";
         String USER_EMAIL = Configuration.JELASTIC_USER_EMAIL;
         String USER_PASSWORD = Configuration.JELASTIC_USER_PASSWORD;
         String ENV_NAME = Configuration.JELASTIC_ENV_NAME;

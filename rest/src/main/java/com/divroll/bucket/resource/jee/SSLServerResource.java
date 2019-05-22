@@ -1,29 +1,24 @@
 package com.divroll.bucket.resource.jee;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.divroll.bucket.Configuration;
+import com.divroll.backend.sdk.Divroll;
+import com.divroll.backend.sdk.DivrollEntities;
+import com.divroll.backend.sdk.DivrollUser;
+import com.divroll.backend.sdk.filter.EqualQueryFilter;
+import com.divroll.backend.sdk.filter.QueryFilter;
+import com.divroll.bucket.Cert;
+import com.divroll.bucket.ClientTest;
 import com.divroll.bucket.resource.SSLResource;
-import com.divroll.bucket.service.CertificateHelper;
-import com.divroll.bucket.service.HttpChallengeListener;
 import com.divroll.bucket.validator.EmailValidator;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import it.zero11.acme.Acme;
-import it.zero11.acme.AcmeChallengeListener;
-import it.zero11.acme.storage.impl.DefaultCertificateStorage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import org.restlet.resource.ResourceException;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
 import java.security.Security;
-import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class SSLServerResource extends BaseServerResource
@@ -39,12 +34,24 @@ public class SSLServerResource extends BaseServerResource
     private static final String PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
 
-    private static final String CA_STAGING_URL = "https://acme-staging.api.letsencrypt.org/acme";
-    private static String CA_PRODUCTION_URL = "";
-    private static String AGREEMENT_URL = "";
+//    private static String CA_PRODUCTION_URL = "https://acme-staging.api.letsencrypt.org/acme";
+    private static String CA_PRODUCTION_URL = "https://acme-v01.api.letsencrypt.org/acme";
+    private static String AGREEMENT_URL = "https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf";
+
+    private static final String DIVROLL_APP_ID = "***REMOVED***";
+    private static final String DIVROLL_API_KEY = "***REMOVED***";
+    private static final String DIVROLL_MASTER_KEY = "***REMOVED***";
+
+    @Override
+    protected void doInit() throws ResourceException {
+        super.doInit();
+        Divroll.initialize("https://www.divroll.xyz/divroll", DIVROLL_APP_ID,
+                DIVROLL_API_KEY, DIVROLL_MASTER_KEY);
+    }
 
     @Override
     public Representation post(Representation entity) {
+
         LOG.info("Domain: " + domain);
         LOG.info("Subdomain: " + subdomain);
         JSONObject responseObject = new JSONObject();
@@ -113,42 +120,16 @@ public class SSLServerResource extends BaseServerResource
             }
             // Check if Subdomain exists
             // and owned by client
-            JSONObject whereObject = new JSONObject();
-            whereObject.put("appId", subdomain);
 
-            HttpResponse<String> getRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL +
-                    "/classes/Application")
-                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_PARSE_SESSION_TOKEN, sessionToken)
-                    .queryString("where", whereObject.toJSONString())
-                    .asString();
-            String body = getRequest.getBody();
-            //String appObjectId = null;
+            DivrollEntities entities = new DivrollEntities("Subdomain");
+            entities.query(new EqualQueryFilter("subdomain", subdomain));
 
-            if(getRequest.getStatus() == 200) {
-                JSONObject results = JSON.parseObject(body);
-                JSONArray resultsArray = results.getJSONArray("results");
-                if(!resultsArray.isEmpty()){
-                    for(int i=0;i<resultsArray.size();i++){
-                        JSONObject jsonObject = resultsArray.getJSONObject(i);
-                        LOG.info("jsonObject: " + jsonObject.toJSONString());
-                        String appId = jsonObject.getString("objectId");
-                        String appSubdomain = jsonObject.getString("appId");
-                        JSONObject userPointer = jsonObject.getJSONObject("userId");
-                        if(userPointer == null) {
-                            setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
-                            return null;
-                        } else {
-                            String id = userPointer.getString("objectId");
-                            if(userId.equals(id) && subdomain.equals(appSubdomain)) {
-                                appObjectId = appId;
-                                break;
-                            }
-                        }
+            if(entities.getEntities() != null && !entities.getEntities().isEmpty()) {
+                entities.getEntities().forEach(e -> {
+                    if(e.getProperty("subdomain").equals(subdomain)) {
+                        appObjectId = e.getEntityId();
                     }
-                }
-
+                });
                 LOG.info("Subdomain: " + subdomain);
                 LOG.info("Application ID: " + appObjectId);
 
@@ -157,31 +138,20 @@ public class SSLServerResource extends BaseServerResource
                     return null;
                 }
 
-                try {
-                    HttpResponse<String> res = Unirest.get(Configuration.DIVROLL_PARSE_URL + "/config")
-                            .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                            .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
-                            .header("Content-Type", "application/json")
-                            .asString();
-                    String resBody = res.getBody();
-                    JSONObject config = JSONObject.parseObject(resBody);
-                    CA_PRODUCTION_URL = config.getJSONObject("params").getString("LETSENCRYPT_PRODUCTION_URL");
-                    AGREEMENT_URL = config.getJSONObject("params").getString("LETSENCRYPT_AGREEMENT_URL");
-                } catch (UnirestException e) {
-                    LOG.info("Error " + e.getMessage());
-                }
+                //CA_PRODUCTION_URL = config.getJSONObject("params").getString("LETSENCRYPT_PRODUCTION_URL");
+                //AGREEMENT_URL = config.getJSONObject("params").getString("LETSENCRYPT_AGREEMENT_URL");
 
                 ///////////////////////////////
                 // Let's Encrypt !
                 //////////////////////////////
 
-
                 Security.addProvider(new BouncyCastleProvider());
-                //String mailTo = "mailto:webmaster@***REMOVED***";
 
-                JSONObject userObject = JSONObject.parseObject(user);
-                String mailTo = userObject.getString("email");
-
+                DivrollUser divrollUser = new DivrollUser();
+                divrollUser.setEntityId(userId);
+                divrollUser.setAuthToken(authToken);
+                divrollUser.retrieve();
+                String mailTo = divrollUser.getUsername();
                 if(mailTo == null || mailTo.isEmpty() || !EmailValidator.validate(mailTo)) {
                     return badRequest("Must have valid email");
                 }
@@ -194,15 +164,14 @@ public class SSLServerResource extends BaseServerResource
                 domains[0] = domain;
                 contacts[0] = "mailto:" + mailTo;
                 LOG.info("Mail to: " + mailTo);
-                LOG.info("Session Token: " + sessionToken);
+                LOG.info("Auth Token: " + authToken);
 
                 //AGREEMENT_URL = "https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf";
 
-                AcmeChallengeListener challengeListener = new HttpChallengeListener(sessionToken, subdomain, userId, domains[0], "");
+                /*
+                AcmeChallengeListener challengeListener = new HttpChallengeListener(authToken, subdomain, userId, domains[0], "");
                 Acme acme = new Acme(CA_PRODUCTION_URL, new DefaultCertificateStorage(true), true, true);
                 X509Certificate cert = acme.getCertificate(domains, AGREEMENT_URL, contacts, challengeListener);
-
-                // TODO:
                 KeyPair domainKey = acme.getCertificateStorage().getDomainKeyPair(domains);
                 PrivateKey privateKey = domainKey.getPrivate();
 
@@ -211,22 +180,38 @@ public class SSLServerResource extends BaseServerResource
 
                 LOG.info(fullchain);
                 LOG.info(privateKeyString);
-                ////////////////////////////////
-                jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
-                ////////////////////////////////
-                responseObject.put("code", Status.SUCCESS_OK.getCode());
-                responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
+                */
 
-                JSONObject certificate = new JSONObject();
-                certificate.put("certificate", fullchain);
-                certificate.put("privateKey", privateKeyString);
+                String fullchain = "";
+                String privateKeyString = "";
 
-                responseObject.put("result", certificate);
+                try {
+                    LOG.info("Starting Let's Encrypt process...");
+                    ClientTest ct = new ClientTest(subdomain, jelasticService);
+                    Cert cert = ct.fetchCertificate(Arrays.asList(domains));
+                    fullchain = cert.getCertificateChain();
+                    privateKeyString = cert.getDomainKey();
+                    ////////////////////////////////
+                    jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
+                    ////////////////////////////////
+                    responseObject.put("code", Status.SUCCESS_OK.getCode());
+                    responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
 
-                setStatus(Status.SUCCESS_OK);
-                Representation representation = new StringRepresentation(responseObject.toJSONString());
-                representation.setMediaType(MediaType.APPLICATION_JSON);
-                return representation;
+                    JSONObject certificate = new JSONObject();
+                    certificate.put("certificate", fullchain);
+                    certificate.put("privateKey", privateKeyString);
+
+                    responseObject.put("result", certificate);
+
+                    setStatus(Status.SUCCESS_OK);
+                    Representation representation = new StringRepresentation(responseObject.toJSONString());
+                    representation.setMediaType(MediaType.APPLICATION_JSON);
+                    return representation;
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    LOG.info("Failed to get a certificate for domains " + domains);
+                    return internalError();
+                }
             } else {
                 return badRequest();
             }
@@ -238,45 +223,21 @@ public class SSLServerResource extends BaseServerResource
     }
 
     private boolean checkDomainOwner(String domain) {
-        boolean isOwner = false;
+        final boolean[] isOwner = {false};
         try {
-            JSONObject whereObject = new JSONObject();
-            whereObject.put("name", domain);
-            HttpResponse<String> quotaRequest = Unirest.get(Configuration.DIVROLL_PARSE_URL +
-                    "/classes/Domain")
-                    .header(X_PARSE_APPLICATION_ID, Configuration.DIVROLL_PARSE_APP_ID)
-                    .header(X_PARSE_REST_API_KEY, Configuration.DIVROLL_PARSE_REST_API_KEY)
-                    .header(X_MASTER_KEY, Configuration.DIVROLL_MASTER_KEY)
-                    .queryString("where", whereObject.toJSONString())
-                    .asString();
-            String body = quotaRequest.getBody();
-            JSONArray jsonArray = JSONObject.parseObject(body).getJSONArray("results");
-            if(!jsonArray.isEmpty()) {
-                for(int i=0;i<jsonArray.size();i++){
-                    JSONObject domainObject = jsonArray.getJSONObject(i);
-                    String name = domainObject.getString("name");
-                    String objectId = domainObject.getString("objectId");
-                    JSONObject appPointer = domainObject.getJSONObject("appId");
-                    if(domain.equals(name)) {
-                        // Found domain
-                        String appId = appPointer.getString("objectId");
-                        JSONObject application = getApplicationByUser(subdomain, userId);
-                        if(application != null) {
-                            LOG.info("Application: " + appId);
-                            LOG.info("Application: " + application.getString("objectId"));
-                            if(appId.equals(application.getString("objectId"))) {
-                                isOwner = true;
-                            }
-                        } else {
-                            LOG.info("No application found for " + domain);
-                        }
-                    }
+            // TODO - Check if this is a valid way to check if domain is owned
+            DivrollEntities entities = new DivrollEntities("Domain");
+            QueryFilter queryFilter = new EqualQueryFilter("name", domain);
+            entities.query(queryFilter);
+            entities.getEntities().forEach(entity -> {
+                String name = String.valueOf(entity.getProperty("name"));
+                if(name != null && name.equals(domain)) {
+                    isOwner[0] = true;
                 }
-            }
-
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return isOwner;
+        return isOwner[0];
     }
 }

@@ -10,8 +10,8 @@ public class Template {
             "    server_name  __DOMAIN__;\n" +
             "\n" +
             "    ssl                  on;\n" +
-            "    ssl_certificate      /var/lib/nginx/ssl/__DOMAIN__.crt;\n" +
-            "    ssl_certificate_key  /var/lib/nginx/ssl/__DOMAIN__.key;\n" +
+            "    ssl_certificate      /var/lib/jelastic/keys/__DOMAIN__.crt;\n" +
+            "    ssl_certificate_key  /var/lib/jelastic/keys/__DOMAIN__.key;\n" +
             "\n" +
             "    ssl_session_timeout  5m;\n" +
             "\n" +

@@ -34,7 +34,7 @@ public class Configuration {
     public final static String JELASTIC_AUTH_HOSTER_URL = "https://app.hidora.com/1.0/users/authentication/";
     public final static String JELASTIC_ENV_HOSTER_URL = "https://app.hidora.com/1.0/environment/";
     public final static String JELASTIC_USER_EMAIL = "webmaster@divroll.com";
-    public final static String JELASTIC_USER_PASSWORD = "";
+    public final static String JELASTIC_USER_PASSWORD = "***REMOVED***";
     public final static String JELASTIC_ENV_NAME = "roller";
     public final static Integer JELASTIC_NGINX_NODE_ID = 43282; // roller.hidora.com Nginx
 }
