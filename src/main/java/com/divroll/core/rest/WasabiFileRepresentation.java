@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.divroll.core.rest.service.CacheService;
+import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.StringUtil;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
@@ -16,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Executable;
 import java.nio.charset.StandardCharsets;
 
 public class WasabiFileRepresentation extends OutputRepresentation {
@@ -45,7 +47,19 @@ public class WasabiFileRepresentation extends OutputRepresentation {
             S3Object o = s3.getObject(BUCKET, path);
             InputStream is = o.getObjectContent();
             byte[] buff = new byte[64*1024];
-            flow(is, outputStream, buff);
+
+            final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
+            flow(is, cachingOutputStream, buff);
+
+            try {
+                byte[] cached = cachingOutputStream.getCache();
+                cacheService.put(path, cached);
+            } catch (Exception e) {
+                e.printStackTrace();
+                cachingOutputStream.close();
+            }
+
+            //cachingOutputStream.close();
         } catch (FileNotFoundException e) {
             if(path.endsWith("index.html") || path.endsWith("index.htm")) {
                 byte[] array = StringUtil.toByteArray(read404template());

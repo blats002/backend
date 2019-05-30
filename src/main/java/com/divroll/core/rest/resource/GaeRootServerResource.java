@@ -17,10 +17,10 @@ package com.divroll.core.rest.resource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.divroll.backend.Divroll;
-import com.divroll.backend.DivrollEntities;
-import com.divroll.backend.DivrollEntity;
-import com.divroll.backend.filter.EqualQueryFilter;
+import com.divroll.backend.sdk.Divroll;
+import com.divroll.backend.sdk.DivrollEntities;
+import com.divroll.backend.sdk.DivrollEntity;
+import com.divroll.backend.sdk.filter.EqualQueryFilter;
 import com.divroll.core.rest.CloudFileRepresentation;
 import com.divroll.core.rest.WasabiFileRepresentation;
 import com.divroll.core.rest.service.CacheService;
@@ -293,12 +293,18 @@ public class GaeRootServerResource extends BaseServerResource {
 
     private boolean isValidSubdomain(String subdomain) {
         final Boolean[] isValid = {false};
+        String isValidCached = cacheService.getString("subdomain:" + subdomain + ":valid");
+        // TODO: Add cache expiration (either here or to redis)
+        if(isValidCached != null && isValidCached.equals("true")) {
+            return true;
+        }
         DivrollEntities entities = new DivrollEntities("Subdomain");
         entities.query(new EqualQueryFilter("subdomain", subdomain));
         entities.getEntities().forEach(divrollEntity -> {
             String subDomain = String.valueOf(divrollEntity.getProperty("subdomain"));
             if(subDomain != null && subDomain.equals(subDomain)) {
                 isValid[0] = true;
+                cacheService.putString("subdomain:" + subdomain + ":valid", "true");
             }
         });
         return isValid[0];
