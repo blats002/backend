@@ -25,8 +25,8 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 import java.io.*;
 import java.nio.channels.Channels;

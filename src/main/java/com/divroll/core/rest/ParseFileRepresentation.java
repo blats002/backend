@@ -24,8 +24,8 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.common.io.CountingOutputStream;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;

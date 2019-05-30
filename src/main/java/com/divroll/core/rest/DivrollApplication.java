@@ -21,9 +21,8 @@ import com.google.inject.Guice;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.routing.Router;
-
-import org.slf4j.*;
-
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 /**
  * Main Application
  *

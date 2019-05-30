@@ -19,8 +19,8 @@ import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.StringUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.LinkedList;

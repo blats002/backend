@@ -13,8 +13,8 @@ import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.StringUtil;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Executable;
@@ -45,6 +45,8 @@ public class WasabiFileRepresentation extends OutputRepresentation {
                     .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("s3.wasabisys.com", "us-east-1"))
                     .build();
             S3Object o = s3.getObject(BUCKET, path);
+            LOG.info("Content Length = " + o.getObjectMetadata().getContentLength());
+            LOG.info("Content Type = " + o.getObjectMetadata().getContentType());
             InputStream is = o.getObjectContent();
             byte[] buff = new byte[64*1024];
 
