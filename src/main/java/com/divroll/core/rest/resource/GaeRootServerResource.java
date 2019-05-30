@@ -206,6 +206,14 @@ public class GaeRootServerResource extends BaseServerResource {
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 String completeFilePath = subdomain + "/" + p;
                 LOG.info("Complete File Path:       " + completeFilePath);
+
+                if(RegexHelper.isPath(completeFilePath)) {
+                    String ref = RegexHelper.getRef(completePath);
+                    setLocationRef(completePath + "/index.html");
+                    setStatus(Status.REDIRECTION_FOUND);
+                    return null;
+                }
+
                 byte[] cachedBytes = null;
                 try{
                     cachedBytes = cacheService.get(completeFilePath);
@@ -221,6 +229,9 @@ public class GaeRootServerResource extends BaseServerResource {
                             processMediaType(path),
                             cacheService);
                     responseEntity.setMediaType(processMediaType(completePath));
+//                    if(path.endsWith("index.html")) {
+//                        responseEntity.setDisposition(new Disposition(Disposition.TYPE_INLINE));
+//                    }
                 }
                 if(!canAcceptGzip) {
                     return responseEntity;

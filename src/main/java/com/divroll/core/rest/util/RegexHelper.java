@@ -80,4 +80,22 @@ public class RegexHelper {
         return false;
     }
 
+    public static boolean isPath(String path) {
+        Pattern pattern = Pattern.compile(".+\\/[a-z0-9-_]+$");
+        Matcher matcher = pattern.matcher(path);
+        if(matcher.matches()){
+            return true;
+        }
+        return false;
+    }
+
+    public static String getRef(String path) {
+        Pattern pattern = Pattern.compile("\\/([a-z0-9-_]+)$");
+        Matcher matcher = pattern.matcher(path);
+        if(matcher.matches()){
+            return matcher.group(1);
+        }
+        return "";
+    }
+
 }

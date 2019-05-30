@@ -7,6 +7,7 @@ import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.CachingOutputStream;
@@ -72,8 +73,19 @@ public class WasabiFileRepresentation extends OutputRepresentation {
                 throw new FileNotFoundException(e.getMessage());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            outputStream.close();
+            if(e instanceof AmazonS3Exception) {
+                AmazonS3Exception ax = (AmazonS3Exception) e;
+                if(ax.getStatusCode() == 404) {
+                    if(path.endsWith("/")) {
+
+                    } else {
+
+                    }
+                }
+            } else {
+                e.printStackTrace();
+                outputStream.close();
+            }
         } finally {
             outputStream.close();
         }
