@@ -793,9 +793,6 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                                     .concat(txn.find(entityType, "publicRead", true));
                   }
 
-                  System.out.println("COUNT NOT MASTER 5=" + result.size());
-
-
                 } else {
                   result =
                           txn.findLinks(entityType, targetEntity, "aclRead")
@@ -810,9 +807,6 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   for(String roleName : roleNames){
                     Entity roleEntity = txn.find(defaultRoleStore, "name", roleName).getFirst();
                     EntityIterable entitiesWithGivenRole = roleEntity.getLinks(Constants.USERS_LINKNAME);
-//                    System.out.println("roleName=" + roleName);
-//                    System.out.println("roleId=" + roleEntity.getId());
-//                    System.out.println("entitiesWithGivenRole=" + entitiesWithGivenRole.count());
                     result = result.intersect(entitiesWithGivenRole);
                   }
                 }

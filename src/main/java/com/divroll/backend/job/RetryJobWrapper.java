@@ -1,8 +1,8 @@
 package com.divroll.backend.job;
 
 import org.quartz.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

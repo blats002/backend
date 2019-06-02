@@ -590,7 +590,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       Comparable<T> propertyVal,
       Class<T> clazz,
       String blobKey) {
-    System.out.println("appId = " + appId);
     final InputStream[] inputStream = new InputStream[1];
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appId);
     try {
@@ -1217,7 +1216,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               }
               if (firstEntity != null) {
                 LOG.with("propertyNames", firstEntity.getPropertyNames());
-                System.out.println(firstEntity.getPropertyNames());
                 ComparableLinkedList<Comparable> uniqueProperties =
                     Comparables.cast(metadata.uniqueProperties());
                 ComparableLinkedList<Comparable> finalUniqueProperties =

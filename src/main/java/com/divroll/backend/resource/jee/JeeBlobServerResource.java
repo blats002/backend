@@ -86,6 +86,9 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
 
   @Override
   public Representation setBlob(Representation entity) {
+
+    LOG.info("Method setBlob called");
+
     try {
 
       if (entity == null || entity.isEmpty()) {
@@ -278,6 +281,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
             String base64 = entity.getText();
             byte[] bytes = BaseEncoding.base64().decode(base64);
             InputStream inputStream = ByteSource.wrap(bytes).openStream();
+            LOG.info("Creating entity blob - base64");
             if (entityRepository.createEntityBlob(
                 appId, namespace, entityType, entityId, blobName, inputStream)) {
               pubSubService.updated(appId, namespace, entityType, entityId);
@@ -300,6 +304,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
                 } else {
                   CountingInputStream countingInputStream =
                       new CountingInputStream(item.openStream());
+                  LOG.info("Creating entity blob - multipart form data - " + item.getContentType());
                   if (entityRepository.createEntityBlob(
                       appId, namespace, entityType, entityId, blobName, countingInputStream)) {
                     pubSubService.updated(appId, namespace, entityType, entityId);
@@ -313,6 +318,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
                 && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
               InputStream inputStream = entity.getStream();
               CountingInputStream countingInputStream = new CountingInputStream(inputStream);
+              LOG.info("Creating entity blob - octet stream - " + countingInputStream.getCount() + " bytes");
               if (entityRepository.createEntityBlob(
                   appId, namespace, entityType, entityId, blobName, countingInputStream)) {
                 pubSubService.updated(appId, namespace, entityType, entityId);

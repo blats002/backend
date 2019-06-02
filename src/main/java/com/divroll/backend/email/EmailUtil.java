@@ -59,7 +59,7 @@ public class EmailUtil {
       String subject,
       String body)
       throws MessagingException, UnsupportedEncodingException {
-    System.out.println("*** Sending email via SMTP ***");
+    LOG.info("*** Sending email via SMTP ***");
 
     MimeMessage msg = new MimeMessage(session);
     // set message headers
@@ -77,7 +77,7 @@ public class EmailUtil {
 
     Transport.send(msg);
     LOG.info("EMail Sent Successfully");
-    //        System.out.println("*** Sending email via Postmark ***");
+    //        LOG.info("*** Sending email via Postmark ***");
     //        ApiClient client = Postmark.getApiClient("");
     //        Message message = new Message("***REMOVED***",
     // "***REMOVED***", "Hello from Postmark!", "Hello message body");

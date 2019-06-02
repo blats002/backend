@@ -218,10 +218,6 @@ public abstract class JeeBaseRespository {
                           txn.find(
                               entityType, filter.getPropertyName(), filter.getPropertyValue()));
                 }
-                //                        entityIterableResult[0].forEach(entity -> {
-                //                            System.out.println("entityId->" +
-                // entity.getId().toString());
-                //                        });
               } else {
                 entityIterableResult[0] =
                     entityIterableResult[0].union(

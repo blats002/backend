@@ -31,7 +31,10 @@ import jetbrains.exodus.entitystore.PersistentEntityStore;
 import jetbrains.exodus.entitystore.PersistentEntityStores;
 import jetbrains.exodus.entitystore.StoreTransaction;
 import jetbrains.exodus.entitystore.StoreTransactionalExecutable;
+import jetbrains.exodus.entitystore.replication.S3BlobVault;
+import jetbrains.exodus.entitystore.replication.S3ReplicationBlobVault;
 import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;
 import jetbrains.exodus.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
@@ -56,7 +59,9 @@ public class XodusManagerImpl implements XodusManager {
   public Environment getEnvironment(String xodusRoot, String instance) {
     Environment environment = environmentMap.get(xodusRoot + instance);
     if (environment == null) {
-      Environment env = Environments.newInstance(xodusRoot + instance);
+      EnvironmentConfig config = new EnvironmentConfig();
+      //config.setLogDataReaderWriterProvider("jetbrains.exodus.log.replication.WasabiDataReaderWriterProvider");
+      Environment env = Environments.newInstance(xodusRoot + instance, config);
       environmentMap.put(xodusRoot + instance, env);
     }
     Environment e = environmentMap.get(xodusRoot + instance);
@@ -67,7 +72,10 @@ public class XodusManagerImpl implements XodusManager {
   public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir) {
     PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
     if (entityStore == null) {
-      final PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
+      Environment environment = getEnvironment(xodusRoot, dir);
+      //S3ReplicationBlobVault blobVault = new S3ReplicationBlobVault();
+      //final PersistentEntityStore store = PersistentEntityStores.newInstance(environment, new S3BlobVault());
+      final PersistentEntityStore store = PersistentEntityStores.newInstance(environment);
       //store.getConfig().setRefactoringHeavyLinks(true);
       store.executeInTransaction(
           new StoreTransactionalExecutable() {

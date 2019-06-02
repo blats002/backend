@@ -30,8 +30,8 @@ import org.atmosphere.cpr.Action;
 import org.atmosphere.cpr.AtmosphereInterceptorAdapter;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,8 +94,6 @@ public class AuthenticationInterceptor extends AtmosphereInterceptorAdapter {
     Properties properties = readProperties();
     String xodusRoot = properties.getProperty("xodusRoot");
     String masterStore = properties.getProperty("masterStore");
-    System.out.println("xodusRoot->" + xodusRoot);
-    System.out.println("masterStore->" + masterStore);
     final Map<String, Comparable>[] result = new Map[] {null};
     final PersistentEntityStore entityStore = getPersistentEntityStore(xodusRoot, masterStore);
     try {

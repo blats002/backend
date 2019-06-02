@@ -112,7 +112,6 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             users.setCount(1);
             Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
             String text = representation.getText();
-            System.out.println("--------------------->" + text);
             return representation;
         } else {
             List<User> processedResults = new LinkedList<>();
@@ -138,7 +137,6 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             setStatus(Status.SUCCESS_OK);
             Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
             String text = representation.getText();
-            System.out.println("--------------------->" + text);
             return representation;
         }
       } else {
@@ -154,7 +152,6 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               users.setCount(1);
               Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
               String text = representation.getText();
-              System.out.println("--------------------->" + text);
               return representation;
           } else {
               List<User> results =
@@ -179,7 +176,6 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               setStatus(Status.SUCCESS_OK);
               Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
               String text = representation.getText();
-              System.out.println("--------------------->" + text);
               return representation;
           }
       }
@@ -203,7 +199,6 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
       }
 
       LOG.with("NAMESPACE", namespace);
-      System.out.println("NAMESPACE="+namespace);
 
       String[] read = new String[] {};
       String[] write = new String[] {};
