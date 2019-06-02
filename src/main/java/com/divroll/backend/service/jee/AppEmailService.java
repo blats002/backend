@@ -52,7 +52,6 @@ public class AppEmailService {
   }
 
   public void send(String subject, String to, String htmlBody) {
-    System.out.println("*** Sending email ***");
     if (emailConfig != null) {
       try {
         JobDetail job =

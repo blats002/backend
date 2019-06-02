@@ -18,8 +18,6 @@
         <javaee.version>7.0</javaee.version>
         <jboss-javaee7.version>1.0.4.Final</jboss-javaee7.version>
 
-        <slf4j.version>1.6.4</slf4j.version>
-
         <glassfish.version>4.1.1</glassfish.version>
         <jboss.version>7.1.1.Final</jboss.version>
         <tomcat.version>8.0.32</tomcat.version>
@@ -150,36 +148,6 @@
                     </gitDescribe>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>org.codehaus.cargo</groupId>-->
-<!--                <artifactId>cargo-maven2-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <container>-->
-<!--                        <containerId>glassfish-5x</containerId>-->
-<!--                        <type>remote</type>-->
-<!--                        <home>${payara.home}</home>-->
-<!--                    </container>-->
-<!--                    <configuration>-->
-<!--                        <type>existing</type>-->
-<!--                        <home>${payara.domainDir}</home>-->
-<!--                        <properties>-->
-<!--                            <cargo.remote.username>${payara.username}</cargo.remote.username>-->
-<!--                            <cargo.remote.password>${payara.password}</cargo.remote.password>-->
-<!--                            <cargo.glassfish.admin.port>${payara.adminPort}</cargo.glassfish.admin.port>-->
-<!--                            <cargo.hostname>${payara.hostname}</cargo.hostname>-->
-<!--                            <cargo.glassfish.domain.name>${payara.domainName}</cargo.glassfish.domain.name>-->
-<!--                        </properties>-->
-<!--                    </configuration>-->
-<!--                </configuration>-->
-<!--                &lt;!&ndash; provides JSR88 client API to deploy on Payara &ndash;&gt;-->
-<!--                <dependencies>-->
-<!--                    <dependency>-->
-<!--                        <groupId>org.glassfish.main.deployment</groupId>-->
-<!--                        <artifactId>deployment-client</artifactId>-->
-<!--                        <version>5.0</version>-->
-<!--                    </dependency>-->
-<!--                </dependencies>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
@@ -257,12 +225,6 @@
         <dependency>
             <groupId>org.jboss.arquillian.junit</groupId>
             <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -407,6 +369,11 @@
             <version>${xodus.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.jetbrains.xodus</groupId>
+            <artifactId>xodus-multinode</artifactId>
+            <version>${xodus.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-zip</artifactId>
             <version>1.13</version>
@@ -452,8 +419,6 @@
             <version>2.4.21</version>
         </dependency>
 
-
-
         <dependency>
             <groupId>org.atmosphere</groupId>
             <artifactId>atmosphere-jersey</artifactId>
@@ -464,20 +429,12 @@
             <artifactId>jaxb-api</artifactId>
             <version>${jaxb-version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
             <version>${jersey-version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.6.1</version>
-        </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.apache.geronimo.specs</groupId>-->
-            <!--<artifactId>geronimo-servlet_3.0_spec</artifactId>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -489,6 +446,12 @@
             <groupId>com.netflix.rxjava</groupId>
             <artifactId>rxjava-apache-http</artifactId>
             <version>0.20.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.20</version>
         </dependency>
 
         <dependency>
@@ -561,6 +524,12 @@
             <groupId>com.wildbit.java</groupId>
             <artifactId>postmark</artifactId>
             <version>1.1.7</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -732,4 +701,11 @@
             <url>http://maven.restlet.org</url>
         </repository>
     </repositories>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>bintray-divroll-maven</id>
+            <name>oss-jfrog-artifactory-snapshots</name>
+            <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

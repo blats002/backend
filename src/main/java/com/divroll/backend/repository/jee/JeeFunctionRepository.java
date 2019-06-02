@@ -79,7 +79,6 @@ public class JeeFunctionRepository implements FunctionRepository {
 
   @Override
   public InputStream retrieveFunctionEntity(String appId, String namespace, String functionName) {
-    System.out.println("appId = " + appId);
     InputStream is =
         entityRepository.getFirstEntityBlob(
             appId,

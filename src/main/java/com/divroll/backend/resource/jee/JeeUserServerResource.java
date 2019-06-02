@@ -78,7 +78,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
       Application app = applicationService.read(appId);
 
       LOG.with("NAMESPACE", namespace);
-      System.out.println("NAMESPACE="+namespace);
 
       if (app == null) {
         return null;
@@ -96,7 +95,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
 
           Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
           String text = representation.getText();
-          System.out.println("--------------------->" + text);
           return representation;
         } else {
           String authUserId = null;
@@ -125,7 +123,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
             setStatus(Status.SUCCESS_OK);
             Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
             String text = representation.getText();
-            System.out.println("--------------------->" + text);
             return representation;
           } else {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -166,7 +163,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON,
                   UserDTO.convert((User) ObjectLogger.log(user)));
           String text = representation.getText();
-          System.out.println("--------------------->" + text);
           return representation;
         } else {
           userEntity =
@@ -188,7 +184,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
 
             Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(user)));
             String text = representation.getText();
-            System.out.println("--------------------->" + text);
             return representation;
           } else {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -356,7 +351,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
 
           Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
           String text = representation.getText();
-          System.out.println("--------------------->" + text);
           return representation;
         } else {
           setStatus(Status.SERVER_ERROR_INTERNAL);
@@ -435,7 +429,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
 
               Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
               String text = representation.getText();
-              System.out.println("--------------------->" + text);
               return representation;
             } else {
               setStatus(Status.SERVER_ERROR_INTERNAL);
