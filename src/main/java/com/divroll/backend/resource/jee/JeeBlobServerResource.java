@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -88,6 +88,8 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
   public Representation setBlob(Representation entity) {
 
     LOG.info("Method setBlob called");
+    LOG.info("Media type - " + entity.getMediaType());
+    LOG.info("Media size - " + entity.getSize());
 
     try {
 
@@ -157,6 +159,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
           }
 
           if (encoding != null && encoding.equals("base64")) {
+            LOG.info("Media type - " + "base64");
             String base64 = entity.getText();
             byte[] bytes = BaseEncoding.base64().decode(base64);
             InputStream inputStream = ByteSource.wrap(bytes).openStream();
@@ -186,7 +189,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
             }
           } else {
             if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-
+              LOG.info("Media type - " + entity.getMediaType());
               String writeOver = getQueryValue("writeOver");
               CreateOption.CREATE_OPTION createOption = null;
               if(writeOver != null) {
@@ -326,9 +329,10 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
               } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
               }
+            } else {
+              badRequest();
             }
           }
-
         } else {
           setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         }
