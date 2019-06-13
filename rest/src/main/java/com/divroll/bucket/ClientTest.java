@@ -100,6 +100,7 @@ public class ClientTest {
 
         // Create a session for Let's Encrypt.
         // Use "acme://letsencrypt.org" for production server
+//        Session session = new Session("https://acme-staging-v02.api.letsencrypt.org/directory");
         Session session = new Session("acme://letsencrypt.org");
 
         // Get the Account.

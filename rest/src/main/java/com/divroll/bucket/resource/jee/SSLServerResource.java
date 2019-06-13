@@ -9,13 +9,16 @@ import com.divroll.backend.sdk.filter.QueryFilter;
 import com.divroll.bucket.Cert;
 import com.divroll.bucket.ClientTest;
 import com.divroll.bucket.resource.SSLResource;
+import com.divroll.bucket.validator.CertificateValidator;
 import com.divroll.bucket.validator.EmailValidator;
+import com.divroll.bucket.validator.PrivateKeyValidator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ResourceException;
+import org.shredzone.acme4j.exception.AcmeRateLimitedException;
 
 import java.security.Security;
 import java.util.Arrays;
@@ -33,9 +36,9 @@ public class SSLServerResource extends BaseServerResource
     private static final String CERTIFICATE_FOOTER = "-----END CERTIFICATE-----";
     private static final String PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
     private static final String PRIVATE_KEY_FOOTER = "-----END PRIVATE KEY-----";
+    private static final String PRIVATE_KEY_HEADER_ALT = "-----BEGIN RSA PRIVATE KEY-----";
+    private static final String PRIVATE_KEY_FOOTER_ALT = "-----END RSA PRIVATE KEY-----";
 
-//    private static String CA_PRODUCTION_URL = "https://acme-staging.api.letsencrypt.org/acme";
-    private static String CA_PRODUCTION_URL = "https://acme-v01.api.letsencrypt.org/acme";
     private static String AGREEMENT_URL = "https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf";
 
     private static final String DIVROLL_APP_ID = "***REMOVED***";
@@ -81,7 +84,8 @@ public class SSLServerResource extends BaseServerResource
             String certificate = jsonObject.getString("certificate");
             String privateKey = jsonObject.getString("privateKey");
             if(certificate.startsWith(CERTIFICATE_HEADER) && certificate.endsWith(CERTIFICATE_FOOTER)
-                    && privateKey.startsWith(PRIVATE_KEY_HEADER) && privateKey.endsWith(PRIVATE_KEY_FOOTER)) {
+                    && (privateKey.startsWith(PRIVATE_KEY_HEADER) || privateKey.startsWith(PRIVATE_KEY_HEADER_ALT))
+                    && (privateKey.endsWith(PRIVATE_KEY_FOOTER) || privateKey.endsWith(PRIVATE_KEY_FOOTER_ALT))) {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             jelasticService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -191,26 +195,46 @@ public class SSLServerResource extends BaseServerResource
                     Cert cert = ct.fetchCertificate(Arrays.asList(domains));
                     fullchain = cert.getCertificateChain();
                     privateKeyString = cert.getDomainKey();
+
+
+                    fullchain = fullchain.trim();
+                    privateKeyString = privateKeyString.trim();
+
+                    LOG.info("Domain:\n" + domains[0]);
+                    LOG.info("Full Chain:\n" + fullchain);
+                    LOG.info("Private Key:\n" + privateKeyString);
+
                     ////////////////////////////////
-                    jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
+                    boolean certificateValid = CertificateValidator.validate(fullchain);
+                    boolean privateKeyValid = PrivateKeyValidator.validate(privateKeyString);
+                    if(certificateValid && privateKeyValid) {
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
+                        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        responseObject.put("code", Status.SUCCESS_OK.getCode());
+                        responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
+                        JSONObject certificate = new JSONObject();
+                        certificate.put("certificate", fullchain);
+                        certificate.put("privateKey", privateKeyString);
+                        responseObject.put("result", certificate);
+                        setStatus(Status.SUCCESS_OK);
+                    } else {
+                        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                    }
                     ////////////////////////////////
-                    responseObject.put("code", Status.SUCCESS_OK.getCode());
-                    responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());
-
-                    JSONObject certificate = new JSONObject();
-                    certificate.put("certificate", fullchain);
-                    certificate.put("privateKey", privateKeyString);
-
-                    responseObject.put("result", certificate);
-
-                    setStatus(Status.SUCCESS_OK);
                     Representation representation = new StringRepresentation(responseObject.toJSONString());
                     representation.setMediaType(MediaType.APPLICATION_JSON);
                     return representation;
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    LOG.info("Failed to get a certificate for domains " + domains);
-                    return internalError();
+                    if(ex instanceof AcmeRateLimitedException) {
+                        setStatus(Status.SERVER_ERROR_INTERNAL, ex.getMessage());
+                        return null;
+                    } else {
+                        LOG.info("Failed to get a certificate for domains " + domains);
+                        return internalError();
+                    }
+
                 }
             } else {
                 return badRequest();
