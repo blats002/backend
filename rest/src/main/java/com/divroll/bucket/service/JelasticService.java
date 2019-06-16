@@ -18,12 +18,13 @@ import com.divroll.bucket.Template;
 
 import java.util.logging.Logger;
 
+@Deprecated
 public class JelasticService {
     private static final Logger LOG
             = Logger.getLogger(JelasticService.class.getName());
 
-    protected final static String CERTIFICATE_PATH_TEMPLATE = "/var/lib/jelastic/keys/DOMAIN_NAME.crt";
-    protected final static String PRIVATE_KEY_PATH_TEMPLATE = "/var/lib/jelastic/keys/DOMAIN_NAME.key";
+    protected final static String CERTIFICATE_PATH_TEMPLATE = "/etc/ssl/certs/DOMAIN_NAME.crt";
+    protected final static String PRIVATE_KEY_PATH_TEMPLATE = "/etc/ssl/certs/keys/DOMAIN_NAME.key";
     protected final static String NGINX_CONF_PATH_TEMPLATE = "/etc/nginx/conf.d/DOMAIN_NAME.conf";
 
     public String getSession() {

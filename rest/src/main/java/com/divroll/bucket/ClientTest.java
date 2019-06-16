@@ -1,24 +1,13 @@
 package com.divroll.bucket;
 
-import java.io.*;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.security.Security;
-import java.util.Arrays;
-import java.util.Collection;
-
-//import javax.swing.JOptionPane;
-
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.divroll.bucket.service.JelasticService;
+import com.divroll.bucket.service.ShellService;
 import com.google.common.io.ByteSource;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -28,6 +17,15 @@ import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.util.Collection;
+
+//import javax.swing.JOptionPane;
 
 /**
  * A simple client test tool.
@@ -61,11 +59,11 @@ public class ClientTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
 
-    private JelasticService jelasticService;
+    private ShellService shellService;
 
 
-    public ClientTest(String subdomain, JelasticService jelasticService) {
-        this.jelasticService = jelasticService;
+    public ClientTest(String subdomain, ShellService shellService) {
+        this.shellService = shellService;
         this.subdomain = subdomain;
     }
 

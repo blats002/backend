@@ -87,7 +87,7 @@ public class SSLServerResource extends BaseServerResource
                     && (privateKey.startsWith(PRIVATE_KEY_HEADER) || privateKey.startsWith(PRIVATE_KEY_HEADER_ALT))
                     && (privateKey.endsWith(PRIVATE_KEY_FOOTER) || privateKey.endsWith(PRIVATE_KEY_FOOTER_ALT))) {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            jelasticService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
+            shellService.writeCertificateAndPrivateKeyFile(domain, certificate, privateKey);
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -191,7 +191,7 @@ public class SSLServerResource extends BaseServerResource
 
                 try {
                     LOG.info("Starting Let's Encrypt process...");
-                    ClientTest ct = new ClientTest(subdomain, jelasticService);
+                    ClientTest ct = new ClientTest(subdomain, shellService);
                     Cert cert = ct.fetchCertificate(Arrays.asList(domains));
                     fullchain = cert.getCertificateChain();
                     privateKeyString = cert.getDomainKey();
@@ -209,7 +209,7 @@ public class SSLServerResource extends BaseServerResource
                     boolean privateKeyValid = PrivateKeyValidator.validate(privateKeyString);
                     if(certificateValid && privateKeyValid) {
                         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        jelasticService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
+                        shellService.writeCertificateAndPrivateKeyFile(domains[0], fullchain, privateKeyString);
                         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         responseObject.put("code", Status.SUCCESS_OK.getCode());
                         responseObject.put("reason", Status.SUCCESS_OK.getReasonPhrase());

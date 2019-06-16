@@ -1,15 +1,9 @@
 package com.divroll.bucket.resource.jee;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.sdk.DivrollUser;
-import com.divroll.bucket.ClientTest;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.divroll.bucket.Configuration;
 import com.divroll.bucket.service.BaseService;
-import com.divroll.bucket.service.JelasticService;
+import com.divroll.bucket.service.ShellService;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.servlet.ServletUtils;
@@ -47,7 +41,7 @@ public class BaseServerResource extends ServerResource
     protected String domain;
     protected String functioName;
 
-    protected JelasticService jelasticService;
+    protected ShellService shellService;
 
     @Override
     protected void doInit() throws ResourceException {
@@ -59,7 +53,7 @@ public class BaseServerResource extends ServerResource
         authToken = getQueryValue("authToken");
 
         getHeaders();
-        jelasticService = new JelasticService();
+        shellService = new ShellService();
     }
 
     protected String getUser(String authToken) {
