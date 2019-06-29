@@ -36,6 +36,7 @@ import jetbrains.exodus.entitystore.replication.S3ReplicationBlobVault;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;
+import jetbrains.exodus.log.replication.S3DataReaderWriterProvider;
 import jetbrains.exodus.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,12 +56,17 @@ public class XodusManagerImpl implements XodusManager {
   Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
   VirtualFileSystem virtualFileSystem = null;
 
+  static {
+    System.setProperty("aws.accessKeyId", "");
+    System.setProperty("aws.secretKey", "");
+  }
+
   @Override
   public Environment getEnvironment(String xodusRoot, String instance) {
     Environment environment = environmentMap.get(xodusRoot + instance);
     if (environment == null) {
       EnvironmentConfig config = new EnvironmentConfig();
-      //config.setLogDataReaderWriterProvider("jetbrains.exodus.log.replication.WasabiDataReaderWriterProvider");
+//      config.setLogDataReaderWriterProvider("com.divroll.backend.io.WasabiDataReaderWriterProvider");
       Environment env = Environments.newInstance(xodusRoot + instance, config);
       environmentMap.put(xodusRoot + instance, env);
     }
@@ -73,8 +79,9 @@ public class XodusManagerImpl implements XodusManager {
     PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
     if (entityStore == null) {
       Environment environment = getEnvironment(xodusRoot, dir);
-      //S3ReplicationBlobVault blobVault = new S3ReplicationBlobVault();
-      //final PersistentEntityStore store = PersistentEntityStores.newInstance(environment, new S3BlobVault());
+//      S3ReplicationBlobVault blobVault = new S3ReplicationBlobVault();
+//      final PersistentEntityStore store = PersistentEntityStores.newInstance(environment,
+//              new S3BlobVault(null, null, null, null, null, null));
       final PersistentEntityStore store = PersistentEntityStores.newInstance(environment);
       //store.getConfig().setRefactoringHeavyLinks(true);
       store.executeInTransaction(
