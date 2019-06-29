@@ -459,7 +459,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                if(publicRead != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                }
               }
 
               if (write != null) {
@@ -473,7 +475,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                if(publicWrite != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                }
               }
               entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               success[0] = true;

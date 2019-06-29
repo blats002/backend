@@ -299,10 +299,12 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
               HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
               ServletFileUpload upload = new ServletFileUpload();
               FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+              LOG.info("File Item iterator - " + fileIterator.hasNext());
               while (fileIterator.hasNext()) {
                 FileItemStream item = fileIterator.next();
                 String fieldName = item.getFieldName();
                 String name = item.getName();
+                LOG.info("Item isFormField - " + item.isFormField());
                 if (item.isFormField()) {
                 } else {
                   CountingInputStream countingInputStream =
