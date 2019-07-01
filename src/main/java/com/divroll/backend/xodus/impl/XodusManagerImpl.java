@@ -79,10 +79,8 @@ public class XodusManagerImpl implements XodusManager {
     PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
     if (entityStore == null) {
       Environment environment = getEnvironment(xodusRoot, dir);
-//      S3ReplicationBlobVault blobVault = new S3ReplicationBlobVault();
-//      final PersistentEntityStore store = PersistentEntityStores.newInstance(environment,
-//              new S3BlobVault(null, null, null, null, null, null));
       final PersistentEntityStore store = PersistentEntityStores.newInstance(environment);
+      store.getConfig().setDebugSearchForIncomingLinksOnDelete(true);
       //store.getConfig().setRefactoringHeavyLinks(true);
       store.executeInTransaction(
           new StoreTransactionalExecutable() {
