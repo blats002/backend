@@ -12,27 +12,21 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
         <java.version>1.8</java.version>
-
         <javaee.version>7.0</javaee.version>
         <jboss-javaee7.version>1.0.4.Final</jboss-javaee7.version>
-
         <glassfish.version>4.1.1</glassfish.version>
         <jboss.version>7.1.1.Final</jboss.version>
         <tomcat.version>8.0.32</tomcat.version>
         <wildfly.version>10.1.0.Final</wildfly.version>
-
         <weld.version>2.4.1.Final</weld.version>
         <el.version>2.2</el.version>
         <eclipse-jdt.version>3.7</eclipse-jdt.version>
-
         <junit.version>4.12</junit.version>
         <arquillian.version>1.1.11.Final</arquillian.version>
         <arquillian-tomcat.version>1.0.0.CR8</arquillian-tomcat.version>
         <arquillian-glassfish.version>1.0.0.Final</arquillian-glassfish.version>
         <arquillian-wildfly.version>1.1.0.Final</arquillian-wildfly.version>
-
         <jacoco.version>0.8.2</jacoco.version>
         <jacoco.path>
             ${settings.localRepository}/org/jacoco/org.jacoco.agent/${jacoco.version}/org.jacoco.agent-${jacoco.version}-runtime.jar
@@ -41,38 +35,20 @@
         <jacoco.itReport>${project.build.directory}/jacoco-it.exec</jacoco.itReport>
         <jacoco.utAgentConfig>-javaagent:${jacoco.path}=destfile=${jacoco.utReport}</jacoco.utAgentConfig>
         <jacoco.itAgentConfig>-javaagent:${jacoco.path}=destfile=${jacoco.itReport}</jacoco.itAgentConfig>
-
         <jacoco-listeners.version>5.1.0.13090</jacoco-listeners.version>
-
-
         <jackson.version>2.6.0</jackson.version>
         <guava.version>18.0</guava.version>
         <xtend.version>2.9.1</xtend.version>
         <version.restlet>2.3.12</version.restlet>
-
         <atmosphere-version>2.4.30</atmosphere-version>
         <jersey-version>1.19.4</jersey-version>
         <jaxb-version>2.1</jaxb-version>
-
         <jettyVersion>9.4.12.RC2</jettyVersion>
-
         <godaddy.logging.version>1.2.5</godaddy.logging.version>
         <customcode.version>0-SNAPSHOT</customcode.version>
         <swagger-maven-plugin-version>3.1.7</swagger-maven-plugin-version>
         <xodus.version>1.3.0</xodus.version>
         <skipTests>true</skipTests>
-        <cargo.remote.username>admin</cargo.remote.username>
-        <cargo.remote.password>adminadmin</cargo.remote.password>
-        <cargo.remote.hostname>localhost</cargo.remote.hostname>
-
-        <payara.adminPort>4848</payara.adminPort>
-        <payara.username>admin</payara.username>
-        <payara.password>***REMOVED***</payara.password>
-        <payara.hostname>localhost:8080</payara.hostname>
-        <payara.domainName>domain1</payara.domainName>
-        <payara.home>/root/payara5</payara.home>
-        <payara.domainDir>${payara.home}/glassfish/domains</payara.domainDir>
-
     </properties>
 
     <build>
@@ -148,46 +124,6 @@
                     </gitDescribe>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.cargo</groupId>
-                <artifactId>cargo-maven2-plugin</artifactId>
-                <configuration>
-                    <container>
-                        <containerId>glassfish5x</containerId>
-                        <type>remote</type>
-                    </container>
-                    <configuration>
-                        <type>runtime</type>
-                        <properties>
-                            <payara.username>${payara.username}</payara.username>
-                            <payara.password>${payara.password}</payara.password>
-                            <payara.hostname>${payara.hostname}</payara.hostname>
-                            <cargo.remote.username>${payara.username}</cargo.remote.username>
-                            <cargo.remote.password>${payara.password}</cargo.remote.password>
-                            <cargo.glassfish.admin.port>4848</cargo.glassfish.admin.port>
-                            <cargo.hostname>${payara.hostname}</cargo.hostname>
-                        </properties>
-                    </configuration>
-                    <deployables>
-                        <deployable>
-                            <groupId>${groupId}</groupId>
-                            <artifactId>${artifactId}</artifactId>
-                            <type>war</type>
-                            <properties>
-                                <context>test</context>
-                            </properties>
-                        </deployable>
-                    </deployables>
-                </configuration>
-                <!-- provides JSR88 client API to deploy on Payara Server -->
-                <dependencies>
-                    <dependency>
-                        <groupId>org.glassfish.main.deployment</groupId>
-                        <artifactId>deployment-client</artifactId>
-                        <version>5.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
         </plugins>
     </build>
 
@@ -240,7 +176,6 @@
             <version>${jacoco-listeners.version}</version>
             <scope>test</scope>
         </dependency>
-
         <!-- Restlet -->
         <dependency>
             <groupId>org.restlet.jee</groupId>
@@ -279,7 +214,6 @@
             <artifactId>org.restlet.ext.json</artifactId>
             <version>${version.restlet}</version>
         </dependency>
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
@@ -315,8 +249,6 @@
             <artifactId>guice-servlet</artifactId>
             <version>3.0</version>
         </dependency>
-
-
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
@@ -402,7 +334,6 @@
             <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
-
         <dependency>
             <groupId>org.atmosphere</groupId>
             <artifactId>atmosphere-runtime</artifactId>
@@ -418,7 +349,6 @@
             <artifactId>atmosphere-guice</artifactId>
             <version>2.4.21</version>
         </dependency>
-
         <dependency>
             <groupId>org.atmosphere</groupId>
             <artifactId>atmosphere-jersey</artifactId>
@@ -429,37 +359,31 @@
             <artifactId>jaxb-api</artifactId>
             <version>${jaxb-version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
             <version>${jersey-version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.6</version>
         </dependency>
-
         <dependency>
             <groupId>com.netflix.rxjava</groupId>
             <artifactId>rxjava-apache-http</artifactId>
             <version>0.20.7</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.20</version>
         </dependency>
-
         <dependency>
             <groupId>com.godaddy</groupId>
             <artifactId>logging</artifactId>
             <version>${godaddy.logging.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
@@ -470,45 +394,33 @@
             <artifactId>quartz-jobs</artifactId>
             <version>2.2.1</version>
         </dependency>
-
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.5.5</version>
         </dependency>
-
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
             <version>1.7.10</version>
         </dependency>
-
         <dependency>
             <groupId>org.ringojs</groupId>
             <artifactId>ringojs</artifactId>
             <version>1.1.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.dynjs</groupId>
             <artifactId>dynjs</artifactId>
             <version>0.3.0</version>
             <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.immutables</groupId>
             <artifactId>value</artifactId>
             <version>2.7.1</version>
             <scope>provided</scope>
         </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>com.divroll.backend.customcode</groupId>-->
-            <!--<artifactId>sdk</artifactId>-->
-            <!--<version>${customcode.version}</version>-->
-            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.divroll.backend</groupId>
             <artifactId>customcode-sdk</artifactId>

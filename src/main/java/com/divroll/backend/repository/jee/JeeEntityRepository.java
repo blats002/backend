@@ -1471,11 +1471,20 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             public void execute(@NotNull final StoreTransaction txn) {
               EntityId idOfEntity = txn.toEntityId(entityId);
               Entity entity = txn.getEntity(idOfEntity);
-
               entity.getLinkNames().forEach(linkName -> {
                 Entity linked = entity.getLink(linkName);
                 entity.deleteLink(linkName, linked);
               });
+
+              // TODO: This is a performance issue
+              final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) entityStore.getCurrentTransaction());
+              for (final String entityType : txn.getEntityTypes()) {
+                for (final String linkName : allLinkNames) {
+                  for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                    referrer.deleteLink(linkName, entity);
+                  }
+                }
+              }
 
               success[0] = entity.delete();
             }
@@ -1512,6 +1521,17 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   entity.deleteLink(linkName, linked);
                 });
 
+
+                // TODO: This is a performance issue
+                final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) entityStore.getCurrentTransaction());
+                for (final String entityType : txn.getEntityTypes()) {
+                  for (final String linkName : allLinkNames) {
+                    for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                      referrer.deleteLink(linkName, entity);
+                    }
+                  }
+                }
+
                 if (!entity.delete()) {
                   hasError[0] = true;
                 }
@@ -1542,6 +1562,18 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 Entity linked = entity.getLink(linkName);
                 entity.deleteLink(linkName, linked);
               });
+
+
+              // TODO: This is a performance issue
+              final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) storeImp.getCurrentTransaction());
+              for (final String entityType : txn.getEntityTypes()) {
+                  for (final String linkName : allLinkNames) {
+                      for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                          referrer.deleteLink(linkName, entity);
+                      }
+                  }
+              }
+
               if(entityType.equals(defaultUserStore)) {
                 // Delete Role links
                 EntityIterable roles = entity.getLinks(Constants.ROLE_LINKNAME);
