@@ -515,6 +515,11 @@ public class BaseServerResource extends SelfInjectingServerResource {
     return null;
   }
 
+  protected Representation created() {
+    setStatus(Status.SUCCESS_CREATED);
+    return null;
+  }
+
   protected Representation created(org.json.JSONObject jsonObject) {
     setStatus(Status.SUCCESS_CREATED);
     if (jsonObject == null) {
@@ -621,5 +626,14 @@ public class BaseServerResource extends SelfInjectingServerResource {
   //        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
   //        return response;
   //    }
+
+  protected String stackTraceToString(Throwable e) {
+    StringBuilder sb = new StringBuilder();
+    for (StackTraceElement element : e.getStackTrace()) {
+      sb.append(element.toString());
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
 
 }

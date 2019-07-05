@@ -80,7 +80,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
   }
 
   private InputStream getJar(String appId, String customCodeName) {
-    InputStream jarBytes = customCodeRepository.retrieveCustomCodeEntity(appId, namespace, customCodeName);
+    InputStream jarBytes = customCodeRepository.getCustomCode(appId, namespace, customCodeName);
     return jarBytes;
   }
 

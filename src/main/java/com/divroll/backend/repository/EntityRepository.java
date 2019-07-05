@@ -47,7 +47,8 @@ public interface EntityRepository {
       List<Action> actions,
       List<EntityAction> entityActions,
       CreateOption createOption,
-      final EntityMetadata metadata);
+      final EntityMetadata metadata,
+      Map<String, InputStream> blobs);
 
   boolean updateEntity(
       String instance,
@@ -98,6 +99,8 @@ public interface EntityRepository {
   boolean deleteEntity(String instance, String namespace, String entityType, String entityId);
 
   boolean deleteEntities(String instance, String namespace, String entityType);
+
+  boolean deleteEntities(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue);
 
   boolean deleteEntityType(String instance, String namespace, String entityType);
 

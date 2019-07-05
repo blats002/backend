@@ -29,11 +29,11 @@ import java.io.InputStream;
  * @since 0-SNAPSHOT
  */
 public interface CustomCodeRepository {
-  @Deprecated
-  String createCustomCode(String appId, String namespace, String customCodeName, String jar);
 
-  @Deprecated
+  String createCustomCode(String appId, String namespace, String customCodeName, InputStream jar);
+
   boolean deleteCustomCode(String appId, String namespace, String customCodeName);
 
-  InputStream retrieveCustomCodeEntity(String appId, String namespace, String customCodeName);
+  InputStream getCustomCode(String appId, String namespace, String customCodeName);
+
 }

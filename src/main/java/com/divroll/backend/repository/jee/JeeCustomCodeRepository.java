@@ -22,6 +22,8 @@
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
+import com.divroll.backend.model.builder.EntityClassBuilder;
+import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.xodus.XodusStore;
@@ -53,29 +55,39 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
   @Inject EntityRepository entityRepository;
 
   @Override
-  public String createCustomCode(String appId, String namespace, String customCodeName, String jar) {
-    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-    comparableMap.put("appId", appId);
+  public String createCustomCode(String appId, String namespace, String customCodeName, InputStream jar) {
+    Map<String, InputStream> blobs = new LinkedHashMap<>();
+    blobs.put("jar", jar);
+    Map<String, Comparable> comparableMap = new LinkedHashMap<String, Comparable>();
     comparableMap.put("customCodeName", customCodeName);
-    comparableMap.put("jar", jar);
-    EntityId entityId =
-        store.putIfNotExists(
-            masterStore, namespace, Constants.ENTITYSTORE_CUSTOMCODE, comparableMap, "customCodeName");
-    return entityId.toString();
+    String entityId = entityRepository.createEntity(
+            appId,
+            namespace,
+            Constants.ENTITYSTORE_CUSTOMCODE,
+            new EntityClassBuilder()
+                    .comparableMap(comparableMap)
+                    .publicRead(false)
+                    .publicWrite(false)
+                    .build(), null, null, null,
+            new EntityMetadataBuilder().addUniqueProperties("customCodeName").build(), blobs);
+
+//    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+//    comparableMap.put("appId", appId);
+//    comparableMap.put("customCodeName", customCodeName);
+//    comparableMap.put("jar", jar);
+//    EntityId entityId =
+//        store.putIfNotExists(
+//            masterStore, namespace, Constants.ENTITYSTORE_CUSTOMCODE, comparableMap, "customCodeName");
+    return entityId;
   }
 
   @Override
   public boolean deleteCustomCode(String appId, String namespace, String customCodeName) {
-    try {
-      store.delete(masterStore, Constants.ENTITYSTORE_CUSTOMCODE, "customCodeName", customCodeName);
-      return true;
-    } catch (Exception e) {
-      return false;
-    }
+    return entityRepository.deleteEntities(appId, namespace, Constants.ENTITYSTORE_CUSTOMCODE, "customCodeName", customCodeName);
   }
 
   @Override
-  public InputStream retrieveCustomCodeEntity(String appId, String namespace, String customCodeName) {
+  public InputStream getCustomCode(String appId, String namespace, String customCodeName) {
     InputStream is =
         entityRepository.getFirstEntityBlob(
             appId,

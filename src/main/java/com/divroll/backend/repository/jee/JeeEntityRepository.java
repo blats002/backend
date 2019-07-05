@@ -88,7 +88,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       List<Action> actions,
       List<EntityAction> entityActions,
       CreateOption createOption,
-      final EntityMetadata metadata) {
+      final EntityMetadata metadata,
+      Map<String, InputStream> blobs) {
     final String[] entityId = {null};
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
@@ -1539,6 +1540,60 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               success[0] = !hasError[0];
             }
           });
+    } finally {
+      //// entityStore.close();
+    }
+
+    return success[0];
+  }
+
+  @Override
+  public boolean deleteEntities(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue) {
+    final boolean[] success = {false};
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+    try {
+      entityStore.executeInTransaction(
+              new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                  EntityIterable result = null;
+                  if (namespace != null && !namespace.isEmpty()) {
+                    result =
+                            txn.findWithProp(entityType, namespaceProperty)
+                                    .intersect(txn.find(entityType, namespaceProperty, namespace))
+                                    .intersect(txn.find(entityType, propertyName, propertyValue));
+                  } else {
+                    result =
+                            txn.getAll(entityType)
+                                    .intersect(txn.find(entityType, propertyName, propertyValue))
+                                    .minus(txn.findWithProp(entityType, namespaceProperty));
+                  }
+                  final boolean[] hasError = {false};
+                  for (Entity entity : result) {
+
+                    entity.getLinkNames().forEach(linkName -> {
+                      Entity linked = entity.getLink(linkName);
+                      entity.deleteLink(linkName, linked);
+                    });
+
+
+                    // TODO: This is a performance issue
+                    final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) entityStore.getCurrentTransaction());
+                    for (final String entityType : txn.getEntityTypes()) {
+                      for (final String linkName : allLinkNames) {
+                        for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                          referrer.deleteLink(linkName, entity);
+                        }
+                      }
+                    }
+
+                    if (!entity.delete()) {
+                      hasError[0] = true;
+                    }
+                  }
+                  success[0] = !hasError[0];
+                }
+              });
     } finally {
       //// entityStore.close();
     }
