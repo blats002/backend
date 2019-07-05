@@ -25,7 +25,7 @@ import com.alibaba.fastjson.JSON;
 import com.divroll.backend.repository.FunctionRepository;
 import com.divroll.backend.resource.FunctionMethodResource;
 import com.divroll.backend.util.StringUtil;
-import com.divroll.backend.functions.CustomCode;
+import com.divroll.backend.customcodes.CustomCode;
 import com.divroll.backend.customcode.MethodVerb;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import com.godaddy.logging.Logger;
@@ -60,6 +60,7 @@ import java.util.concurrent.ConcurrentMap;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Deprecated
 public class JeeFunctionMethodServerResource extends BaseServerResource
     implements FunctionMethodResource {
 

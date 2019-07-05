@@ -37,6 +37,7 @@ public final class Constants {
   public static final String HEADER_ACCEPT = "Accept";
   public static final String HEADER_CONTENT_TYPE = "Content-Type";
   public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
+  public static final String HEADER_NAMESPACE = "X-Divroll-Namespace";
   public static final String MASTER_KEY = "masterKey";
   public static final String API_KEY = "apiKey";
   public static final String APP_ID = "appId";
@@ -58,7 +59,8 @@ public final class Constants {
   public static final String ACL_ASTERISK = "*";
 
   public static final String ENTITYSTORE_APPLICATION = "Application";
-  public static final String ENTITYSTORE_FUNCTION = "Function";
+  public static final String ENTITYSTORE_FUNCTION = "Function"; // TODO: Remove
+  public static final String ENTITYSTORE_CUSTOMCODE = "CustomCode";
 
   public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
   public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";

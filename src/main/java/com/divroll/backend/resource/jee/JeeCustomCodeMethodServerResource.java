@@ -24,8 +24,8 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.divroll.backend.customcode.MethodVerb;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
-import com.divroll.backend.functions.CustomCode;
-import com.divroll.backend.repository.FunctionRepository;
+import com.divroll.backend.customcodes.CustomCode;
+import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.resource.CustomCodeMethodResource;
 import com.divroll.backend.util.StringUtil;
 import com.godaddy.logging.Logger;
@@ -66,7 +66,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
 
-  @Inject FunctionRepository functionRepository;
+  @Inject
+  CustomCodeRepository customCodeRepository;
 
   String customCodeName;
   String methodName;
@@ -78,8 +79,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     methodName = getAttribute("methodName");
   }
 
-  private InputStream getJar(String appId, String functionName) {
-    InputStream jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
+  private InputStream getJar(String appId, String customCodeName) {
+    InputStream jarBytes = customCodeRepository.retrieveCustomCodeEntity(appId, namespace, customCodeName);
     return jarBytes;
   }
 
@@ -153,8 +154,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if (!isAuthorized()) {
       return unauthorized();
     }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCOde Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -187,7 +188,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -203,8 +204,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //    if (!isAuthorized()) {
 //      return unauthorized();
 //    }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCode Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -270,8 +271,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if (!isAuthorized()) {
       return unauthorized();
     }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCode Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -320,8 +321,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if (!isAuthorized()) {
       return unauthorized();
     }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCode Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();

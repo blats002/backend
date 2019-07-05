@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.functions;
+package com.divroll.backend.customcodes.exception;
 
-import java.util.Map;
+import com.divroll.backend.customcodes.CustomCodeException;
 
 /**
  *
@@ -29,7 +29,11 @@ import java.util.Map;
  * @version 1.0
  * @since 1.0
  */
-public interface CustomCodeEventListener {
-	void onSuccess(Map<String, ?> result);
-	void onFailure(CustomCodeException ex);
+public class EntryPointClassNotFound extends CustomCodeException {
+	public EntryPointClassNotFound(){
+		super();
+	}
+	public EntryPointClassNotFound(String mainClass){
+		super("Entry point class '" + mainClass + "' not found" );
+	}	
 }

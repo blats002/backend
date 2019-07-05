@@ -29,6 +29,7 @@ import org.restlet.resource.*;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Deprecated
 public interface FunctionMethodResource {
 
   @Get

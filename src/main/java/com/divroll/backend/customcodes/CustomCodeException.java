@@ -19,22 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.repository;
-
-import java.io.InputStream;
+package com.divroll.backend.customcodes;
 
 /**
+ *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
+ * @version 1.0
+ * @since 1.0
  */
-@Deprecated
-public interface FunctionRepository {
-  @Deprecated
-  String createFunction(String appId, String namespace, String functionName, String jar);
-
-  @Deprecated
-  boolean deleteFunction(String appId, String namespace, String functionName);
-
-  InputStream retrieveFunctionEntity(String appId, String namespace, String functionName);
+public class CustomCodeException extends Exception {
+	private static final long serialVersionUID = 1L;
+	public CustomCodeException() {
+		super();
+	}
+	public CustomCodeException(String message){
+		super(message);
+	}
 }

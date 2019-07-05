@@ -31,12 +31,9 @@ import jetbrains.exodus.entitystore.PersistentEntityStore;
 import jetbrains.exodus.entitystore.PersistentEntityStores;
 import jetbrains.exodus.entitystore.StoreTransaction;
 import jetbrains.exodus.entitystore.StoreTransactionalExecutable;
-import jetbrains.exodus.entitystore.replication.S3BlobVault;
-import jetbrains.exodus.entitystore.replication.S3ReplicationBlobVault;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;
-import jetbrains.exodus.log.replication.S3DataReaderWriterProvider;
 import jetbrains.exodus.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
 

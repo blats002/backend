@@ -19,20 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.functions;
+package com.divroll.backend.repository;
+
+import java.io.InputStream;
 
 /**
- *
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
  */
-public class CustomCodeException extends Exception {
-	private static final long serialVersionUID = 1L;
-	public CustomCodeException() {
-		super();
-	}
-	public CustomCodeException(String message){
-		super(message);
-	}
+public interface CustomCodeRepository {
+  @Deprecated
+  String createCustomCode(String appId, String namespace, String customCodeName, String jar);
+
+  @Deprecated
+  boolean deleteCustomCode(String appId, String namespace, String customCodeName);
+
+  InputStream retrieveCustomCodeEntity(String appId, String namespace, String customCodeName);
 }
