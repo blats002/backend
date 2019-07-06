@@ -56,8 +56,6 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
 
   @Override
   public String createCustomCode(String appId, String namespace, String customCodeName, InputStream jar) {
-    Map<String, InputStream> blobs = new LinkedHashMap<>();
-    blobs.put("jar", jar);
     Map<String, Comparable> comparableMap = new LinkedHashMap<String, Comparable>();
     comparableMap.put("customCodeName", customCodeName);
     String entityId = entityRepository.createEntity(
@@ -68,8 +66,10 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
                     .comparableMap(comparableMap)
                     .publicRead(false)
                     .publicWrite(false)
+                    .blobName("jar")
+                    .blob(jar)
                     .build(), null, null, null,
-            new EntityMetadataBuilder().addUniqueProperties("customCodeName").build(), blobs);
+            new EntityMetadataBuilder().addUniqueProperties("customCodeName").build());
 
 //    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
 //    comparableMap.put("appId", appId);

@@ -47,8 +47,7 @@ public interface EntityRepository {
       List<Action> actions,
       List<EntityAction> entityActions,
       CreateOption createOption,
-      final EntityMetadata metadata,
-      Map<String, InputStream> blobs);
+      final EntityMetadata metadata);
 
   boolean updateEntity(
       String instance,

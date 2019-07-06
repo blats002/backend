@@ -379,8 +379,7 @@ public class JeeEntityService implements EntityService {
                   new EntityMetadataBuilder()
                       .uniqueProperties(
                           Arrays.asList(new String[] {Constants.RESERVED_FIELD_FUNCTION_NAME}))
-                      .build(),
-                      null);
+                      .build());
           JSONObject entityObject = new JSONObject();
           entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
           result.put("entity", entityObject);
@@ -410,8 +409,7 @@ public class JeeEntityService implements EntityService {
                   actions,
                   entityActions,
                   createOption,
-                  metadata,
-                      null);
+                  metadata);
           JSONObject entityObject = new JSONObject();
           entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
           result.put("entity", entityObject);

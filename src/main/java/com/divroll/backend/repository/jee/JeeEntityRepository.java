@@ -88,8 +88,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       List<Action> actions,
       List<EntityAction> entityActions,
       CreateOption createOption,
-      final EntityMetadata metadata,
-      Map<String, InputStream> blobs) {
+      final EntityMetadata metadata) {
     final String[] entityId = {null};
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
