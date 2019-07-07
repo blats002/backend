@@ -210,6 +210,10 @@
             <version>${version.restlet}</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.codehaus.jettison</groupId>
+                    <artifactId>jettison</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.thoughtworks.xstream</groupId>
                     <artifactId>xstream</artifactId>
                 </exclusion>
@@ -219,6 +223,11 @@
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.json</artifactId>
             <version>${version.restlet}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
