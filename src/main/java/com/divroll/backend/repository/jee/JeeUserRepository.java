@@ -116,7 +116,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -130,7 +132,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
 
               for (Object roleId : Arrays.asList(roles)) {
                 String id = (String) roleId;
@@ -322,7 +326,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -337,7 +343,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
 
               List<String> roleList = Arrays.asList(roles);
               if (!roleList.isEmpty()) {
@@ -439,7 +447,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                if(publicRead != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                }
               }
 
               if (write != null) {
@@ -453,7 +463,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                if(publicWrite != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                }
               }
 
               // Update missing role link

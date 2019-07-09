@@ -105,7 +105,9 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -121,7 +123,9 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
               entityId[0] = entity.getId().toString();
 
               if (actions != null) {
@@ -206,7 +210,10 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                   }
                 }
               }
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -220,7 +227,11 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                   }
                 }
               }
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
+
               entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
               success[0] = true;
