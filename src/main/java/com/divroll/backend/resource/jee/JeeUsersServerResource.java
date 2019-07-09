@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.ext.xstream.XstreamRepresentation;
 import org.restlet.representation.Representation;
 import scala.actors.threadpool.Arrays;
@@ -112,9 +113,16 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             users.setSkip(0);
             users.setLimit(1);
             users.setCount(1);
-            Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-            String text = representation.getText();
-            return representation;
+
+            JSONObject responseBody = new JSONObject();
+            JSONObject usersJSONObj = new JSONObject();
+            usersJSONObj.put("results", Arrays.asList(new UserDTO[]{userDTO}));
+            usersJSONObj.put("skip", 0);
+            usersJSONObj.put("limit", 1);
+            usersJSONObj.put("count", 1);
+
+            responseBody.put("users", usersJSONObj);
+            return success(responseBody);
         } else {
             List<User> processedResults = new LinkedList<>();
             List<User> results =
@@ -136,10 +144,16 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             if(lCount != null) {
                 users.setCount(lCount);
             }
-            setStatus(Status.SUCCESS_OK);
-            Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-            String text = representation.getText();
-            return representation;
+
+            JSONObject responseBody = new JSONObject();
+            JSONObject usersJSONObj = new JSONObject();
+            usersJSONObj.put("results", DTOHelper.convert(results));
+            usersJSONObj.put("skip", Long.valueOf(skipValue));
+            usersJSONObj.put("limit", Long.valueOf(limitValue));
+            responseBody.put("users", usersJSONObj);
+
+            return success(responseBody);
+
         }
       } else {
           if(authTokenQuery  != null) {
@@ -152,9 +166,17 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               users.setSkip(0);
               users.setLimit(1);
               users.setCount(1);
-              Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-              String text = representation.getText();
-              return representation;
+
+              JSONObject responseBody = new JSONObject();
+              JSONObject usersJSONObj = new JSONObject();
+              usersJSONObj.put("results", Arrays.asList(new UserDTO[]{userDTO}));
+              usersJSONObj.put("skip", 0);
+              usersJSONObj.put("limit", 1);
+              usersJSONObj.put("count", 1);
+
+              responseBody.put("users", usersJSONObj);
+              return success(responseBody);
+
           } else {
               List<User> results =
                       userRepository.listUsers(
@@ -175,10 +197,15 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               if(lCount != null) {
                   users.setCount(lCount);
               }
-              setStatus(Status.SUCCESS_OK);
-              Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-              String text = representation.getText();
-              return representation;
+
+              JSONObject responseBody = new JSONObject();
+              JSONObject usersJSONObj = new JSONObject();
+              usersJSONObj.put("results", DTOHelper.convert(results));
+              usersJSONObj.put("skip", Long.valueOf(skipValue));
+              usersJSONObj.put("limit", Long.valueOf(limitValue));
+              responseBody.put("users", usersJSONObj);
+
+              return success(responseBody);
           }
       }
     } catch (Exception e) {

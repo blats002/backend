@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.divroll.backend.model.Users;
 import com.divroll.backend.model.dto.UserDTO;
 import com.wordnik.swagger.annotations.*;
 import org.restlet.representation.Representation;
