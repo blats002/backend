@@ -1,4 +1,4 @@
-![Divroll Logo](https://github.com/divroll/backend-server/blob/master/src/main/resources/logo-small.png?raw=true)
+![Divroll Logo](https://avatars1.githubusercontent.com/u/30984522?s=200&v=4)
 
 ## Welcome to backend
 
