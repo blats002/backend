@@ -1,3 +1,5 @@
+![Divroll Logo](https://www.divroll.com/logo-small.png)
+
 ## Welcome to backend
 
 backend is an Open Source, RESTful Backend as a Service for mobile apps, web apps and IoT devices.
@@ -37,16 +39,17 @@ How to use
 
 ```
 curl -X POST \
-  http://localhost:8080/applications/app-name
+  http://localhost:8080/divroll/applications/app-name
 ```
 This will output access keys that can be used in the front-end.  
 
 ```
 {
     "application": {
-        "appId": "aec05bcb1cf245123fb6ca95a169e55b",
-        "apiKey": "897d706ca9d123cd879c563214284f67",
-        "masterKey": "cb95cc6105844b5e1237f3a8cd1f4caa"
+        apiKey: "a87ee2497fb643e88c60f1402538501c",
+        appId: "0d26c5084dc44b289b61eb152048dd1f",
+        appName: "app-name",
+        masterKey: "b94a2a04c1894282a0bb01ebb60a12b4"
     }
 }
 ```
