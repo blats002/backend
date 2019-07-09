@@ -56,6 +56,14 @@ This will output access keys that can be used in the front-end.
 
 You should take note of the response as it cannot be retrieved again.
 
+You can also create an application through the Backend Dashboard accessible via:
+
+```
+http://localhost:8080/app/
+``` 
+
+Similarly, access keys cannot be retrieved again but are stored in the browser local storage. 
+
 Checkout these examples for [Java](https://github.com/divroll/Backend-SDK-Java/tree/master/src/test/java/com/divroll/backend/sdk) and [GWT](https://github.com/divroll/Backend-SDK-GWT/tree/master/src/test/java/com/divroll/backend/sdk) 
 
 Client integrations
