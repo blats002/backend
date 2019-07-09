@@ -79,8 +79,8 @@ public class EmailUtil {
     LOG.info("EMail Sent Successfully");
     //        LOG.info("*** Sending email via Postmark ***");
     //        ApiClient client = Postmark.getApiClient("");
-    //        Message message = new Message("***REMOVED***",
-    // "***REMOVED***", "Hello from Postmark!", "Hello message body");
+    //        Message message = new Message("",
+    // "", "Hello from Postmark!", "Hello message body");
     //        try {
     //            MessageResponse response = client.deliverMessage(message);
     //        } catch (PostmarkException e) {
