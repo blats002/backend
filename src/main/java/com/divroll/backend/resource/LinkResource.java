@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
@@ -32,6 +33,7 @@ import org.restlet.resource.Post;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "Link", description = "Link resource")
 public interface LinkResource {
 
   @ApiOperation(value = "Create a link", tags = "link")

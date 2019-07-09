@@ -27,6 +27,8 @@ import com.divroll.backend.helper.*;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
+import com.divroll.backend.model.dto.RoleDTO;
+import com.divroll.backend.model.dto.UserDTO;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UsersResource;
 import com.divroll.backend.service.PubSubService;
@@ -365,11 +367,11 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           }
           if (entityId != null) {
-            String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
+            String authToken = webTokenService.createToken(app.getMasterKey(), entityId);
             User user = new User();
             user.setEntityId(entityId);
             user.setUsername(username);
-            user.setWebToken(webToken);
+            user.setWebToken(authToken);
             user.setPublicRead(publicRead);
             user.setPublicWrite(publicWrite);
             user.setAclWrite(ACLHelper.convert(write));

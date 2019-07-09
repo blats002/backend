@@ -21,8 +21,8 @@
  */
 package com.divroll.backend.converters;
 
-import com.divroll.backend.model.LinkDTO;
-import com.divroll.backend.model.UserDTO;
+import com.divroll.backend.model.dto.LinkDTO;
+import com.divroll.backend.model.dto.UserDTO;
 import com.google.gson.Gson;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;

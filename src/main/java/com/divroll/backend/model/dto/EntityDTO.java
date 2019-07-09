@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model;
+package com.divroll.backend.model.dto;
 
+import com.divroll.backend.model.EntityStub;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;

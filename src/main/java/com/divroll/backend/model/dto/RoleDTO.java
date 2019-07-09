@@ -19,22 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.repository;
+package com.divroll.backend.model.dto;
 
-import java.io.InputStream;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.wordnik.swagger.annotations.ApiModel;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@Deprecated
-public interface FunctionRepository {
-  @Deprecated
-  String createFunction(String appId, String namespace, String functionName, String jar);
+@XStreamAlias("role")
+@ApiModel
+public class RoleDTO {
 
-  @Deprecated
-  boolean deleteFunction(String appId, String namespace, String functionName);
+  private String entityId;
 
-  InputStream retrieveFunctionEntity(String appId, String namespace, String functionName);
+  public RoleDTO() {}
+
+  public RoleDTO(String entityId) {
+    setEntityId(entityId);
+  }
+
+  public String getEntityId() {
+    return entityId;
+  }
+
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
 }

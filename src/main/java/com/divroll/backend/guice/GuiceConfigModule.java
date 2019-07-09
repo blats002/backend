@@ -69,7 +69,6 @@ public class GuiceConfigModule extends AbstractModule {
     bind(XodusEnvStore.class).to(XodusEnvStoreImpl.class).in(Scopes.SINGLETON);
     bind(XodusManager.class).to(XodusManagerImpl.class).in(Scopes.SINGLETON);
 
-    bind(FunctionRepository.class).to(JeeFunctionRepository.class).in(Scopes.SINGLETON);
     bind(UserRepository.class).to(JeeUserRepository.class).in(Scopes.SINGLETON);
     bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
     bind(EntityRepository.class).to(JeeEntityRepository.class).in(Scopes.SINGLETON);

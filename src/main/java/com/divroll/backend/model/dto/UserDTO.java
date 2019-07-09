@@ -19,8 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model;
+package com.divroll.backend.model.dto;
 
+import com.divroll.backend.model.EntityStub;
+import com.divroll.backend.model.Link;
+import com.divroll.backend.model.Role;
+import com.divroll.backend.model.User;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;
@@ -50,7 +54,7 @@ public class UserDTO {
   private String email;
 
   @ApiModelProperty(required = false, value = "Generated Authentication Token")
-  private String webToken;
+  private String authToken;
 
   @ApiModelProperty(required = false)
   @XStreamImplicit(itemFieldName = "roles")
@@ -131,11 +135,11 @@ public class UserDTO {
   }
 
   public String getWebToken() {
-    return webToken;
+    return authToken;
   }
 
-  public void setWebToken(String webToken) {
-    this.webToken = webToken;
+  public void setWebToken(String authToken) {
+    this.authToken = authToken;
   }
 
   public String getEntityId() {

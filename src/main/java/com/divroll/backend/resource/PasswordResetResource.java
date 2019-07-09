@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.resource;
 
-import com.divroll.backend.model.PasswordResetDTO;
+import com.divroll.backend.model.dto.PasswordResetDTO;
 import com.wordnik.swagger.annotations.ApiOperation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;

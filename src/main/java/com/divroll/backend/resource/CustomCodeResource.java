@@ -19,51 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model;
+package com.divroll.backend.resource;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import com.wordnik.swagger.annotations.Api;
+import org.restlet.representation.Representation;
+import org.restlet.resource.*;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@XStreamAlias("function")
-@ApiModel
-public class Function {
+@Api(value = "CustomCode", description = "CustomCode resource")
+public interface CustomCodeResource {
 
-  @ApiModelProperty(position = 0, required = false, value = "Application Id")
-  private String appId;
+  @Get
+  Representation getJar(Representation entity);
 
-  @ApiModelProperty(position = 1, required = true, value = "Unique function name")
-  private String functionName;
+  @Post
+  Representation createJar(Representation entity);
 
-  @ApiModelProperty(position = 2, required = false, value = "Base64 encoded Jar file")
-  private String jar;
+  @Put
+  Representation updateJar(Representation entity);
 
-  public String getAppId() {
-    return appId;
-  }
+  @Delete
+  Representation deleteJar(Representation entity);
 
-  public void setAppId(String appId) {
-    this.appId = appId;
-  }
+  @Options
+  void optionsMethod(Representation entity);
 
-  public String getFunctionName() {
-    return functionName;
-  }
-
-  public void setFunctionName(String functionName) {
-    this.functionName = functionName;
-  }
-
-  public String getJar() {
-    return jar;
-  }
-
-  public void setJar(String jar) {
-    this.jar = jar;
-  }
 }

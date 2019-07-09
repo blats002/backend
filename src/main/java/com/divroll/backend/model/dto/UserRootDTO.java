@@ -19,33 +19,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model;
+package com.divroll.backend.model.dto;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-@XStreamAlias("role")
+@XStreamAlias("user")
 @ApiModel
-public class RoleDTO {
+public class UserRootDTO {
 
-  private String entityId;
+  @ApiModelProperty(required = true, value = "Username")
+  private String username;
 
-  public RoleDTO() {}
+  @ApiModelProperty(required = true, value = "Password")
+  private String password;
 
-  public RoleDTO(String entityId) {
-    setEntityId(entityId);
+  @ApiModelProperty(required = true, value = "Role")
+  private String role;
+
+  public UserRootDTO() {}
+
+  public String getUsername() {
+    return username;
   }
 
-  public String getEntityId() {
-    return entityId;
+  public void setUsername(String username) {
+    this.username = username;
   }
 
-  public void setEntityId(String entityId) {
-    this.entityId = entityId;
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getRole() {
+    return role;
+  }
+
+  public void setRole(String role) {
+    this.role = role;
   }
 }

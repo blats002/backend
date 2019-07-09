@@ -19,21 +19,52 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.resource;
+package com.divroll.backend.model.dto;
 
-import com.divroll.backend.model.Function;
-import org.restlet.resource.Delete;
-import org.restlet.resource.Get;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface ManageFunctionResource {
-  @Get
-  Function createFunction(Function entity);
+@XStreamAlias("user")
+@ApiModel
+public class PasswordResetDTO {
+  @ApiModelProperty(required = true, value = "Username")
+  private String username;
 
-  @Delete
-  void removeFunction(Function entity);
+  @ApiModelProperty(required = true, value = "Password")
+  private String password;
+
+  @ApiModelProperty(required = true, value = "New Password")
+  private String newPassword;
+
+  public PasswordResetDTO() {}
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  public String getNewPassword() {
+    return newPassword;
+  }
+
+  public void setNewPassword(String newPassword) {
+    this.newPassword = newPassword;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
 }

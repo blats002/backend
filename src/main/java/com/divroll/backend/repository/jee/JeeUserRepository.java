@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
+import com.divroll.backend.model.dto.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -35,7 +36,6 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
-import util.ComparableLinkedList;
 
 import java.util.Iterator;
 import java.util.LinkedList;

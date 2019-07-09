@@ -26,7 +26,7 @@ import com.divroll.backend.job.EmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Email;
-import com.divroll.backend.model.PasswordResetDTO;
+import com.divroll.backend.model.dto.PasswordResetDTO;
 import com.divroll.backend.model.User;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.PasswordResetResource;

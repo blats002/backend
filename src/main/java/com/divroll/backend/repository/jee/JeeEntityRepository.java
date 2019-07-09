@@ -32,6 +32,8 @@ import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.model.builder.EntityMetadata;
+import com.divroll.backend.model.dto.EntityDTO;
+import com.divroll.backend.model.dto.LinkDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.xodus.XodusManager;

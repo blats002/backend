@@ -21,10 +21,9 @@
  */
 package com.divroll.backend.helper;
 
-import com.divroll.backend.model.Role;
-import com.divroll.backend.model.RoleDTO;
+import com.divroll.backend.model.dto.RoleDTO;
 import com.divroll.backend.model.User;
-import com.divroll.backend.model.UserDTO;
+import com.divroll.backend.model.dto.UserDTO;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -39,7 +39,6 @@ import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
-import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
 import org.restlet.engine.application.CorsFilter;
 
@@ -101,8 +100,7 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "files/{appId}/{fileName}", JeeFileServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
-    router.attach(ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
-    router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodesMethodServerResource.class);
+    router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodeServerResource.class);
     router.attach(ROOT_URI + "customCodes/{customCodeName}/{methodName}", JeeCustomCodeMethodServerResource.class);
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);

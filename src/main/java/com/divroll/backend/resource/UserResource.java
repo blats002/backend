@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.resource;
 
-import com.divroll.backend.model.UserDTO;
+import com.divroll.backend.model.dto.UserDTO;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -38,7 +38,7 @@ import org.restlet.resource.Put;
  */
 @Api(value = "User", description = "User resource")
 public interface UserResource {
-  @ApiOperation(value = "retrieve a webToken of user", tags = "user")
+  @ApiOperation(value = "retrieve a authToken of user", tags = "user")
   @ApiResponses({
     @ApiResponse(code = 200, message = "the updated application"),
     @ApiResponse(code = 404, message = "user not found"),

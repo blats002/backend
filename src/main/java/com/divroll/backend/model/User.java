@@ -50,7 +50,7 @@ public class User {
   private String email;
 
   @ApiModelProperty(required = false, value = "Generated Authentication Token")
-  private String webToken;
+  private String authToken;
 
   @ApiModelProperty(required = false)
   @XStreamImplicit(itemFieldName = "roles")
@@ -93,11 +93,11 @@ public class User {
   }
 
   public String getWebToken() {
-    return webToken;
+    return authToken;
   }
 
-  public void setWebToken(String webToken) {
-    this.webToken = webToken;
+  public void setWebToken(String authToken) {
+    this.authToken = authToken;
   }
 
   public String getEntityId() {

@@ -28,6 +28,8 @@ import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.helper.DTOHelper;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.dto.RoleDTO;
+import com.divroll.backend.model.dto.UserDTO;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserResource;
 import com.divroll.backend.service.PubSubService;
@@ -174,10 +176,10 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           String userId = userEntity.getEntityId();
           String existingPassword = userEntity.getPassword();
           if (BCrypt.checkpw(password, existingPassword)) {
-            String webToken = webTokenService.createToken(app.getMasterKey(), userId);
+            String authToken = webTokenService.createToken(app.getMasterKey(), userId);
             User user = new User();
             user.setEntityId(userId);
-            user.setWebToken(webToken);
+            user.setWebToken(authToken);
             user.setPassword(null);
             user.setLinks(userEntity.getLinks());
             setStatus(Status.SUCCESS_OK);

@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.Api;
 import org.restlet.representation.Representation;
 import org.restlet.resource.*;
 
@@ -29,6 +30,7 @@ import org.restlet.resource.*;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "CustomCodeMethod", description = "CustomCodeMethod resource")
 public interface CustomCodeMethodResource {
 
   @Get

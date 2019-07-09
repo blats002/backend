@@ -23,7 +23,7 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.repository.CustomCodeRepository;
-import com.divroll.backend.resource.CustomCodesMethodResource;
+import com.divroll.backend.resource.CustomCodeResource;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -39,8 +39,8 @@ import org.restlet.representation.Representation;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-public class JeeCustomCodesMethodServerResource extends BaseServerResource
-    implements CustomCodesMethodResource {
+public class JeeCustomCodeServerResource extends BaseServerResource
+    implements CustomCodeResource {
 
     String customCodeName;
 

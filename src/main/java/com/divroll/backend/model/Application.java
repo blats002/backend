@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.model;
 
+import com.divroll.backend.model.dto.UserRootDTO;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
