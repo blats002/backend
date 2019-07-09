@@ -70,7 +70,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                LOG.info("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();
@@ -100,7 +100,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                LOG.info("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();
@@ -127,7 +127,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                LOG.info("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();
@@ -173,7 +173,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                LOG.info("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();

@@ -11,7 +11,7 @@ The usage is very simple and requires no configuration.
 
 To run your own Divroll Backend Server, simply execute these commands:
 
-```$xslt
+```
 mvn jetty:run
 ```
 
@@ -24,7 +24,7 @@ If you are deploying to a Jetty server or Tomcat server, please refer to their w
 
 In order to store key/values or entities to Divroll, create a application:
 
-```$xslt
+```
 curl -X GET \
   http://localhost:8080/thing/applications
 ```
@@ -32,7 +32,7 @@ curl -X GET \
 Take note of the response as it cannot be retrieved again, response
 looks like this:
 
-```$xslt
+```
 {
     "application": {
         "appId": "aec05bcb1cf245123fb6ca95a169e55b",
@@ -49,7 +49,7 @@ be changed (by design for performance.)
 
 #### Create an Entity
 
-```$xslt
+```
 curl -X POST \
   http://localhost:8080/thing/entities/messages/hello \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
@@ -61,7 +61,7 @@ curl -X POST \
 
 #### Update an Entity
 
-```$xslt
+```
 curl -X PUT \
   http://localhost:8080/thing/entities/messages/hello \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
@@ -72,7 +72,7 @@ curl -X PUT \
 ```
 
 #### Get an Entity
-```$xslt
+```
 curl -X GET \
   http://localhost:8080/thing/entities/messages/hello \
   -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
@@ -81,7 +81,7 @@ curl -X GET \
 
 #### Changing the masterKey and apiKey
 
-```$xslt
+```
 curl -X PUT \
   https://localhost:8080/thing/applications \
   -H 'Content-Type: application/json' \
@@ -99,7 +99,7 @@ curl -X PUT \
 
 #### Create a User
 
-```$xslt
+```
 curl -X POST \
   http://localhost:8080/thing/entities/users \
   -H 'Content-Type: application/json' \
@@ -109,7 +109,7 @@ curl -X POST \
       	"user": {
       		"username": "user",
       		"password": "pass",
-      		"webToken": ""
+      		"authToken": ""
       	}
       }'
 ```
@@ -120,14 +120,14 @@ HTTP request:
 ```
 {
 	"user": {
-		"webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
+		"authToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
 	}
 }
 
 ```
 
 #### Update a User
-```$xslt
+```
 curl -X POST \
   http://localhost:8080/thing/entities/users \
   -H 'Content-Type: application/json' \
@@ -138,17 +138,17 @@ curl -X POST \
       	"user": {
       		"username": "newuser",
       		"password": "newpass",
-      		"webToken": ""
+      		"authToken": ""
       	}
       }'
 ```
 
-Example reponse will be like this:
+Example response will be like this:
 
 ```
 {
 	"user": {
-		"webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
+		"authToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
 	}
 }
 
