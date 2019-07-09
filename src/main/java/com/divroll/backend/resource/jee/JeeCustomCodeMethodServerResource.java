@@ -54,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -65,6 +66,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
+  private static final int DEFAULT_TIMEOUT = 10;
 
   @Inject
   CustomCodeRepository customCodeRepository;
@@ -95,7 +97,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
   }
 
   private void customCodePost(
@@ -109,7 +111,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
   }
 
   private void customCodePut(
@@ -123,7 +125,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
   }
 
   private void customCodeDelete(
@@ -137,7 +139,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
   }
 
   protected String stackTraceToString(Throwable e) {
@@ -177,14 +179,25 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
+        long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        customCodeGet(jarBytes, path, params, is, methodName, 0, future);
+        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         Map<String, ?> futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
+        customCodeGet(jarBytes, path, params, is, methodName, 0, future);
+
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
@@ -244,14 +257,26 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
+
+        long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         customCodePost(jarBytes, path, params, is, methodName, 0, future);
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
@@ -294,14 +319,26 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
+
+        long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         customCodePut(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
+
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
@@ -344,14 +381,25 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
+        long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
+
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }

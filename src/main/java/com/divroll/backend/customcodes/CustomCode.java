@@ -25,7 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.JarInputStream;
@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import com.divroll.backend.customcode.method.CustomCodeMethod;
 import com.divroll.backend.customcode.jar.JarEntryObject;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.divroll.backend.sdk.exception.BadRequestException;
 import org.json.simple.JSONValue;
 
 /**
@@ -70,7 +71,7 @@ public class CustomCode {
 	 * 
 	 * @param request
 	 */
-	public void executeMainClass(CustomCodeRequest request) {
+	public void executeMainClass(CustomCodeRequest request, int timeoutInSeconds) {
 		LOGGER.info("Execute main class");
 		String classToLoad = null;
 		String methodName = request.getMethodName();
@@ -82,10 +83,22 @@ public class CustomCode {
 			Thread.currentThread().setContextClassLoader(loader);
 			JarEntryObject jarEntry = (JarEntryObject) c.newInstance();
         	List<CustomCodeMethod> methods = jarEntry.methods();
+
+        	boolean isMethodExists = false;
         	for (CustomCodeMethod cc : methods){
         		String ccMethodName = cc.getMethodName();
         		if(methodName.equals(ccMethodName)) {
-					Map<String, ?> result = cc.execute(request).getResponseMap();
+        			isMethodExists = true;
+					ExecutorService executor = Executors.newCachedThreadPool();
+					Callable<Map<String,?>> task = new Callable<Map<String, ?>>() {
+						@Override
+						public Map<String, ?> call() throws Exception {
+							Map<String, ?> result = cc.execute(request).getResponseMap();
+							return result;
+						}
+					};
+					Future<Map<String,?>> futureResult = executor.submit(task);
+					Map<String, ?> result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
 					if (result != null){
 						//listener.onSuccess(result); // TODO: remove this
 						future.complete(result);
@@ -93,6 +106,10 @@ public class CustomCode {
 					LOGGER.info("Result: " + JSONValue.toJSONString(result));
 				}
         	}
+
+        	if(!isMethodExists) {
+				future.cancel(true);
+			}
 
 		} catch (ClassNotFoundException e) {
 			//listener.onFailure(new EntryPointClassNotFound(classToLoad));
@@ -103,11 +120,12 @@ public class CustomCode {
 			future.completeExceptionally(e);
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			//listener.onFailure(new CustomCodeException(e.getMessage()));
+			future.completeExceptionally(e);
+			e.printStackTrace();
+		} catch (TimeoutException e){
 			future.completeExceptionally(e);
 			e.printStackTrace();
 		} catch (Exception e){
-			//listener.onFailure(new CustomCodeException(e.getMessage()));
 			future.completeExceptionally(e);
 			e.printStackTrace();
 		}
