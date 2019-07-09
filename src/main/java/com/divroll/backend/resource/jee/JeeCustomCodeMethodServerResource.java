@@ -181,7 +181,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         }
         long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         Map<String, ?> futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
@@ -260,7 +259,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
         long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         customCodePost(jarBytes, path, params, is, methodName, 0, future);
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
@@ -280,7 +278,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -322,7 +320,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
         long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         customCodePut(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         long endTime   = System.nanoTime();
@@ -342,7 +339,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -383,7 +380,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         }
         long startTime = System.nanoTime();
         CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        future.completeOnTimeout(new LinkedHashMap<>(), DEFAULT_TIMEOUT, TimeUnit.SECONDS);
         customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         long endTime   = System.nanoTime();
@@ -403,7 +399,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }

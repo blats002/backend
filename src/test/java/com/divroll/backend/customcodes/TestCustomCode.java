@@ -66,7 +66,7 @@ public class TestCustomCode {
     File file = new File(JAR_FILE);
     CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(new FileInputStream(file)), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, 10);
     Map<String, ?> result = future.get();
     System.out.println(JSONValue.toJSONString(future));
   }
