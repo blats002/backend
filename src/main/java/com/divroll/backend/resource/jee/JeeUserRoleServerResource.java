@@ -89,7 +89,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements Use
                 appId,
                 namespace,
                 defaultUserStore,
-                Constants.ROLE_NAME,
+                Constants.ROLE_LINKNAME,
                 role.getEntityId(),
                 user.getEntityId());
             setStatus(Status.SUCCESS_CREATED);
@@ -141,7 +141,7 @@ public class JeeUserRoleServerResource extends BaseServerResource implements Use
                 appId,
                 namespace,
                 defaultUserStore,
-                Constants.ROLE_NAME,
+                Constants.ROLE_LINKNAME,
                 role.getEntityId(),
                 user.getEntityId());
             setStatus(Status.SUCCESS_CREATED);

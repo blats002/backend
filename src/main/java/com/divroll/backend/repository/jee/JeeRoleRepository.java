@@ -360,7 +360,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               Entity roleEntity = txn.getEntity(roleEntityId);
               userEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               roleEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
-              success[0] = userEntity.addLink(Constants.ROLE_NAME, roleEntity);
+              success[0] = userEntity.addLink(Constants.ROLE_LINKNAME, roleEntity);
             }
           });
     } finally {
@@ -389,7 +389,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               Entity roleEntity = txn.getEntity(roleEntityId);
               userEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               roleEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
-              success[0] = userEntity.deleteLink(Constants.ROLE_NAME, roleEntity);
+              success[0] = userEntity.deleteLink(Constants.ROLE_LINKNAME, roleEntity);
             }
           });
     } finally {
@@ -416,7 +416,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               EntityId roleEntityId = txn.toEntityId(roleID);
               Entity userEntity = txn.getEntity(userEntityId);
               Entity roleEntity = txn.getEntity(roleEntityId);
-              Entity linkedRole = userEntity.getLink(Constants.ROLE_NAME);
+              Entity linkedRole = userEntity.getLink(Constants.ROLE_LINKNAME);
               success[0] = linkedRole.getId().toString().equals(roleEntity.getId().toString());
             }
           });
