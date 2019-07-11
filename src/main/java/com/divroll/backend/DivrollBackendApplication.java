@@ -128,6 +128,10 @@ public class DivrollBackendApplication extends Application {
             Constants.HEADER_ACL_WRITE.toLowerCase(),
             Constants.HEADER_CONTENT_TYPE,
             Constants.HEADER_CONTENT_TYPE.toLowerCase()));
+    corsFilter.setExposedHeaders(Sets.newHashSet(
+            Constants.HEADER_CONTENT_DISPOSITION,
+            Constants.HEADER_CONTENT_DISPOSITION.toLowerCase()
+    ));
     corsFilter.setAllowedCredentials(true);
 
     corsFilter.setNext(router);

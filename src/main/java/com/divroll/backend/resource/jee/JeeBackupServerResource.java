@@ -23,11 +23,14 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.model.Application;
 import com.divroll.backend.resource.BackupResource;
+import com.divroll.backend.xodus.XodusManager;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.util.CompressBackupUtil;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -54,6 +57,9 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
   @Inject
   @Named("xodusRoot")
   String xodusRoot;
+
+  @Inject
+  XodusManager manager;
 
   @Override
   public void restore(Representation entity) {
@@ -102,13 +108,13 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
         return null;
       }
       try {
-        String folderPath = xodusRoot + appId;
-        String zipPath = xodusRoot + appId + ".zip";
-        ZipUtil.pack(new File(folderPath), new File(zipPath));
-        File zipFile = new File(zipPath);
-        Representation representation = new FileRepresentation(zipFile, MediaType.APPLICATION_ZIP);
+
+        Environment env = manager.getEnvironment(xodusRoot, appId);
+        final File backupFile = CompressBackupUtil.backup(env, new File(env.getLocation(), "backups"), null, true);
+
+        Representation representation = new FileRepresentation(backupFile, MediaType.APPLICATION_ZIP);
         Disposition disposition = new Disposition(Disposition.TYPE_ATTACHMENT);
-        disposition.setFilename(appId); // TODO: Not working
+        disposition.setFilename(backupFile.getName());
         representation.setDisposition(disposition);
         setStatus(Status.SUCCESS_OK);
         return representation;
