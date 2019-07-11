@@ -29,6 +29,7 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.entitystore.PersistentEntityStore;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.util.CompressBackupUtil;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -109,8 +110,8 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
       }
       try {
 
-        Environment env = manager.getEnvironment(xodusRoot, appId);
-        final File backupFile = CompressBackupUtil.backup(env, new File(env.getLocation(), "backups"), null, true);
+        PersistentEntityStore store = manager.getPersistentEntityStore(xodusRoot, appId);
+        final File backupFile = CompressBackupUtil.backup(store, new File(store.getLocation(), "backups"), null, true);
 
         Representation representation = new FileRepresentation(backupFile, MediaType.APPLICATION_ZIP);
         Disposition disposition = new Disposition(Disposition.TYPE_ATTACHMENT);
