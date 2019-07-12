@@ -51,6 +51,7 @@ import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -158,6 +159,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
     username = getQueryValue(Constants.QUERY_USERNAME);
     sort = getQueryValue("sort");
 
+    if(blobName != null) {
+      try {
+        blobName = URLDecoder.decode(blobName, StandardCharsets.UTF_8.name());
+      } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+      }
+    }
 
     Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 
