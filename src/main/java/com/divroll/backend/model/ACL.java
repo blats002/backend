@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package com.divroll.backend.model;
 
 /**
@@ -27,7 +28,15 @@ package com.divroll.backend.model;
  * @since 0-SNAPSHOT
  */
 public interface ACL {
-  public String[] getRead();
+  /**
+   * Retrieves read Access-Control-List.
+   * @return array of {@linkplain String} entity ids
+   */
+  String[] getRead();
 
-  public String[] getWrite();
+  /**
+   * Retrieves write Access-Control-List.
+   * @return array of {@linkplain String} entity ids
+   */
+  String[] getWrite();
 }
