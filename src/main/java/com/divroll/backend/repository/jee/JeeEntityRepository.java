@@ -282,6 +282,35 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               EntityClass created =
                   new EntityClassBuilder().from(entityClass).comparableMap(eMap).build();
 
+              if(createOption != null) {
+                CreateOption.CREATE_OPTION createOp = createOption.createOption();
+                if(createOp != null && createOp.equals(CreateOption.CREATE_OPTION.CREATE_ENTITY_THEN_LINK)) {
+                  String linkedEntityType = createOption.linkedEntityType();
+                  String linkedEntityLinkName = createOption.linkedEntityLinkName();
+                  Entity newLinkedEntity = txn.newEntity(linkedEntityType);
+
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, finalEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, finalEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
+
+                  finalEntity.getLinks(Constants.RESERVED_FIELD_ACL_READ).forEach(entity1 -> {
+                    newLinkedEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, entity1);
+                  });
+
+                  finalEntity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE).forEach(entity1 -> {
+                    newLinkedEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, entity1);
+                  });
+
+                  if(createOption.linkedEntityLinkType()) {
+                    finalEntity.setLink(linkedEntityLinkName, newLinkedEntity);
+                  } else {
+                    finalEntity.addLink(linkedEntityLinkName, newLinkedEntity);
+                  }
+                }
+              }
+
               if (actions != null) {
                 actions.forEach(
                     action -> {

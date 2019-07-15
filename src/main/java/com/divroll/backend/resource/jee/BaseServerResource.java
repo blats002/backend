@@ -69,6 +69,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String appName;
   protected String entityId;
   protected String entityType;
+  protected String entityTypeQuery;
   protected String blobName;
   protected String appId;
   protected String namespace;
@@ -146,6 +147,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
     linkName = getAttribute("linkName");
     targetEntityId = getAttribute("targetEntityId");
     sourceEntityId = getQueryValue("sourceEntityId");
+
+    entityTypeQuery = getQueryValue("entityType");
 
     if (linkName == null) {
       linkName = getQueryValue("linkName");

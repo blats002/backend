@@ -85,6 +85,14 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
   @Inject PubSubService pubSubService;
 
   @Override
+  protected void doInit() {
+    super.doInit();
+    if(blobName == null || blobName.isEmpty()) {
+      blobName = getQueryValue("blobName");
+    }
+  }
+
+  @Override
   public Representation setBlob(Representation entity) {
 
     LOG.info("Method setBlob called");

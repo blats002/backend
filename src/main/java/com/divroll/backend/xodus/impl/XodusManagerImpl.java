@@ -37,8 +37,15 @@ import jetbrains.exodus.env.Environments;
 import jetbrains.exodus.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -63,7 +70,7 @@ public class XodusManagerImpl implements XodusManager {
     Environment environment = environmentMap.get(xodusRoot + instance);
     if (environment == null) {
       EnvironmentConfig config = new EnvironmentConfig();
-//      config.setLogDataReaderWriterProvider("com.divroll.backend.io.WasabiDataReaderWriterProvider");
+      //config.setLogDataReaderWriterProvider("jetbrains.exodus.log.replication.S3DataReaderWriterProvider");
       Environment env = Environments.newInstance(xodusRoot + instance, config);
       environmentMap.put(xodusRoot + instance, env);
     }

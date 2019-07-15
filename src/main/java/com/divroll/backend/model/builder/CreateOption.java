@@ -28,7 +28,15 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @Value.Style(visibility = Value.Style.ImplementationVisibility.PRIVATE)
 public interface CreateOption {
-    enum CREATE_OPTION { SET_BLOB_ON_PROPERTY_EQUALS }
+    enum CREATE_OPTION {
+        SET_BLOB_ON_PROPERTY_EQUALS,
+        CREATE_ENTITY_THEN_LINK,
+        CREATE_ENTITY_THEN_LINK_AND_BACKLINK
+    }
     @Nullable CREATE_OPTION createOption();
     @Nullable String referencePropertyName();
+    @Nullable String linkedEntityType();
+    @Nullable String linkedEntityLinkName();
+    @Nullable String linkedEntityBacklinkName();
+    @Nullable Boolean linkedEntityLinkType();
 }
