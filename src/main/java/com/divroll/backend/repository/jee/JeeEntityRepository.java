@@ -1181,8 +1181,20 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 throw new IllegalArgumentException(
                     metadataProperty + " property cannot be removed");
               }
+              EntityIterable entities = null;
+              if (namespace != null && !namespace.isEmpty()) {
+                entities =
+                        txn.findWithProp(entityType, namespaceProperty)
+                                .intersect(txn.find(entityType, namespaceProperty, namespace));
+                entities = entities.intersect(txn.findWithProp(entityType, propertyName));
+              } else {
+                entities =
+                        txn.getAll(entityType)
+                                .minus(txn.findWithProp(entityType, namespaceProperty));
+                entities = entities.intersect(txn.findWithProp(entityType, propertyName));
+              }
 
-              EntityIterable entities = txn.findWithProp(entityType, propertyName);
+
               final boolean[] hasError = {false};
               entities.forEach(
                   entity -> {
