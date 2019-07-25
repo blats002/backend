@@ -1,5 +1,7 @@
 ![Divroll Logo](https://avatars1.githubusercontent.com/u/30984522?s=200&v=4)
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+<br/>   
 
 ## Welcome to backend
 
