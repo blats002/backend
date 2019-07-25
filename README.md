@@ -1,5 +1,6 @@
 ![Divroll Logo](https://avatars1.githubusercontent.com/u/30984522?s=200&v=4)
 
+
 ## Welcome to backend
 
 backend is an Open Source, RESTful Backend as a Service for mobile apps, web apps and IoT devices.
@@ -30,7 +31,10 @@ To run your own backend server, simply execute this commands:
 mvn jetty:run
 ```
 
-If you are deploying to a Jetty server or Tomcat server, please refer to their website on how to deploy
+If you are deploying to a Jetty server or Tomcat server, please refer to their website on how to deploy.
+Alternatively, you can deploy to Heroku:
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 How to use
 ---
