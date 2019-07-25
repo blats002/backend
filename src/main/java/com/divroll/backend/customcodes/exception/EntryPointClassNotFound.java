@@ -25,15 +25,26 @@ import com.divroll.backend.customcodes.CustomCodeException;
 
 /**
  *
+ * Exception thrown when main class is missing.
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
  */
 public class EntryPointClassNotFound extends CustomCodeException {
-	public EntryPointClassNotFound(){
+	/**
+	 * Constructor.
+	 */
+	public EntryPointClassNotFound() {
 		super();
 	}
-	public EntryPointClassNotFound(String mainClass){
+
+	/**
+	 * Constructor.
+	 *
+	 * @param mainClass missing entry point class
+	 */
+	public EntryPointClassNotFound(final String mainClass) {
 		super("Entry point class '" + mainClass + "' not found" );
-	}	
+	}
 }
+
