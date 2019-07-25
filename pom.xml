@@ -400,6 +400,14 @@
             <name>Public online Restlet repository</name>
             <url>http://maven.restlet.org</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>bintray</name>
+            <url>https://jcenter.bintray.com</url>
+        </repository>
     </repositories>
     <distributionManagement>
         <snapshotRepository>
