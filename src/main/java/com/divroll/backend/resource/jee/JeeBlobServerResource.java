@@ -23,6 +23,7 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.Application;
@@ -60,9 +61,12 @@ import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import util.ComparableLinkedList;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +93,13 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
     super.doInit();
     if(blobName == null || blobName.isEmpty()) {
       blobName = getQueryValue("blobName");
+    }
+    try {
+      if(blobName != null) {
+        blobName = URLDecoder.decode(blobName, "UTF-8");
+      }
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
     }
   }
 
@@ -358,7 +369,63 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
 
   @Override
   public Representation updateBlob(Representation entity) {
-    return setBlob(entity);
+    if(replaceAll != null) {
+      if(replaceWith == null) {
+        return badRequest();
+      }
+    } else {
+      return setBlob(entity);
+    }
+    Application app = applicationService.read(appId);
+    if (app == null) {
+      setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+      return null;
+    }
+
+    String authUserId = null;
+
+    boolean isWriteAccess = false;
+    boolean isMaster = false;
+    boolean isPublic = false;
+
+    try {
+      authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+    } catch (Exception e) {
+      // do nothing
+    }
+
+    Map<String, Comparable> map =
+            entityRepository.getEntity(appId, namespace, entityType, entityId, null);
+    List<EntityStub> aclWriteList =
+            map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
+                    : new LinkedList<>();
+
+    if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
+      isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+    }
+
+    if (isMaster()) {
+      isMaster = true;
+    } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
+      isWriteAccess = true;
+    } else if (authUserId != null) {
+      List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
+      for (Role role : roles) {
+        if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
+          isWriteAccess = true;
+        }
+      }
+    }
+
+    if (isMaster || isWriteAccess || isPublic) {
+      if(entityRepository.replaceBlobName(appId, namespace, entityType, entityId, replaceAll, replaceWith)) {
+        setStatus(Status.SUCCESS_OK);
+      } else {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+    }
+    return null;
   }
 
   @Override

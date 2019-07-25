@@ -102,6 +102,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String entityJson;
   protected String sourceEntityId;
 
+  protected String replaceAll;
+  protected String replaceWith;
+
   protected String masterToken;
 
   protected String authTokenQuery;
@@ -168,6 +171,26 @@ public class BaseServerResource extends SelfInjectingServerResource {
       } catch (UnsupportedEncodingException e) {
         e.printStackTrace();
       }
+    }
+
+
+    replaceAll = getQueryValue("replaceAll");
+    replaceWith = getQueryValue("replaceWith");
+
+    try {
+      if(replaceAll != null) {
+        replaceAll = URLDecoder.decode(replaceAll, "UTF-8");
+      }
+    } catch (UnsupportedEncodingException e) {
+
+    }
+
+    try {
+      if(replaceWith != null) {
+        replaceWith = URLDecoder.decode(replaceWith, "UTF-8");
+      }
+    } catch (UnsupportedEncodingException e) {
+
     }
 
     Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
