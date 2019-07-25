@@ -999,6 +999,32 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
   @Override
+  public Boolean replaceBlobName(String instance, String namespace, String entityType, String entityId, String pattern, String replacement) {
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+    final Boolean[] success = {false};
+    try {
+      entityStore.executeInTransaction(
+              new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                  EntityId idOfEntity = txn.toEntityId(entityId);
+                  final Entity entity = txn.getEntity(idOfEntity);
+                  entity.getBlobNames().forEach(blobName -> {
+                    InputStream blobStream = entity.getBlob(blobName);
+                    entity.deleteBlob(blobName);
+                    blobName = blobName.replaceAll(pattern, replacement);
+                    entity.setBlob(blobName, blobStream);
+                    success[0] = true;
+                  });
+                }
+              });
+    } finally {
+      //// entityStore.close();
+    }
+    return success[0];
+  }
+
+  @Override
   public Long countEntityBlobSize(String instance, String namespace, String entityType, String entityId, String blobKey) {
     final Long[] count = new Long[1];
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
