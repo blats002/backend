@@ -21,8 +21,8 @@
  */
 package com.divroll.backend.resource;
 
+import com.divroll.backend.model.User;
 import com.divroll.backend.model.Users;
-import com.divroll.backend.model.dto.UserDTO;
 import com.wordnik.swagger.annotations.*;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
@@ -44,7 +44,7 @@ public interface UsersResource {
         message = "unauthorized access, missing Application ID/API Key headers pair")
   })
   @Post
-  UserDTO createUser(UserDTO entity);
+  User createUser(User entity);
 
   @ApiOperation(value = "list users", tags = "user")
   @ApiResponses({

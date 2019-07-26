@@ -25,7 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
-import com.divroll.backend.model.dto.EntityDTO;
+import com.divroll.backend.model.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;

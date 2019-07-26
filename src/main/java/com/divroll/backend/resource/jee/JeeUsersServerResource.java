@@ -27,8 +27,6 @@ import com.divroll.backend.helper.*;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
-import com.divroll.backend.model.dto.RoleDTO;
-import com.divroll.backend.model.dto.UserDTO;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UsersResource;
 import com.divroll.backend.service.PubSubService;
@@ -108,15 +106,14 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             User user = userRepository.getUser(appId, namespace, defaultUserStore, queryUserId, includeLinks);
             Users users = new Users();
             users.setCount(1);
-            UserDTO userDTO = UserDTO.convert(user);
-            users.setResults(Arrays.asList(new UserDTO[]{userDTO}));
+            users.setResults(Arrays.asList(new User[]{user}));
             users.setSkip(0);
             users.setLimit(1);
             users.setCount(1);
 
             JSONObject responseBody = new JSONObject();
             JSONObject usersJSONObj = new JSONObject();
-            usersJSONObj.put("results", Arrays.asList(new UserDTO[]{userDTO}));
+            usersJSONObj.put("results", Arrays.asList(new User[]{user}));
             usersJSONObj.put("skip", 0);
             usersJSONObj.put("limit", 1);
             usersJSONObj.put("count", 1);
@@ -161,15 +158,14 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               User user = userRepository.getUser(appId, namespace, defaultUserStore, queryUserId, includeLinks);
               Users users = new Users();
               users.setCount(1);
-              UserDTO userDTO = UserDTO.convert(user);
-              users.setResults(Arrays.asList(new UserDTO[]{userDTO}));
+              users.setResults(Arrays.asList(new User[]{user}));
               users.setSkip(0);
               users.setLimit(1);
               users.setCount(1);
 
               JSONObject responseBody = new JSONObject();
               JSONObject usersJSONObj = new JSONObject();
-              usersJSONObj.put("results", Arrays.asList(new UserDTO[]{userDTO}));
+              usersJSONObj.put("results", Arrays.asList(new User[]{user}));
               usersJSONObj.put("skip", 0);
               usersJSONObj.put("limit", 1);
               usersJSONObj.put("count", 1);
@@ -216,7 +212,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
   }
 
   @Override
-  public UserDTO createUser(UserDTO entity) {
+  public User createUser(User entity) {
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -282,7 +278,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
       publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
       publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
-      List<RoleDTO> roles = entity.getRoles();
+      List<Role> roles = entity.getRoles();
       String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
       User userEntity =
@@ -416,7 +412,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
 
             pubSubService.created(appId, namespace, defaultUserStore, entityId);
             setStatus(Status.SUCCESS_CREATED);
-            return UserDTO.convert((User) ObjectLogger.log(user));
+            return (User) ObjectLogger.log(user);
           } else {
             setStatus(Status.SERVER_ERROR_INTERNAL);
           }

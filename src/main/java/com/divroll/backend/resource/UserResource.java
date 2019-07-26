@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.resource;
 
-import com.divroll.backend.model.dto.UserDTO;
+import com.divroll.backend.model.User;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -60,7 +60,7 @@ public interface UserResource {
             "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")
   })
   @Put
-  Representation updateUser(UserDTO entity);
+  Representation updateUser(User entity);
 
   @ApiOperation(value = "delete existing user", tags = "user")
   @ApiResponses({
@@ -70,5 +70,5 @@ public interface UserResource {
         message = "unauthorized access, missing Application ID/API Key/Master Key headers")
   })
   @Delete
-  void deleteUser(UserDTO entity);
+  void deleteUser(User entity);
 }

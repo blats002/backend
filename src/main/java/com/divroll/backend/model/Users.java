@@ -21,7 +21,6 @@
  */
 package com.divroll.backend.model;
 
-import com.divroll.backend.model.dto.UserDTO;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;
@@ -37,17 +36,17 @@ import java.util.List;
 @ApiModel
 public class Users {
   @XStreamImplicit(itemFieldName = "results")
-  private List<UserDTO> results;
+  private List<User> results;
 
   private long skip;
   private long limit;
   private long count;
 
-  public List<UserDTO> getResults() {
+  public List<User> getResults() {
     return results;
   }
 
-  public void setResults(List<UserDTO> results) {
+  public void setResults(List<User> results) {
     this.results = results;
   }
 

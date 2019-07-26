@@ -21,7 +21,6 @@
  */
 package com.divroll.backend.model;
 
-import com.divroll.backend.model.dto.UserRootDTO;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
@@ -54,7 +53,7 @@ public class Application {
   private String dateCreated;
   private String dateUpdated;
 
-  private UserRootDTO user;
+  private UserRoot user;
 
   public String getId() {
     return appId;
@@ -104,11 +103,11 @@ public class Application {
     this.emailConfig = emailConfig;
   }
 
-  public UserRootDTO getUser() {
+  public UserRoot getUser() {
     return user;
   }
 
-  public void setUser(UserRootDTO user) {
+  public void setUser(UserRoot user) {
     this.user = user;
   }
 

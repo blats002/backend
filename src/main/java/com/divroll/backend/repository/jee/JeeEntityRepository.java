@@ -32,8 +32,7 @@ import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.model.builder.EntityMetadata;
-import com.divroll.backend.model.dto.EntityDTO;
-import com.divroll.backend.model.dto.LinkDTO;
+import com.divroll.backend.model.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -825,9 +824,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                     comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
 
                                   if(includes != null && !includes.isEmpty()) {
-                                      ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                                      ComparableLinkedList<Link> linkDTOS = new ComparableLinkedList<Link>();
                                       for(String include : includes) {
-                                      LinkDTO linkDTO = new LinkDTO();
+                                      Link linkDTO = new Link();
                                       linkDTO.setLinkName(include);
                                       if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                                               || include.equals(Constants.RESERVED_FIELD_ACL_READ)
@@ -838,7 +837,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                       EntityIterable linkedEntities = entity.getLinks(include);
                                       for(Entity linkEntity : linkedEntities) {
                                         EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
-                                        linkDTO.getEntities().add(entityDTO);
+                                        linkDTO.getEntities().add(new EntityStub(entityDTO));
                                       }
                                       linkDTOS.add(linkDTO);
                                     }

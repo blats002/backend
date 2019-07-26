@@ -28,8 +28,6 @@ import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.helper.DTOHelper;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
-import com.divroll.backend.model.dto.RoleDTO;
-import com.divroll.backend.model.dto.UserDTO;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserResource;
 import com.divroll.backend.service.PubSubService;
@@ -95,7 +93,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           userEntity.setPassword(null);
           setStatus(Status.SUCCESS_OK);
 
-          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
+          Representation representation = new XstreamRepresentation<User>(MediaType.APPLICATION_JSON, (User) ObjectLogger.log(userEntity));
           String text = representation.getText();
           return representation;
         } else {
@@ -123,7 +121,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           }
           if (userEntity != null) {
             setStatus(Status.SUCCESS_OK);
-            Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
+            Representation representation = new XstreamRepresentation<User>(MediaType.APPLICATION_JSON, (User) ObjectLogger.log(userEntity));
             String text = representation.getText();
             return representation;
           } else {
@@ -162,8 +160,8 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           user.setLinks(userEntity.getLinks());
           setStatus(Status.SUCCESS_OK);
 
-          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON,
-                  UserDTO.convert((User) ObjectLogger.log(user)));
+          Representation representation = new XstreamRepresentation<User>(MediaType.APPLICATION_JSON,
+                  (User) ObjectLogger.log(user));
           String text = representation.getText();
           return representation;
         } else {
@@ -184,7 +182,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
             user.setLinks(userEntity.getLinks());
             setStatus(Status.SUCCESS_OK);
 
-            Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(user)));
+            Representation representation = new XstreamRepresentation<User>(MediaType.APPLICATION_JSON, (User) ObjectLogger.log(user));
             String text = representation.getText();
             return representation;
           } else {
@@ -208,7 +206,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
   }
 
   @Override
-  public Representation updateUser(UserDTO entity) {
+  public Representation updateUser(User entity) {
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -294,7 +292,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
         return null;
       }
 
-      List<RoleDTO> roles = entity.getRoles();
+      List<Role> roles = entity.getRoles();
       String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
       Boolean isMaster = isMaster();
@@ -351,7 +349,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           pubSubService.updated(appId, namespace, defaultUserStore, userId);
           setStatus(Status.SUCCESS_OK);
 
-          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
+          Representation representation = new XstreamRepresentation<User>(MediaType.APPLICATION_JSON, (User) ObjectLogger.log(resultUser));
           String text = representation.getText();
           return representation;
         } else {
@@ -429,7 +427,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
               pubSubService.updated(appId, namespace, defaultUserStore, userId);
               setStatus(Status.SUCCESS_OK);
 
-              Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
+              Representation representation = new XstreamRepresentation<User>(MediaType.APPLICATION_JSON, (User) ObjectLogger.log(resultUser));
               String text = representation.getText();
               return representation;
             } else {
@@ -453,7 +451,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
   }
 
   @Override
-  public void deleteUser(UserDTO entity) {
+  public void deleteUser(User entity) {
     try {
 
       Application app = applicationService.read(appId);

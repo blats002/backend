@@ -46,6 +46,11 @@ public class EntityStub implements Comparable {
     setEntityType(entityType);
   }
 
+  public EntityStub(EntityDTO entity) {
+    setEntityId(entity.getEntityId());
+    setEntityType(entity.getEntityType());
+  }
+
   public String getEntityId() {
     return entityId;
   }

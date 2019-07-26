@@ -24,7 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Email;
-import com.divroll.backend.model.dto.UserRootDTO;
+import com.divroll.backend.model.UserRoot;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.ApplicationResource;
@@ -134,7 +134,7 @@ public class JeeApplicationServerResource extends BaseServerResource
       return null;
     }
 
-    UserRootDTO rootDTO = application.getUser();
+    UserRoot rootDTO = application.getUser();
 
     String appId = UUID.randomUUID().toString().replace("-", "");
     String apiKey = UUID.randomUUID().toString().replace("-", "");

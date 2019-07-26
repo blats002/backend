@@ -24,7 +24,7 @@ package com.divroll.backend.repository.jee;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.model.*;
-import com.divroll.backend.model.dto.EntityDTO;
+import com.divroll.backend.model.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;

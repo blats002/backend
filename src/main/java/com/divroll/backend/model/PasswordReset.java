@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model.dto;
+package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.wordnik.swagger.annotations.ApiModel;
@@ -32,7 +32,7 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
  */
 @XStreamAlias("user")
 @ApiModel
-public class PasswordResetDTO {
+public class PasswordReset {
   @ApiModelProperty(required = true, value = "Username")
   private String username;
 
@@ -42,7 +42,7 @@ public class PasswordResetDTO {
   @ApiModelProperty(required = true, value = "New Password")
   private String newPassword;
 
-  public PasswordResetDTO() {}
+  public PasswordReset() {}
 
   public String getUsername() {
     return username;

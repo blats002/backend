@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.model.dto;
+package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.wordnik.swagger.annotations.ApiModel;
@@ -32,7 +32,7 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
  */
 @XStreamAlias("user")
 @ApiModel
-public class UserRootDTO {
+public class UserRoot {
 
   @ApiModelProperty(required = true, value = "Username")
   private String username;
@@ -43,7 +43,7 @@ public class UserRootDTO {
   @ApiModelProperty(required = true, value = "Role")
   private String role;
 
-  public UserRootDTO() {}
+  public UserRoot() {}
 
   public String getUsername() {
     return username;
