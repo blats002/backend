@@ -2094,10 +2094,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   if (value != null) {
                     if (value != null) {
                       if (value instanceof EmbeddedEntityIterable) {
-                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
+                        Comparable comparable = asObject((EmbeddedEntityIterable) value);
+                        comparableMap.put(property, comparable);
                       } else if (value instanceof EmbeddedArrayIterable) {
-                        comparableMap.put(
-                            property, Comparables.cast((((EmbeddedArrayIterable) value).asObject())));
+                        // TODO - Replace with recursive object mapping
+                        List<Comparable> comparables = ((EmbeddedArrayIterable) value).asObject();
+                        comparableMap.put(property, Comparables.cast(comparables));
                       } else {
                         comparableMap.put(property, value);
                       }
@@ -2193,5 +2195,22 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   protected String getDefaultRoleStore() {
     return defaultRoleStore;
   }
+
+  private Comparable asObject(EmbeddedEntityIterable entityIterable) {
+    Comparable comparable = entityIterable.asObject();
+    if(comparable instanceof ComparableHashMap) {
+      ComparableHashMap comparableHashMap = (ComparableHashMap) comparable;
+      ComparableHashMap replacements = new ComparableHashMap();
+      comparableHashMap.forEach((key, value) -> {
+        if(value instanceof EmbeddedEntityIterable) {
+          replacements.put(key, asObject((EmbeddedEntityIterable)value));
+        }
+      });
+      comparableHashMap.putAll(replacements);
+      return comparableHashMap;
+    }
+    return comparable;
+  }
+
 
 }
