@@ -64,6 +64,10 @@ public class User {
   @ApiModelProperty(required = false, value = "")
   private List<EntityStub> aclWrite;
 
+  @XStreamImplicit(itemFieldName = "blobNames")
+  @ApiModelProperty(required = false, value = "")
+  private List<String> blobNames;
+
   @ApiModelProperty(required = false, value = "")
   private Boolean publicRead;
 
@@ -92,11 +96,11 @@ public class User {
     this.password = password;
   }
 
-  public String getWebToken() {
+  public String getAuthToken() {
     return authToken;
   }
 
-  public void setWebToken(String authToken) {
+  public void setAuthToken(String authToken) {
     this.authToken = authToken;
   }
 
@@ -181,5 +185,13 @@ public class User {
 
   public void setLinks(List<Link> links) {
     this.links = links;
+  }
+
+  public List<String> getBlobNames() {
+    return blobNames;
+  }
+
+  public void setBlobNames(List<String> blobNames) {
+    this.blobNames = blobNames;
   }
 }

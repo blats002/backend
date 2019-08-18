@@ -603,7 +603,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   }
                   user.setLinks(links);
                 }
-
+                user.setBlobNames(userEntity.getBlobNames());
                 entity[0] = user;
               }
             }
@@ -650,6 +650,8 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     userEntity.getProperty("email") != null
                         ? (String) userEntity.getProperty("email")
                         : null);
+                user.setBlobNames(userEntity.getBlobNames());
+
                 List<Role> roles = new LinkedList<>();
                 for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                   Role role = new Role();
@@ -842,6 +844,8 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 user.setUsername(
                     (String) userEntity.getProperty(Constants.RESERVED_FIELD_USERNAME));
                 user.setEmail((String) userEntity.getProperty("email"));
+                user.setBlobNames(userEntity.getBlobNames());
+
                 for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                   Role role = new Role();
                   role.setEntityId(roleEntity.getId().toString());

@@ -37,10 +37,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
-import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.json.JsonRepresentation;
-import org.restlet.ext.xstream.XstreamRepresentation;
 import org.restlet.representation.Representation;
 import scala.actors.threadpool.Arrays;
 
@@ -394,7 +391,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             User user = new User();
             user.setEntityId(entityId);
             user.setUsername(username);
-            user.setWebToken(authToken);
+            user.setAuthToken(authToken);
             user.setPublicRead(publicRead);
             user.setPublicWrite(publicWrite);
             user.setAclWrite(ACLHelper.convert(write));
