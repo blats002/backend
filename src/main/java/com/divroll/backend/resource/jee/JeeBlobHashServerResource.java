@@ -100,7 +100,7 @@ public class JeeBlobHashServerResource extends BaseServerResource implements Blo
 
             String authUserId = null;
 
-            boolean isWriteAccess = false;
+            boolean isReadAccess = false;
             boolean isMaster = false;
             boolean isPublic = false;
 
@@ -113,30 +113,30 @@ public class JeeBlobHashServerResource extends BaseServerResource implements Blo
 
             Map<String, Comparable> map =
                     entityRepository.getEntity(appId, namespace, entityType, entityId, null);
-            List<EntityStub> aclWriteList =
-                    map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
-                            ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
+            List<EntityStub> aclReadList =
+                    map.get(Constants.RESERVED_FIELD_ACL_READ) != null
+                            ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_READ)
                             : new LinkedList<>();
 
-            if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
-                isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+            if (map.get(Constants.RESERVED_FIELD_PUBLICREAD) != null) {
+                isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICREAD);
             }
 
             if (isMaster()) {
                 isMaster = true;
-            } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
-                isWriteAccess = true;
+            } else if (authUserId != null && ACLHelper.contains(authUserId, aclReadList)) {
+                isReadAccess = true;
             } else if (authUserId != null) {
                 List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
                 for (Role role : roles) {
-                    if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
-                        isWriteAccess = true;
+                    if (ACLHelper.contains(role.getEntityId(), aclReadList)) {
+                        isReadAccess = true;
                     }
                 }
             }
 
 
-            if (isMaster || isWriteAccess || isPublic) {
+            if (isMaster || isReadAccess || isPublic) {
                 Long count = entityRepository.countEntityBlobSize(appId, namespace, entityType, entityId, blobName);
                 InputStream is =
                         entityRepository.getEntityBlob(appId, namespace, entityType, entityId, blobName);
