@@ -33,6 +33,7 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.SchemaService;
+import com.divroll.backend.util.Base64;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
@@ -71,6 +72,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String entityType;
   protected String entityTypeQuery;
   protected String blobName;
+  protected String blobHash;
+  protected String contentDisposition;
   protected String appId;
   protected String namespace;
   protected String apiKey;
@@ -144,6 +147,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     entityId = getAttribute(Constants.RESERVED_FIELD_ENTITY_ID);
     entityType = getAttribute(Constants.ENTITY_TYPE);
     blobName = getAttribute("blobName");
+    blobHash = getAttribute("blobHash");
     userId = getAttribute(Constants.USER_ID);
     roleId = getAttribute(Constants.ROLE_ID);
     propertyName = getAttribute("propertyName");
@@ -299,6 +303,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
       publicWrite = Boolean.valueOf(getQueryValue("publicWrite"));
     } catch (Exception e) {
 
+    }
+
+    if(blobHash != null && !blobHash.isEmpty()) {
+      try {
+        String jsonString = Base64.decode(blobHash);
+        org.json.JSONObject jsonObject = new org.json.JSONObject(jsonString);
+        appId = jsonObject.getString("appId");
+        apiKey = jsonObject.getString("apiKey");
+        entityType = jsonObject.getString("entityType");
+        entityId = jsonObject.getString("entityId");
+        blobName = jsonObject.getString("blobName");
+        //masterKey = jsonObject.getString("masterKey");
+        //contentDisposition = jsonObject.getString("contentDisposition");
+      } catch (Exception e) {
+
+      }
     }
 
     if (appId != null) {
