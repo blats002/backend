@@ -16,8 +16,7 @@
         <junit.version>4.12</junit.version>
 <!--        <jackson.version>2.6.0</jackson.version>-->
         <jackson.version>2.9.9</jackson.version>
-        <version.restlet.ext>2.3.12</version.restlet.ext>
-        <version.restlet>2.4.0</version.restlet>
+        <version.restlet>2.3.12</version.restlet>
         <atmosphere-version>2.4.30</atmosphere-version>
         <jersey-version>1.19.4</jersey-version>
         <jaxb-version>2.1</jaxb-version>
@@ -169,7 +168,7 @@
         <dependency>
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.xstream</artifactId>
-            <version>${version.restlet.ext}</version>
+            <version>${version.restlet}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.jettison</groupId>
@@ -184,7 +183,7 @@
         <dependency>
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.json</artifactId>
-            <version>${version.restlet.ext}</version>
+            <version>${version.restlet}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
