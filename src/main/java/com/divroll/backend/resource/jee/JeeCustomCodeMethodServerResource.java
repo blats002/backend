@@ -24,6 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.divroll.backend.customcode.MethodVerb;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.rest.CustomCodeResponse;
 import com.divroll.backend.customcodes.CustomCode;
 import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.resource.CustomCodeMethodResource;
@@ -98,7 +99,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
       InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
@@ -112,7 +113,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
@@ -126,7 +127,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
@@ -140,7 +141,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
@@ -185,8 +186,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           });
         }
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        Map<String, ?> futureResult = future.get();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
+        CustomCodeResponse futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
@@ -194,9 +195,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -263,18 +267,21 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         }
 
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodePost(jarBytes, path, params, is, methodName, 0, future);
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
 
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -324,18 +331,21 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         }
 
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodePut(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -384,18 +394,21 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           });
         }
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
