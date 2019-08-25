@@ -1600,6 +1600,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   }
                 }
 
+                entity.getBlobNames().forEach(blobName -> {
+                  entity.deleteBlob(blobName);
+                });
+
                 if (!entity.delete()) {
                   hasError[0] = true;
                 }
@@ -1653,6 +1657,10 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                         }
                       }
                     }
+
+                    entity.getBlobNames().forEach(blobName -> {
+                      entity.deleteBlob(blobName);
+                    });
 
                     if (!entity.delete()) {
                       hasError[0] = true;
