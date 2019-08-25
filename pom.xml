@@ -14,8 +14,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
-        <jackson.version>2.6.0</jackson.version>
-        <version.restlet>2.3.12</version.restlet>
+<!--        <jackson.version>2.6.0</jackson.version>-->
+        <jackson.version>2.9.9</jackson.version>
+        <version.restlet.ext>2.3.12</version.restlet.ext>
+        <version.restlet>2.4.0</version.restlet>
         <atmosphere-version>2.4.30</atmosphere-version>
         <jersey-version>1.19.4</jersey-version>
         <jaxb-version>2.1</jaxb-version>
@@ -167,7 +169,7 @@
         <dependency>
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.xstream</artifactId>
-            <version>${version.restlet}</version>
+            <version>${version.restlet.ext}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.codehaus.jettison</groupId>
@@ -182,7 +184,7 @@
         <dependency>
             <groupId>org.restlet.jee</groupId>
             <artifactId>org.restlet.ext.json</artifactId>
-            <version>${version.restlet}</version>
+            <version>${version.restlet.ext}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jettison</groupId>
@@ -299,6 +301,12 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-json</artifactId>
             <version>${jersey-version}</version>
+                      <exclusions>
+                          <exclusion>
+                              <groupId>javax.ws.rs</groupId>
+                              <artifactId>jsr311-api</artifactId>
+                          </exclusion>
+                      </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
