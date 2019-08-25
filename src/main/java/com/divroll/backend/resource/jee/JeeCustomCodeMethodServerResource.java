@@ -66,19 +66,24 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
-  private static final int DEFAULT_TIMEOUT = 10;
+  private static final int DEFAULT_TIMEOUT = 60;
 
   @Inject
   CustomCodeRepository customCodeRepository;
 
   String customCodeName;
   String methodName;
+  int customCodeTimeout = DEFAULT_TIMEOUT;
 
   @Override
   protected void doInit() {
     super.doInit();
     customCodeName = getAttribute("customCodeName");
     methodName = getAttribute("methodName");
+    String CUSTOM_CODE_TIMEOUT = System.getenv("CUSTOM_CODE_TIMEOUT");
+    if(CUSTOM_CODE_TIMEOUT != null && !CUSTOM_CODE_TIMEOUT.isEmpty()) {
+      customCodeTimeout = Integer.valueOf(CUSTOM_CODE_TIMEOUT);
+    }
   }
 
   private InputStream getJar(String appId, String customCodeName) {
@@ -97,7 +102,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodePost(
@@ -111,7 +116,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodePut(
@@ -125,7 +130,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodeDelete(
@@ -139,7 +144,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   protected String stackTraceToString(Throwable e) {
