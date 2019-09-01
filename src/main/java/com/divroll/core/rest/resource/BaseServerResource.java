@@ -113,6 +113,18 @@ public class BaseServerResource extends SelfInjectingServerResource {
         super.doInit();
         //cacheService.setAddress(getMemcachedAddress());
         cacheService.setAddress(Arrays.asList(getRedisConnection()));
+
+        String envPrenderUrl = System.getenv("PRERENDER_URL");
+        String envPrenderDevUrl = System.getenv("PRERENDER_DEV_URL");
+
+        if(envPrenderUrl != null && !envPrenderUrl.isEmpty()) {
+            prerenderUrl = envPrenderUrl;
+        }
+
+        if(envPrenderDevUrl != null && !envPrenderDevUrl.isEmpty()) {
+            prerenderUrlDev = envPrenderDevUrl;
+        }
+
     }
 
     public String getRedisConnection() {

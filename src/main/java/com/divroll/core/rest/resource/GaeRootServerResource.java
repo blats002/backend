@@ -80,6 +80,7 @@ public class GaeRootServerResource extends BaseServerResource {
 
     private String acceptEncodings;
     private String cacheKey;
+    private String environment;
 
     public static class ParseUrl extends GenericUrl {
         public ParseUrl(String encodedUrl) {
@@ -93,6 +94,29 @@ public class GaeRootServerResource extends BaseServerResource {
         Series<Header> series = (Series<Header>)getRequestAttributes().get("org.restlet.http.headers");
         acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
         cacheKey = getQueryValue("cachekey");
+        environment = getQueryValue("environment");
+
+        String envServerUrl = System.getenv("DIVROLL_SERVER_URL");
+        String envAppId = System.getenv("DIVROLL_APP_ID");
+        String envApiKey = System.getenv("DIVROLL_API_KEY");
+        String envMasterKey = System.getenv("DIVROLL_MASTER_KEY");
+
+        if(envServerUrl != null && !envServerUrl.isEmpty()) {
+            serverUrl = envServerUrl;
+        }
+
+        if(envAppId != null && !envAppId.isEmpty()) {
+            appId = envAppId;
+        }
+
+        if(envApiKey != null && !envApiKey.isEmpty()) {
+            appKey = envApiKey;
+        }
+
+        if(envMasterKey != null && !envMasterKey.isEmpty()) {
+            masterKey = envMasterKey;
+        }
+
         Divroll.initialize(serverUrl, appId, appKey, masterKey);
     }
 
@@ -204,6 +228,11 @@ public class GaeRootServerResource extends BaseServerResource {
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 // Main code that reads file from cache or Cloud Storage
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                if(environment != null) {
+                    subdomain = subdomain + "." + environment;
+                }
+
                 String completeFilePath = subdomain + "/" + p;
                 LOG.info("Complete File Path:       " + completeFilePath);
 
