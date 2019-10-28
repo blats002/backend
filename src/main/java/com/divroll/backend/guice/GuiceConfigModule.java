@@ -29,9 +29,11 @@ import com.divroll.backend.service.jee.*;
 import com.divroll.backend.xodus.XodusEnvStore;
 import com.divroll.backend.xodus.XodusManager;
 import com.divroll.backend.xodus.XodusStore;
+import com.divroll.backend.xodus.XodusVFS;
 import com.divroll.backend.xodus.impl.XodusEnvStoreImpl;
 import com.divroll.backend.xodus.impl.XodusManagerImpl;
 import com.divroll.backend.xodus.impl.XodusStoreImpl;
+import com.divroll.backend.xodus.impl.XodusVFSImpl;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.AbstractModule;
@@ -68,6 +70,7 @@ public class GuiceConfigModule extends AbstractModule {
     bind(XodusStore.class).to(XodusStoreImpl.class).in(Scopes.SINGLETON);
     bind(XodusEnvStore.class).to(XodusEnvStoreImpl.class).in(Scopes.SINGLETON);
     bind(XodusManager.class).to(XodusManagerImpl.class).in(Scopes.SINGLETON);
+    bind(XodusVFS.class).to(XodusVFSImpl.class).in(Scopes.SINGLETON);
 
     bind(UserRepository.class).to(JeeUserRepository.class).in(Scopes.SINGLETON);
     bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
@@ -83,6 +86,8 @@ public class GuiceConfigModule extends AbstractModule {
     bind(ApplicationService.class).to(JeeApplicationService.class).in(Scopes.SINGLETON);
     bind(KeyValueService.class).to(JeeKeyValueService.class).in(Scopes.SINGLETON);
     bind(PubSubService.class).to(JeePubSubService.class).in(Scopes.SINGLETON);
+    bind(PrerenderService.class).to(JeePrerenderService.class).in(Scopes.SINGLETON);
+    bind(SubdomainService.class).to(JeeSubdomainService.class).in(Scopes.SINGLETON);
 
     Names.bindProperties(binder(), readProperties());
   }

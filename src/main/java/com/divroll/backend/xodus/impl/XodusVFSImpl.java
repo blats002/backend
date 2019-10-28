@@ -48,28 +48,57 @@ public class XodusVFSImpl implements XodusVFS {
     public OutputStream createFile(String instance, String path, InputStream stream) {
         Environment env = manager.getEnvironment(xodusRoot, instance);
         final VirtualFileSystem vfs = new VirtualFileSystem(env);
+        final OutputStream[] output = new OutputStream[1];
         try {
             env.executeInTransaction(new TransactionalExecutable() {
                 @Override
                 public void execute(@NotNull Transaction txn) {
                     final File file = vfs.createFile(txn, path);
-                    final OutputStream output = vfs.writeFile(txn, file);
-
+                    output[0] = vfs.writeFile(txn, file);
                 }
             });
         } finally {
 
         }
-        return null;
+        return output[0];
     }
 
     @Override
     public InputStream openFile(String instance, String path) {
-        return null;
+        Environment env = manager.getEnvironment(xodusRoot, instance);
+        final VirtualFileSystem vfs = new VirtualFileSystem(env);
+        final InputStream[] inputStream = new InputStream[1];
+        try {
+            env.executeInTransaction(new TransactionalExecutable() {
+                @Override
+                public void execute(@NotNull Transaction txn) {
+                    File file = vfs.openFile(txn, path, false);
+                    inputStream[0] = vfs.readFile(txn, file);
+                }
+            });
+        } finally {
+            // Do nothing
+        }
+        return inputStream[0];
     }
 
     @Override
     public boolean deleteFile(String instance, String path) {
-        return false;
+        Environment env = manager.getEnvironment(xodusRoot, instance);
+        final VirtualFileSystem vfs = new VirtualFileSystem(env);
+        final Boolean[] success = {false};
+        try {
+            env.executeInTransaction(new TransactionalExecutable() {
+                @Override
+                public void execute(@NotNull Transaction txn) {
+                    File file = vfs.deleteFile(txn, path);
+                    success[0] = true;
+                }
+            });
+        } finally {
+            // Do nothing
+        }
+        return success[0];
     }
+
 }
