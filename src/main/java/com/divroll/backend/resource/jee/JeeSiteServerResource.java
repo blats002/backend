@@ -49,10 +49,10 @@ import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.Date;
 
-public class JeeHostingServerResource extends BaseServerResource {
+public class JeeSiteServerResource extends BaseServerResource {
 
     final static Logger LOG
-            = LoggerFactory.getLogger(JeeHostingServerResource.class);
+            = LoggerFactory.getLogger(JeeSiteServerResource.class);
 
     private static final String HASH = "#";
     private static final String APP_ROOT_URI = "";

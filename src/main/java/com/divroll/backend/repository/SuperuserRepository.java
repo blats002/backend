@@ -19,21 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.service;
+package com.divroll.backend.repository;
 
-import java.util.Map;
+import com.divroll.backend.model.Superuser;
+import com.divroll.backend.model.exception.DuplicateSuperuserException;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public interface WebTokenService {
-  String createToken(String secret, String userId);
+public interface SuperuserRepository {
+  String createUser(
+          String entityType,
+          String username,
+          String password,
+          String email) throws Exception;
 
-  String createToken(String secret, String userId, String expiration);
+  boolean updateUser(Superuser superuser);
 
-  Map<String, Object> readToken(String secret, String token);
+  boolean updateUserPassword(String userId, String newPassword);
 
-  String readUserIdFromToken(String secret, String token);
+  boolean activateUser(String userId);
+
+  Superuser getUser(String userId);
+
+  Superuser getUserByUsername(String username);
+
+  boolean deleteUser(String userId);
+
+  List<Superuser> listUsers(
+          int skip,
+          int limit,
+          String sort);
 }

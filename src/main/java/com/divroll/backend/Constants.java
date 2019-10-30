@@ -56,6 +56,7 @@ public final class Constants {
   public static final String QUERY_LIMIT = "limit";
   public static final String QUERY_COUNT = "count";
   public static final String JWT_ID_KEY = "id";
+  public static final String JWT_ID_EXPIRATION = "expiration";
   public static final String DEFAULT_CHARSET = "utf-8";
   public static final String ACL_ASTERISK = "*";
 
@@ -73,6 +74,8 @@ public final class Constants {
   public static final String RESERVED_FIELD_PUBLICREAD = "publicRead";
   public static final String RESERVED_FIELD_USERNAME = "username";
   public static final String RESERVED_FIELD_PASSWORD = "password";
+  public static final String RESERVED_FIELD_EMAIL = "email";
+  public static final String RESERVED_FIELD_ACTIVE = "active";
   public static final String RESERVED_FIELD_FUNCTION_NAME = "functionName";
   public static final String RESERVED_FIELD_METADATA = "metaData";
 

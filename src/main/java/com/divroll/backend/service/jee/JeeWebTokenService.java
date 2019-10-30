@@ -60,7 +60,29 @@ public class JeeWebTokenService implements WebTokenService {
   }
 
   @Override
-  public Map<String, Comparable> readToken(String secret) {
+  public String createToken(String secret, String userId, String expiration) {
+    JWTSigner signer = new JWTSigner(secret);
+    HashMap<String, Object> claims = new HashMap<String, Object>();
+    claims.put(Constants.JWT_ID_KEY, String.valueOf(userId));
+    claims.put(Constants.JWT_ID_EXPIRATION, String.valueOf(expiration));
+    String token = signer.sign(claims);
+    // log.info("Generated token: " + token);
+    return token;  }
+
+  @Override
+  public Map<String, Object> readToken(String secret, String token) {
+    try {
+      JWTVerifier verifier = new JWTVerifier(secret);
+      Map<String, Object> parsed = verifier.verify(token);
+      return parsed;
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    } catch (InvalidKeyException e) {
+    } catch (IOException e) {
+    } catch (SignatureException e) {
+    } catch (JWTVerifyException e) {
+    } catch (Exception e) {
+    }
     return null;
   }
 
