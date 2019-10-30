@@ -19,21 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.service;
+package com.divroll.backend.resource.jee;
 
-import java.util.Map;
+import com.divroll.backend.guice.SelfInjectingServerResource;
+import com.divroll.backend.resource.SuperuserPasswordResetResource;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public interface WebTokenService {
-  String createToken(String secret, String userId);
-
-  String createToken(String secret, String userId, String expiration);
-
-  Map<String, Object> readToken(String secret, String token);
-
-  String readUserIdFromToken(String secret, String token);
+public class JeeSuperuserPasswordResetServerResource extends SelfInjectingServerResource
+    implements SuperuserPasswordResetResource {
 }
