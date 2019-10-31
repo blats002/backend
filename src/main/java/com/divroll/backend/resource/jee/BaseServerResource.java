@@ -66,6 +66,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   private static final Logger LOG = LoggerFactory.getLogger(BaseServerResource.class);
   protected Map<String, Comparable> queryMap = new LinkedHashMap<>();
   protected Map<String, String> propsMap = new LinkedHashMap<>();
+  protected static Long ONE_DAY = 1000L * 60L * 60L * 24L;
 
   protected String appName;
   protected String entityId;

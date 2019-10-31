@@ -23,20 +23,36 @@ package com.divroll.backend.resource.jee;
 
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
-import com.divroll.backend.guice.SelfInjectingServerResource;
+import com.divroll.backend.job.RetryJobWrapper;
+import com.divroll.backend.job.TransactionalEmailJob;
 import com.divroll.backend.model.Superuser;
 import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.resource.SuperuserResource;
 import com.divroll.backend.service.WebTokenService;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.mindrot.jbcrypt.BCrypt;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
-public class JeeSuperuserServerResource extends SelfInjectingServerResource
+import java.util.Date;
+import java.util.UUID;
+
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
+
+public class JeeSuperuserServerResource extends BaseServerResource
     implements SuperuserResource {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JeeSuperuserServerResource.class);
 
     @Inject
     SuperuserRepository superuserRepository;
@@ -48,37 +64,60 @@ public class JeeSuperuserServerResource extends SelfInjectingServerResource
     @Named("masterSecret")
     String masterSecret;
 
+    @Inject
+    @Named("masterToken")
+    String theMasterToken;
+
     @Override
     public Representation getUser() {
+        try {
+            String username = getQueryValue(Constants.QUERY_USERNAME);
+            String password = getQueryValue(Constants.QUERY_PASSWORD);
 
-        String username = getQueryValue(Constants.QUERY_USERNAME);
-        String password = getQueryValue(Constants.QUERY_PASSWORD);
-
-        if(username == null || password == null) {
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return null;
-        }
-
-        Superuser superuser = superuserRepository.getUserByUsername(username);
-        if(superuser != null) {
-            String superuserId = superuser.getEntityId();
-            String existingPassword = superuser.getPassword();
-            if (BCrypt.checkpw(password, existingPassword)) {
-                String authToken = webTokenService.createToken(masterSecret, superuserId);
-                superuser.setAuthToken(authToken);
-                superuser.setPassword(null);
-                superuser.setEntityId(superuserId);
-                superuser.setDateUpdated(superuser.getDateUpdated());
-                superuser.setDateCreated(superuser.getDateCreated());
-                setStatus(Status.SUCCESS_OK);
-                return new JsonRepresentation(asJSONObject(superuser));
-
-            } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+            if(username == null || password == null) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
-        } else {
-            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+
+            boolean isMasterToken = false;
+            if (theMasterToken != null
+                    && masterToken != null
+                    && BCrypt.checkpw(masterToken, theMasterToken)) {
+                isMasterToken = true;
+            }
+
+            Superuser superuser = superuserRepository.getUserByUsername(username);
+            if(superuser != null) {
+                String superuserId = superuser.getEntityId();
+                String existingPassword = superuser.getPassword();
+                if (BCrypt.checkpw(password, existingPassword)) {
+                    String authToken = webTokenService.createToken(masterSecret, superuserId);
+                    superuser.setAuthToken(authToken);
+                    superuser.setPassword(null);
+                    superuser.setEntityId(superuserId);
+                    superuser.setDateUpdated(superuser.getDateUpdated());
+                    superuser.setDateCreated(superuser.getDateCreated());
+                    setStatus(Status.SUCCESS_OK);
+                    if(superuser.getActive() == null || superuser.getActive() == false) {
+                        if(isMasterToken) {
+                            return new JsonRepresentation(asJSONObject(superuser));
+                        } else {
+                            setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Superuser " + username + " is not activated");
+                            sendActivationCode(superuserId, superuser.getEmail());
+                        }
+                    } else if(superuser.getActive() == true) {
+                        return new JsonRepresentation(asJSONObject(superuser));
+                    }
+
+                } else {
+                    setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                    return null;
+                }
+            } else {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            }
+        } catch (Exception e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
         }
         return null;
     }
@@ -103,6 +142,42 @@ public class JeeSuperuserServerResource extends SelfInjectingServerResource
         userObject.put("dateUpdated", userEntity.getDateUpdated());
         jsonObject.put("superuser", userObject);
         return jsonObject;
+    }
+
+    private void sendActivationCode(String userId, String email) throws Exception {
+        // Send activation code
+        Date expiration = new Date();
+        expiration.setTime(expiration.getTime() + ONE_DAY);
+        String activationToken
+                = webTokenService.createToken(masterSecret, userId, String.valueOf(expiration.getTime()));
+        LOG.info("ACTIVATION TOKEN: " + activationToken);
+
+        JobDetail job =
+                newJob(RetryJobWrapper.class)
+                        .storeDurably()
+                        .requestRecovery(true)
+                        .withIdentity(UUID.randomUUID().toString(), "transactionalEmailJobs")
+                        .withDescription(
+                                "An important job that fails with an exception and is retried.")
+                        .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, TransactionalEmailJob.class.getName())
+                        .usingJobData(RetryJobWrapper.MAX_RETRIES_KEY, "5")
+                        .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
+                        .usingJobData("templateId", "")
+                        .usingJobData("fromEmail", "")
+                        .usingJobData("toEmail", email)
+                        .usingJobData("subject", "Account Activation")
+                        .usingJobData("activationToken", activationToken)
+                        .build();
+
+        Trigger trigger =
+                newTrigger()
+                        .withIdentity(UUID.randomUUID().toString(),  "emailJobs")
+                        .startNow()
+                        .withSchedule(simpleSchedule())
+                        .build();
+
+        Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+        scheduler.scheduleJob(job, trigger);
     }
 
 }

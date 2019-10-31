@@ -22,7 +22,9 @@
 package com.divroll.backend.resource;
 
 import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
 
 public interface SuperuserActivateResource {
+    @Get
     Representation activate();
 }

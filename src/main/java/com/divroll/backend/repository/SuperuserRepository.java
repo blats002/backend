@@ -42,11 +42,13 @@ public interface SuperuserRepository {
 
   boolean updateUserPassword(String userId, String newPassword);
 
-  boolean activateUser(String userId);
+  boolean activateUser(String email);
 
   Superuser getUser(String userId);
 
   Superuser getUserByUsername(String username);
+
+  Superuser getUserByEmail(String email);
 
   boolean deleteUser(String userId);
 

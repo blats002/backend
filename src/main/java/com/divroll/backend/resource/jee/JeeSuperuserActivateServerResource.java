@@ -22,7 +22,7 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
-import com.divroll.backend.guice.SelfInjectingServerResource;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.resource.SuperuserActivateResource;
 import com.divroll.backend.service.WebTokenService;
@@ -33,7 +33,7 @@ import org.restlet.representation.Representation;
 
 import java.util.Map;
 
-public class JeeSuperuserActivateServerResource extends SelfInjectingServerResource implements
+public class JeeSuperuserActivateServerResource extends BaseServerResource implements
         SuperuserActivateResource {
 
     @Inject
@@ -49,21 +49,36 @@ public class JeeSuperuserActivateServerResource extends SelfInjectingServerResou
     @Override
     public Representation activate() {
         String activationToken = getQueryValue("activationToken");
+        String email = getQueryValue("email");
         if(activationToken == null || activationToken.isEmpty()) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        }
+        if(email == null || email.isEmpty()) { // TODO: Check if valid email
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         }
 
         Map<String,Object> parsed = webTokenService.readToken(masterSecret, activationToken);
         if(parsed != null) {
             String expiration = (String) parsed.get(Constants.JWT_ID_EXPIRATION);
-            String userId = (String) parsed.get(Constants.JWT_ID_KEY);
             // TODO: Check if token is expired
-            boolean activated = superuserRepository.activateUser(userId);
-            if(activated) {
-                setStatus(Status.SUCCESS_ACCEPTED);
+            String userId = (String) parsed.get(Constants.JWT_ID_KEY);
+            Superuser superuser = superuserRepository.getUserByEmail(email);
+            if(superuser == null) {
+                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                return null;
+            }
+            if(superuser.getEntityId().equals(userId)) {
+                boolean activated = superuserRepository.activateUser(email);
+                if(activated) {
+                    setStatus(Status.SUCCESS_ACCEPTED);
+                } else {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                }
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             }
+        } else {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         }
         return null;
     }
