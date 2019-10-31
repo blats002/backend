@@ -70,6 +70,27 @@ public class JeeWebTokenService implements WebTokenService {
     return token;  }
 
   @Override
+  public String createEmailToken(String secret, String email, String expiration) {
+    JWTSigner signer = new JWTSigner(secret);
+    HashMap<String, Object> claims = new HashMap<String, Object>();
+    claims.put(Constants.JWT_ID_EMAIL, email);
+    claims.put(Constants.JWT_ID_EXPIRATION, String.valueOf(expiration));
+    String token = signer.sign(claims);
+    return token;
+  }
+
+  @Override
+  public String createPasswordResetToken(String secret, String email, String password, String expiration) {
+    JWTSigner signer = new JWTSigner(secret);
+    HashMap<String, Object> claims = new HashMap<String, Object>();
+    claims.put(Constants.JWT_ID_EMAIL, email);
+    claims.put(Constants.JWT_ID_PASSWORD, String.valueOf(password));
+    claims.put(Constants.JWT_ID_EXPIRATION, String.valueOf(expiration));
+    String token = signer.sign(claims);
+    return token;
+  }
+
+  @Override
   public Map<String, Object> readToken(String secret, String token) {
     try {
       JWTVerifier verifier = new JWTVerifier(secret);

@@ -109,8 +109,18 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public boolean updateUserPassword(String userId, String newPassword) {
-        return false;
-    }
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final Boolean[] success = {false};
+        try {
+            entityStore.executeInTransaction(txn -> {
+                Entity entity = txn.getEntity(txn.toEntityId(userId));
+                entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+                success[0] = true;
+            });
+        } finally {
+
+        }
+        return success[0];    }
 
     @Override
     public boolean activateUser(String email) {

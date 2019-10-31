@@ -171,7 +171,7 @@ public class JeeSuperuserServerResource extends BaseServerResource
 
         Trigger trigger =
                 newTrigger()
-                        .withIdentity(UUID.randomUUID().toString(),  "emailJobs")
+                        .withIdentity(UUID.randomUUID().toString(),  "transactionalEmailJobs")
                         .startNow()
                         .withSchedule(simpleSchedule())
                         .build();

@@ -33,6 +33,10 @@ public interface WebTokenService {
 
   String createToken(String secret, String userId, String expiration);
 
+  String createEmailToken(String secret, String email, String expiration);
+
+  String createPasswordResetToken(String secret, String email, String password, String expiration);
+
   Map<String, Object> readToken(String secret, String token);
 
   String readUserIdFromToken(String secret, String token);
