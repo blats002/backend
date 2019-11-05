@@ -29,6 +29,7 @@ import com.divroll.backend.service.WebTokenService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
 import java.util.Map;
@@ -49,31 +50,26 @@ public class JeeSuperuserActivateServerResource extends BaseServerResource imple
     @Override
     public Representation activate() {
         String activationToken = getQueryValue("activationToken");
-        String email = getQueryValue("email");
+        //String email = getQueryValue("email");
         if(activationToken == null || activationToken.isEmpty()) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         }
-        if(email == null || email.isEmpty()) { // TODO: Check if valid email
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        }
-
         Map<String,Object> parsed = webTokenService.readToken(masterSecret, activationToken);
         if(parsed != null) {
             String expiration = (String) parsed.get(Constants.JWT_ID_EXPIRATION);
+            String email = (String) parsed.get(Constants.JWT_ID_EMAIL);
             // TODO: Check if token is expired
             String userId = (String) parsed.get(Constants.JWT_ID_KEY);
             Superuser superuser = superuserRepository.getUserByEmail(email);
+            superuser.setPassword(null);
             if(superuser == null) {
                 setStatus(Status.CLIENT_ERROR_NOT_FOUND);
                 return null;
             }
-            if(superuser.getEntityId().equals(userId)) {
-                boolean activated = superuserRepository.activateUser(email);
-                if(activated) {
-                    setStatus(Status.SUCCESS_ACCEPTED);
-                } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                }
+            boolean activated = superuserRepository.activateUser(email);
+            if(activated) {
+                setStatus(Status.SUCCESS_ACCEPTED);
+                return new JsonRepresentation(asJSONObject(superuser));
             } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             }

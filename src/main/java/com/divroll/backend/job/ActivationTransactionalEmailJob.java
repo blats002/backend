@@ -27,22 +27,15 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.HttpRequestWithBody;
-import com.wildbit.java.postmark.Postmark;
-import com.wildbit.java.postmark.client.ApiClient;
-import com.wildbit.java.postmark.client.data.model.message.Message;
-import com.wildbit.java.postmark.client.data.model.message.MessageResponse;
-import com.wildbit.java.postmark.client.data.model.templates.TemplatedMessage;
 import org.json.JSONObject;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.StatefulJob;
 
-import java.util.HashMap;
+public class ActivationTransactionalEmailJob implements StatefulJob {
 
-public class PasswordResetTransactionalEmailJob implements StatefulJob {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PasswordResetTransactionalEmailJob.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ActivationTransactionalEmailJob.class);
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
@@ -53,23 +46,11 @@ public class PasswordResetTransactionalEmailJob implements StatefulJob {
             String senderSignature = (String) dataMap.get("senderSignature");
             String recipient = (String) dataMap.get("recipient");
             Integer templateId = (Integer) dataMap.get("templateId");
-            String resetToken = (String) dataMap.get("resetToken");
-            String passwordResetBaseUrl = (String) dataMap.get("passwordResetBaseUrl");
+            String activationToken = (String) dataMap.get("activationToken");
+            String activationBaseUrl = (String) dataMap.get("activationBaseUrl");
 
-/*
-            ApiClient client = Postmark.getApiClient(serverToken);
-
-            TemplatedMessage message = new TemplatedMessage(senderSignature, recipient);
-            message.setTemplateId(templateId);
-
-            HashMap model = new HashMap<String, Object>();
-            model.put("action_url_Value ", "http://localhost:8080/divroll/superusers/resetPassword?resetToken=" + resetToken);
-
-            message.setTemplateModel(model);
-            MessageResponse response = client.deliverMessage(message);
-*/
             JSONObject templateModel = new JSONObject();
-            templateModel.put("action_url", passwordResetBaseUrl + "resetToken=" + resetToken);
+            templateModel.put("action_url", activationBaseUrl + "activationToken=" + activationToken);
 
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("From", senderSignature);

@@ -23,6 +23,7 @@ package com.divroll.backend.resource.jee;
 
 import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
+import com.divroll.backend.job.ActivationTransactionalEmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.job.TransactionalEmailJob;
 import com.divroll.backend.model.Superuser;
@@ -68,13 +69,30 @@ public class JeeSuperuserServerResource extends BaseServerResource
     @Named("masterToken")
     String theMasterToken;
 
+    @Inject
+    @Named("postmark.serverToken")
+    private String postmarkServerToken;
+
+    @Inject
+    @Named("postmark.senderSignature")
+    private String postmarkSenderSignature;
+
+    @Inject
+    @Named("postmark.resetPasswordTemplateId")
+    private String postmarkActivationTemplateId;
+
+    @Inject
+    @Named("defaultActivationBase")
+    private String defaultActivationBase;
+
     @Override
     public Representation getUser() {
         try {
             String username = getQueryValue(Constants.QUERY_USERNAME);
             String password = getQueryValue(Constants.QUERY_PASSWORD);
+            String auth = getQueryValue(Constants.QUERY_AUTH_TOKEN);
 
-            if(username == null || password == null) {
+            if((username == null || password == null) && authToken == null) {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 return null;
             }
@@ -86,9 +104,14 @@ public class JeeSuperuserServerResource extends BaseServerResource
                 isMasterToken = true;
             }
 
-            Superuser superuser = superuserRepository.getUserByUsername(username);
+            Superuser superuser = superuserRepository.getUserByAuthToken(auth);
+            if(username != null) {
+                superuser = superuserRepository.getUserByUsername(username);
+            }
+
             if(superuser != null) {
                 String superuserId = superuser.getEntityId();
+                String email = superuser.getUsername();
                 String existingPassword = superuser.getPassword();
                 if (BCrypt.checkpw(password, existingPassword)) {
                     String authToken = webTokenService.createToken(masterSecret, superuserId);
@@ -103,7 +126,7 @@ public class JeeSuperuserServerResource extends BaseServerResource
                             return new JsonRepresentation(asJSONObject(superuser));
                         } else {
                             setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Superuser " + username + " is not activated");
-                            sendActivationCode(superuserId, superuser.getEmail());
+                            sendActivationCode(email);
                         }
                     } else if(superuser.getActive() == true) {
                         return new JsonRepresentation(asJSONObject(superuser));
@@ -114,9 +137,10 @@ public class JeeSuperuserServerResource extends BaseServerResource
                     return null;
                 }
             } else {
-                setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+                notFound(Constants.ERROR_USER_NOT_EXISTS);
             }
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             setStatus(Status.SERVER_ERROR_INTERNAL);
         }
         return null;
@@ -132,24 +156,12 @@ public class JeeSuperuserServerResource extends BaseServerResource
 
     }
 
-    public static JSONObject asJSONObject(Superuser userEntity) {
-        JSONObject jsonObject = new JSONObject();
-        JSONObject userObject = new JSONObject();
-        userObject.put("entityId", userEntity.getEntityId());
-        userObject.put("username", userEntity.getUsername());
-        userObject.put("authToken", userEntity.getAuthToken());
-        userObject.put("dateCreated", userEntity.getDateCreated());
-        userObject.put("dateUpdated", userEntity.getDateUpdated());
-        jsonObject.put("superuser", userObject);
-        return jsonObject;
-    }
-
-    private void sendActivationCode(String userId, String email) throws Exception {
+    private void sendActivationCode(String email) throws Exception {
         // Send activation code
         Date expiration = new Date();
         expiration.setTime(expiration.getTime() + ONE_DAY);
         String activationToken
-                = webTokenService.createToken(masterSecret, userId, String.valueOf(expiration.getTime()));
+                = webTokenService.createEmailToken(masterSecret, email, String.valueOf(expiration.getTime()));
         LOG.info("ACTIVATION TOKEN: " + activationToken);
 
         JobDetail job =
@@ -159,14 +171,16 @@ public class JeeSuperuserServerResource extends BaseServerResource
                         .withIdentity(UUID.randomUUID().toString(), "transactionalEmailJobs")
                         .withDescription(
                                 "An important job that fails with an exception and is retried.")
-                        .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, TransactionalEmailJob.class.getName())
+                        .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, ActivationTransactionalEmailJob.class.getName())
                         .usingJobData(RetryJobWrapper.MAX_RETRIES_KEY, "5")
                         .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
-                        .usingJobData("templateId", "")
-                        .usingJobData("fromEmail", "")
-                        .usingJobData("toEmail", email)
-                        .usingJobData("subject", "Account Activation")
+                        .usingJobData("serverToken", postmarkServerToken)
+                        .usingJobData("senderSignature", postmarkSenderSignature)
+                        .usingJobData("recipient", email)
+                        .usingJobData("templateId", Integer.valueOf(postmarkActivationTemplateId))
                         .usingJobData("activationToken", activationToken)
+                        .usingJobData("activationBaseUrl", defaultActivationBase)
+                        .usingJobData("subject", "Account Activation")
                         .build();
 
         Trigger trigger =

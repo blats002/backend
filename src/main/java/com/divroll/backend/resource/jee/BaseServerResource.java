@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
 import com.divroll.backend.guice.SelfInjectingServerResource;
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.ActionParser;
 import com.divroll.backend.model.filter.TransactionFilter;
@@ -531,6 +532,18 @@ public class BaseServerResource extends SelfInjectingServerResource {
     return entityService.afterSave(getApp(), namespace, entity, appId, entityType);
   }
 
+  protected Representation notFound(String message) {
+    JSONObject jsonObject = new JSONObject();
+    JSONObject errorObject = new JSONObject();
+    errorObject.put("message", message);
+    errorObject.put("code", 404);
+    jsonObject.put("error", errorObject);
+    Representation representation = new JsonRepresentation(jsonObject.toString());
+
+    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+    return representation;
+  }
+
   protected Representation notFound() {
     setStatus(Status.CLIENT_ERROR_NOT_FOUND);
     return null;
@@ -689,6 +702,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
       sb.append("\n");
     }
     return sb.toString();
+  }
+
+  protected static JSONObject asJSONObject(Superuser userEntity) {
+    JSONObject jsonObject = new JSONObject();
+    JSONObject userObject = new JSONObject();
+    userObject.put("entityId", userEntity.getEntityId());
+    userObject.put("username", userEntity.getUsername());
+    userObject.put("authToken", userEntity.getAuthToken());
+    userObject.put("dateCreated", userEntity.getDateCreated());
+    userObject.put("dateUpdated", userEntity.getDateUpdated());
+    userObject.put("active", userEntity.getActive());
+    jsonObject.put("superuser", userObject);
+    return jsonObject;
   }
 
 }
