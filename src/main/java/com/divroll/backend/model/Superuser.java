@@ -32,9 +32,6 @@ public class Superuser {
     @ApiModelProperty(required = false, value = "Entity Id")
     private String entityId;
 
-    @ApiModelProperty(required = true, value = "Username")
-    private String username;
-
     @ApiModelProperty(required = true, value = "Password")
     private String password;
 
@@ -53,32 +50,17 @@ public class Superuser {
 
     public Superuser() {}
 
-    public Superuser(String username, String password) {
-        setUsername(username);
+    public Superuser(String email, String password) {
         setPassword(password);
+        setUsername(email);
     }
 
-    public Superuser(String username, String password, String email) {
-        setUsername(username);
+    public Superuser(String email, String password, Boolean active) {
         setPassword(password);
-        setEmail(email);
-    }
-
-    public Superuser(String username, String password, String email, Boolean active) {
-        setUsername(username);
-        setPassword(password);
-        setEmail(email);
+        setUsername(email);
         setActive(active);
     }
 
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getPassword() {
         return password;
@@ -88,11 +70,11 @@ public class Superuser {
         this.password = password;
     }
 
-    public String getEmail() {
+    public String getUsername() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setUsername(String email) {
         this.email = email;
     }
 

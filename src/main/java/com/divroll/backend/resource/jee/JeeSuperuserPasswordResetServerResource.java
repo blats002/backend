@@ -71,6 +71,10 @@ public class JeeSuperuserPasswordResetServerResource extends BaseServerResource
     private String postmarkResetPasswordTemplateId;
 
     @Inject
+    @Named("defaultPasswordResetBase")
+    private String defaultPasswordResetBase;
+
+    @Inject
     SuperuserRepository superuserRepository;
 
     @Inject
@@ -135,6 +139,7 @@ public class JeeSuperuserPasswordResetServerResource extends BaseServerResource
                         .usingJobData("recipient", email)
                         .usingJobData("templateId", Integer.valueOf(postmarkResetPasswordTemplateId))
                         .usingJobData("resetToken", resetToken)
+                        .usingJobData("passwordResetBaseUrl", defaultPasswordResetBase)
                         .build();
 
         Trigger trigger =

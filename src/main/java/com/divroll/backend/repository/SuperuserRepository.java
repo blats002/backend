@@ -34,9 +34,8 @@ import java.util.List;
 public interface SuperuserRepository {
   String createUser(
           String entityType,
-          String username,
-          String password,
-          String email) throws Exception;
+          String email,
+          String password) throws Exception;
 
   boolean updateUser(Superuser superuser);
 
@@ -47,6 +46,8 @@ public interface SuperuserRepository {
   Superuser getUser(String userId);
 
   Superuser getUserByUsername(String username);
+
+  Superuser getUserByAuthToken(String authToken);
 
   Superuser getUserByEmail(String email);
 

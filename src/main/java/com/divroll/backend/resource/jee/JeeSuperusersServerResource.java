@@ -75,12 +75,10 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
             return null;
         }
         try {
-            if(entity.getEmail() != null
-                    && entity.getUsername() != null
+            if(entity.getUsername() != null
                     && entity.getPassword() != null) {
                 entity.setActive(false);
-                String userId = superuserRepository.createUser(defaultSuperuserStore,
-                        entity.getUsername(), entity.getPassword(), entity.getEmail());
+                String userId = superuserRepository.createUser(defaultSuperuserStore, entity.getUsername(), entity.getPassword());
                 entity.setEntityId(userId);
                 entity.setPassword(null);
 
@@ -103,14 +101,14 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
                                 .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
                                 .usingJobData("templateId", "")
                                 .usingJobData("fromEmail", "")
-                                .usingJobData("toEmail", entity.getEmail())
+                                .usingJobData("toEmail", entity.getUsername())
                                 .usingJobData("subject", "Account Activation")
                                 .usingJobData("activationToken", activationToken)
                                 .build();
 
                 Trigger trigger =
                         newTrigger()
-                                .withIdentity(UUID.randomUUID().toString(),  "emailJobs")
+                                .withIdentity(UUID.randomUUID().toString(),  "emffailJobs")
                                 .startNow()
                                 .withSchedule(simpleSchedule())
                                 .build();

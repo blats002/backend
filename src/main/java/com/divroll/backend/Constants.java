@@ -52,6 +52,7 @@ public final class Constants {
   public static final String WEBTOKEN = "authToken";
   public static final String QUERY_USERNAME = "username";
   public static final String QUERY_PASSWORD = "password";
+  public static final String QUERY_AUTH_TOKEN = "authToken";
   public static final String QUERY_SKIP = "skip";
   public static final String QUERY_LIMIT = "limit";
   public static final String QUERY_COUNT = "count";
@@ -88,6 +89,7 @@ public final class Constants {
   public static final String ERROR_INVALID_AUTH_TOKEN = "Invalid auth token";
   public static final String ERROR_INVALID_ACL = "Invalid ACL";
   public static final String ERROR_MISSING_USERNAME_PASSWORD = "Missing username/password pair";
+  public static final String ERROR_USER_NOT_EXISTS = "User does not exists";
   public static final String ERROR_USERNAME_EXISTS = "Username already exists";
   public static final String ERROR_MISSING_ROLE_ID = "Missing Role ID in request";
   public static final String ERROR_MISSING_USER_ID = "Missing User ID in path";

@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.exception.DuplicateSuperuserException;
 import com.divroll.backend.repository.SuperuserRepository;
+import com.divroll.backend.service.WebTokenService;
 import com.divroll.backend.xodus.XodusManager;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -57,8 +58,16 @@ public class JeeSuperuserRepository extends JeeBaseRespository
     @Inject
     XodusManager manager;
 
+    @Inject
+    WebTokenService webTokenService;
+
+    @Inject
+    @Named("masterSecret")
+    String masterSecret;
+
+
     @Override
-    public String createUser(String entityType, String username, String password, String email) throws Exception {
+    public String createUser(String entityType, String email, String password) throws Exception {
         final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
         final String[] entityId = {null};
         final Boolean[] isExistUsername = {false};
@@ -68,14 +77,11 @@ public class JeeSuperuserRepository extends JeeBaseRespository
                 @Override
                 public void execute(@NotNull StoreTransaction txn) {
                     Entity superuser = txn.find(defaultSuperuserStore,
-                            Constants.RESERVED_FIELD_USERNAME, username).getFirst();
-                    Entity superuserByEmail =txn.find(defaultSuperuserStore,
-                            Constants.RESERVED_FIELD_EMAIL, email).getFirst();
-                    if(superuser == null && superuserByEmail == null) {
+                            Constants.RESERVED_FIELD_USERNAME, email).getFirst();
+                    if(superuser == null) {
                         final Entity entity = txn.newEntity(defaultSuperuserStore);
-                        entity.setProperty(Constants.RESERVED_FIELD_USERNAME, username);
+                        entity.setProperty(Constants.RESERVED_FIELD_USERNAME, email);
                         entity.setProperty(Constants.RESERVED_FIELD_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
-                        entity.setProperty(Constants.RESERVED_FIELD_EMAIL, email);
                         entity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
                         entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
                         entity.setProperty(Constants.RESERVED_FIELD_ACTIVE, false);
@@ -84,9 +90,6 @@ public class JeeSuperuserRepository extends JeeBaseRespository
                         if(superuser != null) {
                             isExistUsername[0] = true;
                         }
-                        if(superuserByEmail != null) {
-                            isExistEmail[0] = true;
-                        }
                     }
                 }
             });
@@ -94,10 +97,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
         }
         if(isExistUsername[0]) {
-            throw new DuplicateSuperuserException("Username " + username + " already exists");
-        }
-        if(isExistEmail[0]) {
-            throw new DuplicateSuperuserException("Email " + email + " already exists");
+            throw new DuplicateSuperuserException("Username " + email + " already exists");
         }
         return entityId[0];
     }
@@ -129,7 +129,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
         try {
             entityStore.executeInTransaction(txn -> {
                 Entity entity = txn.find(defaultSuperuserStore,
-                        Constants.RESERVED_FIELD_EMAIL, email).getFirst();
+                        Constants.RESERVED_FIELD_USERNAME, email).getFirst();
                 entity.setProperty(Constants.RESERVED_FIELD_ACTIVE, true);
                 success[0] = true;
             });
@@ -152,12 +152,15 @@ public class JeeSuperuserRepository extends JeeBaseRespository
                 String password = (String) entity.getProperty(Constants.RESERVED_FIELD_PASSWORD);
                 String dateCreated = (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED);
                 String dateUpdated = (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED);
+                Boolean isActive = (Boolean) entity.getProperty(Constants.RESERVED_FIELD_ACTIVE);
 
                 superuser[0] = new Superuser();
-                superuser[0].setUsername(username);
+                superuser[0].setEntityId(entity.getId().toString());
                 superuser[0].setPassword(password);
+                superuser[0].setUsername(username);
                 superuser[0].setDateCreated(dateCreated);
                 superuser[0].setDateUpdated(dateUpdated);
+                superuser[0].setActive(isActive);
             });
         } finally {
 
@@ -172,14 +175,14 @@ public class JeeSuperuserRepository extends JeeBaseRespository
         try {
             entityStore.executeInTransaction(txn -> {
                 Entity entity = txn.find(defaultSuperuserStore,
-                        Constants.RESERVED_FIELD_EMAIL, email).getFirst();
+                        Constants.RESERVED_FIELD_USERNAME, email).getFirst();
                 String uname = (String) entity.getProperty(Constants.RESERVED_FIELD_USERNAME);
                 String pass = (String) entity.getProperty(Constants.RESERVED_FIELD_PASSWORD);
                 String dateCreated = (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED);
                 String dateUpdated = (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED);
                 superuser[0] = new Superuser();
                 superuser[0].setEntityId(entity.getId().toString());
-                superuser[0].setUsername(uname);
+                superuser[0].setUsername(email);
                 superuser[0].setPassword(pass);
                 superuser[0].setDateCreated(dateCreated);
                 superuser[0].setDateUpdated(dateUpdated);
@@ -222,6 +225,12 @@ public class JeeSuperuserRepository extends JeeBaseRespository
     }
 
     @Override
+    public Superuser getUserByAuthToken(String authToken) {
+        String userId = webTokenService.readUserIdFromToken(masterSecret, authToken);
+        return userId != null ? getUser(userId) : null;
+    }
+
+    @Override
     public boolean deleteUser(String userId) {
         return false;
     }
@@ -248,7 +257,6 @@ public class JeeSuperuserRepository extends JeeBaseRespository
                     superuser.setEntityId(userEntity.getId().toString());
                     superuser.setUsername((String) userEntity.getProperty(Constants.RESERVED_FIELD_USERNAME));
                     superuser.setPassword((String) userEntity.getProperty(Constants.RESERVED_FIELD_PASSWORD));
-                    superuser.setEmail((String) userEntity.getProperty(Constants.RESERVED_FIELD_EMAIL));
                     superuser.setActive((Boolean) userEntity.getProperty(Constants.RESERVED_FIELD_ACTIVE));
                     superusers.add(superuser);
                 }
