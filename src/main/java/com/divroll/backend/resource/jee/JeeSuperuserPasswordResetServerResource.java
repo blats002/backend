@@ -39,6 +39,7 @@ import org.quartz.Scheduler;
 import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
 import java.util.Date;
@@ -84,7 +85,7 @@ public class JeeSuperuserPasswordResetServerResource extends BaseServerResource
     public Representation resetPassword() {
         try {
             String newPassword = getQueryValue("newPassword");
-            String email = getQueryValue("email");
+            String email = getQueryValue("username");
             String resetToken = getQueryValue("resetToken");
             if(email != null && !email.isEmpty() && newPassword != null && !newPassword.isEmpty()) {
                 Date expiration = new Date();
@@ -104,6 +105,9 @@ public class JeeSuperuserPasswordResetServerResource extends BaseServerResource
                     String userId = superuser.getEntityId();
                     if(superuserRepository.updateUserPassword(userId, parsedNewPassword)) {
                         setStatus(Status.SUCCESS_ACCEPTED);
+                        String authToken = webTokenService.createToken(masterSecret, superuser.getEntityId());
+                        superuser.setAuthToken(authToken);
+                        return new JsonRepresentation(asJSONObject(superuser));
                     }
                 } else {
                     setStatus(Status.CLIENT_ERROR_NOT_FOUND);

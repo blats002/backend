@@ -68,6 +68,8 @@ public class JeeSuperuserActivateServerResource extends BaseServerResource imple
             }
             boolean activated = superuserRepository.activateUser(email);
             if(activated) {
+                String authToken = webTokenService.createToken(masterSecret, superuser.getEntityId());
+                superuser.setAuthToken(authToken);
                 setStatus(Status.SUCCESS_ACCEPTED);
                 return new JsonRepresentation(asJSONObject(superuser));
             } else {
