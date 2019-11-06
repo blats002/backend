@@ -22,6 +22,7 @@
 package com.divroll.backend.service;
 
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.filter.TransactionFilter;
 import jetbrains.exodus.entitystore.EntityId;
 
@@ -33,7 +34,7 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface ApplicationService {
-  EntityId create(Application user);
+  EntityId create(Application application, Superuser superuser);
 
   Application read(String appId);
 

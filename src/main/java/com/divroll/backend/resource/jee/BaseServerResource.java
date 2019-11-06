@@ -112,6 +112,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   protected String masterToken;
 
+  protected String superAuthToken;
+
   protected String authTokenQuery;
 
   protected List<TransactionFilter> filters;
@@ -228,6 +230,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
         headers.getFirstValue(Constants.HEADER_MASTER_TOKEN) != null
             ? headers.getFirstValue(Constants.HEADER_MASTER_TOKEN)
             : headers.getFirstValue(Constants.HEADER_MASTER_TOKEN.toLowerCase());
+    superAuthToken =
+            headers.getFirstValue(Constants.HEADER_SUPER_AUTH) != null
+                    ? headers.getFirstValue(Constants.HEADER_SUPER_AUTH)
+                    : headers.getFirstValue(Constants.HEADER_SUPER_AUTH.toLowerCase());
 
     if(masterToken == null) {
       masterToken = getQueryValue("masterToken");

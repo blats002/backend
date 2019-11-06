@@ -22,6 +22,7 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.guice.SelfInjectingServerResource;
+import com.divroll.backend.job.ActivationTransactionalEmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.job.TransactionalEmailJob;
 import com.divroll.backend.model.Superuser;
@@ -29,6 +30,7 @@ import com.divroll.backend.model.exception.DuplicateSuperuserException;
 import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.resource.SuperusersResource;
 import com.divroll.backend.service.WebTokenService;
+import com.divroll.backend.util.RegexHelper;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;
@@ -63,6 +65,22 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
     String masterSecret;
 
     @Inject
+    @Named("defaultActivationBase")
+    private String defaultActivationBase;
+
+    @Inject
+    @Named("postmark.serverToken")
+    private String postmarkServerToken;
+
+    @Inject
+    @Named("postmark.senderSignature")
+    private String postmarkSenderSignature;
+
+    @Inject
+    @Named("postmark.postmarkActivationTemplateId")
+    private String postmarkActivationTemplateId;
+
+    @Inject
     SuperuserRepository superuserRepository;
 
     @Inject
@@ -77,6 +95,9 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
         try {
             if(entity.getUsername() != null
                     && entity.getPassword() != null) {
+
+                // TODO: Username should be email only
+
                 entity.setActive(false);
                 String userId = superuserRepository.createUser(defaultSuperuserStore, entity.getUsername(), entity.getPassword());
                 entity.setEntityId(userId);
@@ -86,7 +107,7 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
                 Date expiration = new Date();
                 expiration.setTime(expiration.getTime() + ONE_DAY);
                 String activationToken
-                        = webTokenService.createToken(masterSecret, userId, String.valueOf(expiration.getTime()));
+                        = webTokenService.createEmailToken(masterSecret, entity.getUsername(), String.valueOf(expiration.getTime()));
                 LOG.info("ACTIVATION TOKEN: " + activationToken);
 
                 JobDetail job =
@@ -96,14 +117,15 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
                                 .withIdentity(UUID.randomUUID().toString(), "transactionalEmailJobs")
                                 .withDescription(
                                         "An important job that fails with an exception and is retried.")
-                                .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, TransactionalEmailJob.class.getName())
+                                .usingJobData(RetryJobWrapper.WRAPPED_JOB_KEY, ActivationTransactionalEmailJob.class.getName())
                                 .usingJobData(RetryJobWrapper.MAX_RETRIES_KEY, "5")
                                 .usingJobData(RetryJobWrapper.RETRY_DELAY_KEY, "5")
-                                .usingJobData("templateId", "")
-                                .usingJobData("fromEmail", "")
-                                .usingJobData("toEmail", entity.getUsername())
-                                .usingJobData("subject", "Account Activation")
+                                .usingJobData("serverToken", postmarkServerToken)
+                                .usingJobData("senderSignature", postmarkSenderSignature)
+                                .usingJobData("templateId", Integer.valueOf(postmarkActivationTemplateId))
+                                .usingJobData("recipient", entity.getUsername())
                                 .usingJobData("activationToken", activationToken)
+                                .usingJobData("activationBaseUrl", defaultActivationBase)
                                 .build();
 
                 Trigger trigger =

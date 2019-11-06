@@ -45,42 +45,52 @@ public interface XodusStore {
   // final Boolean propertyValue);
   //    public EntityId putIfNotExists(String dir, final String entityType, final String
   // propertyKey, final InputStream is);
-  public EntityId putIfNotExists(
+
+  EntityId putIfNotExists(
       String dir,
       String namespace,
       final String kind,
       Map<String, Comparable> properties,
       String uniqueProperty);
 
-  public EntityId put(
+  EntityId putIfNotExists(
+          String dir,
+          String namespace,
+          final String kind,
+          Map<String, Comparable> properties,
+          Map<String, String> links,
+          Map<String, List<String>> multiLinks,
+          String uniqueProperty);
+
+  EntityId put(
       String dir, String namespace, final String kind, Map<String, Comparable> properties);
 
-  public <T> EntityId put(
+  <T> EntityId put(
       String dir, String namespace, String kind, String id, Map<String, Comparable> comparableMap);
 
-  public Map<String, Comparable> get(String dir, String namespace, String id);
+  Map<String, Comparable> get(String dir, String namespace, String id);
 
-  public Map<String, Comparable> get(String dir, String namespace, EntityId id);
+  Map<String, Comparable> get(String dir, String namespace, EntityId id);
 
-  public <T> T get(String dir, String namespace, String kind, String id, String key);
+  <T> T get(String dir, String namespace, String kind, String id, String key);
 
-  public byte[] getBlob(String dir, String namespace, final String kind, final String blobKey);
+  byte[] getBlob(String dir, String namespace, final String kind, final String blobKey);
 
-  public EntityId update(
+  EntityId update(
       String dir,
       String namespace,
       final String kind,
       String id,
       Map<String, Comparable> properties);
 
-  public void delete(String dir, String namespace, final String id);
+  void delete(String dir, String namespace, final String id);
 
-  public void delete(String dir, String namespace, final String... id);
+  void delete(String dir, String namespace, final String... id);
 
-  public void delete(
+  void delete(
       String dir, String namespace, String kind, String propertyName, Comparable propertyValue);
 
-  public <T> EntityId getFirstEntityId(
+  <T> EntityId getFirstEntityId(
       String dir,
       String namespace,
       final String kind,
@@ -99,7 +109,7 @@ public interface XodusStore {
       int skip,
       int limit);
 
-  public List<EntityPropertyType> listPropertyTypes(
+  List<EntityPropertyType> listPropertyTypes(
       final String dir, String namespace, final String entityType);
 
   List<String> listEntityTypes(String dir, String namespace);
