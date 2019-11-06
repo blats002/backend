@@ -28,6 +28,7 @@ package com.divroll.backend;
  */
 public final class Constants {
   public static final String SERVER_NAME = "Divroll";
+  public static final String HEADER_SUPER_AUTH = "X-Divroll-Super-Auth-Token";
   public static final String HEADER_MASTER_KEY = "X-Divroll-Master-Key";
   public static final String HEADER_API_KEY = "X-Divroll-Api-Key";
   public static final String HEADER_APP_ID = "X-Divroll-App-Id";

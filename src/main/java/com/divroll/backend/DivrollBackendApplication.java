@@ -83,7 +83,9 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "sites", JeeSiteServerResource.class);
     router.attach(ROOT_URI + "sites/ssls", JeeSiteServerResource.class);
     router.attach(ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class);
+
     router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
+
     router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
     router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
     router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
@@ -118,6 +120,8 @@ public class DivrollBackendApplication extends Application {
     corsFilter.setSkippingResourceForCorsOptions(true);
     corsFilter.setAllowedHeaders(
         Sets.newHashSet(
+            Constants.HEADER_SUPER_AUTH,
+            Constants.HEADER_SUPER_AUTH.toLowerCase(),
             Constants.HEADER_MASTER_KEY,
             Constants.HEADER_MASTER_KEY.toLowerCase(),
             Constants.HEADER_API_KEY,

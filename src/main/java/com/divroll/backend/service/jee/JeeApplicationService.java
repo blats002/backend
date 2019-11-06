@@ -25,9 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.helper.EntityIterables;
 import com.divroll.backend.helper.JSON;
-import com.divroll.backend.model.Application;
-import com.divroll.backend.model.Email;
-import com.divroll.backend.model.EmbeddedEntityIterable;
+import com.divroll.backend.model.*;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.xodus.XodusStore;
@@ -59,7 +57,7 @@ public class JeeApplicationService implements ApplicationService {
   @Inject XodusStore store;
 
   @Override
-  public EntityId create(Application application) {
+  public EntityId create(Application application, Superuser superuser) {
     Map<String, Comparable> comparableMap = new LinkedHashMap<>();
     comparableMap.put(Constants.MASTER_KEY, application.getMasterKey());
     comparableMap.put(Constants.API_KEY, application.getApiKey());
@@ -67,8 +65,15 @@ public class JeeApplicationService implements ApplicationService {
     if (application.getAppName() != null) {
       comparableMap.put(Constants.APP_NAME, application.getAppName());
     }
+
+    Map<String,String> links = new LinkedHashMap<>();
+    if(superuser != null) {
+      links.put("superuser", superuser.getEntityId());
+    }
+
     EntityId entityId =
-        store.put(masterStore, null, Constants.ENTITYSTORE_APPLICATION, comparableMap);
+        store.putIfNotExists(masterStore, null,
+                Constants.ENTITYSTORE_APPLICATION, comparableMap, links, null, Constants.APP_NAME);
     return entityId;
   }
 
@@ -155,6 +160,12 @@ public class JeeApplicationService implements ApplicationService {
         application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
         application.setAppName((String) entityMap.get(Constants.APP_NAME));
         application.setCloudCode((String) entityMap.get("cloudCode"));
+
+        String superuserId = (String) entityMap.get("superuser");
+        Superuser superuser = new Superuser();
+        superuser.setEntityId(superuserId);
+        application.setSuperuser(superuser);
+
         EmbeddedEntityIterable embeddedEntityIterable =
             (entityMap.get("emailConfig") != null
                 ? (EmbeddedEntityIterable) entityMap.get("emailConfig")

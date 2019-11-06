@@ -51,9 +51,12 @@ public class Application {
   private String cloudCode;
 
   private String dateCreated;
+
   private String dateUpdated;
 
   private UserRoot user;
+
+  private Superuser superuser;
 
   public String getId() {
     return appId;
@@ -133,5 +136,13 @@ public class Application {
 
   public void setDateUpdated(String dateUpdated) {
     this.dateUpdated = dateUpdated;
+  }
+
+  public Superuser getSuperuser() {
+    return superuser;
+  }
+
+  public void setSuperuser(Superuser superuser) {
+    this.superuser = superuser;
   }
 }

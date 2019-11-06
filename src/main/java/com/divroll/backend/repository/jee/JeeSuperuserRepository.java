@@ -48,8 +48,8 @@ public class JeeSuperuserRepository extends JeeBaseRespository
     String defaultSuperuserStore;
 
     @Inject
-    @Named("superStore")
-    String superStore;
+    @Named("masterStore")
+    String masterStore;
 
     @Inject
     @Named("xodusRoot")
@@ -68,7 +68,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public String createUser(String entityType, String email, String password) throws Exception {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         final String[] entityId = {null};
         final Boolean[] isExistUsername = {false};
         final Boolean[] isExistEmail = {false};
@@ -109,7 +109,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public boolean updateUserPassword(String userId, String newPassword) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         final Boolean[] success = {false};
         try {
             entityStore.executeInTransaction(txn -> {
@@ -124,7 +124,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public boolean activateUser(String email) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         final Boolean[] success = {false};
         try {
             entityStore.executeInTransaction(txn -> {
@@ -141,7 +141,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public Superuser getUser(String userId) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         final Superuser[] superuser = {null};
         try {
             entityStore.executeInTransaction(txn -> {
@@ -170,7 +170,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public Superuser getUserByEmail(String email) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         final Superuser[] superuser = {null};
         try {
             entityStore.executeInTransaction(txn -> {
@@ -196,7 +196,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public Superuser getUserByUsername(String username) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         final Superuser[] superuser = {null};
         try {
             entityStore.executeInTransaction(txn -> {
@@ -237,7 +237,7 @@ public class JeeSuperuserRepository extends JeeBaseRespository
 
     @Override
     public List<Superuser> listUsers(int skip, int limit, String sort) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, superStore);
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, masterStore);
         List<Superuser> superusers = new LinkedList<>();
         try {
             entityStore.executeInTransaction(txn -> {

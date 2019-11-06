@@ -35,8 +35,8 @@ public class Superuser {
     @ApiModelProperty(required = true, value = "Password")
     private String password;
 
-    @ApiModelProperty(required = true, value = "Email")
-    private String email;
+    @ApiModelProperty(required = true, value = "Username")
+    private String username;
 
     @ApiModelProperty(required = false, value = "Generated Authentication Token")
     private String authToken;
@@ -50,14 +50,18 @@ public class Superuser {
 
     public Superuser() {}
 
-    public Superuser(String email, String password) {
-        setPassword(password);
-        setUsername(email);
+    public Superuser(String username) {
+        setUsername(username);
     }
 
-    public Superuser(String email, String password, Boolean active) {
+    public Superuser(String username, String password) {
         setPassword(password);
-        setUsername(email);
+        setUsername(username);
+    }
+
+    public Superuser(String username, String password, Boolean active) {
+        setPassword(password);
+        setUsername(username);
         setActive(active);
     }
 
@@ -71,11 +75,11 @@ public class Superuser {
     }
 
     public String getUsername() {
-        return email;
+        return username;
     }
 
     public void setUsername(String email) {
-        this.email = email;
+        this.username = email;
     }
 
     public String getEntityId() {
