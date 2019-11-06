@@ -42,7 +42,7 @@ public interface ApplicationService {
 
   void delete(String id);
 
-  List<Application> list(List<TransactionFilter> filters, int skip, int limit);
+  List<Application> list(List<TransactionFilter> filters, int skip, int limit, Superuser owner);
 
   void forceUpdate(Application application);
 }

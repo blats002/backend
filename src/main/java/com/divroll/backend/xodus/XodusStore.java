@@ -99,7 +99,8 @@ public interface XodusStore {
       Class<T> clazz);
 
   List<Map<String, Comparable>> list(
-      String dir, String namespace, final String entityType, int skip, int limit);
+      String dir, String namespace, final String entityType, int skip, int limit,
+      Map<String,String> links, Map<String,List<String>> multiLinks);
 
   List<Map<String, Comparable>> list(
       String dir,
@@ -107,7 +108,8 @@ public interface XodusStore {
       final String entityType,
       List<TransactionFilter> filters,
       int skip,
-      int limit);
+      int limit,
+      Map<String,String> links, Map<String,List<String>> multiLinks);
 
   List<EntityPropertyType> listPropertyTypes(
       final String dir, String namespace, final String entityType);

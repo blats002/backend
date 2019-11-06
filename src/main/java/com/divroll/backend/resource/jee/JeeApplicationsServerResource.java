@@ -86,7 +86,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
       if (theMasterToken != null
           && masterToken != null
           && BCrypt.checkpw(masterToken, theMasterToken)) {
-        List<Application> results = applicationService.list(filters, skip, limit);
+        List<Application> results = applicationService.list(filters, skip, limit, null);
         Applications applications = new Applications();
         applications.setSkip(skip);
         applications.setLimit(limit);
@@ -99,6 +99,13 @@ public class JeeApplicationsServerResource extends BaseServerResource
           setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
           return null;
         }
+        List<Application> results = applicationService.list(filters, skip, limit, superuser);
+        Applications applications = new Applications();
+        applications.setSkip(skip);
+        applications.setLimit(limit);
+        applications.setResults(results);
+        setStatus(Status.SUCCESS_OK);
+        return applications;
       } else if (isMaster()) {
         Applications applications = new Applications();
         Application application = applicationService.read(appId);

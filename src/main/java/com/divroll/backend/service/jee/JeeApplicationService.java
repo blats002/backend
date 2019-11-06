@@ -148,10 +148,16 @@ public class JeeApplicationService implements ApplicationService {
   }
 
   @Override
-  public List<Application> list(List<TransactionFilter> filters, int skip, int limit) {
+  public List<Application> list(List<TransactionFilter> filters, int skip, int limit, Superuser owner) {
     List<Application> apps = new LinkedList<>();
+
+    Map<String,String> links = new LinkedHashMap<>();
+    if(owner != null) {
+        links.put("superuser", owner.getEntityId());
+    }
+
     List<Map<String, Comparable>> list =
-        store.list(masterStore, null, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit);
+        store.list(masterStore, null, Constants.ENTITYSTORE_APPLICATION, filters, skip, limit, links, null);
     for (Map entityMap : list) {
       if (entityMap != null) {
         Application application = new Application();

@@ -516,7 +516,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
 
   @Override
   public List<Map<String, Comparable>> list(
-      String dir, String namespace, final String entityType, int skip, int limit) {
+      String dir, String namespace, final String entityType, int skip, int limit, Map<String,String> links, Map<String,List<String>> multiLinks) {
     List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
     try {
@@ -532,6 +532,16 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+              }
+              if(links != null) {
+                  Iterator<String> it = links.keySet().iterator();
+                  while(it.hasNext()) {
+                      String linkName = it.next();
+                      String targetLinkId = links.get(linkName);
+                      EntityId targetEntityId = txn.toEntityId(targetLinkId);
+                      Entity linked = txn.getEntity(targetEntityId);
+                      result = result.intersect(txn.findLinks(entityType, linked, linkName));
+                  }
               }
               result = result.skip(skip).take(limit);
               for (Entity entity : result) {
@@ -557,7 +567,8 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
       String entityType,
       List<TransactionFilter> filters,
       int skip,
-      int limit) {
+      int limit,
+      Map<String,String> links, Map<String,List<String>> multiLinks) {
     List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
     try {
@@ -573,6 +584,16 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               } else {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
+              }
+              if(links != null) {
+                  Iterator<String> it = links.keySet().iterator();
+                  while(it.hasNext()) {
+                      String linkName = it.next();
+                      String targetLinkId = links.get(linkName);
+                      EntityId targetEntityId = txn.toEntityId(targetLinkId);
+                      Entity linked = txn.getEntity(targetEntityId);
+                      result = result.intersect(txn.findLinks(entityType, linked, linkName));
+                  }
               }
               if (filters != null && !filters.isEmpty()) {
                 result = filter(entityType, result, filters, txn);
