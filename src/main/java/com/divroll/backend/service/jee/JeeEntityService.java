@@ -439,7 +439,7 @@ public class JeeEntityService implements EntityService {
       String appId,
       String entityType) {
       try{
-        String cloudCode = application.getCloudCode();
+        String cloudCode = application != null ? application.getCloudCode() : null;
         LOG.info("Cloud Code : " + cloudCode);
         List<JsFunction> jsFunctions = new LinkedList<>();
         if (cloudCode != null && !cloudCode.isEmpty()) {

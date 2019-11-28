@@ -50,6 +50,15 @@ public class JeeWebTokenService implements WebTokenService {
   public JeeWebTokenService() {}
 
   @Override
+  public String createToken(String secret, Long id) {
+    JWTSigner signer = new JWTSigner(secret);
+    HashMap<String, Object> claims = new HashMap<String, Object>();
+    claims.put(Constants.JWT_ID_KEY, id);
+    String token = signer.sign(claims);
+    return token;
+  }
+
+  @Override
   public String createToken(String secret, String userId) {
     JWTSigner signer = new JWTSigner(secret);
     HashMap<String, Object> claims = new HashMap<String, Object>();

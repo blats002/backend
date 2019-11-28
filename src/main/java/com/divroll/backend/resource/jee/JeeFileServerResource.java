@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.Constants;
 import com.divroll.backend.model.File;
 import com.divroll.backend.repository.FileStore;
 import com.divroll.backend.resource.FileResource;
@@ -31,15 +32,19 @@ import com.google.inject.Inject;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.restlet.Request;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -54,8 +59,18 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
 
   @Override
   public File createFile(Representation entity) {
+
+    if(destinationFile == null || destinationFile.isEmpty()) {
+      JSONObject jsonApiArg = new JSONObject(apiArg);
+      destinationFile = jsonApiArg.getString(Constants.RESERVED_DESTINATION_FILE);
+    }
+    if(destinationFile == null || destinationFile.isEmpty()) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
     try {
-      if (!isAuthorized()) {
+      if (!isSuperUser()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
       }
@@ -70,18 +85,27 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
         while (fileIterator.hasNext()) {
           FileItemStream item = fileIterator.next();
-          String fieldName = item.getFieldName();
-          String name = item.getName();
           if (item.isFormField()) {
           } else {
             CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-            File file = fileStore.put(appId, namespace, name, countingInputStream);
+            File file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
             long count = countingInputStream.getCount();
             LOG.with(file).info("File size=" + count);
             setStatus(Status.SUCCESS_CREATED);
             return file;
           }
         }
+      } else if (entity != null
+              && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
+        InputStream inputStream = entity.getStream();
+        CountingInputStream countingInputStream = new CountingInputStream(inputStream);
+        File file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
+        long count = countingInputStream.getCount();
+        LOG.with(file).info("File size=" + count);
+        setStatus(Status.SUCCESS_CREATED);
+        return file;
+      } else {
+        badRequest();
       }
     } catch (Exception e) {
       setStatus(Status.SERVER_ERROR_INTERNAL);
@@ -92,15 +116,25 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
   @Override
   public void deleteFile(Representation entity) {
     try {
-      if (!isMaster()) {
+
+      if (!isSuperUser()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return;
       }
+      if(destinationFile == null || destinationFile.isEmpty()) {
+        JSONObject jsonApiArg = new JSONObject(apiArg);
+        destinationFile = jsonApiArg.getString(Constants.RESERVED_DESTINATION_FILE);
+      }
+      if(destinationFile == null || destinationFile.isEmpty()) {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        return;
+      }
+
       if (appId == null || appId.isEmpty()) {
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return;
       }
-      boolean deleted = fileStore.delete(appId, namespace, fileName);
+      boolean deleted = fileStore.delete(appId, namespace, destinationFile);
       if (deleted) {
         setStatus(Status.SUCCESS_OK);
       } else {
@@ -114,20 +148,138 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
   @Override
   public Representation getFile(Representation entity) {
     try {
-      if (fileName == null || fileName.isEmpty()) {
+
+      String filePath = getQueryValue("filePath");
+      if(filePath != null) {
+        InputStream is = fileStore.getStream(appId, namespace, filePath);
+        if(is != null){
+          Representation representation = new InputRepresentation(is);
+          representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+          setStatus(Status.SUCCESS_OK);
+          return representation;
+        } else {
+          setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+          return null;
+        }
+      }
+
+      String fileId = getAttribute("fileId");
+      if(fileId != null) {
+        Map<String,Object> map = webTokenService.readToken(masterSecret, fileId);
+        Long id = (Long) map.get(Constants.JWT_ID_KEY);
+        if(id != null) {
+          InputStream is =fileStore.getStream(appId, id);
+          if(is != null){
+            Representation representation = new InputRepresentation(is);
+            representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+            setStatus(Status.SUCCESS_OK);
+            return representation;
+          } else {
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            return null;
+          }
+        }
+      }
+
+      if (!isSuperUser()) {
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+        return null;
+      }
+
+      if(apiArg != null && !apiArg.isEmpty()) {
+        if(sourceFile == null || sourceFile.isEmpty() && apiArg != null && !apiArg.isEmpty()) {
+          JSONObject jsonApiArg = new JSONObject(apiArg);
+          sourceFile = jsonApiArg.getString(Constants.RESERVED_SOURCE_FILE);
+        }
+        if(sourceFile == null || sourceFile.isEmpty()) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return null;
+        }
+        InputStream is = fileStore.getStream(appId, namespace, sourceFile);
+        if(is != null){
+          Representation representation = new InputRepresentation(is);
+          representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+          // representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
+          setStatus(Status.SUCCESS_OK);
+          return representation;
+        } else {
+          setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+        }
+      } else {
+        // List files
+        JSONObject response = new JSONObject();
+        JSONArray files = new JSONArray();
+        fileStore.list(appId).forEach(file -> {
+          JSONObject fileJSONObject = new JSONObject();
+          fileJSONObject.put("path", file.getName());
+          String fileToken = webTokenService.createToken(masterSecret, file.getDescriptor());
+          fileJSONObject.put("fileId", fileToken);
+          files.put(fileJSONObject);
+        });
+        response.put("files", files);
+        String jsonString = response.toString();
+        Representation representation = new JsonRepresentation(jsonString);
+        representation.setMediaType(MediaType.APPLICATION_JSON);
+        setStatus(Status.SUCCESS_OK);
+        return representation;
+      }
+
+      if(apiArg == null || apiArg.isEmpty()) {
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return null;
       }
-      String appId = getAttribute("appId");
-      InputStream is = fileStore.getStream(appId, namespace, fileName);
-      Representation representation = new InputRepresentation(is);
-      representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
-      // representation.setDisposition(new Disposition(Disposition.TYPE_ATTACHMENT));
-      setStatus(Status.SUCCESS_OK);
-      return representation;
+
+
     } catch (Exception e) {
       setStatus(Status.SERVER_ERROR_INTERNAL);
+      e.printStackTrace();
     }
+    return null;
+  }
+
+  @Override
+  public Representation updateFile(Representation entity) {
+    String operation = null;
+
+    if (!isSuperUser()) {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      return null;
+    }
+
+    if(apiArg == null || apiArg.isEmpty()) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
+    if( (destinationFile == null || destinationFile.isEmpty())  ||
+            (sourceFile == null || sourceFile.isEmpty())) {
+      JSONObject jsonApiArg = new JSONObject(apiArg);
+      destinationFile = jsonApiArg.getString(Constants.RESERVED_DESTINATION_FILE);
+      sourceFile = jsonApiArg.getString(Constants.RESERVED_SOURCE_FILE);
+      operation = jsonApiArg.getString(Constants.RESERVED_OPERATION);
+    }
+
+    if( (destinationFile == null || destinationFile.isEmpty())  ||
+            (sourceFile == null || sourceFile.isEmpty())) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
+    if(operation == null || operation.isEmpty()) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
+    if(operation.equals(Constants.RESERVED_OPERATION_MOVE)) {
+      if(fileStore.move(appId, namespace, sourceFile, destinationFile)) {
+        setStatus(Status.SUCCESS_ACCEPTED);
+        return null;
+      }
+    } else {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
     return null;
   }
 }

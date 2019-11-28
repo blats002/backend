@@ -388,6 +388,12 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               for (String prop : props) {
                 result[0].put(prop, entity.getProperty(prop));
               }
+              entity.getLinkNames().forEach(linkName -> {
+                if(linkName.equals("superuser")) {
+                  Entity superuser = entity.getLink(linkName);
+                  result[0].put("superuser", superuser.getId().toString());
+                }
+              });
             }
           });
     } finally {
@@ -411,6 +417,12 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               for (String prop : props) {
                 result[0].put(prop, entity.getProperty(prop));
               }
+              entity.getLinkNames().forEach(linkName -> {
+                if(linkName.equals("superuser")) {
+                  Entity superuser = entity.getLink(linkName);
+                  result[0].put("superuser", superuser.getId().toString());
+                }
+              });
             }
           });
     } finally {
@@ -550,6 +562,14 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 for (String prop : props) {
                   map.put(prop, entity.getProperty(prop));
                 }
+
+                entity.getLinkNames().forEach(linkName -> {
+                  if(linkName.equals("superuser")) {
+                    Entity superuser = entity.getLink(linkName);
+                    map.put("superuser", superuser.getId().toString());
+                  }
+                });
+
                 list.add(map);
               }
             }

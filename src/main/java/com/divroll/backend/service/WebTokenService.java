@@ -29,6 +29,9 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface WebTokenService {
+
+  String createToken(String secret, Long id);
+
   String createToken(String secret, String userId);
 
   String createToken(String secret, String userId, String expiration);

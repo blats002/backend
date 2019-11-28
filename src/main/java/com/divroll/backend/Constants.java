@@ -32,6 +32,7 @@ public final class Constants {
   public static final String HEADER_MASTER_KEY = "X-Divroll-Master-Key";
   public static final String HEADER_API_KEY = "X-Divroll-Api-Key";
   public static final String HEADER_APP_ID = "X-Divroll-App-Id";
+  public static final String HEADER_APP_NAME = "X-Divroll-App-Name";
   public static final String HEADER_AUTH_TOKEN = "X-Divroll-Auth-Token";
   public static final String HEADER_ACL_READ = "X-Divroll-ACL-Read";
   public static final String HEADER_ACL_WRITE = "X-Divroll-ACL-Write";
@@ -40,6 +41,8 @@ public final class Constants {
   public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
   public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
   public static final String HEADER_NAMESPACE = "X-Divroll-Namespace";
+  public static final String HEADER_API_ARG = "X-Divroll-Api-Arg";
+
   public static final String MASTER_KEY = "masterKey";
   public static final String API_KEY = "apiKey";
   public static final String APP_ID = "appId";
@@ -82,6 +85,11 @@ public final class Constants {
   public static final String RESERVED_FIELD_ACTIVE = "active";
   public static final String RESERVED_FIELD_FUNCTION_NAME = "functionName";
   public static final String RESERVED_FIELD_METADATA = "metaData";
+  public static final String RESERVED_DESTINATION_FILE = "destinationFile";
+  public static final String RESERVED_SOURCE_FILE = "sourceFile";
+  public static final String RESERVED_OPERATION = "op";
+  public static final String RESERVED_OPERATION_MOVE = "move";
+
 
   public static final String RESERVED_FIELD_DATE_CREATED = "dateCreated";
   public static final String RESERVED_FIELD_DATE_UPDATED = "dateUpdated";

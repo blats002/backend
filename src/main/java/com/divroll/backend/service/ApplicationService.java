@@ -38,6 +38,8 @@ public interface ApplicationService {
 
   Application read(String appId);
 
+  Application readByName(String appName);
+
   void update(Application application, String masterKey);
 
   void delete(String id);

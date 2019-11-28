@@ -23,6 +23,7 @@ package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.repository.FileStore;
 import com.divroll.backend.xodus.XodusManager;
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -37,6 +38,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -66,16 +69,17 @@ public class JeeXodusVFSRepository implements FileStore {
         new TransactionalExecutable() {
           @Override
           public void execute(@NotNull final Transaction txn) {
-            String filePrefix = UUID.randomUUID().toString().replace("-", "");
-            String fileName = filePrefix + "-" + name;
-            final File file = vfs.createFile(txn, fileName);
+            final File file = vfs.openFile(txn, name, true);
             try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
               output.write(array);
             } catch (IOException e) {
               e.printStackTrace();
             } finally {
               createdFile[0] = new com.divroll.backend.model.File();
-              createdFile[0].setName(fileName);
+              createdFile[0].setDescriptor(file.getDescriptor());
+              createdFile[0].setName(name);
+              createdFile[0].setCreated(file.getCreated());
+              createdFile[0].setModified(file.getLastModified());
             }
           }
         });
@@ -94,16 +98,17 @@ public class JeeXodusVFSRepository implements FileStore {
         new TransactionalExecutable() {
           @Override
           public void execute(@NotNull final Transaction txn) {
-            String filePrefix = UUID.randomUUID().toString().replace("-", "");
-            String fileName = filePrefix + "-" + name;
-            final File file = vfs.createFile(txn, fileName);
+            final File file = vfs.openFile(txn, name, true);
             try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
               output.write(ByteStreams.toByteArray(is));
             } catch (IOException e) {
               e.printStackTrace();
             } finally {
               createdFile[0] = new com.divroll.backend.model.File();
-              createdFile[0].setName(fileName);
+              createdFile[0].setDescriptor(file.getDescriptor());
+              createdFile[0].setName(name);
+              createdFile[0].setCreated(file.getCreated());
+              createdFile[0].setModified(file.getLastModified());
             }
           }
         });
@@ -155,7 +160,9 @@ public class JeeXodusVFSRepository implements FileStore {
           @Override
           public void execute(@NotNull final Transaction txn) {
             File file = vfs.openFile(txn, name, false);
-            input[0] = vfs.readFile(txn, file);
+            if(file != null) {
+              input[0] = vfs.readFile(txn, file);
+            }
           }
         });
     vfs.shutdown();
@@ -208,4 +215,122 @@ public class JeeXodusVFSRepository implements FileStore {
   public boolean isExist(String appId, String namespace, String name) {
     throw new IllegalArgumentException("Not yet implemented");
   }
+
+  @Override
+  public boolean move(String appId, String namespace, String name, String targetName) {
+    final boolean[] success = new boolean[1];
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+            new TransactionalExecutable() {
+              @Override
+              public void execute(@NotNull final Transaction txn) {
+                File file = vfs.openFile(txn, name, false);
+                InputStream input = vfs.readFile(txn, file);
+                if(input != null) {
+                  File targetFile = vfs.openFile(txn, targetName, true);
+                  DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, targetFile));
+                  try {
+                    output.write(ByteStreams.toByteArray(input));
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                  }
+                  //vfs.deleteFile(txn, name);
+                  success[0] = true;
+                }
+              }
+            });
+    // vfs.shutdown();
+    // env.close();
+    return success[0];
+  }
+
+  @Override
+  public List<com.divroll.backend.model.File> list(String appId) {
+    List<com.divroll.backend.model.File> files = new LinkedList<>();
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+            new TransactionalExecutable() {
+              @Override
+              public void execute(@NotNull final Transaction txn) {
+                vfs.getFiles(txn).forEach(file -> {
+                  String path = file.getPath();
+                  long created = file.getCreated();
+                  long lastModified = file.getLastModified();
+                  long descriptor = file.getDescriptor();
+                  com.divroll.backend.model.File newFile = new com.divroll.backend.model.File();
+                  newFile.setName(path);
+                  newFile.setDescriptor(descriptor);
+                  newFile.setCreated(created);
+                  newFile.setModified(lastModified);
+                  files.add(newFile);
+                });
+              }
+            });
+    // vfs.shutdown();
+    // env.close();
+    return files;
+  }
+
+  @Override
+  public void get(String appId, Long descriptor, OutputStream os) {
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+            new TransactionalExecutable() {
+              @Override
+              public void execute(@NotNull final Transaction txn) {
+                InputStream input = vfs.readFile(txn, descriptor);
+                try {
+                  ByteStreams.copy(input, os);
+                } catch (IOException e) {
+                  e.printStackTrace();
+                }
+              }
+            });
+    // vfs.shutdown();
+    // env.close();
+  }
+
+  @Override
+  public InputStream getStream(String appId, Long descriptor) {
+    final InputStream[] input = {null};
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+            new TransactionalExecutable() {
+              @Override
+              public void execute(@NotNull final Transaction txn) {
+                input[0] = vfs.readFile(txn, descriptor);
+              }
+            });
+    vfs.shutdown();
+    // env.close();
+    return input[0];
+  }
+
+  @Override
+  public byte[] get(String appId, Long descriptor) {
+    final byte[][] targetArray = {null};
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    env.executeInTransaction(
+            new TransactionalExecutable() {
+              @Override
+              public void execute(@NotNull final Transaction txn) {
+                InputStream input = vfs.readFile(txn, descriptor);
+                try {
+                  targetArray[0] = ByteStreams.toByteArray(input);
+                } catch (IOException e) {
+                  e.printStackTrace();
+                }
+              }
+            });
+    // vfs.shutdown();
+    // env.close();
+    return targetArray[0];
+  }
+
+
 }

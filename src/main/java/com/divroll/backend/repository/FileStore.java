@@ -25,6 +25,7 @@ import com.divroll.backend.model.File;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -49,4 +50,15 @@ public interface FileStore {
   boolean delete(String appId, String namespace, String name);
 
   boolean isExist(String appId, String namespace, String name);
+
+  boolean move(String appId, String namespace, String name, String targetName);
+
+  List<File> list(String appId);
+
+  void get(String appId, Long descriptor, OutputStream os);
+
+  InputStream getStream(String appId, Long descriptor);
+
+  byte[] get(String appId, Long descriptor);
+
 }

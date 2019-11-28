@@ -71,6 +71,7 @@ public class XodusManagerImpl implements XodusManager {
     if (environment == null) {
       EnvironmentConfig config = new EnvironmentConfig();
       //config.setLogDataReaderWriterProvider("jetbrains.exodus.log.replication.S3DataReaderWriterProvider");
+      //config.setLogCacheShared(false);
       Environment env = Environments.newInstance(xodusRoot + instance, config);
       environmentMap.put(xodusRoot + instance, env);
     }

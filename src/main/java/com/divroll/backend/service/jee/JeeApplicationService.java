@@ -106,6 +106,49 @@ public class JeeApplicationService implements ApplicationService {
           emailConfg.fromJSONObject(jsonObject);
           application.setEmailConfig(emailConfg);
         }
+        String superuserId = (String) entityMap.get("superuser");
+        Superuser superuser = new Superuser();
+        superuser.setEntityId(superuserId);
+        application.setSuperuser(superuser);
+        return application;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public Application readByName(String appName) {
+    EntityId id =
+            store.getFirstEntityId(
+                    masterStore,
+                    null,
+                    Constants.ENTITYSTORE_APPLICATION,
+                    Constants.APP_NAME,
+                    appName,
+                    String.class);
+    if (id != null) {
+      Map<String, Comparable> entityMap = store.get(masterStore, null, id.toString());
+      if (entityMap != null) {
+        Application application = new Application();
+        application.setAppId((String) entityMap.get(Constants.APP_ID));
+        application.setApiKey((String) entityMap.get(Constants.API_KEY));
+        application.setMasterKey((String) entityMap.get(Constants.MASTER_KEY));
+        application.setAppName((String) entityMap.get(Constants.APP_NAME));
+        application.setCloudCode((String) entityMap.get("cloudCode"));
+        EmbeddedEntityIterable embeddedEntityIterable =
+                (entityMap.get("emailConfig") != null
+                        ? (EmbeddedEntityIterable) entityMap.get("emailConfig")
+                        : null);
+        if (embeddedEntityIterable != null) {
+          JSONObject jsonObject = EntityIterables.toJSONObject(embeddedEntityIterable);
+          Email emailConfg = new Email();
+          emailConfg.fromJSONObject(jsonObject);
+          application.setEmailConfig(emailConfg);
+        }
+        String superuserId = (String) entityMap.get("superuser");
+        Superuser superuser = new Superuser();
+        superuser.setEntityId(superuserId);
+        application.setSuperuser(superuser);
         return application;
       }
     }
