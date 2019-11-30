@@ -64,7 +64,7 @@ public class JeeXodusVFSRepository implements FileStore {
       String appId, String namespace, String name, byte[] array) {
     final com.divroll.backend.model.File[] createdFile = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+      final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
         new TransactionalExecutable() {
           @Override
@@ -83,7 +83,7 @@ public class JeeXodusVFSRepository implements FileStore {
             }
           }
         });
-    // vfs.shutdown();
+    vfs.shutdown();
     // env.close();
     return createdFile[0];
   }
@@ -93,27 +93,27 @@ public class JeeXodusVFSRepository implements FileStore {
       String appId, String namespace, String name, InputStream is) {
     final com.divroll.backend.model.File[] createdFile = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
         new TransactionalExecutable() {
           @Override
           public void execute(@NotNull final Transaction txn) {
             final File file = vfs.openFile(txn, name, true);
-            try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
+            DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file));
+            try {
               output.write(ByteStreams.toByteArray(is));
             } catch (IOException e) {
               e.printStackTrace();
-            } finally {
-              createdFile[0] = new com.divroll.backend.model.File();
-              createdFile[0].setDescriptor(file.getDescriptor());
-              createdFile[0].setName(name);
-              createdFile[0].setCreated(file.getCreated());
-              createdFile[0].setModified(file.getLastModified());
             }
+            createdFile[0] = new com.divroll.backend.model.File();
+            createdFile[0].setDescriptor(file.getDescriptor());
+            createdFile[0].setName(name);
+            createdFile[0].setCreated(file.getCreated());
+            createdFile[0].setModified(file.getLastModified());
           }
         });
-    // vfs.shutdown();
-    // env.close();
+    vfs.shutdown();
+    //env.close();
     return createdFile[0];
   }
 
@@ -165,7 +165,7 @@ public class JeeXodusVFSRepository implements FileStore {
             }
           }
         });
-    vfs.shutdown();
+    //vfs.shutdown();
     // env.close();
     return input[0];
   }
@@ -174,7 +174,7 @@ public class JeeXodusVFSRepository implements FileStore {
   public byte[] get(String appId, String namespace, String name) {
     final byte[][] targetArray = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
         new TransactionalExecutable() {
           @Override
@@ -188,7 +188,7 @@ public class JeeXodusVFSRepository implements FileStore {
             }
           }
         });
-    // vfs.shutdown();
+    vfs.shutdown();
     // env.close();
     return targetArray[0];
   }
@@ -197,7 +197,7 @@ public class JeeXodusVFSRepository implements FileStore {
   public boolean delete(String appId, String namespace, String name) {
     final boolean[] success = new boolean[1];
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
         new TransactionalExecutable() {
           @Override
@@ -206,7 +206,27 @@ public class JeeXodusVFSRepository implements FileStore {
             success[0] = true;
           }
         });
-    // vfs.shutdown();
+    vfs.shutdown();
+    // env.close();
+    return success[0];
+  }
+
+  @Override
+  public boolean deleteAll(String appId) {
+    final boolean[] success = new boolean[1];
+    final Environment env = manager.getEnvironment(xodusRoot, appId);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
+    env.executeInTransaction(
+            new TransactionalExecutable() {
+              @Override
+              public void execute(@NotNull final Transaction txn) {
+                vfs.getFiles(txn).forEach(file -> {
+                  vfs.deleteFile(txn, file.getPath());
+                });
+                success[0] = true;
+              }
+            });
+    vfs.shutdown();
     // env.close();
     return success[0];
   }
@@ -220,27 +240,17 @@ public class JeeXodusVFSRepository implements FileStore {
   public boolean move(String appId, String namespace, String name, String targetName) {
     final boolean[] success = new boolean[1];
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
             new TransactionalExecutable() {
               @Override
               public void execute(@NotNull final Transaction txn) {
                 File file = vfs.openFile(txn, name, false);
-                InputStream input = vfs.readFile(txn, file);
-                if(input != null) {
-                  File targetFile = vfs.openFile(txn, targetName, true);
-                  DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, targetFile));
-                  try {
-                    output.write(ByteStreams.toByteArray(input));
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                  }
-                  //vfs.deleteFile(txn, name);
-                  success[0] = true;
-                }
+                vfs.renameFile(txn, file, targetName);
+                success[0] = true;
               }
             });
-    // vfs.shutdown();
+    vfs.shutdown();
     // env.close();
     return success[0];
   }
@@ -249,7 +259,7 @@ public class JeeXodusVFSRepository implements FileStore {
   public List<com.divroll.backend.model.File> list(String appId) {
     List<com.divroll.backend.model.File> files = new LinkedList<>();
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
             new TransactionalExecutable() {
               @Override
@@ -268,7 +278,7 @@ public class JeeXodusVFSRepository implements FileStore {
                 });
               }
             });
-    // vfs.shutdown();
+    vfs.shutdown();
     // env.close();
     return files;
   }
@@ -276,7 +286,7 @@ public class JeeXodusVFSRepository implements FileStore {
   @Override
   public void get(String appId, Long descriptor, OutputStream os) {
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
             new TransactionalExecutable() {
               @Override
@@ -289,7 +299,7 @@ public class JeeXodusVFSRepository implements FileStore {
                 }
               }
             });
-    // vfs.shutdown();
+    vfs.shutdown();
     // env.close();
   }
 
@@ -297,7 +307,7 @@ public class JeeXodusVFSRepository implements FileStore {
   public InputStream getStream(String appId, Long descriptor) {
     final InputStream[] input = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
             new TransactionalExecutable() {
               @Override
@@ -314,7 +324,7 @@ public class JeeXodusVFSRepository implements FileStore {
   public byte[] get(String appId, Long descriptor) {
     final byte[][] targetArray = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
-    final VirtualFileSystem vfs = manager.getVirtualFileSystem(env);
+    final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
             new TransactionalExecutable() {
               @Override
@@ -327,7 +337,7 @@ public class JeeXodusVFSRepository implements FileStore {
                 }
               }
             });
-    // vfs.shutdown();
+    vfs.shutdown();
     // env.close();
     return targetArray[0];
   }

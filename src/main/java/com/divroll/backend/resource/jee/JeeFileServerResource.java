@@ -108,6 +108,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         badRequest();
       }
     } catch (Exception e) {
+      e.printStackTrace();
       setStatus(Status.SERVER_ERROR_INTERNAL);
     }
     return null;
@@ -122,24 +123,38 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         return;
       }
       if(destinationFile == null || destinationFile.isEmpty()) {
-        JSONObject jsonApiArg = new JSONObject(apiArg);
-        destinationFile = jsonApiArg.getString(Constants.RESERVED_DESTINATION_FILE);
-      }
-      if(destinationFile == null || destinationFile.isEmpty()) {
-        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        return;
+        try {
+          JSONObject jsonApiArg = new JSONObject(apiArg);
+          destinationFile = jsonApiArg.getString(Constants.RESERVED_DESTINATION_FILE);
+        } catch (Exception e) {
+        }
       }
 
-      if (appId == null || appId.isEmpty()) {
-        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        return;
-      }
-      boolean deleted = fileStore.delete(appId, namespace, destinationFile);
-      if (deleted) {
-        setStatus(Status.SUCCESS_OK);
+      if(destinationFile == null || destinationFile.isEmpty()) {
+        if (appId == null || appId.isEmpty()) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return;
+        }
+        boolean deleted = fileStore.deleteAll(appId);
+        if (deleted) {
+          setStatus(Status.SUCCESS_OK);
+        } else {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        }
       } else {
-        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        if (appId == null || appId.isEmpty()) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return;
+        }
+        boolean deleted = fileStore.delete(appId, namespace, destinationFile);
+        if (deleted) {
+          setStatus(Status.SUCCESS_OK);
+        } else {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+        }
       }
+
+
     } catch (Exception e) {
       setStatus(Status.SERVER_ERROR_INTERNAL);
     }
@@ -213,7 +228,9 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
           JSONObject fileJSONObject = new JSONObject();
           fileJSONObject.put("path", file.getName());
           String fileToken = webTokenService.createToken(masterSecret, file.getDescriptor());
-          fileJSONObject.put("fileId", fileToken);
+          fileJSONObject.put("fileId", file.getDescriptor());
+          fileJSONObject.put("created", file.getCreated());
+          fileJSONObject.put("lastModified", file.getModified());
           files.put(fileJSONObject);
         });
         response.put("files", files);
