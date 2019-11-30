@@ -49,6 +49,8 @@ public interface FileStore {
 
   boolean delete(String appId, String namespace, String name);
 
+  boolean deleteAll(String appId);
+
   boolean isExist(String appId, String namespace, String name);
 
   boolean move(String appId, String namespace, String name, String targetName);
