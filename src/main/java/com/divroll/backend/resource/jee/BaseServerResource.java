@@ -310,9 +310,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
       appName = getAttribute("appName");
     }
 
+    if(appName == null) {
+        appName = getQueryValue("appName");
+    }
+
     if(appName != null && appId == null) {
       Application application = applicationService.readByName(appName);
-      appId = application.getAppId();
+      appId = application != null ? application.getAppId() : null;
     }
 
     try {

@@ -23,7 +23,9 @@ package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.repository.FileStore;
 import com.divroll.backend.xodus.XodusManager;
-import com.google.common.collect.Lists;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -40,7 +42,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -48,6 +49,8 @@ import java.util.UUID;
  * @since 0-SNAPSHOT
  */
 public class JeeXodusVFSRepository implements FileStore {
+
+  private static final Logger LOG = LoggerFactory.getLogger(JeeXodusVFSRepository.class);
 
   @Inject
   @Named("fileStore")
@@ -62,30 +65,32 @@ public class JeeXodusVFSRepository implements FileStore {
   @Override
   public com.divroll.backend.model.File put(
       String appId, String namespace, String name, byte[] array) {
-    final com.divroll.backend.model.File[] createdFile = {null};
-    final Environment env = manager.getEnvironment(xodusRoot, appId);
+      final com.divroll.backend.model.File[] createdFile = {null};
+      final Environment env = manager.getEnvironment(xodusRoot, appId);
       final VirtualFileSystem vfs  = new VirtualFileSystem(env);
-    env.executeInTransaction(
-        new TransactionalExecutable() {
-          @Override
-          public void execute(@NotNull final Transaction txn) {
-            final File file = vfs.openFile(txn, name, true);
-            try (DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file))) {
-              output.write(array);
-            } catch (IOException e) {
-              e.printStackTrace();
-            } finally {
-              createdFile[0] = new com.divroll.backend.model.File();
-              createdFile[0].setDescriptor(file.getDescriptor());
-              createdFile[0].setName(name);
-              createdFile[0].setCreated(file.getCreated());
-              createdFile[0].setModified(file.getLastModified());
-            }
-          }
-        });
-    vfs.shutdown();
-    // env.close();
-    return createdFile[0];
+      env.executeInTransaction(
+              txn -> {
+                  vfs.deleteFile(txn, name);
+                  File file = vfs.openFile(txn, name, true);
+                  try {
+                      byte[] buff = new byte[64*1024];
+                      InputStream is = ByteSource.wrap(array).openStream();
+                      flow(is, vfs.writeFile(txn, file), buff);
+                  } catch (IOException e) {
+                      e.printStackTrace();
+                  } finally {
+                      long fileSize = vfs.getFileLength(txn, file);
+                      LOG.info("File Size: " + fileSize);
+                      createdFile[0] = new com.divroll.backend.model.File();
+                      createdFile[0].setDescriptor(file.getDescriptor());
+                      createdFile[0].setName(name);
+                      createdFile[0].setCreated(file.getCreated());
+                      createdFile[0].setModified(file.getLastModified());
+                  }
+              });
+      vfs.shutdown();
+      //env.close();
+      return createdFile[0];
   }
 
   @Override
@@ -95,23 +100,24 @@ public class JeeXodusVFSRepository implements FileStore {
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
-        new TransactionalExecutable() {
-          @Override
-          public void execute(@NotNull final Transaction txn) {
-            final File file = vfs.openFile(txn, name, true);
-            DataOutputStream output = new DataOutputStream(vfs.writeFile(txn, file));
-            try {
-              output.write(ByteStreams.toByteArray(is));
-            } catch (IOException e) {
-              e.printStackTrace();
-            }
-            createdFile[0] = new com.divroll.backend.model.File();
-            createdFile[0].setDescriptor(file.getDescriptor());
-            createdFile[0].setName(name);
-            createdFile[0].setCreated(file.getCreated());
-            createdFile[0].setModified(file.getLastModified());
-          }
-        });
+            txn -> {
+              vfs.deleteFile(txn, name);
+              File file = vfs.openFile(txn, name, true);
+              try {
+                byte[] buff = new byte[64*1024];
+                flow(is, vfs.writeFile(txn, file), buff);
+              } catch (IOException e) {
+                e.printStackTrace();
+              } finally {
+                long fileSize = vfs.getFileLength(txn, file);
+                LOG.info("File Size: " + fileSize);
+                createdFile[0] = new com.divroll.backend.model.File();
+                createdFile[0].setDescriptor(file.getDescriptor());
+                createdFile[0].setName(name);
+                createdFile[0].setCreated(file.getCreated());
+                createdFile[0].setModified(file.getLastModified());
+              }
+            });
     vfs.shutdown();
     //env.close();
     return createdFile[0];
@@ -180,9 +186,12 @@ public class JeeXodusVFSRepository implements FileStore {
           @Override
           public void execute(@NotNull final Transaction txn) {
             File file = vfs.openFile(txn, name, false);
+            long fileSize = vfs.getFileLength(txn, file);
             InputStream input = vfs.readFile(txn, file);
+            LOG.info("File size: " + fileSize);
             try {
               targetArray[0] = ByteStreams.toByteArray(input);
+              LOG.info("Byte size: " + targetArray[0].length);
             } catch (IOException e) {
               e.printStackTrace();
             }
@@ -332,6 +341,7 @@ public class JeeXodusVFSRepository implements FileStore {
                 InputStream input = vfs.readFile(txn, descriptor);
                 try {
                   targetArray[0] = ByteStreams.toByteArray(input);
+                  LOG.info("Byte size: " + targetArray[0].length + "");
                 } catch (IOException e) {
                   e.printStackTrace();
                 }
@@ -342,5 +352,16 @@ public class JeeXodusVFSRepository implements FileStore {
     return targetArray[0];
   }
 
+
+  public static void flow( InputStream is, OutputStream os, byte[] buf )
+          throws IOException {
+    int numRead;
+    while ( (numRead = is.read(buf) ) >= 0) {
+      os.write(buf, 0, numRead);
+    }
+    if(os != null) {
+      os.close();
+    }
+  }
 
 }

@@ -27,6 +27,7 @@ import com.divroll.backend.repository.FileStore;
 import com.divroll.backend.resource.FileResource;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingInputStream;
 import com.google.inject.Inject;
 import org.apache.commons.fileupload.FileItemIterator;
@@ -39,6 +40,7 @@ import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.ext.servlet.ServletUtils;
+import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
 
@@ -166,9 +168,24 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
 
       String filePath = getQueryValue("filePath");
       if(filePath != null) {
-        InputStream is = fileStore.getStream(appId, namespace, filePath);
-        if(is != null){
-          Representation representation = new InputRepresentation(is);
+//        InputStream is = fileStore.getStream(appId, namespace, filePath);
+////        if(is != null) {
+////            //Representation representation = new InputRepresentation(is);
+////            byte[] ba = ByteStreams.toByteArray(is);
+////            LOG.info("Byte Array Size: " + ba.length);
+////            Representation representation = new ByteArrayRepresentation(ba);
+////            representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
+////            setStatus(Status.SUCCESS_OK);
+////            return representation;
+////        } else {
+////            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+////            return null;
+////        }
+        byte[] bytes = fileStore.get(appId, namespace, filePath);
+        if(bytes != null) {
+          //Representation representation = new InputRepresentation(is);
+          LOG.info("Byte Array Size: " + bytes.length);
+          Representation representation = new ByteArrayRepresentation(bytes);
           representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
           setStatus(Status.SUCCESS_OK);
           return representation;

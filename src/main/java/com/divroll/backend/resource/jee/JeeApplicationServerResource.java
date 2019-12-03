@@ -38,6 +38,7 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 
 import java.util.UUID;
 
@@ -127,6 +128,17 @@ public class JeeApplicationServerResource extends BaseServerResource
       e.printStackTrace();
     }
 
+    return null;
+  }
+
+  @Override
+  public Representation retrieveApp() {
+    // TODO: Check if app exists
+    if(getApp() != null) {
+      setStatus(Status.SUCCESS_NO_CONTENT);
+    } else {
+      setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+    }
     return null;
   }
 
