@@ -143,6 +143,11 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>3.8.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.jelastic</groupId>
             <artifactId>jelastic-public-j2se</artifactId>
             <version>3.1</version>

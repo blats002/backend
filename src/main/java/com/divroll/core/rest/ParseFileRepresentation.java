@@ -73,8 +73,8 @@ public class ParseFileRepresentation extends OutputRepresentation {
                 });
         System.out.println("File URL: " + fileUrl);
 
-        if(fileUrl.startsWith("http://localhost:8080/parse")){
-            fileUrl = fileUrl.replace("http://localhost:8080/parse", parseBase);
+        if(fileUrl.startsWith("http://localhost:9090/parse")){
+            fileUrl = fileUrl.replace("http://localhost:9090/parse", parseBase);
         }
 
         // Get the file and stream it

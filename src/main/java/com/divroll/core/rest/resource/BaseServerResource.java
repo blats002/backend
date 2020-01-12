@@ -37,6 +37,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(BaseServerResource.class);
 
+    protected final static String BACKEND_BASE_URI = "http://localhost:9090/divroll/";
+    protected final static String APPLICATION_BASE_URI = "http://localhost:9090/divroll/applications/";
+
     @Inject
     @Named("divroll.appId")
     protected String appId;

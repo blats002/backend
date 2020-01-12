@@ -22,6 +22,7 @@ import com.divroll.backend.sdk.DivrollEntities;
 import com.divroll.backend.sdk.DivrollEntity;
 import com.divroll.backend.sdk.filter.EqualQueryFilter;
 import com.divroll.core.rest.CloudFileRepresentation;
+import com.divroll.core.rest.DivrollFileRepresentation;
 import com.divroll.core.rest.WasabiFileRepresentation;
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.util.RegexHelper;
@@ -33,6 +34,7 @@ import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.inject.Inject;
 import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -233,12 +235,13 @@ public class GaeRootServerResource extends BaseServerResource {
                     subdomain = subdomain + "." + environment;
                 }
 
-                String completeFilePath = subdomain + "/" + p;
+                //String completeFilePath = subdomain + "/" + p;
+                String completeFilePath = p;
                 LOG.info("Complete File Path:       " + completeFilePath);
 
                 if(RegexHelper.isPath(completeFilePath)) {
                     String ref = RegexHelper.getRef(completePath);
-                    setLocationRef(completePath + "/index.html");
+                    setLocationRef(completePath + "index.html");
                     setStatus(Status.REDIRECTION_FOUND);
                     return null;
                 }
@@ -253,7 +256,8 @@ public class GaeRootServerResource extends BaseServerResource {
                     responseEntity = new ByteArrayRepresentation(cachedBytes);
                     responseEntity.setMediaType(processMediaType(completePath));
                 } else {
-                    responseEntity = new WasabiFileRepresentation(
+                    responseEntity = new DivrollFileRepresentation(
+                            subdomain,
                             completeFilePath,
                             processMediaType(path),
                             cacheService);
@@ -338,15 +342,30 @@ public class GaeRootServerResource extends BaseServerResource {
         if(isValidCached != null && isValidCached.equals("true")) {
             return true;
         }
-        DivrollEntities entities = new DivrollEntities("Subdomain");
-        entities.query(new EqualQueryFilter("subdomain", subdomain));
-        entities.getEntities().forEach(divrollEntity -> {
-            String subDomain = String.valueOf(divrollEntity.getProperty("subdomain"));
-            if(subDomain != null && subDomain.equals(subDomain)) {
+
+        try {
+            String completeUrl = APPLICATION_BASE_URI + subdomain;
+            com.mashape.unirest.http.HttpResponse<String> response
+                    = Unirest.get(completeUrl).asString();
+            if(response.getStatus() == 204) {
                 isValid[0] = true;
                 cacheService.putString("subdomain:" + subdomain + ":valid", "true");
+            } else if(response.getStatus() == 404) {
+
             }
-        });
+        } catch (UnirestException e) {
+            e.printStackTrace();
+        }
+
+//        DivrollEntities entities = new DivrollEntities("Subdomain");
+//        entities.query(new EqualQueryFilter("subdomain", subdomain));
+//        entities.getEntities().forEach(divrollEntity -> {
+//            String subDomain = String.valueOf(divrollEntity.getProperty("subdomain"));
+//            if(subDomain != null && subDomain.equals(subDomain)) {
+//                isValid[0] = true;
+//                cacheService.putString("subdomain:" + subdomain + ":valid", "true");
+//            }
+//        });
         return isValid[0];
     }
 

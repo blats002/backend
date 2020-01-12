@@ -29,5 +29,6 @@ public interface CacheService {
     void put(String key, int expiration, byte[] value);
     void put(String key, byte[] value);
     void delete(String key);
+    @Deprecated
     void setAddress(List<String> address);
 }

@@ -27,6 +27,7 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
+@Deprecated
 public class RedisCacheService implements CacheService {
 
     private RedisClient redisClient;

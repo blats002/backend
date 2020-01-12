@@ -26,6 +26,7 @@ import java.util.List;
  * @version 1.0
  * @since 1.0
  */
+@Deprecated
 public class MemcachedCacheService implements CacheService {
 
     final static Logger LOG
