@@ -30,7 +30,9 @@ public class DivrollFileRepresentation extends OutputRepresentation {
 
     @Override
     public void write(OutputStream outputStream) throws IOException {
-        vfs.openFile(instance, path);
+        byte[] buff = new byte[64*1024];
+        InputStream is = vfs.openFile(instance, path);
+        flow(is, outputStream, buff);
     }
 
     private static void flow(InputStream is, OutputStream os, byte[] buf )

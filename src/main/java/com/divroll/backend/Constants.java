@@ -27,6 +27,11 @@ package com.divroll.backend;
  * @since 0-SNAPSHOT
  */
 public final class Constants {
+
+  public static final String APP_DOMAIN = "APP_DOMAIN";
+  public static final String DEFAULT_ACTIVATION_BASE_URL = "DEFAULT_ACTIVATION_BASE_URL";
+  public static final String DEFAULT_PASSWORD_RESET_BASE_URL = "DEFAULT_PASSWORD_RESET_BASE_URL";
+
   public static final String SERVER_NAME = "Divroll";
   public static final String HEADER_SUPER_AUTH = "X-Divroll-Super-Auth-Token";
   public static final String HEADER_MASTER_KEY = "X-Divroll-Master-Key";

@@ -72,10 +72,6 @@ public class JeeSuperuserPasswordResetServerResource extends BaseServerResource
     private String postmarkResetPasswordTemplateId;
 
     @Inject
-    @Named("defaultPasswordResetBase")
-    private String defaultPasswordResetBase;
-
-    @Inject
     SuperuserRepository superuserRepository;
 
     @Inject

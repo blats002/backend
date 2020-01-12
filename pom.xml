@@ -78,7 +78,7 @@
                 <version>${jetty.version}</version>
                 <configuration>
                     <httpConnector>
-                        <port>8080</port>
+                        <port>9090</port>
                     </httpConnector>
                 </configuration>
             </plugin>

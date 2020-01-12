@@ -236,7 +236,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
                 "Generated Password Reset Token - " + encoded); // TODO: Do not log in production
 
             String htmlBody =
-                "<p>Reset password link: http://localhost:8080/divroll/entities/users/resetPassword?"
+                "<p>Reset password link: " + appDomain + "/divroll/entities/users/resetPassword?"
                     + encoded
                     + "</p>";
 

@@ -60,27 +60,33 @@ public class JeeXodusVFSRepository implements FileStore {
   @Named("xodusRoot")
   String xodusRoot;
 
-  @Inject XodusManager manager;
+  @Inject
+  XodusManager manager;
 
   @Override
   public com.divroll.backend.model.File put(
-      String appId, String namespace, String name, byte[] array) {
+      String appId, String name, byte[] array) {
       final com.divroll.backend.model.File[] createdFile = {null};
       final Environment env = manager.getEnvironment(xodusRoot, appId);
       final VirtualFileSystem vfs  = new VirtualFileSystem(env);
       env.executeInTransaction(
               txn -> {
-                  vfs.deleteFile(txn, name);
-                  File file = vfs.openFile(txn, name, true);
+                  File file = vfs.openFile(txn, name, false);
+                  if(file == null) {
+                      file = vfs.createFile(txn, name);
+                  }
                   try {
-                      byte[] buff = new byte[64*1024];
-                      InputStream is = ByteSource.wrap(array).openStream();
-                      flow(is, vfs.writeFile(txn, file), buff);
+                      OutputStream writeStream = vfs.writeFile(txn, file);
+                      writeStream.write(array);
+                      writeStream.close();
+//                      byte[] buff = new byte[64*1024];
+//                      InputStream is = ByteSource.wrap(array).openStream();
+//                      flow(is, vfs.writeFile(txn, file), buff);
                   } catch (IOException e) {
                       e.printStackTrace();
                   } finally {
                       long fileSize = vfs.getFileLength(txn, file);
-                      LOG.info("File Size: " + fileSize);
+                      LOG.info("[File Size: " + fileSize + " File Path: " + file.getPath() +"]");
                       createdFile[0] = new com.divroll.backend.model.File();
                       createdFile[0].setDescriptor(file.getDescriptor());
                       createdFile[0].setName(name);
@@ -95,14 +101,17 @@ public class JeeXodusVFSRepository implements FileStore {
 
   @Override
   public com.divroll.backend.model.File put(
-      String appId, String namespace, String name, InputStream is) {
+      String appId, String name, InputStream is) {
     final com.divroll.backend.model.File[] createdFile = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
             txn -> {
-              vfs.deleteFile(txn, name);
-              File file = vfs.openFile(txn, name, true);
+//              vfs.deleteFile(txn, name);
+              File file = vfs.openFile(txn, name, false);
+              if(file == null) {
+                  file = vfs.createFile(txn, name);
+              }
               try {
                 byte[] buff = new byte[64*1024];
                 flow(is, vfs.writeFile(txn, file), buff);
@@ -110,7 +119,7 @@ public class JeeXodusVFSRepository implements FileStore {
                 e.printStackTrace();
               } finally {
                 long fileSize = vfs.getFileLength(txn, file);
-                LOG.info("File Size: " + fileSize);
+                LOG.info("File Size: " + fileSize + " File Path: " + file.getPath());
                 createdFile[0] = new com.divroll.backend.model.File();
                 createdFile[0].setDescriptor(file.getDescriptor());
                 createdFile[0].setName(name);
@@ -125,18 +134,18 @@ public class JeeXodusVFSRepository implements FileStore {
 
   @Override
   public com.divroll.backend.model.File unmodifiedPut(
-      String appId, String namespace, String name, InputStream is) {
+      String appId, String name, InputStream is) {
     throw new IllegalArgumentException("Not yet implemented");
   }
 
   @Override
   public com.divroll.backend.model.File unmodifiedPut(
-      String appId, String namespace, String name, byte[] array) {
+      String appId, String name, byte[] array) {
     throw new IllegalArgumentException("Not yet implemented");
   }
 
   @Override
-  public void get(String appId, String namespace, String name, OutputStream os) {
+  public void get(String appId, String name, OutputStream os) {
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);
     env.executeInTransaction(
@@ -157,7 +166,7 @@ public class JeeXodusVFSRepository implements FileStore {
   }
 
   @Override
-  public InputStream getStream(String appId, String namespace, String name) {
+  public InputStream getStream(String appId, String name) {
     final InputStream[] input = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);
@@ -177,7 +186,7 @@ public class JeeXodusVFSRepository implements FileStore {
   }
 
   @Override
-  public byte[] get(String appId, String namespace, String name) {
+  public byte[] get(String appId, String name) {
     final byte[][] targetArray = {null};
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);
@@ -186,14 +195,16 @@ public class JeeXodusVFSRepository implements FileStore {
           @Override
           public void execute(@NotNull final Transaction txn) {
             File file = vfs.openFile(txn, name, false);
-            long fileSize = vfs.getFileLength(txn, file);
-            InputStream input = vfs.readFile(txn, file);
-            LOG.info("File size: " + fileSize);
-            try {
-              targetArray[0] = ByteStreams.toByteArray(input);
-              LOG.info("Byte size: " + targetArray[0].length);
-            } catch (IOException e) {
-              e.printStackTrace();
+            if(file != null) {
+                long fileSize = vfs.getFileLength(txn, file);
+                InputStream input = vfs.readFile(txn, file);
+                LOG.info("File size: " + fileSize);
+                try {
+                    targetArray[0] = ByteStreams.toByteArray(input);
+                    LOG.info("Byte size: " + targetArray[0].length);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
           }
         });
@@ -203,7 +214,7 @@ public class JeeXodusVFSRepository implements FileStore {
   }
 
   @Override
-  public boolean delete(String appId, String namespace, String name) {
+  public boolean delete(String appId, String name) {
     final boolean[] success = new boolean[1];
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);
@@ -241,12 +252,12 @@ public class JeeXodusVFSRepository implements FileStore {
   }
 
   @Override
-  public boolean isExist(String appId, String namespace, String name) {
+  public boolean isExist(String appId, String name) {
     throw new IllegalArgumentException("Not yet implemented");
   }
 
   @Override
-  public boolean move(String appId, String namespace, String name, String targetName) {
+  public boolean move(String appId, String name, String targetName) {
     final boolean[] success = new boolean[1];
     final Environment env = manager.getEnvironment(xodusRoot, appId);
     final VirtualFileSystem vfs  = new VirtualFileSystem(env);

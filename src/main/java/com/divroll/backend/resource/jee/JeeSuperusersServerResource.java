@@ -49,7 +49,7 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
-public class JeeSuperusersServerResource extends SelfInjectingServerResource
+public class JeeSuperusersServerResource extends BaseServerResource
     implements SuperusersResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(JeeSuperusersServerResource.class);
@@ -63,10 +63,6 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
     @Inject
     @Named("masterSecret")
     String masterSecret;
-
-    @Inject
-    @Named("defaultActivationBase")
-    private String defaultActivationBase;
 
     @Inject
     @Named("postmark.serverToken")
@@ -88,6 +84,7 @@ public class JeeSuperusersServerResource extends SelfInjectingServerResource
 
     @Override
     public Superuser createUser(Superuser entity) {
+
         if(entity == null)  {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             return null;

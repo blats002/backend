@@ -23,12 +23,13 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.model.File;
+import com.divroll.backend.repository.FileRepository;
 import com.divroll.backend.repository.FileStore;
 import com.divroll.backend.resource.FileResource;
+import com.divroll.backend.util.RegexHelper;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.CountingInputStream;
 import com.google.inject.Inject;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
@@ -46,7 +47,6 @@ import org.restlet.representation.Representation;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -57,7 +57,11 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeFileServerResource.class);
 
-  @Inject FileStore fileStore;
+//  @Inject
+//  FileStore fileStore;
+
+  @Inject
+  FileRepository fileRepository;
 
   @Override
   public File createFile(Representation entity) {
@@ -85,25 +89,27 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
         ServletFileUpload upload = new ServletFileUpload();
         FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+        File file = null;
         while (fileIterator.hasNext()) {
           FileItemStream item = fileIterator.next();
           if (item.isFormField()) {
           } else {
-            CountingInputStream countingInputStream = new CountingInputStream(item.openStream());
-            File file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
-            long count = countingInputStream.getCount();
-            LOG.with(file).info("File size=" + count);
+            //file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
+            byte[] bytes = ByteStreams.toByteArray(item.openStream());
+            LOG.info("UPLOAD FILE SIZE=" + bytes.length);
+            file = fileRepository.put(appId, destinationFile, bytes);
             setStatus(Status.SUCCESS_CREATED);
-            return file;
+            break;
           }
         }
+        return file;
       } else if (entity != null
               && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
         InputStream inputStream = entity.getStream();
-        CountingInputStream countingInputStream = new CountingInputStream(inputStream);
-        File file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
-        long count = countingInputStream.getCount();
-        LOG.with(file).info("File size=" + count);
+        //File file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
+        byte[] bytes = ByteStreams.toByteArray(inputStream);
+        LOG.info("UPLOAD FILE SIZE=" + bytes.length);
+        File file = fileRepository.put(appId, destinationFile, bytes);
         setStatus(Status.SUCCESS_CREATED);
         return file;
       } else {
@@ -137,7 +143,8 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           return;
         }
-        boolean deleted = fileStore.deleteAll(appId);
+        //boolean deleted = fileStore.deleteAll(appId);
+        boolean deleted = fileRepository.deleteAll(appId);
         if (deleted) {
           setStatus(Status.SUCCESS_OK);
         } else {
@@ -148,7 +155,8 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           return;
         }
-        boolean deleted = fileStore.delete(appId, namespace, destinationFile);
+        //boolean deleted = fileStore.delete(appId, namespace, destinationFile);
+        boolean deleted = fileRepository.delete(appId, destinationFile);
         if (deleted) {
           setStatus(Status.SUCCESS_OK);
         } else {
@@ -166,7 +174,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
   public Representation getFile(Representation entity) {
     try {
 
-      String filePath = getQueryValue("filePath");
+      String filePath = cleanFilePath(getQueryValue("filePath"));
       if(filePath != null) {
 //        InputStream is = fileStore.getStream(appId, namespace, filePath);
 ////        if(is != null) {
@@ -181,7 +189,8 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
 ////            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
 ////            return null;
 ////        }
-        byte[] bytes = fileStore.get(appId, namespace, filePath);
+        //byte[] bytes = fileStore.get(appId, namespace, filePath);
+        byte[] bytes = fileRepository.get(appId, filePath);
         if(bytes != null) {
           //Representation representation = new InputRepresentation(is);
           LOG.info("Byte Array Size: " + bytes.length);
@@ -195,12 +204,14 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         }
       }
 
+      /*
       String fileId = getAttribute("fileId");
       if(fileId != null) {
         Map<String,Object> map = webTokenService.readToken(masterSecret, fileId);
         Long id = (Long) map.get(Constants.JWT_ID_KEY);
         if(id != null) {
-          InputStream is =fileStore.getStream(appId, id);
+          //InputStream is =fileStore.getStream(appId, id);
+          InputStream is = fileRepository.getStream(appId, id); // <----------- check
           if(is != null){
             Representation representation = new InputRepresentation(is);
             representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
@@ -212,6 +223,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
           }
         }
       }
+      */
 
       if (!isSuperUser()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -227,7 +239,8 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           return null;
         }
-        InputStream is = fileStore.getStream(appId, namespace, sourceFile);
+        //InputStream is = fileStore.getStream(appId, namespace, sourceFile);
+        InputStream is = fileRepository.getStream(appId, sourceFile);
         if(is != null){
           Representation representation = new InputRepresentation(is);
           representation.setMediaType(MediaType.APPLICATION_OCTET_STREAM);
@@ -241,7 +254,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         // List files
         JSONObject response = new JSONObject();
         JSONArray files = new JSONArray();
-        fileStore.list(appId).forEach(file -> {
+        fileRepository.list(appId).forEach(file -> {
           JSONObject fileJSONObject = new JSONObject();
           fileJSONObject.put("path", file.getName());
           String fileToken = webTokenService.createToken(masterSecret, file.getDescriptor());
@@ -250,6 +263,15 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
           fileJSONObject.put("lastModified", file.getModified());
           files.put(fileJSONObject);
         });
+//        fileStore.list(appId).forEach(file -> {
+//          JSONObject fileJSONObject = new JSONObject();
+//          fileJSONObject.put("path", file.getName());
+//          String fileToken = webTokenService.createToken(masterSecret, file.getDescriptor());
+//          fileJSONObject.put("fileId", file.getDescriptor());
+//          fileJSONObject.put("created", file.getCreated());
+//          fileJSONObject.put("lastModified", file.getModified());
+//          files.put(fileJSONObject);
+//        });
         response.put("files", files);
         String jsonString = response.toString();
         Representation representation = new JsonRepresentation(jsonString);
@@ -305,7 +327,11 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
     }
 
     if(operation.equals(Constants.RESERVED_OPERATION_MOVE)) {
-      if(fileStore.move(appId, namespace, sourceFile, destinationFile)) {
+//      if(fileStore.move(appId, namespace, sourceFile, destinationFile)) {
+//        setStatus(Status.SUCCESS_ACCEPTED);
+//        return null;
+//      }
+      if(fileRepository.move(appId, sourceFile, destinationFile)) {
         setStatus(Status.SUCCESS_ACCEPTED);
         return null;
       }
@@ -316,4 +342,12 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
 
     return null;
   }
+
+  private String cleanFilePath(String filePath) {
+    if(filePath != null) {
+      RegexHelper.removeQueryParam(filePath);
+    }
+    return filePath;
+  }
+
 }

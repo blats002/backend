@@ -66,7 +66,7 @@ import java.util.*;
 public class BaseServerResource extends SelfInjectingServerResource {
 
   protected static final Integer DEFAULT_LIMIT = 100;
-  private static final Logger LOG = LoggerFactory.getLogger(BaseServerResource.class);
+  //private static final Logger LOG = LoggerFactory.getLogger(BaseServerResource.class);
   protected Map<String, Comparable> queryMap = new LinkedHashMap<>();
   protected Map<String, String> propsMap = new LinkedHashMap<>();
   protected static Long ONE_DAY = 1000L * 60L * 60L * 24L;
@@ -149,11 +149,23 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   @Inject
   @Named("masterSecret")
-  String masterSecret;
+  protected String masterSecret;
 
   @Inject
   @Named("masterToken")
-  String theMasterToken;
+  protected String theMasterToken;
+
+  @Inject
+  @Named("appDomain")
+  protected String appDomain;
+
+  @Inject
+  @Named("defaultActivationBase")
+  protected String defaultActivationBase;
+
+  @Inject
+  @Named("defaultPasswordResetBase")
+  protected String defaultPasswordResetBase;
 
   @Override
   protected void doInit() {
@@ -224,7 +236,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 
-    LOG.with(headers).info("Logging headers");
+    //LOG.with(headers).info("Logging headers");
 
     namespace =
         headers.getFirstValue("X-Divroll-Namespace") != null
@@ -296,16 +308,16 @@ public class BaseServerResource extends SelfInjectingServerResource {
             ? headers.getFirstValue(Constants.HEADER_CONTENT_TYPE)
             : headers.getFirstValue(Constants.HEADER_CONTENT_TYPE.toLowerCase());
 
-      LOG.info("Captured aclWrite - " + aclWrite);
-      LOG.info("Captured aclRead  - " + aclRead);
+      //LOG.info("Captured aclWrite - " + aclWrite);
+      //LOG.info("Captured aclRead  - " + aclRead);
     try {
       aclWrite = URLDecoder.decode(aclWrite, "UTF-8");
       aclRead = URLDecoder.decode(aclRead, "UTF-8");
     } catch (Exception e) {
     }
 
-    LOG.info("Decoded captured aclWrite - " + aclWrite);
-    LOG.info("Decoded captured aclRead  - " + aclRead);
+    //LOG.info("Decoded captured aclWrite - " + aclWrite);
+    //LOG.info("Decoded captured aclRead  - " + aclRead);
     if(appName == null) {
       appName = getAttribute("appName");
     }
@@ -385,7 +397,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
     if (actionsString != null) {
       try {
         actions = new ActionParser().parseAction(actionsString);
-        LOG.with(actions).info("Actions: " + actions.size());
+        //LOG.with(actions).info("Actions: " + actions.size());
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -452,6 +464,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
     authTokenQuery = getQueryValue("authToken");
     encoding = getQueryValue("contentEncoding");
     entityJson = getQueryValue("entity");
+
+    String appDomainEnvironment = System.getenv(Constants.APP_DOMAIN);
+    if(appDomainEnvironment != null && !appDomainEnvironment.isEmpty()) {
+      appDomain = appDomainEnvironment;
+    }
+
+    String defaultActivationBaseEnvironment = System.getenv(Constants.DEFAULT_ACTIVATION_BASE_URL);
+    if(defaultActivationBaseEnvironment != null && !defaultActivationBaseEnvironment.isEmpty()) {
+      defaultActivationBase = defaultActivationBaseEnvironment;
+    }
+
+    String defaultPasswordResetBaseEnvironment = System.getenv(Constants.DEFAULT_PASSWORD_RESET_BASE_URL);
+    if(defaultPasswordResetBaseEnvironment != null && !defaultPasswordResetBaseEnvironment.isEmpty()) {
+      defaultPasswordResetBase = defaultPasswordResetBaseEnvironment;
+    }
+
 
   }
 
@@ -782,6 +810,15 @@ public class BaseServerResource extends SelfInjectingServerResource {
     userObject.put("active", userEntity.getActive());
     jsonObject.put("superuser", userObject);
     return jsonObject;
+  }
+
+  protected boolean isDevmode() {
+    String environment = System.getenv("DIVROLL_ENVIRONMENT");
+    //System.out.println("Environment:  " + environment);
+    if(environment == null) {
+      return false;
+    }
+    return environment.equals("development");
   }
 
 }

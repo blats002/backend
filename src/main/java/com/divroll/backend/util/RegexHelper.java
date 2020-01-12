@@ -31,6 +31,15 @@ public class RegexHelper {
         return true;
     }
 
+    public static String removeQueryParam(String string) {
+        Pattern pattern = Pattern.compile("/([^\\?]+)(\\?.*)?/g");
+        Matcher matcher = pattern.matcher(string);
+        if(matcher.find()){
+            return matcher.group(1);
+        }
+        return string;
+    }
+
     public static String parseSubdomain(String string, String domain){
         Pattern pattern = Pattern.compile("(.*)." + domain);
         if(pattern.matcher(string).matches()){

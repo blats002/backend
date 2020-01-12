@@ -80,9 +80,11 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "superusers/login", JeeSuperuserServerResource.class);
     router.attach(ROOT_URI + "superusers/activate", JeeSuperuserActivateServerResource.class);
     router.attach(ROOT_URI + "superusers/resetPassword", JeeSuperuserPasswordResetServerResource.class);
+
     router.attach(ROOT_URI + "sites", JeeSiteServerResource.class);
     router.attach(ROOT_URI + "sites/ssls", JeeSiteServerResource.class);
     router.attach(ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class);
+
     router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class);
     router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class);
     router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
