@@ -52,6 +52,7 @@ public final class Constants {
   public static final String API_KEY = "apiKey";
   public static final String APP_ID = "appId";
   public static final String APP_NAME = "appName";
+  public static final String ENTITY = "entity";
   public static final String ENTITY_TYPE = "entityType";
   public static final String USER_ID = "userId";
   public static final String ROLE_ID = "roleId";
@@ -75,6 +76,7 @@ public final class Constants {
   public static final String ENTITYSTORE_APPLICATION = "Application";
   public static final String ENTITYSTORE_FUNCTION = "Function"; // TODO: Remove
   public static final String ENTITYSTORE_CUSTOMCODE = "CustomCode";
+  public static final String CUSTOMCODE_NAME = "customCodeName";
 
   public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
   public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";
@@ -92,6 +94,7 @@ public final class Constants {
   public static final String RESERVED_FIELD_METADATA = "metaData";
   public static final String RESERVED_DESTINATION_FILE = "destinationFile";
   public static final String RESERVED_SOURCE_FILE = "sourceFile";
+  public static final String RESERVED_FILE_ID = "fileId";
   public static final String RESERVED_OPERATION = "op";
   public static final String RESERVED_OPERATION_MOVE = "move";
 

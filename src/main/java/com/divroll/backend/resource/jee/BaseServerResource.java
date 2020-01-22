@@ -123,6 +123,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   @Deprecated
   protected String fileName;
 
+  protected String fileId;
   protected String destinationFile;
   protected String sourceFile;
   protected String apiArg;
@@ -410,6 +411,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
                     ? headers.getFirstValue(Constants.HEADER_API_ARG)
                     : headers.getFirstValue(Constants.HEADER_API_ARG.toLowerCase());
 
+    fileId = getQueryValue(Constants.RESERVED_FILE_ID);
     destinationFile = getQueryValue(Constants.RESERVED_DESTINATION_FILE);
     sourceFile = getQueryValue(Constants.RESERVED_SOURCE_FILE);
 

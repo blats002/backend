@@ -1,3 +1,24 @@
+/*
+ * Divroll, Platform for Hosting Static Sites
+ * Copyright 2019-present, Divroll, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3.0 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package com.divroll.backend.repository.jee;
 
 import com.divroll.backend.Constants;
@@ -9,10 +30,10 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteSource;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.CountingInputStream;
-import com.google.common.primitives.Bytes;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.Entity;
+import jetbrains.exodus.entitystore.EntityId;
 import jetbrains.exodus.entitystore.EntityIterable;
 import jetbrains.exodus.entitystore.PersistentEntityStore;
 
@@ -147,18 +168,79 @@ public class JeeFileRepository extends JeeBaseRespository
 
     @Override
     public boolean delete(String appName, String filePath) {
-        // TODO
-        return false;
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appName);
+        final Boolean[] deleted = {false};
+        entityStore.executeInTransaction(txn -> {
+            Entity entity = txn.findWithBlob("File", filePath).getFirst();
+            if(entity != null) {
+                deleted[0] = entity.delete();
+            }
+        });
+        return deleted[0];
+    }
+
+    @Override
+    public boolean delete(String appName, String fileId, List<String> filePaths) {
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appName);
+        final Boolean[] deleted = {false};
+        List<String> mergedFilePaths = new LinkedList<>();
+
+        entityStore.executeInTransaction(txn -> {
+            EntityId entityId = txn.toEntityId(fileId);
+            if(entityId != null) {
+                Entity entity = txn.getEntity(entityId);
+                List<String> blobNames = entity.getBlobNames();
+                // Get all complete file paths based on folder paths
+                for(String blobName : blobNames) {
+                    for(String fPath : filePaths) {
+                        if(blobName.startsWith(fPath) && !blobName.equals(fPath)) {
+                            mergedFilePaths.add(blobName);
+                        }
+                    }
+                }
+            }
+            mergedFilePaths.addAll(filePaths);
+            mergedFilePaths.forEach(filePath -> {
+                Entity entity = txn.findWithBlob("File", filePath).getFirst();
+                if(entity != null) {
+                    entity.delete();
+                }
+            });
+            deleted[0] = true;
+        });
+        return deleted[0];
     }
 
     @Override
     public boolean deleteAll(String appName) {
-        return false;
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appName);
+        final boolean[] deleted = {false};
+        entityStore.executeInTransaction(txn -> {
+            EntityIterable entities = txn.getAll("File");
+            final boolean[] hasError = {false};
+            entities.forEach(entity -> {
+                if (!entity.delete()) {
+                    hasError[0] = true;
+                }
+            });
+            deleted[0] = !hasError[0];
+        });
+        return deleted[0];
     }
 
     @Override
     public boolean move(String appName, String sourceFilePath, String targetFilePath) {
-        return false;
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appName);
+        final Boolean[] moved = {false};
+        entityStore.executeInTransaction(txn -> {
+            Entity entity = txn.findWithBlob("File", sourceFilePath).getFirst();
+            if(entity != null) {
+                InputStream blobStream = entity.getBlob(sourceFilePath);
+                entity.setBlob(targetFilePath, blobStream);
+                moved[0] = entity.deleteBlob(sourceFilePath);
+            }
+        });
+        return moved[0];
     }
 
     @Override

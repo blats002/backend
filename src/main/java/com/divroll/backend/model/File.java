@@ -35,6 +35,7 @@ import java.io.PrintStream;
 @XStreamAlias("file")
 public class File {
 
+  private String entityId;
   private String url;
   private String name;
   private String etag;
@@ -104,5 +105,13 @@ public class File {
 
   public void setModified(Long modified) {
     this.modified = modified;
+  }
+
+  public String getEntityId() {
+    return entityId;
+  }
+
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
   }
 }

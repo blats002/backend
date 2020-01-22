@@ -27,6 +27,7 @@ import com.divroll.backend.customcode.rest.CustomCodeRequest;
 import com.divroll.backend.customcodes.CustomCode;
 import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.resource.CustomCodeMethodResource;
+import com.divroll.backend.service.CacheService;
 import com.divroll.backend.util.StringUtil;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -34,6 +35,7 @@ import com.google.common.io.ByteStreams;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.json.JSONObject;
 import org.json.simple.JSONValue;
 import org.restlet.Message;
 import org.restlet.data.Form;
@@ -50,8 +52,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +71,9 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   @Inject
   CustomCodeRepository customCodeRepository;
+
+  @Inject
+  CacheService cacheService;
 
   String customCodeName;
   String methodName;
@@ -158,7 +162,13 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCOde Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
+
     if (jarBytes == null) {
       return notFound();
     }
@@ -190,6 +200,14 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+
+          // Cache, if set
+//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
+//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
+//            LOG.info("Caching " + buildCacheKey());
+//            cacheService.put(buildCacheKey(), toStream);
+//          }
+
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
@@ -218,6 +236,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //    }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCode Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -268,6 +291,13 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          // Cache, if set
+//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
+//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
+//            LOG.info("Caching " + buildCacheKey());
+//            cacheService.put(buildCacheKey(), toStream);
+//          }
+          System.out.println("------------>" + new String(toStream, "UTF-8"));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
@@ -296,6 +326,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCode Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -329,6 +364,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          // Cache, if set
+//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
+//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
+//            LOG.info("Caching " + buildCacheKey());
+//            cacheService.put(buildCacheKey(), toStream);
+//          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
@@ -357,6 +398,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCode Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -389,6 +435,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
         if (futureResult != null) {
           byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          // Cache, if set
+//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
+//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
+//            LOG.info("Caching " + buildCacheKey());
+//            cacheService.put(buildCacheKey(), toStream);
+//          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.getOutputStream().write(toStream);
@@ -430,6 +482,46 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
       if (prev != null) { headers = prev; }
     }
     return headers;
+  }
+
+  private String buildCacheKey() {
+    String cacheKey = customCodeName + ":" + methodName + ":";
+    List<String> queryKeys = new LinkedList<String>();
+    Form queries = getQuery();
+    if(queries != null) {
+      queries.forEach(query -> {
+        queryKeys.add(query.getName());
+      });
+    }
+    Collections.sort(queryKeys);
+    for(String queryKey : queryKeys) {
+      cacheKey = cacheKey + queryKey + "=" + getQueryValue(queryKey) + ":";
+    }
+    LOG.info("Cache Key: " + cacheKey);
+    return cacheKey;
+  }
+
+  private boolean getCached() {
+    if(apiArg != null) {
+      JSONObject jsonApiArg = new JSONObject(apiArg);
+      boolean getCached = jsonApiArg.getBoolean("cached");
+      return getCached;
+    }
+    return false;
+  }
+
+  private Representation cachedRepresentation() {
+    try {
+      byte[] cachedBytes = cacheService.get(buildCacheKey());
+      HttpServletResponse response = ServletUtils.getResponse(getResponse());
+      response.setHeader("Content-Length", cachedBytes.length + "");
+      response.getOutputStream().write(cachedBytes);
+      response.getOutputStream().flush();
+      response.getOutputStream().close();
+    } catch (Exception e) {
+      return internalError(stackTraceToString(e));
+    }
+    return null;
   }
 
 }

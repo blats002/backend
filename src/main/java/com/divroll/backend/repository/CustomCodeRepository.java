@@ -22,6 +22,7 @@
 package com.divroll.backend.repository;
 
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -35,5 +36,7 @@ public interface CustomCodeRepository {
   boolean deleteCustomCode(String appId, String namespace, String customCodeName);
 
   InputStream getCustomCode(String appId, String namespace, String customCodeName);
+
+  Map<String,Comparable> getCustomCodeMeta(String appId, String namespace, String customCodeName);
 
 }

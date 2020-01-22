@@ -19,22 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.repository;
+package com.divroll.backend.service;
 
-import com.divroll.backend.model.File;
-
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 
-public interface FileRepository {
-    File put(String appName, String filePath, byte[] array);
-    File put(String appName, String filePath, InputStream is);
-    byte[] get(String appName, String filePath);
-    InputStream getStream(String appName, String filePath);
-    boolean delete(String appName, String filePath);
-    boolean delete(String appName, String fileId, List<String> filePaths);
-    boolean deleteAll(String appName);
-    boolean move(String appName, String sourceFilePath, String targetFilePath);
-    List<File> list(String appName);
+public interface CacheService {
+    String getString(String key);
+    void putString(String key, int expiration, String value);
+    void putString(String key, String value);
+    byte[] get(String key);
+    void put(String key, int expiration, byte[] value);
+    void put(String key, byte[] value);
+    void delete(String key);
+    @Deprecated
+    void setAddress(List<String> address);
 }
