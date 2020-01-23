@@ -134,6 +134,12 @@ public interface EntityRepository {
   List<Map<String, Comparable>> getLinkedEntities(
       String instance, String namespace, String entityType, String entityId, String linkName);
 
+  List<Map<String, Comparable>> getLinkedEntitiesByEntityType(
+          String instance,
+          String namespace,
+          String entityType,
+          final String linkName);
+
   List<Map<String, Comparable>> listEntities(
       String instance,
       String namespace,

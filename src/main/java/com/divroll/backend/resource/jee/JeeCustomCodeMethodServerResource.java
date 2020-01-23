@@ -24,6 +24,7 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.divroll.backend.customcode.MethodVerb;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.rest.CustomCodeResponse;
 import com.divroll.backend.customcodes.CustomCode;
 import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.resource.CustomCodeMethodResource;
@@ -67,7 +68,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
-  private static final int DEFAULT_TIMEOUT = 60;
+  private static final int DEFAULT_TIMEOUT = 1000;
 
   @Inject
   CustomCodeRepository customCodeRepository;
@@ -88,6 +89,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if(CUSTOM_CODE_TIMEOUT != null && !CUSTOM_CODE_TIMEOUT.isEmpty()) {
       customCodeTimeout = Integer.valueOf(CUSTOM_CODE_TIMEOUT);
     }
+    customCodeTimeout = 1000;
   }
 
   private InputStream getJar(String appId, String customCodeName) {
@@ -204,15 +206,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
 
         if (futureResult != null) {
-
-          // Cache, if set
-//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
-//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
-//            LOG.info("Caching " + buildCacheKey());
-//            cacheService.put(buildCacheKey(), toStream);
-//          }
-
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
+          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -298,15 +292,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
         CustomCodeResponse futureResult = future.get();
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
-          // Cache, if set
-//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
-//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
-//            LOG.info("Caching " + buildCacheKey());
-//            cacheService.put(buildCacheKey(), toStream);
-//          }
+          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
           System.out.println("------------>" + new String(toStream, "UTF-8"));
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -375,13 +362,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
-          // Cache, if set
-//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
-//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
-//            LOG.info("Caching " + buildCacheKey());
-//            cacheService.put(buildCacheKey(), toStream);
-//          }
+          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -449,13 +430,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
-          // Cache, if set
-//          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
-//          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
-//            LOG.info("Caching " + buildCacheKey());
-//            cacheService.put(buildCacheKey(), toStream);
-//          }
+          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -523,7 +498,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if(apiArg != null) {
       JSONObject jsonApiArg = new JSONObject(apiArg);
       boolean getCached = jsonApiArg.getBoolean("cached");
-      return getCached;
+      return getCached && cacheService.isExists(buildCacheKey());
     }
     return false;
   }
@@ -540,6 +515,15 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
       return internalError(stackTraceToString(e));
     }
     return null;
+  }
+
+  private byte[] cacheResponse(byte[] response) {
+    Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
+    if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
+      LOG.info("Caching " + buildCacheKey());
+      cacheService.put(buildCacheKey(), response);
+    }
+    return response;
   }
 
 }

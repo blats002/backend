@@ -19,17 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.service.jee;
+package com.divroll.backend.service;
 
-import com.divroll.backend.service.CloudCodeService;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
+import com.divroll.backend.customcode.MethodVerb;
+import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.rest.CustomCodeResponse;
+import com.divroll.backend.customcodes.CustomCode;
+import com.google.common.io.ByteStreams;
+import jetbrains.exodus.core.dataStructures.Pair;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
-public class JeeCloudCodeService implements CloudCodeService {
-  private static final Logger LOG = LoggerFactory.getLogger(JeeCloudCodeService.class);
+public interface CustomCodeService {
+    Pair<byte[], Exception> customCodePost(
+            InputStream jarBytes,
+            String path,
+            Map<String, String> params,
+            InputStream body,
+            String methodName);
 }

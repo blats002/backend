@@ -27,9 +27,12 @@ import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.expiry.Duration;
+import org.ehcache.expiry.Expirations;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class JeeEhcacheCacheService implements CacheService {
 
@@ -97,18 +100,29 @@ public class JeeEhcacheCacheService implements CacheService {
 
     }
 
+    @Override
+    public boolean isExists(String key) {
+        if(cache == null) {
+            cache = buildCache();
+        }
+        return cache.containsKey(key);
+    }
+
     private Cache<String, String> buildCache() {
         if(cacheManager == null) {
             cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
                     .withCache("preConfigured",
                             CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
                                     ResourcePoolsBuilder.heap(100))
+                                     .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS)))
                                     .build())
                     .build(true);
         }
         cache = cacheManager.createCache("defaultCache",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
-                        ResourcePoolsBuilder.heap(100)).build());
+                        ResourcePoolsBuilder.heap(100))
+                        .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS)))
+                        .build());
         return cache;
     }
 }

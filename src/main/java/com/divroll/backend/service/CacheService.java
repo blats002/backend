@@ -33,4 +33,5 @@ public interface CacheService {
     void delete(String key);
     @Deprecated
     void setAddress(List<String> address);
+    boolean isExists(String key);
 }

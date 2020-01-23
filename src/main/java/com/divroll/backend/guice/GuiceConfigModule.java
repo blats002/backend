@@ -76,7 +76,7 @@ public class GuiceConfigModule extends AbstractModule {
     bind(RoleRepository.class).to(JeeRoleRepository.class).in(Scopes.SINGLETON);
     bind(EntityRepository.class).to(JeeEntityRepository.class).in(Scopes.SINGLETON);
     bind(FileStore.class).to(JeeXodusVFSRepository.class).in(Scopes.SINGLETON);
-    bind(CloudCodeService.class).to(JeeCloudCodeService.class).in(Scopes.SINGLETON);
+    bind(CustomCodeService.class).to(JeeCustomCodeService.class).in(Scopes.SINGLETON);
     bind(EmailService.class).to(JeeEmailService.class).in(Scopes.SINGLETON);
     bind(CustomCodeRepository.class).to(JeeCustomCodeRepository.class).in(Scopes.SINGLETON);
     bind(SuperuserRepository.class).to(JeeSuperuserRepository.class).in(Scopes.SINGLETON);
@@ -91,6 +91,7 @@ public class GuiceConfigModule extends AbstractModule {
     bind(PrerenderService.class).to(JeePrerenderService.class).in(Scopes.SINGLETON);
     bind(SubdomainService.class).to(JeeSubdomainService.class).in(Scopes.SINGLETON);
     bind(CacheService.class).to(JeeEhcacheCacheService.class).in(Scopes.SINGLETON);
+    bind(CustomCodeService.class).to(JeeCustomCodeService.class).in(Scopes.SINGLETON);
 
     Names.bindProperties(binder(), readProperties());
   }

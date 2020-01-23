@@ -95,6 +95,17 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
   }
 
   @Override
+  public List<InputStream> getAfterSavedLinkedCustomCodes(String appId, String namespace, String entityType) {
+    //entityRepository.getLinkedEntities(appId, namespace, Constants.ENTITYSTORE_CUSTOMCODE, "id", "afterSave");
+    return null;
+  }
+
+  @Override
+  public List<InputStream> getBeforeSavedLinkedCustomCodes(String appId, String namespace, String entityType) {
+    return null;
+  }
+
+  @Override
   public Map<String, Comparable> getCustomCodeMeta(String appId, String namespace, String customCodeName) {
     List<Map<String,Comparable>> comparables
             = entityRepository.getEntity(appId, namespace, Constants.ENTITYSTORE_CUSTOMCODE, Constants.CUSTOMCODE_NAME, customCodeName, new ArrayList<>());

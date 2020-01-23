@@ -1900,94 +1900,98 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
     return comparableMap;
   }
 
-  @Override
   public List<Map<String, Comparable>> getLinkedEntities(
-      String instance,
-      String namespace,
-      String entityType,
-      final String entityId,
-      final String linkName) {
+          String instance,
+          String namespace,
+          String entityType,
+          final String entityId,
+          final String linkName) {
     final List<Map<String, Comparable>> entities = new LinkedList<Map<String, Comparable>>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
     try {
       entityStore.executeInTransaction(
-          new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull StoreTransaction txn) {
-              EntityId idOfEntity = txn.toEntityId(entityId);
-              Entity txnEntity = txn.getEntity(idOfEntity);
-              EntityIterable result = txnEntity.getLinks(Arrays.asList(new String[] {linkName}));
-              for (Entity entity : result) {
-                final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-                for (String property : entity.getPropertyNames()) {
-                  Comparable value = entity.getProperty(property);
-                  if (value != null) {
-                    if (value != null) {
-                      if (value instanceof EmbeddedEntityIterable) {
-                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
-                      } else if (value instanceof EmbeddedArrayIterable) {
-                        comparableMap.put(
-                            property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
-                      } else {
-                        comparableMap.put(property, value);
+              new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull StoreTransaction txn) {
+                  EntityId idOfEntity = txn.toEntityId(entityId);
+                  Entity txnEntity = txn.getEntity(idOfEntity);
+                  EntityIterable result = txnEntity.getLinks(Arrays.asList(new String[] {linkName}));
+                  for (Entity entity : result) {
+                    final Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+                    for (String property : entity.getPropertyNames()) {
+                      Comparable value = entity.getProperty(property);
+                      if (value != null) {
+                        if (value != null) {
+                          if (value instanceof EmbeddedEntityIterable) {
+                            comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
+                          } else if (value instanceof EmbeddedArrayIterable) {
+                            comparableMap.put(
+                                    property, (Comparable) ((EmbeddedArrayIterable) value).asObject());
+                          } else {
+                            comparableMap.put(property, value);
+                          }
+                        }
                       }
                     }
+
+                    List<EntityStub> aclRead = new LinkedList<>();
+                    List<EntityStub> aclWrite = new LinkedList<>();
+
+                    Boolean publicRead =
+                            (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
+                    Boolean publicWrite =
+                            (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
+
+                    for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
+                      aclRead.add(
+                              new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
+                    }
+
+                    for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
+                      aclWrite.add(
+                              new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
+                    }
+
+                    comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
+                    comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
+                    comparableMap.put(
+                            Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
+                    comparableMap.put(
+                            Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                    comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
+                    if (entity.getType().equals(defaultUserStore)) {
+                      comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
+                    }
+                    comparableMap.put("entityType", entity.getType());
+
+                    String dateCreated =
+                            (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
+                                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED)
+                                    : null);
+                    String dateUpdated =
+                            (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
+                                    ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED)
+                                    : null);
+
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
+                    comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
+
+                    entities.add(comparableMap);
                   }
                 }
-
-                List<EntityStub> aclRead = new LinkedList<>();
-                List<EntityStub> aclWrite = new LinkedList<>();
-
-                Boolean publicRead =
-                    (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD);
-                Boolean publicWrite =
-                    (Boolean) entity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE);
-
-                for (Entity aclReadLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_READ)) {
-                  aclRead.add(
-                      new EntityStub(aclReadLink.getId().toString(), aclReadLink.getType()));
-                }
-
-                for (Entity aclWriteLink : entity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE)) {
-                  aclWrite.add(
-                      new EntityStub(aclWriteLink.getId().toString(), aclWriteLink.getType()));
-                }
-
-                comparableMap.put(Constants.RESERVED_FIELD_ENTITY_ID, entity.getId().toString());
-                comparableMap.put(Constants.RESERVED_FIELD_ACL_READ, Comparables.cast(aclRead));
-                comparableMap.put(Constants.RESERVED_FIELD_ACL_WRITE, Comparables.cast(aclWrite));
-                comparableMap.put(
-                    Constants.RESERVED_FIELD_BLOBNAMES, Comparables.cast(entity.getBlobNames()));
-                comparableMap.put(
-                    Constants.RESERVED_FIELD_LINKNAMES, Comparables.cast(entity.getLinkNames()));
-                comparableMap.put(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
-                comparableMap.put(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
-
-                if (entity.getType().equals(defaultUserStore)) {
-                  comparableMap.remove(Constants.RESERVED_FIELD_PASSWORD);
-                }
-                comparableMap.put("entityType", entity.getType());
-
-                String dateCreated =
-                    (entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED) != null
-                        ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_CREATED)
-                        : null);
-                String dateUpdated =
-                    (entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED) != null
-                        ? (String) entity.getProperty(Constants.RESERVED_FIELD_DATE_UPDATED)
-                        : null);
-
-                comparableMap.put(Constants.RESERVED_FIELD_DATE_CREATED, dateCreated);
-                comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
-
-                entities.add(comparableMap);
-              }
-            }
-          });
+              });
     } finally {
 
     }
     return entities;
+  }
+
+  @Override
+  public List<Map<String, Comparable>> getLinkedEntitiesByEntityType(String instance, String namespace, String entityType, String linkName) {
+    return null;
   }
 
   @Override

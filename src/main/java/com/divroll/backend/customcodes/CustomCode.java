@@ -100,7 +100,8 @@ public class CustomCode {
 						}
 					};
 					Future<CustomCodeResponse> futureResult = executor.submit(task);
-					CustomCodeResponse result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
+					//CustomCodeResponse result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
+					CustomCodeResponse result = futureResult.get();
 					if (result != null){
 						//listener.onSuccess(result); // TODO: remove this
 						future.complete(result);
@@ -124,10 +125,10 @@ public class CustomCode {
 		} catch (IllegalAccessException e) {
 			future.completeExceptionally(e);
 			e.printStackTrace();
-		} catch (TimeoutException e){
+		} /*catch (TimeoutException e){
 			future.completeExceptionally(e);
 			e.printStackTrace();
-		} catch (Exception e){
+		}*/ catch (Exception e){
 			future.completeExceptionally(e);
 			e.printStackTrace();
 		}
