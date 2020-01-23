@@ -72,14 +72,6 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
                     .blob(jar)
                     .build(), null, null, null,
             new EntityMetadataBuilder().addUniqueProperties("customCodeName").build());
-
-//    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
-//    comparableMap.put("appId", appId);
-//    comparableMap.put("customCodeName", customCodeName);
-//    comparableMap.put("jar", jar);
-//    EntityId entityId =
-//        store.putIfNotExists(
-//            masterStore, namespace, Constants.ENTITYSTORE_CUSTOMCODE, comparableMap, "customCodeName");
     return entityId;
   }
 

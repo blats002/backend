@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 import com.divroll.backend.customcode.method.CustomCodeMethod;
 import com.divroll.backend.customcode.jar.JarEntryObject;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import com.divroll.backend.customcode.rest.CustomCodeResponse;
 import com.divroll.backend.sdk.exception.BadRequestException;
 import org.json.simple.JSONValue;
 
@@ -50,7 +51,7 @@ public class CustomCode {
 	private static Logger LOGGER = Logger.getLogger(CustomCode.class.getName());
 	private static String MAIN_CLASS = "Main-Class";
 	//private CustomCodeEventListener listener;
-	private CompletableFuture<Map<String,?>> future;
+	private CompletableFuture<CustomCodeResponse> future;
 	private byte[] jar;
 	    
 	public CustomCode() {
@@ -61,7 +62,7 @@ public class CustomCode {
 //		this.jar = jar;
 //	}
 
-	public CustomCode(byte[] jar, CompletableFuture<Map<String,?>> future) {
+	public CustomCode(byte[] jar, CompletableFuture<CustomCodeResponse> future) {
 		this.jar = jar;
 		this.future = future;
 	}
@@ -90,15 +91,16 @@ public class CustomCode {
         		if(methodName.equals(ccMethodName)) {
         			isMethodExists = true;
 					ExecutorService executor = Executors.newCachedThreadPool();
-					Callable<Map<String,?>> task = new Callable<Map<String, ?>>() {
+					Callable<CustomCodeResponse> task = new Callable<CustomCodeResponse>() {
 						@Override
-						public Map<String, ?> call() throws Exception {
-							Map<String, ?> result = cc.execute(request).getResponseMap();
-							return result;
+						public CustomCodeResponse call() throws Exception {
+							CustomCodeResponse customCodeResponse = cc.execute(request);
+							//Map<String, ?> result = cc.execute(request).getResponseMap();
+							return customCodeResponse;
 						}
 					};
-					Future<Map<String,?>> futureResult = executor.submit(task);
-					Map<String, ?> result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
+					Future<CustomCodeResponse> futureResult = executor.submit(task);
+					CustomCodeResponse result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
 					if (result != null){
 						//listener.onSuccess(result); // TODO: remove this
 						future.complete(result);

@@ -67,7 +67,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
-  private static final int DEFAULT_TIMEOUT = 10;
+  private static final int DEFAULT_TIMEOUT = 60;
 
   @Inject
   CustomCodeRepository customCodeRepository;
@@ -77,12 +77,17 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   String customCodeName;
   String methodName;
+  int customCodeTimeout = DEFAULT_TIMEOUT;
 
   @Override
   protected void doInit() {
     super.doInit();
     customCodeName = getAttribute("customCodeName");
     methodName = getAttribute("methodName");
+    String CUSTOM_CODE_TIMEOUT = System.getenv("CUSTOM_CODE_TIMEOUT");
+    if(CUSTOM_CODE_TIMEOUT != null && !CUSTOM_CODE_TIMEOUT.isEmpty()) {
+      customCodeTimeout = Integer.valueOf(CUSTOM_CODE_TIMEOUT);
+    }
   }
 
   private InputStream getJar(String appId, String customCodeName) {
@@ -97,11 +102,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
       InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodePost(
@@ -111,11 +116,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodePut(
@@ -125,11 +130,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodeDelete(
@@ -139,11 +144,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request, DEFAULT_TIMEOUT);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   protected String stackTraceToString(Throwable e) {
@@ -190,8 +195,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           });
         }
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
-        Map<String, ?> futureResult = future.get();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
+        CustomCodeResponse futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
@@ -199,7 +204,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
 
           // Cache, if set
 //          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
@@ -208,8 +212,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //            cacheService.put(buildCacheKey(), toStream);
 //          }
 
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -281,16 +289,16 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         }
 
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodePost(jarBytes, path, params, is, methodName, 0, future);
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
 
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           // Cache, if set
 //          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
 //          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
@@ -298,8 +306,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //            cacheService.put(buildCacheKey(), toStream);
 //          }
           System.out.println("------------>" + new String(toStream, "UTF-8"));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -354,16 +366,16 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         }
 
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodePut(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           // Cache, if set
 //          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
 //          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
@@ -372,6 +384,9 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
@@ -425,16 +440,16 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           });
         }
         long startTime = System.nanoTime();
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
         long endTime   = System.nanoTime();
         long totalTime = endTime - startTime;
         long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           // Cache, if set
 //          Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
 //          if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
@@ -443,6 +458,9 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
