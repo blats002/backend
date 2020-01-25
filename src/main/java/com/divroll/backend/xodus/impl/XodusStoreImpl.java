@@ -437,43 +437,54 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
   }
 
   @Override
-  public void delete(String dir, String namespace, final String id) {
+  public boolean delete(String dir, String namespace, final String id) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    final boolean[] deleted = {false};
     try {
       entityStore.executeInTransaction(
           new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-              // TODO
+              EntityId entityId = txn.toEntityId(id);
+              Entity result = txn.getEntity(entityId);
+              result.delete();
+              deleted[0] = true;
             }
           });
     } finally {
       // entityStore.close();
     }
+    return deleted[0];
   }
 
   @Override
-  public void delete(String dir, String namespace, final String... ids) {
+  public boolean delete(String dir, String namespace, final String... ids) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    final boolean[] deleted = {false};
     try {
       entityStore.executeInTransaction(
           new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
               for (String p : ids) {
-                // TODO
+                EntityId entityId = txn.toEntityId(p);
+                Entity result = txn.getEntity(entityId);
+                result.delete();
               }
+              deleted[0] = true;
             }
           });
     } finally {
       // entityStore.close();
     }
+    return deleted[0];
   }
 
   @Override
-  public void delete(
+  public boolean delete(
       String dir, String namespace, String kind, String propertyName, Comparable propertyValue) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    final boolean[] deleted = {false};
     try {
       entityStore.executeInTransaction(
           new StoreTransactionalExecutable() {
@@ -484,11 +495,13 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                   entity -> {
                     entity.delete();
                   });
+              deleted[0] = true;
             }
           });
     } finally {
       // entityStore.close();
     }
+    return deleted[0];
   }
 
   @Override

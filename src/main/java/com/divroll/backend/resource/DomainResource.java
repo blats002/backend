@@ -19,39 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.service;
+package com.divroll.backend.resource;
 
-import com.divroll.backend.model.Application;
-import com.divroll.backend.model.Superuser;
-import com.divroll.backend.model.filter.TransactionFilter;
-import jetbrains.exodus.entitystore.EntityId;
+import com.divroll.backend.model.Domain;
+import org.restlet.representation.Representation;
+import org.restlet.resource.Delete;
+import org.restlet.resource.Get;
+import org.restlet.resource.Post;
 
-import java.util.List;
-
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public interface ApplicationService {
-  EntityId create(Application application, Superuser superuser);
-
-  Application read(String appId);
-
-  Application readByName(String appName);
-
-  Application readByDomainName(String domainName);
-
-  void update(Application application, String masterKey);
-
-  void delete(String id);
-
-  List<Application> list(List<TransactionFilter> filters, int skip, int limit, Superuser owner);
-
-  void forceUpdate(Application application);
-
-  EntityId attachDomain(String appName, String domainName, Superuser superuser);
-
-  boolean detachDomain(String appName, String domainName, Superuser superuser);
-
+public interface DomainResource {
+    @Get
+    Domain retrieveDomain();
+    @Post
+    Domain attachDomain(Domain entity);
+    @Delete
+    Domain detachDomain(Domain entity);
 }

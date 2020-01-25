@@ -42,6 +42,7 @@ public class Application {
   @ApiModelProperty(required = true, value = "Generated Master Key")
   private String masterKey;
 
+  @ApiModelProperty(required = true, value = "Unique Application Name")
   private String appName;
 
   @ApiModelProperty(required = false, value = "Email configuration")

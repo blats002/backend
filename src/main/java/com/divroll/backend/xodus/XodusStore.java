@@ -35,17 +35,6 @@ import java.util.Map;
  */
 public interface XodusStore {
 
-  //    public void putIfNotExists(String dir, final String entityType, final String propertyKey,
-  // final String propertyValue);
-  //    public void putIfNotExists(String dir, final String entityType, final String propertyKey,
-  // final Double propertyValue);
-  //    public void putIfNotExists(String dir, final String entityType, final String propertyKey,
-  // final Long propertyValue);
-  //    public void putIfNotExists(String dir, final String entityType, final String propertyKey,
-  // final Boolean propertyValue);
-  //    public EntityId putIfNotExists(String dir, final String entityType, final String
-  // propertyKey, final InputStream is);
-
   EntityId putIfNotExists(
       String dir,
       String namespace,
@@ -83,11 +72,11 @@ public interface XodusStore {
       String id,
       Map<String, Comparable> properties);
 
-  void delete(String dir, String namespace, final String id);
+  boolean delete(String dir, String namespace, final String id);
 
-  void delete(String dir, String namespace, final String... id);
+  boolean delete(String dir, String namespace, final String... id);
 
-  void delete(
+  boolean delete(
       String dir, String namespace, String kind, String propertyName, Comparable propertyValue);
 
   <T> EntityId getFirstEntityId(
