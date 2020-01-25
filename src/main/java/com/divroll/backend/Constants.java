@@ -48,10 +48,12 @@ public final class Constants {
   public static final String HEADER_NAMESPACE = "X-Divroll-Namespace";
   public static final String HEADER_API_ARG = "X-Divroll-Api-Arg";
 
+  public static final String SUPERUSER = "superuser";
   public static final String MASTER_KEY = "masterKey";
   public static final String API_KEY = "apiKey";
   public static final String APP_ID = "appId";
   public static final String APP_NAME = "appName";
+  public static final String DOMAIN_NAME = "domainName";
   public static final String ENTITY = "entity";
   public static final String ENTITY_TYPE = "entityType";
   public static final String USER_ID = "userId";
@@ -73,6 +75,7 @@ public final class Constants {
   public static final String DEFAULT_CHARSET = "utf-8";
   public static final String ACL_ASTERISK = "*";
 
+  public static final String ENTITYSTORE_DOMAIN = "Domain";
   public static final String ENTITYSTORE_APPLICATION = "Application";
   public static final String ENTITYSTORE_FUNCTION = "Function"; // TODO: Remove
   public static final String ENTITYSTORE_CUSTOMCODE = "CustomCode";

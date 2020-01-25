@@ -54,7 +54,8 @@ public class JeeApplicationService implements ApplicationService {
   @Named("masterStore")
   String masterStore;
 
-  @Inject XodusStore store;
+  @Inject
+  XodusStore store;
 
   @Override
   public EntityId create(Application application, Superuser superuser) {
@@ -156,6 +157,31 @@ public class JeeApplicationService implements ApplicationService {
   }
 
   @Override
+  public Application readByDomainName(String domainName) {
+    EntityId id =
+            store.getFirstEntityId(
+                    masterStore,
+                    null,
+                    Constants.ENTITYSTORE_DOMAIN,
+                    Constants.DOMAIN_NAME,
+                    domainName,
+                    String.class);
+    if (id != null) {
+      Map<String, Comparable> entityMap = store.get(masterStore, null, id.toString());
+      String appName = (String) entityMap.get(Constants.APP_NAME);
+      String superuserId = (String) entityMap.get(Constants.SUPERUSER);
+      Superuser superuser = new Superuser();
+      superuser.setEntityId(superuserId);
+      if(entityMap != null) {
+        Domain domain = new Domain(id.toString(), domainName, appName, superuser);
+        Application application = readByName(domain.getAppName());
+        return application;
+      }
+    }
+    return null;
+  }
+
+  @Override
   public void update(Application application, String theMasterKey) {
     Map<String, Comparable> comparableMap = new LinkedHashMap<>();
     comparableMap.put(Constants.APP_ID, application.getAppId());
@@ -235,5 +261,42 @@ public class JeeApplicationService implements ApplicationService {
   @Override
   public void forceUpdate(Application application) {
     throw new IllegalArgumentException("Not implemented");
+  }
+
+  @Override
+  public EntityId attachDomain(String appName, String domainName, Superuser superuser) {
+
+    Map<String,String> links = new LinkedHashMap<>();
+    if(superuser != null) {
+      links.put("superuser", superuser.getEntityId());
+    }
+
+    Map<String, Comparable> comparableMap = new LinkedHashMap<>();
+    comparableMap.put(Constants.DOMAIN_NAME, domainName);
+    comparableMap.put(Constants.APP_NAME, appName);
+
+    EntityId entityId = store.putIfNotExists(masterStore,
+            null,
+            Constants.ENTITYSTORE_DOMAIN,
+            comparableMap,
+            links,
+            null,
+            Constants.DOMAIN_NAME);
+
+    return entityId;
+
+  }
+
+  @Override
+  public boolean detachDomain(String appName, String domainName, Superuser superuser) {
+
+    Map<String,String> links = new LinkedHashMap<>();
+    if(superuser != null) {
+      links.put("superuser", superuser.getEntityId());
+    }
+
+    store.delete(appName, null, Constants.ENTITYSTORE_DOMAIN, Constants.DOMAIN_NAME, domainName);
+
+    return true;
   }
 }

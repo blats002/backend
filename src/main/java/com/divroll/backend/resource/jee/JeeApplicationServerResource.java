@@ -70,12 +70,6 @@ public class JeeApplicationServerResource extends BaseServerResource
 
   @Inject XodusStore store;
 
-  @Inject UserRepository userRepository;
-
-  @Inject RoleRepository roleRepository;
-
-  @Inject SuperuserRepository superuserRepository;
-
   @Override
   public Application updateApp(Application entity) {
     try {

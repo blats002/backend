@@ -31,10 +31,10 @@ import com.divroll.backend.model.action.ActionParser;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.repository.EntityRepository;
-import com.divroll.backend.service.ApplicationService;
-import com.divroll.backend.service.EntityService;
-import com.divroll.backend.service.SchemaService;
-import com.divroll.backend.service.WebTokenService;
+import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.SuperuserRepository;
+import com.divroll.backend.repository.UserRepository;
+import com.divroll.backend.service.*;
 import com.divroll.backend.util.Base64;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -78,6 +78,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String blobName;
   protected String blobHash;
   protected String contentDisposition;
+  protected String domainName;
   protected String appId;
   protected String namespace;
   protected String apiKey;
@@ -131,22 +132,40 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   protected List<String> uniqueProperties;
 
-  @Inject ApplicationService applicationService;
+  @Inject
+  protected DomainService domainService;
 
-  @Inject EntityRepository entityRepository;
+  @Inject
+  protected ApplicationService applicationService;
 
-  @Inject SchemaService schemaService;
+  @Inject
+  protected SchemaService schemaService;
 
-  @Inject EntityService entityService;
-  private Application application;
+  @Inject
+  protected EntityService entityService;
+
+  @Inject
+  protected WebTokenService webTokenService;
+
+  @Inject
+  protected UserRepository userRepository;
+
+  @Inject
+  protected RoleRepository roleRepository;
+
+  @Inject
+  protected SuperuserRepository superuserRepository;
+
+  @Inject
+  protected EntityRepository entityRepository;
+
+  protected Application application;
 
   protected List<String> roles;
+
   protected List<String> includeLinks;
 
   protected String encoding;
-
-  @Inject
-  WebTokenService webTokenService;
 
   @Inject
   @Named("masterSecret")
@@ -239,6 +258,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     //LOG.with(headers).info("Logging headers");
 
+    domainName = headers.getFirstValue("X-Divroll-Domain-Name") != null
+            ? headers.getFirstValue("X-Divroll-Domain-Name")
+            : headers.getFirstValue("X-Divroll-Domain-Name".toLowerCase());
     namespace =
         headers.getFirstValue("X-Divroll-Namespace") != null
             ? headers.getFirstValue("X-Divroll-Namespace")
@@ -274,6 +296,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     if(masterToken == null) {
       masterToken = getQueryValue("masterToken");
+    }
+
+    if(domainName == null) {
+      domainName = getQueryValue(Constants.DOMAIN_NAME);
     }
 
     if (appId == null) {

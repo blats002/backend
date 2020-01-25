@@ -22,6 +22,7 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
+import com.divroll.backend.model.Application;
 import com.divroll.backend.model.File;
 import com.divroll.backend.repository.FileRepository;
 import com.divroll.backend.repository.FileStore;
@@ -76,11 +77,17 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
     }
 
     try {
-      if (!isSuperUser()) {
+      if (!isSuperUser() && !isMaster()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return null;
       }
-      if (appId == null || appId.isEmpty()) {
+
+      if(domainName != null && !domainName.isEmpty()) {
+        Application application = applicationService.readByDomainName(domainName);
+        appId = application.getAppId();
+      }
+
+      if ( (appId == null || appId.isEmpty()) ) {
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
         return null;
       }
@@ -130,6 +137,12 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         return;
       }
+
+      if(domainName != null && !domainName.isEmpty()) {
+        Application application = applicationService.readByDomainName(domainName);
+        appId = application.getAppId();
+      }
+
       if(destinationFile == null || destinationFile.isEmpty()) {
         try {
           JSONObject jsonApiArg = new JSONObject(apiArg);
@@ -139,6 +152,7 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
       }
 
       if(destinationFile == null || destinationFile.isEmpty()) {
+
         if (appId == null || appId.isEmpty()) {
           setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           return;
@@ -230,6 +244,11 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
         return null;
       }
 
+      if(domainName != null && !domainName.isEmpty()) {
+        Application application = applicationService.readByDomainName(domainName);
+        appId = application.getAppId();
+      }
+
       if(apiArg != null && !apiArg.isEmpty()) {
         if(sourceFile == null || sourceFile.isEmpty() && apiArg != null && !apiArg.isEmpty()) {
           JSONObject jsonApiArg = new JSONObject(apiArg);
@@ -300,6 +319,11 @@ public class JeeFileServerResource extends BaseServerResource implements FileRes
     if (!isSuperUser()) {
       setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
       return null;
+    }
+
+    if(domainName != null && !domainName.isEmpty()) {
+      Application application = applicationService.readByDomainName(domainName);
+      appId = application.getAppId();
     }
 
     if(apiArg == null || apiArg.isEmpty()) {
