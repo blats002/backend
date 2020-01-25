@@ -295,4 +295,5 @@ public class JeeApplicationService implements ApplicationService {
     }
     return store.delete(masterStore, null, Constants.ENTITYSTORE_DOMAIN, Constants.DOMAIN_NAME, domainName);
   }
+
 }
