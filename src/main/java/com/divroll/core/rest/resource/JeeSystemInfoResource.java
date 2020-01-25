@@ -38,7 +38,7 @@ import java.util.Properties;
  * @version 1.0
  * @since 1.0
  */
-public class GaeSystemInfoResource extends BaseServerResource {
+public class JeeSystemInfoResource extends BaseServerResource {
     @Get("json")
     public Representation represent(){
         if(!hasAdminRole()){

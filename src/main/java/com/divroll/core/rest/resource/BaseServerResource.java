@@ -37,24 +37,15 @@ public class BaseServerResource extends SelfInjectingServerResource {
     final static Logger LOG
             = LoggerFactory.getLogger(BaseServerResource.class);
 
-    protected final static String BACKEND_BASE_URI = "http://localhost:9090/divroll/";
-    protected final static String APPLICATION_BASE_URI = "http://localhost:9090/divroll/applications/";
-
-    @Inject
-    @Named("divroll.appId")
-    protected String appId;
-
-    @Inject
-    @Named("divroll.appKey")
-    protected String appKey;
-
-    @Inject
-    @Named("divroll.masterKey")
-    protected String masterKey;
+    protected final static String APPLICATION_BASE_URI = "/applications/";
 
     @Inject
     @Named("divroll.serverUrl")
     protected String serverUrl;
+
+    @Inject
+    @Named("divroll.masterToken")
+    protected String masterToken;
 
     @Inject
     @Named("app.domain")
@@ -63,26 +54,6 @@ public class BaseServerResource extends SelfInjectingServerResource {
     @Inject
     @Named("app.domain.local")
     protected String appDomainLocal;
-
-    @Inject
-    @Named("parse.url.dev")
-    protected String parseUrlDev;
-
-    @Inject
-    @Named("parse.url")
-    protected String parseUrl;
-
-    @Inject
-    @Named("parse.appid")
-    protected String parseAppId;
-
-    @Inject
-    @Named("parse.restapikey")
-    protected String parseRestAPIkey;
-
-    @Inject
-    @Named("parse.publicurl")
-    protected String parsePublicUrl;
 
     @Inject
     @Named("prerender.url.dev")
@@ -152,19 +123,6 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String getPrerenderUrl() {
         String prerenderUrlString = isDevmode() ? prerenderUrlDev : prerenderUrl;
         return prerenderUrlString;
-    }
-
-    protected String getParseServerUrl() {
-        String serverUrl = isDevmode() ? parseUrlDev : parseUrl;
-        return serverUrl;
-    }
-
-    protected String getParseAppId() {
-        return parseAppId;
-    }
-
-    protected String getParseRestAPIkey() {
-        return parseRestAPIkey;
     }
 
     protected boolean isDevmode() {

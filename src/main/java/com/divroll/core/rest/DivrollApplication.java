@@ -16,7 +16,7 @@ package com.divroll.core.rest;
 
 import com.divroll.core.rest.guice.GuiceConfigModule;
 import com.divroll.core.rest.guice.SelfInjectingServerResourceModule;
-import com.divroll.core.rest.resource.GaeRootServerResource;
+import com.divroll.core.rest.resource.JeeRootServerResource;
 import com.google.inject.Guice;
 import org.restlet.Application;
 import org.restlet.Restlet;
@@ -43,7 +43,7 @@ public class DivrollApplication extends Application {
             new SelfInjectingServerResourceModule());
     getRangeService().setEnabled(false);
     Router router = new Router(getContext());
-    router.attachDefault(GaeRootServerResource.class);
+    router.attachDefault(JeeRootServerResource.class);
     return router;
   }
 }

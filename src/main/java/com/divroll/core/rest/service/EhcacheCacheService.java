@@ -4,9 +4,12 @@ import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.expiry.ExpiryPolicy;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 
 public class EhcacheCacheService implements CacheService {
@@ -81,12 +84,15 @@ public class EhcacheCacheService implements CacheService {
                     .withCache("preConfigured",
                             CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
                                     ResourcePoolsBuilder.heap(100))
+                                    .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(60)))
                                     .build())
                     .build(true);
         }
         cache = cacheManager.createCache("defaultCache",
                 CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
-                        ResourcePoolsBuilder.heap(100)).build());
+                        ResourcePoolsBuilder.heap(100))
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(60)))
+                        .build());
         return cache;
     }
 }

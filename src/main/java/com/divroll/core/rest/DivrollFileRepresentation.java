@@ -17,18 +17,24 @@ import java.io.OutputStream;
 
 public class DivrollFileRepresentation extends OutputRepresentation {
 
-    protected final static String FILE_BASE_URI = "http://localhost:9090/divroll/files";
     final static Logger LOG = LoggerFactory.getLogger(DivrollFileRepresentation.class);
 
     private String path;
     private String appName;
+    private String domain;
     private CacheService cacheService;
+    private String baseUri;
+    private String masterToken;
 
-    public DivrollFileRepresentation(String appName, String path, MediaType mediaType, CacheService cacheService) {
+    public DivrollFileRepresentation(String masterToken, String appName, String domainName, String baseUri, String path, MediaType mediaType,
+                                     CacheService cacheService) {
         super(mediaType);
         this.appName = appName;
         this.path = path;
         this.cacheService = cacheService;
+        this.baseUri = baseUri;
+        this.masterToken = masterToken;
+        this.domain = domainName;
     }
 
     public DivrollFileRepresentation(MediaType mediaType) {
@@ -38,15 +44,30 @@ public class DivrollFileRepresentation extends OutputRepresentation {
     @Override
     public void write(OutputStream outputStream) throws IOException {
         try {
-            HttpResponse<InputStream> response = Unirest.get(FILE_BASE_URI)
-                    .queryString("appName", appName)
-                    .queryString("filePath", path)
-                    .asBinary();
-            if(response.getStatus() == 200) {
-                InputStream is = response.getBody();
-                byte[] buff = new byte[64*1024];
-                final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
-                flow(is, cachingOutputStream, buff);
+            if(appName != null) {
+                HttpResponse<InputStream> response = Unirest.get(baseUri + "/files")
+                        .header("X-Divroll-Master-Token", masterToken)
+                        .queryString("appName", appName)
+                        .queryString("filePath", path)
+                        .asBinary();
+                if(response.getStatus() == 200) {
+                    InputStream is = response.getBody();
+                    byte[] buff = new byte[64*1024];
+                    final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
+                    flow(is, cachingOutputStream, buff);
+                }
+            } else if(domain != null) {
+                HttpResponse<InputStream> response = Unirest.get(baseUri + "/files")
+                        .header("X-Divroll-Master-Token", masterToken)
+                        .queryString("domainName", domain)
+                        .queryString("filePath", path)
+                        .asBinary();
+                if(response.getStatus() == 200) {
+                    InputStream is = response.getBody();
+                    byte[] buff = new byte[64*1024];
+                    final CachingOutputStream cachingOutputStream = new CachingOutputStream(outputStream);
+                    flow(is, cachingOutputStream, buff);
+                }
             }
         } catch (UnirestException e) {
             e.printStackTrace();

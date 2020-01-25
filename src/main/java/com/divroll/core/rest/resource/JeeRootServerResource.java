@@ -14,27 +14,24 @@
 */
 package com.divroll.core.rest.resource;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.sdk.Divroll;
 import com.divroll.backend.sdk.DivrollEntities;
 import com.divroll.backend.sdk.DivrollEntity;
 import com.divroll.backend.sdk.filter.EqualQueryFilter;
-import com.divroll.core.rest.CloudFileRepresentation;
 import com.divroll.core.rest.DivrollFileRepresentation;
-import com.divroll.core.rest.WasabiFileRepresentation;
-import com.divroll.core.rest.service.CacheService;
+import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.util.StringUtil;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.inject.Inject;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONObject;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
 import org.restlet.representation.ByteArrayRepresentation;
@@ -48,6 +45,7 @@ import com.godaddy.logging.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,7 +53,6 @@ import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  *
@@ -65,10 +62,10 @@ import java.util.Scanner;
  * @version 1.0
  * @since 1.0
  */
-public class GaeRootServerResource extends BaseServerResource {
+public class JeeRootServerResource extends BaseServerResource {
 
     final static Logger LOG
-            = LoggerFactory.getLogger(GaeRootServerResource.class);
+            = LoggerFactory.getLogger(JeeRootServerResource.class);
 
     private static final String HASH = "#";
     private static final String APP_ROOT_URI = "";
@@ -99,27 +96,9 @@ public class GaeRootServerResource extends BaseServerResource {
         environment = getQueryValue("environment");
 
         String envServerUrl = System.getenv("DIVROLL_SERVER_URL");
-        String envAppId = System.getenv("DIVROLL_APP_ID");
-        String envApiKey = System.getenv("DIVROLL_API_KEY");
-        String envMasterKey = System.getenv("DIVROLL_MASTER_KEY");
-
         if(envServerUrl != null && !envServerUrl.isEmpty()) {
             serverUrl = envServerUrl;
         }
-
-        if(envAppId != null && !envAppId.isEmpty()) {
-            appId = envAppId;
-        }
-
-        if(envApiKey != null && !envApiKey.isEmpty()) {
-            appKey = envApiKey;
-        }
-
-        if(envMasterKey != null && !envMasterKey.isEmpty()) {
-            masterKey = envMasterKey;
-        }
-
-        Divroll.initialize(serverUrl, appId, appKey, masterKey);
     }
 
     @Delete
@@ -204,6 +183,24 @@ public class GaeRootServerResource extends BaseServerResource {
                     subdomain = parseSubdomain(host);
                 }
 
+                String cachedAppName = cacheService.getString(host + ":appName");
+                if(cachedAppName == null) {
+                    HttpResponse<JsonNode> response = Unirest.get(serverUrl + "/domains")
+                            .header("X-Divroll-Master-Token", masterToken)
+                            .queryString("domainName", host)
+                            .asJson();
+                    if(response.getStatus() == 202) {
+                        JsonNode body = response.getBody();
+                        JSONObject bodyObject = body.getObject();
+                        JSONObject domainObject = bodyObject.getJSONObject("domain");
+                        String appName = domainObject.getString("appName");
+                        LOG.info("App Name: " + appName);
+                        subdomain = appName;
+                        //cacheService.putString(host + ":appName", appName);
+                    }
+                }
+
+
                 LOG.info("Application ID: " + subdomain);
                 if( (subdomain == null || subdomain.isEmpty()) || !isValidSubdomain(subdomain)){
                     //subdomain = "404";
@@ -222,10 +219,6 @@ public class GaeRootServerResource extends BaseServerResource {
                 LOG.info("Complete Path:            " + completePath);
                 LOG.info("Host:                     " + host);
                 LOG.info("Application ID/Subdomain: " + subdomain);
-
-                //JSONObject postObject = new JSONObject();
-                //postObject.put("path", p);
-                //postObject.put("appId", subdomain);
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 // Main code that reads file from cache or Cloud Storage
@@ -256,8 +249,13 @@ public class GaeRootServerResource extends BaseServerResource {
                     responseEntity = new ByteArrayRepresentation(cachedBytes);
                     responseEntity.setMediaType(processMediaType(completePath));
                 } else {
+                    String appName = subdomain;
+                    String domainName = host;
                     responseEntity = new DivrollFileRepresentation(
-                            subdomain,
+                            masterToken,
+                            appName,
+                            domainName,
+                            serverUrl,
                             completeFilePath,
                             processMediaType(path),
                             cacheService);
@@ -344,9 +342,11 @@ public class GaeRootServerResource extends BaseServerResource {
         }
 
         try {
-            String completeUrl = APPLICATION_BASE_URI + subdomain;
+            String completeUrl = serverUrl + APPLICATION_BASE_URI + subdomain;
             com.mashape.unirest.http.HttpResponse<String> response
-                    = Unirest.get(completeUrl).asString();
+                    = Unirest.get(completeUrl)
+                        .header("X-Divroll-Master-Token", masterToken)
+                        .asString();
             if(response.getStatus() == 204) {
                 isValid[0] = true;
                 cacheService.putString("subdomain:" + subdomain + ":valid", "true");
@@ -357,15 +357,6 @@ public class GaeRootServerResource extends BaseServerResource {
             e.printStackTrace();
         }
 
-//        DivrollEntities entities = new DivrollEntities("Subdomain");
-//        entities.query(new EqualQueryFilter("subdomain", subdomain));
-//        entities.getEntities().forEach(divrollEntity -> {
-//            String subDomain = String.valueOf(divrollEntity.getProperty("subdomain"));
-//            if(subDomain != null && subDomain.equals(subDomain)) {
-//                isValid[0] = true;
-//                cacheService.putString("subdomain:" + subdomain + ":valid", "true");
-//            }
-//        });
         return isValid[0];
     }
 
@@ -411,109 +402,15 @@ public class GaeRootServerResource extends BaseServerResource {
         return result;
     }
 
-    @Deprecated
-    private String getApplicationName(JSONObject pointer) {
-        String appName = null;
-        try {
-            String objectId = pointer.getString("objectId");
-            HttpRequestFactory requestFactory =
-                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
-                        @Override
-                        public void initialize(HttpRequest request) {
-                            request.setParser(new JsonObjectParser(JSON_FACTORY));
-                        }
-                    });
-            JSONObject where = new JSONObject();
-            where.put("objectId", objectId);
-            GaeRootServerResource.ParseUrl url = new GaeRootServerResource.ParseUrl(getParseServerUrl() + "/classes/Application");
-            url.put("where", where.toJSONString());
-            HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", getParseAppId());
-            request.getHeaders().set("X-Parse-REST-API-Key", getParseRestAPIkey());
-            request.getHeaders().set("X-Parse-Revocable-Session", "1");
-            request.setRequestMethod("GET");
-            com.google.api.client.http.HttpResponse response = request.execute();
-            String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-            LOG.info("Get Application Name Response: " + body);
-
-            JSONObject jsonBody = JSON.parseObject(body);
-            JSONArray array = jsonBody.getJSONArray("results");
-            JSONObject resultItem = (JSONObject) array.iterator().next();
-            appName = resultItem.getString("appId");
-            /*
-            Boolean isActive = resultItem.getBoolean("isActive");
-            try {
-                if(isActive) {
-                    appName = resultItem.getString("appId");
-                } else {
-                    appName = "404";
-                }
-            } catch (Exception e){
-                e.printStackTrace();
-                appName = "404";
-            }
-            */
-        } catch (Exception e) {
-            LOG.debug("Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return appName;
-    }
-
     private String parseSubdomain(String host){
         if(host.endsWith("divroll.com")){
             return RegexHelper.parseSubdomain(host, "divroll.com");
         } else if(host.endsWith("localhost.com")){
             return RegexHelper.parseSubdomain(host, "localhost.com");
         } else {
-            return getStoredSubdomain(host);
+            //return getStoredSubdomain(host);
         }
-    }
-
-    @Deprecated
-    private boolean isExist(String subdomain){
-        try {
-            JSONObject where = new JSONObject();
-            where.put("appId", subdomain);
-            HttpRequestFactory requestFactory =
-                    HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
-                        @Override
-                        public void initialize(HttpRequest request) {
-                            request.setParser(new JsonObjectParser(JSON_FACTORY));
-                        }
-                    });
-            ParseUrl url = new ParseUrl(getParseServerUrl() + "/classes/Application");
-            url.put("where", where.toJSONString());
-            HttpRequest request = requestFactory.buildGetRequest(url);
-            request.getHeaders().set("X-Parse-Application-Id", getParseAppId());
-            request.getHeaders().set("X-Parse-REST-API-Key", getParseRestAPIkey());
-            request.getHeaders().set("X-Parse-Revocable-Session", "1");
-            request.setRequestMethod("GET");
-
-            HttpResponse response = request.execute();
-            String body = new Scanner(response.getContent()).useDelimiter("\\A").next();
-
-            //LOG.info("Get appId Response: " + body);
-
-            JSONArray resultsArray = JSON.parseObject(body)
-                    .getJSONArray("results");
-
-            if(!resultsArray.isEmpty()){
-                LOG.info("Result: " + body);
-                return true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    protected JSONObject createPointer(String className, String objectId) {
-        JSONObject pointer = new JSONObject();
-        pointer.put("__type", "Pointer");
-        pointer.put("className", className);
-        pointer.put("objectId", objectId);
-        return pointer;
+        return null;
     }
 
     protected String read404template(){
