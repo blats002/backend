@@ -79,7 +79,7 @@ public class DivrollFileRepresentation extends OutputRepresentation {
                     start = new Date();
                     flow(ByteSource.wrap(cached).openStream(), outputStream, buff);
                     finished = new Date();
-                    System.out.println("CACHED FLOW DONE at " + (finished.getTime() - start.getTime()) );
+                    LOG.info("CACHED FLOW DONE at " + (finished.getTime() - start.getTime()) );
                 } else {
                     HttpResponse<InputStream> response = Unirest.get(baseUri + "/files")
                             .header("X-Divroll-Master-Token", masterToken)
@@ -92,7 +92,7 @@ public class DivrollFileRepresentation extends OutputRepresentation {
                         start = new Date();
                         flow(is, cachingOutputStream, buff);
                         finished = new Date();
-                        System.out.println("FLOW DONE at " + (finished.getTime() - start.getTime()) );
+                        LOG.info("FLOW DONE at " + (finished.getTime() - start.getTime()) );
                         cached = cachingOutputStream.getCache();
                         if(cached != null && cached.length > 0) {
                             cacheService.put(cacheKey, cached);
@@ -108,7 +108,7 @@ public class DivrollFileRepresentation extends OutputRepresentation {
                     Date start = new Date();
                     flow(ByteSource.wrap(cached).openStream(), outputStream, buff);
                     Date finished = new Date();
-                    System.out.println("CACHED FLOW DONE at " + (finished.getTime() - start.getTime()) );
+                    LOG.info("CACHED FLOW DONE at " + (finished.getTime() - start.getTime()) );
                 } else {
                     HttpResponse<InputStream> response = Unirest.get(baseUri + "/files")
                             .header("X-Divroll-Master-Token", masterToken)

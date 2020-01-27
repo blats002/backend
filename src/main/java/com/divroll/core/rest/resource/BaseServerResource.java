@@ -24,22 +24,11 @@ package com.divroll.core.rest.resource;
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
 import com.divroll.core.rest.service.CacheService;
 import com.divroll.core.rest.service.PrerenderService;
-import com.divroll.core.rest.util.StringUtil;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
-/**
- *
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 1.0
- * @since 1.0
- */
 public class BaseServerResource extends SelfInjectingServerResource {
 
     final static Logger LOG
@@ -96,7 +85,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     protected boolean isDevmode() {
         String environment = System.getenv("DIVROLL_ENVIRONMENT");
-        //System.out.println("Environment:  " + environment);
+        //LOG.info("Environment:  " + environment);
         if(environment == null) {
             return false;
         }
