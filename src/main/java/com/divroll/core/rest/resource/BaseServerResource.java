@@ -72,6 +72,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         String prerenderTimeoutEnv = System.getenv("PRERENDER_TIMEOUT");
         String prerenderWindowTimeoutEnv = System.getenv("PRERENDER_WINDOW_TIMEOUT");
+        String serverUrlEnv = System.getenv("DIVROLL_SERVER_URL");
 
         if(prerenderTimeoutEnv != null && !prerenderTimeoutEnv.isEmpty()) {
             prerenderTimeout = prerenderTimeoutEnv;
@@ -79,6 +80,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
         if(prerenderWindowTimeoutEnv != null && !prerenderWindowTimeoutEnv.isEmpty()) {
             prerenderWindowTimeout = prerenderWindowTimeoutEnv;
+        }
+
+        if(serverUrlEnv != null && !serverUrlEnv.isEmpty()) {
+            serverUrl = serverUrlEnv;
         }
 
     }
