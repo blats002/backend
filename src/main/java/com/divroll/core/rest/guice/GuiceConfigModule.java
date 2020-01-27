@@ -15,8 +15,8 @@
 package com.divroll.core.rest.guice;
 
 import com.divroll.core.rest.service.*;
-import com.divroll.core.rest.util.StringUtil;
-import com.google.common.io.ByteStreams;
+import com.divroll.core.rest.service.impl.ChromeDriverPrerenderService;
+import com.divroll.core.rest.service.impl.EhcacheCacheService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;
@@ -51,6 +51,7 @@ public class GuiceConfigModule extends AbstractModule {
         // see https://code.google.com/p/google-guice/issues/detail?id=488
         Logger.getLogger("com.google.inject.internal.util").setLevel(Level.WARNING);
         bind(CacheService.class).to(EhcacheCacheService.class).in(Scopes.SINGLETON);
+        bind(PrerenderService.class).to(ChromeDriverPrerenderService.class).in(Scopes.SINGLETON);
 //        bind(CacheService.class).to(MockCacheService.class).in(Scopes.SINGLETON);
         Names.bindProperties(binder(), readProperties());
 

@@ -14,15 +14,13 @@
 */
 package com.divroll.core.rest.resource;
 
-import com.divroll.backend.sdk.Divroll;
-import com.divroll.backend.sdk.DivrollEntities;
-import com.divroll.backend.sdk.DivrollEntity;
-import com.divroll.backend.sdk.filter.EqualQueryFilter;
 import com.divroll.core.rest.DivrollFileRepresentation;
-import com.divroll.core.rest.util.CachingOutputStream;
 import com.divroll.core.rest.util.RegexHelper;
 import com.divroll.core.rest.util.StringUtil;
-import com.google.api.client.http.*;
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -30,29 +28,23 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.restlet.data.*;
 import org.restlet.engine.application.EncodeRepresentation;
-import org.restlet.representation.ByteArrayRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.util.Series;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 /**
  *
@@ -123,7 +115,7 @@ public class JeeRootServerResource extends BaseServerResource {
     @Get
     public Representation represent() {
         boolean canAcceptGzip = (acceptEncodings.contains("gzip") || acceptEncodings.contains("GZIP"));
-        EncodeRepresentation encoded = null;
+        Representation encoded = null;
         MediaType type = getRequest().getEntity().getMediaType();
         String path = getRequest().getResourceRef().getPath();
         String _completePath = getRequest().getResourceRef().getHostIdentifier() +
@@ -136,16 +128,12 @@ public class JeeRootServerResource extends BaseServerResource {
             Form queries = getQuery();
             if(escapeQuery != null && !escapeQuery.isEmpty()) {
                 String decodedFragment = URLDecoder.decode(escapeQuery, "UTF-8");
-                com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPrerenderUrl())
-                        .queryString("url", _completePath)
-                        .queryString("_escaped_fragment_", decodedFragment)
-                        .asString();
-                String body = response.getBody();
+                String body = prerenderService.prerender(_completePath, decodedFragment);
                 Representation entity = new StringRepresentation(body);
                 //entity.setMediaType(processMediaType(s));
                 entity.setMediaType(MediaType.TEXT_HTML);
                 if(!canAcceptGzip) {
-                    return entity;
+                    encoded = entity;
                 }
                 encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else if(queries != null && !queries.isEmpty() && queries.getValues("f") != null) {
@@ -154,16 +142,12 @@ public class JeeRootServerResource extends BaseServerResource {
                 if(_completePath.endsWith("/")) {
                     _completePath = _completePath.substring(0, _completePath.length() - 1);
                 }
-                String getPath = getPrerenderUrl() + "?url=" + _completePath + "&_escaped_fragment_=" + escapedFragment;
-                LOG.info("GET Path=" + getPath);
-                com.mashape.unirest.http.HttpResponse<String> response = Unirest.get(getPath)
-                    .asString();
-                String body = response.getBody();
+                String body = prerenderService.prerender(_completePath, escapedFragment);
                 Representation entity = new StringRepresentation(body);
                 //entity.setMediaType(processMediaType(s));
                 entity.setMediaType(MediaType.TEXT_HTML);
                 if(!canAcceptGzip) {
-                    return entity;
+                    encoded = entity;
                 }
                 encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else {
@@ -183,8 +167,8 @@ public class JeeRootServerResource extends BaseServerResource {
                     subdomain = parseSubdomain(host);
                 }
 
-                String cachedAppName = cacheService.getString(host + ":appName");
-                if(cachedAppName == null) {
+                if(subdomain == null) {
+                    subdomain = cacheService.getString(host + ":appName");
                     HttpResponse<JsonNode> response = Unirest.get(serverUrl + "/domains")
                             .header("X-Divroll-Master-Token", masterToken)
                             .queryString("domainName", host)
@@ -193,13 +177,11 @@ public class JeeRootServerResource extends BaseServerResource {
                         JsonNode body = response.getBody();
                         JSONObject bodyObject = body.getObject();
                         JSONObject domainObject = bodyObject.getJSONObject("domain");
-                        String appName = domainObject.getString("appName");
-                        LOG.info("App Name: " + appName);
-                        subdomain = appName;
-                        //cacheService.putString(host + ":appName", appName);
+                        subdomain = domainObject.getString("appName");
+                        LOG.info("App Name: " + subdomain);
+                        cacheService.putString(host + ":appName", subdomain);
                     }
                 }
-
 
                 LOG.info("Application ID: " + subdomain);
                 if( (subdomain == null || subdomain.isEmpty()) || !isValidSubdomain(subdomain)){
@@ -208,10 +190,9 @@ public class JeeRootServerResource extends BaseServerResource {
                     responseEntity.setMediaType(MediaType.TEXT_HTML);
                     setStatus(Status.SUCCESS_OK);
                     if(!canAcceptGzip) {
-                        return responseEntity;
+                        encoded = responseEntity;
                     }
                     encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
-                    return encoded;
                 }
                 p = p.replace("%20", " ");
                 final String completePath = APP_ROOT_URI + p;
@@ -238,37 +219,21 @@ public class JeeRootServerResource extends BaseServerResource {
                     setStatus(Status.REDIRECTION_FOUND);
                     return null;
                 }
-
-                byte[] cachedBytes = null;
-                try{
-                    cachedBytes = cacheService.get(completeFilePath);
-                } catch (Exception e) {
-                }
-                Representation responseEntity = null;
-                if(cachedBytes != null) {
-                    responseEntity = new ByteArrayRepresentation(cachedBytes);
-                    responseEntity.setMediaType(processMediaType(completePath));
-                } else {
-                    String appName = subdomain;
-                    String domainName = host;
-                    responseEntity = new DivrollFileRepresentation(
-                            masterToken,
-                            appName,
-                            domainName,
-                            serverUrl,
-                            completeFilePath,
-                            processMediaType(path),
-                            cacheService);
-                    responseEntity.setMediaType(processMediaType(completePath));
-//                    if(path.endsWith("index.html")) {
-//                        responseEntity.setDisposition(new Disposition(Disposition.TYPE_INLINE));
-//                    }
-                }
+                String appName = subdomain;
+                String domainName = host;
+                Representation responseEntity = new DivrollFileRepresentation(
+                        masterToken,
+                        appName,
+                        domainName,
+                        serverUrl,
+                        completeFilePath,
+                        processMediaType(path),
+                        cacheService);
+                responseEntity.setMediaType(processMediaType(completePath));
                 if(!canAcceptGzip) {
-                    return responseEntity;
+                    encoded = responseEntity;
                 }
                 encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
-                return encoded;
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         } catch (MalformedURLException | UnsupportedEncodingException e) {
@@ -335,12 +300,11 @@ public class JeeRootServerResource extends BaseServerResource {
 
     private boolean isValidSubdomain(String subdomain) {
         final Boolean[] isValid = {false};
-        String isValidCached = cacheService.getString("subdomain:" + subdomain + ":valid");
+        String isValidCached = cacheService.getString("appName:" + subdomain + ":valid");
         // TODO: Add cache expiration (either here or to redis)
         if(isValidCached != null && isValidCached.equals("true")) {
             return true;
         }
-
         try {
             String completeUrl = serverUrl + APPLICATION_BASE_URI + subdomain;
             com.mashape.unirest.http.HttpResponse<String> response
@@ -349,57 +313,14 @@ public class JeeRootServerResource extends BaseServerResource {
                         .asString();
             if(response.getStatus() == 204) {
                 isValid[0] = true;
-                cacheService.putString("subdomain:" + subdomain + ":valid", "true");
+                cacheService.putString("appName:" + subdomain + ":valid", "true");
             } else if(response.getStatus() == 404) {
-
+                cacheService.putString("appName:" + subdomain + ":valid", "false");
             }
         } catch (UnirestException e) {
             e.printStackTrace();
         }
-
         return isValid[0];
-    }
-
-    // TODO: Convert to cloud code
-    private String getStoredSubdomain(String host){
-        LOG.info("Get stored subdomain: " + host);
-        String result = null;
-        try{
-            result = cacheService.getString("domain:" + host + ":subdomain");
-        } catch (Exception e) {
-        }
-        if(result != null) {
-            return result;
-        }
-        try {
-            String domain = null;
-            DivrollEntities entities = new DivrollEntities("Domain");
-            entities.query(new EqualQueryFilter("name", host));
-            final DivrollEntity[] entity = new DivrollEntity[1];
-            entities.getEntities().forEach(divrollEntity -> {
-                entity[0] = divrollEntity;
-            });
-            if(entity[0] != null) {
-                domain = String.valueOf(entity[0].getProperty("name"));
-                List<DivrollEntity> linked = entity[0].links("subdomain");
-                final String[] finalSubdomain = new String[1];
-                linked.forEach(divrollEntity -> {
-                    finalSubdomain[0] = String.valueOf(divrollEntity.getProperty("subdomain"));
-                });
-                result = finalSubdomain[0];
-                if(domain != null && result != null) {
-                    String cacheKey = "domain:" + host + ":subdomain" + "->" + result;
-                    cacheService.putString(cacheKey, result);
-                }
-            }
-//            System.out.println("HOST: " + host);
-//            System.out.println("domain: " + domain);
-//            System.out.println("subdomain: " + result);
-        } catch (Exception e) {
-            LOG.debug("Error: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return result;
     }
 
     private String parseSubdomain(String host){

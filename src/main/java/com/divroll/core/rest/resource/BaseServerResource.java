@@ -1,21 +1,29 @@
 /*
-*
-* Copyright (c) 2017 Kerby Martino and Divroll. All Rights Reserved.
-* Licensed under Divroll Commercial License, Version 1.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   https://www.divroll.com/licenses/LICENSE-1.0
-*
-* Unless required by applicable law or agreed to in writing, software distributed
-* under the License is distributed as Proprietary and Confidential to
-* Divroll and must not be redistributed in any form.
-*
-*/
+ * Divroll, Platform for Hosting Static Sites
+ * Copyright 2019-present, Divroll, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3.0 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package com.divroll.core.rest.resource;
 
 import com.divroll.core.rest.guice.SelfInjectingServerResource;
 import com.divroll.core.rest.service.CacheService;
+import com.divroll.core.rest.service.PrerenderService;
 import com.divroll.core.rest.util.StringUtil;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -56,73 +64,34 @@ public class BaseServerResource extends SelfInjectingServerResource {
     protected String appDomainLocal;
 
     @Inject
-    @Named("prerender.url.dev")
-    protected String prerenderUrlDev;
+    @Named("prerender.timeout")
+    protected String prerenderTimeout;
 
     @Inject
-    @Named("prerender.url")
-    protected String prerenderUrl;
-
-    @Inject
-    @Named("memcached.address")
-    protected String memcachedAddress;
-
-    @Inject
-    @Named("memcached.address.dev")
-    protected String memcachedAddressDev;
-
-    @Inject
-    @Named("redis.connection.dev")
-    protected String redisConnectionDev;
-
-    @Inject
-    @Named("redis.connection")
-    protected String redisConnection;
+    @Named("prerender.windowTimeout")
+    protected String prerenderWindowTimeout;
 
     @Inject
     protected CacheService cacheService;
 
+    @Inject
+    protected PrerenderService prerenderService;
+
     @Override
     protected void doInit() {
         super.doInit();
-        //cacheService.setAddress(getMemcachedAddress());
-        cacheService.setAddress(Arrays.asList(getRedisConnection()));
 
-        String envPrenderUrl = System.getenv("PRERENDER_URL");
-        String envPrenderDevUrl = System.getenv("PRERENDER_DEV_URL");
+        String prerenderTimeoutEnv = System.getenv("PRERENDER_TIMEOUT");
+        String prerenderWindowTimeoutEnv = System.getenv("PRERENDER_WINDOW_TIMEOUT");
 
-        if(envPrenderUrl != null && !envPrenderUrl.isEmpty()) {
-            prerenderUrl = envPrenderUrl;
+        if(prerenderTimeoutEnv != null && !prerenderTimeoutEnv.isEmpty()) {
+            prerenderTimeout = prerenderTimeoutEnv;
         }
 
-        if(envPrenderDevUrl != null && !envPrenderDevUrl.isEmpty()) {
-            prerenderUrlDev = envPrenderDevUrl;
+        if(prerenderWindowTimeoutEnv != null && !prerenderWindowTimeoutEnv.isEmpty()) {
+            prerenderWindowTimeout = prerenderWindowTimeoutEnv;
         }
 
-    }
-
-    public String getRedisConnection() {
-        return isDevmode() ? redisConnectionDev : redisConnection;
-    }
-
-    public List<String> getMemcachedAddress() {
-        List<String> address = new LinkedList<String>();
-        boolean isDevmode = isDevmode();
-        if(isDevmode) {
-            address.add(memcachedAddressDev);
-        } else {
-            if(memcachedAddress.contains(",")) {
-                address = StringUtil.asList(memcachedAddress);
-            } else {
-                address.add(memcachedAddress);
-            }
-        }
-        return address;
-    }
-
-    protected String getPrerenderUrl() {
-        String prerenderUrlString = isDevmode() ? prerenderUrlDev : prerenderUrl;
-        return prerenderUrlString;
     }
 
     protected boolean isDevmode() {

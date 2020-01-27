@@ -19,40 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.core.rest.util;
+package com.divroll.core.rest.service;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-
-public class CachingOutputStream extends OutputStream {
-	private final OutputStream os;
-	private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-	public CachingOutputStream(OutputStream os) {
-		this.os = os;
-	}
-
-	public void write(int b) throws IOException {
-		try {
-			os.write(b);
-			baos.write(b);
-		} catch (Exception e) {
-
-		}
-	}
-
-	public byte[] getCache() {
-		return baos.toByteArray();
-	}
-
-	public void close() throws IOException {
-		os.close();
-	}
-
-	public void flush() throws IOException {
-		os.flush();
-	}
-
+public interface PrerenderService {
+    String prerender(String url, String escapeFragment);
 }
-
