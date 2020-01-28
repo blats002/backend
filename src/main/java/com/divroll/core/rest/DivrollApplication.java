@@ -27,9 +27,20 @@ import com.divroll.core.rest.resource.JeeRootServerResource;
 import com.google.inject.Guice;
 import org.restlet.Application;
 import org.restlet.Restlet;
+import org.restlet.ext.apispark.internal.firewall.FirewallFilter;
+import org.restlet.ext.apispark.internal.firewall.handler.RateLimitationHandler;
+import org.restlet.ext.apispark.internal.firewall.handler.policy.UniqueLimitPolicy;
+import org.restlet.ext.apispark.internal.firewall.rule.FirewallRule;
+import org.restlet.ext.apispark.internal.firewall.rule.PeriodicFirewallCounterRule;
+import org.restlet.ext.apispark.internal.firewall.rule.policy.IpAddressCountingPolicy;
 import org.restlet.routing.Router;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
+
 /**
  * Main Application
  *
@@ -41,6 +52,7 @@ public class DivrollApplication extends Application {
   final static Logger LOG
           = LoggerFactory.getLogger(DivrollApplication.class);
   private static final String ROOT_URI = "/";
+  private static final int DEFAULT_RATE_LIMIT = 1000;
   /**
    * Creates a root Restlet that will receive all incoming calls.
    */
@@ -49,8 +61,21 @@ public class DivrollApplication extends Application {
     Guice.createInjector(new GuiceConfigModule(this.getContext()),
             new SelfInjectingServerResourceModule());
     getRangeService().setEnabled(false);
+
     Router router = new Router(getContext());
     router.attachDefault(JeeRootServerResource.class);
-    return router;
+
+    int rateLimit = DEFAULT_RATE_LIMIT;
+    String rateLimitEnv = System.getenv("RATE_LIMIT");
+    if(rateLimitEnv != null && !rateLimitEnv.isEmpty()) {
+        rateLimit = Integer.valueOf(rateLimitEnv);
+    }
+
+    FirewallRule rule = new PeriodicFirewallCounterRule(60, TimeUnit.SECONDS, new IpAddressCountingPolicy());
+    ((PeriodicFirewallCounterRule)rule).addHandler(new RateLimitationHandler(new UniqueLimitPolicy(rateLimit)));
+    FirewallFilter firewallFiler = new FirewallFilter(getContext(), Arrays.asList(rule));
+    firewallFiler.setNext(router);
+
+    return firewallFiler;
   }
 }

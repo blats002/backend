@@ -71,6 +71,7 @@ public class JeeRootServerResource extends BaseServerResource {
     private String acceptEncodings;
     private String cacheKey;
     private String environment;
+    private boolean canAcceptGzip;
 
     public static class ParseUrl extends GenericUrl {
         public ParseUrl(String encodedUrl) {
@@ -85,6 +86,7 @@ public class JeeRootServerResource extends BaseServerResource {
         acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
         cacheKey = getQueryValue("cachekey");
         environment = getQueryValue("environment");
+        canAcceptGzip = (acceptEncodings.contains("gzip") || acceptEncodings.contains("GZIP"));
 
         String envServerUrl = System.getenv("DIVROLL_SERVER_URL");
         if(envServerUrl != null && !envServerUrl.isEmpty()) {
@@ -113,7 +115,7 @@ public class JeeRootServerResource extends BaseServerResource {
     @SuppressWarnings("unused")
     @Get
     public Representation represent() {
-        boolean canAcceptGzip = (acceptEncodings.contains("gzip") || acceptEncodings.contains("GZIP"));
+        canAcceptGzip = (acceptEncodings.contains("gzip") || acceptEncodings.contains("GZIP"));
         Representation encoded = null;
         MediaType type = getRequest().getEntity().getMediaType();
         String path = getRequest().getResourceRef().getPath();
@@ -133,8 +135,9 @@ public class JeeRootServerResource extends BaseServerResource {
                 entity.setMediaType(MediaType.TEXT_HTML);
                 if(!canAcceptGzip) {
                     encoded = entity;
+                } else {
+                    encoded = new EncodeRepresentation(Encoding.GZIP, entity);
                 }
-                encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else if(queries != null && !queries.isEmpty() && queries.getValues("f") != null) {
                 // TODO: just a quick
                 String escapedFragment = queries.getValues("f");
@@ -147,8 +150,9 @@ public class JeeRootServerResource extends BaseServerResource {
                 entity.setMediaType(MediaType.TEXT_HTML);
                 if(!canAcceptGzip) {
                     encoded = entity;
+                } else {
+                    encoded = new EncodeRepresentation(Encoding.GZIP, entity);
                 }
-                encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else {
                 url = new URL(_completePath);
                 String host = url.getHost();
@@ -190,8 +194,9 @@ public class JeeRootServerResource extends BaseServerResource {
                     setStatus(Status.SUCCESS_OK);
                     if(!canAcceptGzip) {
                         encoded = responseEntity;
+                    } else {
+                        encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
                     }
-                    encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
                 }
                 p = p.replace("%20", " ");
                 final String completePath = APP_ROOT_URI + p;
@@ -231,8 +236,9 @@ public class JeeRootServerResource extends BaseServerResource {
                 responseEntity.setMediaType(processMediaType(completePath));
                 if(!canAcceptGzip) {
                     encoded = responseEntity;
+                } else {
+                    encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
                 }
-                encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         } catch (MalformedURLException | UnsupportedEncodingException e) {

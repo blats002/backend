@@ -70,6 +70,7 @@ public class DivrollFileRepresentation extends OutputRepresentation {
             LOG.info("Writing bytes...");
             if(appName != null) {
                 String cacheKey = appName + ":" + path;
+                LOG.info("Cache Key: " + cacheKey);
                 byte[] buff = new byte[128*1024];
                 Date start = new Date();
                 byte[] cached = cacheService.get(cacheKey);
@@ -102,6 +103,7 @@ public class DivrollFileRepresentation extends OutputRepresentation {
 
             } else if(domain != null) {
                 String cacheKey = domain + ":" + path;
+                LOG.info("Cache Key: " + cacheKey);
                 byte[] buff = new byte[64*1024];
                 byte[] cached = cacheService.get(cacheKey);
                 if(cached != null && cached.length > 0) {
@@ -126,11 +128,15 @@ public class DivrollFileRepresentation extends OutputRepresentation {
                     }
                 }
             }
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            outputStream.close();
+            if(outputStream != null)       {
+                outputStream.close();
+            }
         } finally {
-            outputStream.close();
+            if(outputStream != null)       {
+                outputStream.close();
+            }
         }
     }
 
