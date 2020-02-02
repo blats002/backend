@@ -47,6 +47,8 @@ import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.restlet.Request;
 import org.restlet.data.MediaType;
@@ -213,6 +215,22 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
 
         Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
         JSONObject response = null;
+
+        try {
+          JSONObject metaDataJSONObject = entityJSONObject.getJSONObject(Constants.RESERVED_FIELD_METADATA);
+          if(metaDataJSONObject != null) {
+            JSONArray uniquePropertyArray = metaDataJSONObject.getJSONArray("uniqueProperties");
+            for(int i=0;i<uniquePropertyArray.length();i++) {
+              String uniqueProperty = uniquePropertyArray.getString(i);
+              if(uniqueProperties == null) {
+                uniqueProperties = new LinkedList<>();
+              }
+              uniqueProperties.add(uniqueProperty);
+            }
+          }
+        } catch (JSONException e) {
+          // Do nothing
+        }
 
         if( (entityTypeQuery != null && !entityTypeQuery.isEmpty()) && (linkName != null && !linkName.isEmpty()) ) {
           Boolean setLinkType = false;

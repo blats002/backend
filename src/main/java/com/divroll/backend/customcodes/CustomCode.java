@@ -84,7 +84,6 @@ public class CustomCode {
 			Thread.currentThread().setContextClassLoader(loader);
 			JarEntryObject jarEntry = (JarEntryObject) c.newInstance();
         	List<CustomCodeMethod> methods = jarEntry.methods();
-
         	boolean isMethodExists = false;
         	for (CustomCodeMethod cc : methods){
         		String ccMethodName = cc.getMethodName();
@@ -106,7 +105,7 @@ public class CustomCode {
 						//listener.onSuccess(result); // TODO: remove this
 						future.complete(result);
 					}
-					LOGGER.info("Result: " + JSONValue.toJSONString(result));
+					//LOGGER.info("Result: " + JSONValue.toJSONString(result));
 				}
         	}
 

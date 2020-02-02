@@ -182,7 +182,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+      is = entity != null ? entity.getStream() : null;
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -206,7 +206,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
 
         if (futureResult != null) {
-          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -220,7 +225,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -250,24 +254,26 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-        if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+        if(entity != null) {
+          if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
             try {
-                DiskFileItemFactory factory = new DiskFileItemFactory();
-                factory.setSizeThreshold(1000240);
-                RestletFileUpload upload = new RestletFileUpload(factory);
-                FileItemIterator fileIterator = upload.getItemIterator(entity);
-                while (fileIterator.hasNext()) {
-                    FileItemStream fi = fileIterator.next();
-                    byte[] bytes = ByteStreams.toByteArray(fi.openStream());
-                    is = new ByteArrayInputStream(bytes);
-                }
+              DiskFileItemFactory factory = new DiskFileItemFactory();
+              factory.setSizeThreshold(1000240);
+              RestletFileUpload upload = new RestletFileUpload(factory);
+              FileItemIterator fileIterator = upload.getItemIterator(entity);
+              while (fileIterator.hasNext()) {
+                FileItemStream fi = fileIterator.next();
+                byte[] bytes = ByteStreams.toByteArray(fi.openStream());
+                is = new ByteArrayInputStream(bytes);
+              }
             } catch (Exception e) {
-                setStatus(Status.SERVER_ERROR_INTERNAL);
-                return null;
+              setStatus(Status.SERVER_ERROR_INTERNAL);
+              return null;
             }
-        } else {
-          is = entity.getStream();
-      }
+          } else {
+            is = entity.getStream();
+          }
+        }
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -292,8 +298,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
         CustomCodeResponse futureResult = future.get();
         if (futureResult != null) {
-          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
-          System.out.println("------------>" + new String(toStream, "UTF-8"));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -307,7 +317,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -337,7 +346,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+      is = entity != null ? entity.getStream() : null;
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -362,7 +371,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -376,7 +390,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -406,7 +419,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+      is = entity != null ? entity.getStream() : null;
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -430,7 +443,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -444,7 +462,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
