@@ -24,9 +24,11 @@ package com.divroll.core.rest;
 import com.divroll.core.rest.guice.GuiceConfigModule;
 import com.divroll.core.rest.guice.SelfInjectingServerResourceModule;
 import com.divroll.core.rest.resource.JeeRootServerResource;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import org.restlet.Application;
 import org.restlet.Restlet;
+import org.restlet.engine.application.CorsFilter;
 import org.restlet.ext.apispark.internal.firewall.FirewallFilter;
 import org.restlet.ext.apispark.internal.firewall.handler.RateLimitationHandler;
 import org.restlet.ext.apispark.internal.firewall.handler.policy.UniqueLimitPolicy;
@@ -38,6 +40,7 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 
@@ -71,10 +74,16 @@ public class DivrollApplication extends Application {
         rateLimit = Integer.valueOf(rateLimitEnv);
     }
 
+    CorsFilter corsFilter = new CorsFilter(getContext());
+    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
+    corsFilter.setAllowedCredentials(true);
+
+    corsFilter.setNext(router);
+
     FirewallRule rule = new PeriodicFirewallCounterRule(60, TimeUnit.SECONDS, new IpAddressCountingPolicy());
     ((PeriodicFirewallCounterRule)rule).addHandler(new RateLimitationHandler(new UniqueLimitPolicy(rateLimit)));
     FirewallFilter firewallFiler = new FirewallFilter(getContext(), Arrays.asList(rule));
-    firewallFiler.setNext(router);
+    firewallFiler.setNext(corsFilter);
 
     return firewallFiler;
   }
