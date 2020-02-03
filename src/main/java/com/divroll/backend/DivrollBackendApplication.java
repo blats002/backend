@@ -56,6 +56,7 @@ public class DivrollBackendApplication extends Application {
   private static final Logger LOG = LoggerFactory.getLogger(DivrollBackendApplication.class);
 
   private static final String ROOT_URI = "/";
+  private static final String DIVROLL_ROOT_URI = "/divroll/";
 
   /** Creates a root Restlet that will receive all incoming calls. */
   @Override
@@ -70,53 +71,53 @@ public class DivrollBackendApplication extends Application {
     configureJobScheduler();
 
     Router router = new Router(getContext());
-    router.attachDefault(JeeRootServerResource.class);
+    router.attachDefault(JeeSiteServerResource.class);
 
 //    attachSwaggerSpecification2(router);
     attachSwaggerSpecification2(router);
 
-    router.attach(ROOT_URI + "version", JeeVersionServerResource.class);
-    router.attach(ROOT_URI + "superusers", JeeSuperusersServerResource.class);
-    router.attach(ROOT_URI + "superusers/login", JeeSuperuserServerResource.class);
-    router.attach(ROOT_URI + "superusers/activate", JeeSuperuserActivateServerResource.class);
-    router.attach(ROOT_URI + "superusers/resetPassword", JeeSuperuserPasswordResetServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "version", JeeVersionServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "superusers", JeeSuperusersServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "superusers/login", JeeSuperuserServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "superusers/activate", JeeSuperuserActivateServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "superusers/resetPassword", JeeSuperuserPasswordResetServerResource.class);
 
-    router.attach(ROOT_URI + "sites", JeeSiteServerResource.class);
-    router.attach(ROOT_URI + "sites/ssls", JeeSiteServerResource.class);
-    router.attach(ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "sites", JeeSiteServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "sites/ssls", JeeSiteServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class);
 
-    router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class);
-    router.attach(ROOT_URI + "applications/{appName}/domains/{domainName}", JeeDomainServerResource.class);
-    router.attach(ROOT_URI + "domains", JeeDomainServerResource.class);
-    router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class);
-    router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
-    router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
-    router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
-    router.attach(ROOT_URI + "entities/users/login", JeeUserServerResource.class);
-    router.attach(ROOT_URI + "entities/users/resetPassword", JeePasswordResetServerResource.class);
-    router.attach(ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
-    router.attach(ROOT_URI + "entities/roles", JeeRolesServerReource.class);
-    router.attach(ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
-    router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
-    router.attach(ROOT_URI + "entities/files", JeeFileServerResource.class);
-    router.attach(ROOT_URI + "entities/files/{fileId}", JeeFileServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/properties/{propertyName}", JeePropertyServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs", JeeBlobServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}", JeePropertyServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}", JeeLinkServerResource.class);
-    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
-    router.attach(ROOT_URI + "blobs/{blobHash}", JeeBlobHashServerResource.class);
-    router.attach(ROOT_URI + "files", JeeFileServerResource.class);
-    router.attach(ROOT_URI + "files/{fileId}", JeeFileServerResource.class);
-    router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
-    router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
-    router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodeServerResource.class);
-    router.attach(ROOT_URI + "customCodes/{customCodeName}/{methodName}", JeeCustomCodeMethodServerResource.class);
-    router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
-    router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "applications/{appName}/domains/{domainName}", JeeDomainServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "domains", JeeDomainServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "applications", JeeApplicationsServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities", JeeEntityTypesServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/users", JeeUsersServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/users/login", JeeUserServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/users/resetPassword", JeePasswordResetServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/users/{userId}", JeeUserServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/roles", JeeRolesServerReource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/files", JeeFileServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/files/{fileId}", JeeFileServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/properties/{propertyName}", JeePropertyServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/{entityId}/blobs", JeeBlobServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}", JeePropertyServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}", JeeLinkServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "blobs/{blobHash}", JeeBlobHashServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "files", JeeFileServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "files/{fileId}", JeeFileServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodeServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "customCodes/{customCodeName}/{methodName}", JeeCustomCodeMethodServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "backups", JeeBackupServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
     CorsFilter corsFilter = new CorsFilter(getContext());
     corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));

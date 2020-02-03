@@ -36,6 +36,7 @@ import org.restlet.resource.Get;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Deprecated
 public class JeeRootServerResource extends SelfInjectingServerResource implements RootResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeRootServerResource.class);
