@@ -131,7 +131,8 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
 
               List<String> uniqueList = new LinkedList<>();
               ComparableHashMap metaDataHashMap = null;
-              if(first != null && metadata.uniqueProperties() == null) {
+
+              if(first != null) {
                   EmbeddedEntityIterable embeddedEntityIterable = first.getProperty(metadataProperty) != null
                           ? (EmbeddedEntityIterable) first.getProperty(metadataProperty)
                           : null;
@@ -144,6 +145,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                           uniqueList.addAll(comparableLinkedList);
                       }
                   }
+                  if(metadata.uniqueProperties() != null) {
+                    uniqueList.addAll(metadata.uniqueProperties());
+                  }
               } else {
                   if(metadata.uniqueProperties() != null) {
                       uniqueList.addAll(metadata.uniqueProperties());
@@ -151,7 +155,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               }
 
               final EntityIterable[] iterable = new EntityIterable[1];
-              if (!uniqueList.isEmpty()) {
+              if (!uniqueList.isEmpty() && namespaceProperty == null) {
                   uniqueList
                     .forEach(
                         property -> {
@@ -169,6 +173,24 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                 iterable[0].union(txn.find(entityType, property, propertyValue));
                           }
                         });
+              } else if(!uniqueList.isEmpty() && namespace != null) {
+                uniqueList
+                        .forEach(
+                                property -> {
+                                  if ( (metadata.uniqueProperties() != null && !metadata.uniqueProperties().isEmpty())
+                                          && !entityClass.comparableMap().keySet().contains(property)) {
+                                    throw new IllegalArgumentException("Invalid unique property name");
+                                  }
+
+                                  Comparable propertyValue = entityClass.comparableMap().get(property);
+                                  if (iterable[0] == null && propertyValue != null) {
+                                    iterable[0] = txn.find(entityType, property, propertyValue).intersect(txn.find(entityType, namespaceProperty, namespace));
+                                  }
+                                  if (propertyValue != null) {
+                                    iterable[0] =
+                                            iterable[0].union(txn.find(entityType, property, propertyValue).intersect(txn.find(entityType, namespaceProperty, namespace)));
+                                  }
+                                });
               }
 
               if(entityToUpdate != null) {
