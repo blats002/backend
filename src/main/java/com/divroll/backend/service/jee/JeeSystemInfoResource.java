@@ -19,8 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.core.rest.resource;
+package com.divroll.backend.service.jee;
 
+import com.divroll.core.rest.resource.BaseServerResource;
 import org.json.JSONObject;
 import org.restlet.Context;
 import org.restlet.data.ClientInfo;

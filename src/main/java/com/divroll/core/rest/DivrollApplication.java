@@ -71,7 +71,7 @@ public class DivrollApplication extends Application {
     int rateLimit = DEFAULT_RATE_LIMIT;
     String rateLimitEnv = System.getenv("RATE_LIMIT");
     if(rateLimitEnv != null && !rateLimitEnv.isEmpty()) {
-        rateLimit = Integer.valueOf(rateLimitEnv);
+      rateLimit = Integer.valueOf(rateLimitEnv);
     }
 
     CorsFilter corsFilter = new CorsFilter(getContext());

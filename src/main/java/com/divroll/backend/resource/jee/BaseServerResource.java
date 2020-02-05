@@ -36,6 +36,7 @@ import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.service.*;
 import com.divroll.backend.util.Base64;
+import com.divroll.core.rest.service.PrerenderService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
@@ -148,6 +149,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected WebTokenService webTokenService;
 
   @Inject
+  protected com.divroll.core.rest.service.CacheService cacheService;
+
+  @Inject
+  protected PrerenderService prerenderService;
+
+
+  @Inject
   protected UserRepository userRepository;
 
   @Inject
@@ -186,6 +194,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
   @Inject
   @Named("defaultPasswordResetBase")
   protected String defaultPasswordResetBase;
+
+  @Inject
+  @Named("app.domain.local")
+  protected String appDomainLocal;
+
+  @Inject
+  @Named("prerender.timeout")
+  protected String prerenderTimeout;
+
+  @Inject
+  @Named("prerender.windowTimeout")
+  protected String prerenderWindowTimeout;
+
 
   @Override
   protected void doInit() {

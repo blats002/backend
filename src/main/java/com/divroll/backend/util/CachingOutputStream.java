@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.core.rest.util;
+package com.divroll.backend.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

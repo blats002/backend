@@ -23,24 +23,20 @@ package com.divroll.core.rest;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
-import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
+import com.divroll.backend.util.StringUtil;
 import com.divroll.core.rest.service.CacheService;
-import com.divroll.core.rest.util.CachingOutputStream;
-import com.divroll.core.rest.util.StringUtil;
+import com.divroll.backend.util.CachingOutputStream;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 
 import java.io.*;
-import java.lang.reflect.Executable;
-import java.nio.charset.StandardCharsets;
 
 public class WasabiFileRepresentation extends OutputRepresentation {
 

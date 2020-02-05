@@ -22,8 +22,8 @@
 package com.divroll.core.rest.guice;
 
 import com.divroll.core.rest.service.*;
-import com.divroll.core.rest.service.impl.ChromeDriverPrerenderService;
-import com.divroll.core.rest.service.impl.EhcacheCacheService;
+import com.divroll.backend.service.jee.ChromeDriverPrerenderService;
+import com.divroll.backend.service.jee.EhcacheCacheService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import com.google.inject.name.Names;

@@ -21,9 +21,9 @@
  */
 package com.divroll.core.rest.resource;
 
+import com.divroll.backend.util.RegexHelper;
+import com.divroll.backend.util.StringUtil;
 import com.divroll.core.rest.DivrollFileRepresentation;
-import com.divroll.core.rest.util.RegexHelper;
-import com.divroll.core.rest.util.StringUtil;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.api.client.http.GenericUrl;

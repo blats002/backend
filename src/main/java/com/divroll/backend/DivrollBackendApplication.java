@@ -36,6 +36,12 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.engine.Engine;
 import org.restlet.engine.converter.ConverterHelper;
+import org.restlet.ext.apispark.internal.firewall.FirewallFilter;
+import org.restlet.ext.apispark.internal.firewall.handler.RateLimitationHandler;
+import org.restlet.ext.apispark.internal.firewall.handler.policy.UniqueLimitPolicy;
+import org.restlet.ext.apispark.internal.firewall.rule.FirewallRule;
+import org.restlet.ext.apispark.internal.firewall.rule.PeriodicFirewallCounterRule;
+import org.restlet.ext.apispark.internal.firewall.rule.policy.IpAddressCountingPolicy;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
@@ -45,6 +51,7 @@ import org.restlet.engine.application.CorsFilter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -57,12 +64,19 @@ public class DivrollBackendApplication extends Application {
 
   private static final String ROOT_URI = "/";
   private static final String DIVROLL_ROOT_URI = "/divroll/";
+  private static final int DEFAULT_RATE_LIMIT = 1000;
 
   /** Creates a root Restlet that will receive all incoming calls. */
   @Override
   public Restlet createInboundRoot() {
 
     LOG.info("Starting application");
+
+    int rateLimit = DEFAULT_RATE_LIMIT;
+    String rateLimitEnv = System.getenv("RATE_LIMIT");
+    if(rateLimitEnv != null && !rateLimitEnv.isEmpty()) {
+      rateLimit = Integer.valueOf(rateLimitEnv);
+    }
 
     Guice.createInjector(
         new GuiceConfigModule(this.getContext()), new SelfInjectingServerResourceModule());
@@ -151,8 +165,13 @@ public class DivrollBackendApplication extends Application {
     corsFilter.setAllowedCredentials(true);
 
     corsFilter.setNext(router);
-    return corsFilter;
-//    return router;
+
+    FirewallRule rule = new PeriodicFirewallCounterRule(60, TimeUnit.SECONDS, new IpAddressCountingPolicy());
+    ((PeriodicFirewallCounterRule)rule).addHandler(new RateLimitationHandler(new UniqueLimitPolicy(rateLimit)));
+    FirewallFilter firewallFiler = new FirewallFilter(getContext(), Arrays.asList(rule));
+    firewallFiler.setNext(corsFilter);
+
+    return firewallFiler;
   }
 
   private void configureConverters() {

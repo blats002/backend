@@ -21,15 +21,14 @@
  */
 package com.divroll.core.rest;
 
+import com.divroll.backend.util.StringUtil;
 import com.divroll.core.rest.service.CacheService;
-import com.divroll.core.rest.util.CachingOutputStream;
-import com.divroll.core.rest.util.StringUtil;
+import com.divroll.backend.util.CachingOutputStream;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteSource;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 
