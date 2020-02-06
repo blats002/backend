@@ -36,7 +36,6 @@ import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.service.*;
 import com.divroll.backend.util.Base64;
-import com.divroll.core.rest.service.PrerenderService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
@@ -149,7 +148,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected WebTokenService webTokenService;
 
   @Inject
-  protected com.divroll.core.rest.service.CacheService cacheService;
+  protected CacheService cacheService;
 
   @Inject
   protected PrerenderService prerenderService;
@@ -529,6 +528,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
       defaultPasswordResetBase = defaultPasswordResetBaseEnvironment;
     }
 
+    String prerenderTimeoutEnv = System.getenv("PRERENDER_TIMEOUT");
+    String prerenderWindowTimeoutEnv = System.getenv("PRERENDER_WINDOW_TIMEOUT");
+    String masterTokenEnv = System.getenv("DIVROLL_MASTER_TOKEN");
+
+    if(prerenderTimeoutEnv != null && !prerenderTimeoutEnv.isEmpty()) {
+      prerenderTimeout = prerenderTimeoutEnv;
+    }
+
+    if(prerenderWindowTimeoutEnv != null && !prerenderWindowTimeoutEnv.isEmpty()) {
+      prerenderWindowTimeout = prerenderWindowTimeoutEnv;
+    }
+
+    if(masterTokenEnv != null && !masterTokenEnv.isEmpty()) {
+      masterToken = masterTokenEnv;
+    }
+
 
   }
 
@@ -868,6 +883,14 @@ public class BaseServerResource extends SelfInjectingServerResource {
       return false;
     }
     return environment.equals("development");
+  }
+
+  protected Application getAppByName(String appName) {
+    return applicationService.readByName(appName);
+  }
+
+  protected Application getAppByDomain(String domainName) {
+    return applicationService.readByDomainName(domainName);
   }
 
 }

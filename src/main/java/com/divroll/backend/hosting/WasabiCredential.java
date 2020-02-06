@@ -19,15 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.core.rest.guice;
+package com.divroll.backend.hosting;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.servlet.GuiceServletContextListener;
-
-public class GuiceServletConfig extends GuiceServletContextListener {
-    @Override
-    protected Injector getInjector() {
-        return Guice.createInjector(new GuiceServletModule());
-    }
+public class WasabiCredential {
+    public static final String ACCESS_KEY = "";
+    public static final String SECRET_KEY = "";
 }

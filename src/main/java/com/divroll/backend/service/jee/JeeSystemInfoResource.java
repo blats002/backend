@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.service.jee;
 
-import com.divroll.core.rest.resource.BaseServerResource;
+import com.divroll.backend.resource.jee.BaseServerResource;
 import org.json.JSONObject;
 import org.restlet.Context;
 import org.restlet.data.ClientInfo;

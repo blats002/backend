@@ -22,6 +22,8 @@
 package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.hosting.DivrollFileRepresentation;
+import com.divroll.backend.model.Application;
+import com.divroll.backend.repository.FileRepository;
 import com.divroll.backend.service.PrerenderService;
 import com.divroll.backend.service.SubdomainService;
 import com.divroll.backend.util.RegexHelper;
@@ -66,12 +68,17 @@ public class JeeSiteServerResource extends BaseServerResource {
     private String acceptEncodings;
     private String cacheKey;
     private String environment;
+    private String hostDomain;
+    private String requestPath;
 
     @Inject
     PrerenderService prerenderService;
 
+//    @Inject
+//    SubdomainService subdomainService;
+
     @Inject
-    SubdomainService subdomainService;
+    FileRepository fileRepository;
 
     @Inject
     XodusVFS vfs;
@@ -83,6 +90,8 @@ public class JeeSiteServerResource extends BaseServerResource {
         acceptEncodings =  series.getFirst("Accept-Encoding") != null ? series.getFirst("Accept-Encoding").getValue() : "";
         cacheKey = getQueryValue("cachekey");
         environment = getQueryValue("environment");
+        hostDomain = getRequest().getResourceRef().getHostDomain();
+        requestPath = getRequest().getResourceRef().getPath();
     }
 
     @Delete
@@ -143,24 +152,28 @@ public class JeeSiteServerResource extends BaseServerResource {
                 encoded = new EncodeRepresentation(Encoding.GZIP, entity);
             } else {
                 url = new URL(_completePath);
-                String host = url.getHost();
 
-                String p = url.getPath();
-                if(p.isEmpty() || p.equals("/")){
-                    p = "index.html";
-                }else if(p.startsWith("/")){
-                    p = p.substring(1);
+                if(requestPath == null || requestPath.isEmpty() || requestPath.equals("/")){
+                    requestPath = "index.html";
+                }else if(requestPath.startsWith("/")){
+                    requestPath = requestPath.substring(1);
                 }
-                String subdomain = null;
-                if(host.equals(BASE_HOST)) {
-                    subdomain = BASE_HOST_PREFIX;
+
+                String appName = null;
+                if(hostDomain.equals(BASE_HOST)) {
+                    appName = BASE_HOST_PREFIX;
                 } else {
-                    subdomain = parseSubdomain(host);
+                    appName = parseSubdomain(hostDomain);
                 }
 
-                LOG.info("Application ID: " + subdomain);
-                if( (subdomain == null || subdomain.isEmpty()) || !subdomainService.isValidSubdomain(subdomain)){
-                    //subdomain = "404";
+                Application application = null;
+                if(appName != null) {
+                    application = getAppByName(appName);
+                } else {
+                    application = getAppByDomain(hostDomain);
+                }
+
+                if(application == null) {
                     Representation responseEntity = new StringRepresentation(read404template());
                     responseEntity.setMediaType(MediaType.TEXT_HTML);
                     setStatus(Status.SUCCESS_OK);
@@ -170,12 +183,15 @@ public class JeeSiteServerResource extends BaseServerResource {
                     encoded = new EncodeRepresentation(Encoding.GZIP, responseEntity);
                     return encoded;
                 }
-                p = p.replace("%20", " ");
-                final String completePath = APP_ROOT_URI + p;
+
+                LOG.info("Application ID: " + application.getAppName());
+
+                requestPath = requestPath.replace("%20", " ");
+                final String completePath = APP_ROOT_URI + requestPath;
 
                 LOG.info("Complete Path:            " + completePath);
-                LOG.info("Host:                     " + host);
-                LOG.info("Application ID/Subdomain: " + subdomain);
+                LOG.info("Host:                     " + hostDomain);
+                LOG.info("Application ID/Subdomain: " + appName);
 
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,24 +199,27 @@ public class JeeSiteServerResource extends BaseServerResource {
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
                 if(environment != null) {
-                    subdomain = subdomain + "." + environment;
+                    appName = appName + "." + environment;
                 }
 
-                String completeFilePath = subdomain + "/" + p;
-                LOG.info("Complete File Path:       " + completeFilePath);
+                //String completeFilePath = subdomain + "/" + p;
+                //LOG.info("Complete File Path:       " + completeFilePath);
 
-                if(RegexHelper.isPath(completeFilePath)) {
-                    String ref = RegexHelper.getRef(completePath);
-                    setLocationRef(completePath + "/index.html");
-                    setStatus(Status.REDIRECTION_FOUND);
-                    return null;
-                }
+//                if(RegexHelper.isPath(completeFilePath)) {
+//                    String ref = RegexHelper.getRef(completePath);
+//                    setLocationRef(completePath + "/index.html");
+//                    setStatus(Status.REDIRECTION_FOUND);
+//                    return null;
+//                }
 
-                String appId = subdomainService.retrieveAppId(subdomain);
+                String appId = application.getAppId();
+
                 Representation responseEntity = new DivrollFileRepresentation(
+                        masterToken,
                         appId,
-                        completeFilePath,
-                        processMediaType(path), vfs);
+                        requestPath,
+                        processMediaType(path),
+                        cacheService, fileRepository);
                 responseEntity.setMediaType(processMediaType(completePath));
                 if(!canAcceptGzip) {
                     return responseEntity;
@@ -278,7 +297,12 @@ public class JeeSiteServerResource extends BaseServerResource {
         } else if(host.endsWith("localhost.com")){
             return RegexHelper.parseSubdomain(host, "localhost.com");
         } else {
-            return subdomainService.retrieveDomain(host);
+            Application application = getAppByDomain(host);
+            if(application != null) {
+                return application.getAppName();
+            } else {
+                return null;
+            }
         }
     }
 

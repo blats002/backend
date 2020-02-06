@@ -126,8 +126,8 @@ public class JeeFileRepository extends JeeBaseRespository
     }
 
     @Override
-    public byte[] get(String appName, String filePath) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appName);
+    public byte[] get(String appId, String filePath) {
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appId);
         final byte[][] bytes = {null};
 
         entityStore.executeInTransaction(txn -> {

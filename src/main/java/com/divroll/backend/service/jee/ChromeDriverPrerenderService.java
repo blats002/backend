@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.service.jee;
 
-import com.divroll.core.rest.service.PrerenderService;
+import com.divroll.backend.service.PrerenderService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.inject.Inject;

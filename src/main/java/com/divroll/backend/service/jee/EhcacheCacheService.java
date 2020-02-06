@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.service.jee;
 
-import com.divroll.core.rest.service.CacheService;
+import com.divroll.backend.service.CacheService;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
@@ -112,6 +112,14 @@ public class EhcacheCacheService implements CacheService {
     @Override
     public void setAddress(List<String> address) {
 
+    }
+
+    @Override
+    public boolean isExists(String key) {
+        if(cache == null) {
+            cache = buildCache();
+        }
+        return cache.containsKey(key);
     }
 
     private Cache<String, byte[]> buildCache() {

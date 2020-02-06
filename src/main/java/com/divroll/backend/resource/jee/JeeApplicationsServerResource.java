@@ -117,6 +117,8 @@ public class JeeApplicationsServerResource extends BaseServerResource
       } else {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
       }
+    } catch (IllegalArgumentException e) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
     } catch (Exception e) {
       setStatus(Status.SERVER_ERROR_INTERNAL);
     }

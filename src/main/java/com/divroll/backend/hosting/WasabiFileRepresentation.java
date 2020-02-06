@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.core.rest;
+package com.divroll.backend.hosting;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -28,8 +28,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.S3Object;
+import com.divroll.backend.service.CacheService;
 import com.divroll.backend.util.StringUtil;
-import com.divroll.core.rest.service.CacheService;
 import com.divroll.backend.util.CachingOutputStream;
 import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
