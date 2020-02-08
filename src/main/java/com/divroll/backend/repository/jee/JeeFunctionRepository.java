@@ -78,6 +78,21 @@ public class JeeFunctionRepository implements FunctionRepository {
   }
 
   @Override
+  public byte[] retrieveFunction(String appId, String namespace, String functionName) {
+    EntityId entityId =
+        store.getFirstEntityId(
+            masterStore,
+            namespace,
+            Constants.ENTITYSTORE_FUNCTION,
+            "functionName",
+            functionName,
+            String.class);
+    Map<String, Comparable> comparableMap = store.get(masterStore, namespace, entityId);
+    String jar = (String) comparableMap.get("jar");
+    return Base64.base64ToByteArray(jar);
+  }
+
+  @Override
   public InputStream retrieveFunctionEntity(String appId, String namespace, String functionName) {
     System.out.println("appId = " + appId);
     InputStream is =

@@ -35,5 +35,8 @@ public interface FunctionRepository {
   @Deprecated
   boolean deleteFunction(String appId, String namespace, String functionName);
 
+  @Deprecated
+  byte[] retrieveFunction(String appId, String namespace, String functionName);
+
   InputStream retrieveFunctionEntity(String appId, String namespace, String functionName);
 }

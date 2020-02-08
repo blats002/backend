@@ -81,18 +81,17 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
   }
 
   private InputStream getJar(String appId, String functionName) {
-    InputStream jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
-    return jarBytes;
+    return functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
   }
 
   private void customCodeGet(
-          InputStream jarBytes,
+      InputStream jarBytes,
       String path,
       Map<String, String> params,
       InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
@@ -100,16 +99,16 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
   }
 
   private void customCodePost(
-          InputStream jarBytes,
+      InputStream jarBytes,
       String path,
       Map<String, String> params,
-          InputStream body,
+      InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
-    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
+    CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
 
@@ -117,13 +116,13 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           InputStream jarBytes,
       String path,
       Map<String, String> params,
-          InputStream body,
+      InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
-    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
+    CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
 
@@ -131,13 +130,13 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
           InputStream jarBytes,
       String path,
       Map<String, String> params,
-          InputStream body,
+      InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<Map<String, ?>> future) {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
-    CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
+    CustomCode customCode = new CustomCode(jarBytes, future);
     customCode.executeMainClass(request);
   }
 
@@ -161,24 +160,22 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     if (jarBytes == null) {
       return notFound();
     }
-    byte[] content = null;
     InputStream is = null;
     try {
       is = entity.getStream();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
     }
     try {
       if (jarBytes != null) {
         String path = "";
-        Map params = new LinkedHashMap<>();
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
         Form queries = getQuery();
+        Map<String,String> params = new LinkedHashMap<>();
         if(queries != null) {
-          queries.forEach(query -> {
-            params.put(query.getName(), query.getValue());
+          queries.forEach(parameter -> {
+            params.put(parameter.getName(), parameter.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
@@ -202,18 +199,19 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
 
   @Override
   public Representation postMethod(Representation entity) {
-//    if (!isAuthorized()) {
-//      return unauthorized();
-//    }
+    if (!isAuthorized()) {
+      return unauthorized();
+    }
     LOG.info("Function Name: " + functionName);
     LOG.info("Function Method: " + methodName);
     InputStream jarBytes = getJar(appId, functionName);
     if (jarBytes == null) {
       return notFound();
     }
-    byte[] content = null;
     InputStream is = null;
     try {
+      is = entity.getStream();
+    } catch (Exception e) {
         if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
             try {
                 DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -238,14 +236,14 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     try {
       if (jarBytes != null) {
         String path = "";
-        Map params = new LinkedHashMap<>();
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        Map<String,String> params = new LinkedHashMap<>();
         Form queries = getQuery();
         if(queries != null) {
-          queries.forEach(query -> {
-            params.put(query.getName(), query.getValue());
+          queries.forEach(parameter -> {
+            params.put(parameter.getName(), parameter.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
         customCodePost(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
@@ -278,24 +276,22 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     if (jarBytes == null) {
       return notFound();
     }
-    byte[] content = null;
     InputStream is = null;
     try {
       is = entity.getStream();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
     }
     try {
       if (jarBytes != null) {
         String path = "";
-        Map params = new LinkedHashMap<>();
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        Map<String,String> params = new LinkedHashMap<>();
         Form queries = getQuery();
         if(queries != null) {
-          queries.forEach(query -> {
-            params.put(query.getName(), query.getValue());
+          queries.forEach(parameter -> {
+            params.put(parameter.getName(), parameter.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
         customCodePut(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
@@ -328,24 +324,22 @@ public class JeeFunctionMethodServerResource extends BaseServerResource
     if (jarBytes == null) {
       return notFound();
     }
-    byte[] content = null;
     InputStream is = null;
     try {
       is = entity.getStream();
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
     }
     try {
       if (jarBytes != null) {
         String path = "";
-        Map params = new LinkedHashMap<>();
+        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        Map<String,String> params = new LinkedHashMap<>();
         Form queries = getQuery();
         if(queries != null) {
-          queries.forEach(query -> {
-            params.put(query.getName(), query.getValue());
+          queries.forEach(parameter -> {
+            params.put(parameter.getName(), parameter.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
         customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
         Map<String, ?> futureResult = future.get();
         if (futureResult != null) {
