@@ -31,9 +31,7 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface EntityTypesResource {
-
   @ApiOperation(value = "Get entity types", tags = "entity")
   @Get
   EntityTypes getEntityTypes();
-
 }

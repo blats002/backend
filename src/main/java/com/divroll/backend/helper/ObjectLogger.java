@@ -21,11 +21,6 @@
  */
 package com.divroll.backend.helper;
 
-import com.divroll.backend.email.EmailConfig;
-
-import javax.mail.MessagingException;
-import java.io.UnsupportedEncodingException;
-
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 
@@ -43,5 +38,4 @@ public class ObjectLogger {
     LOG.with(object).info("Logging object");
     return object;
   }
-
 }

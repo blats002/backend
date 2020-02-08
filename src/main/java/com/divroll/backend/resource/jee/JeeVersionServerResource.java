@@ -21,7 +21,6 @@
  */
 package com.divroll.backend.resource.jee;
 
-import com.google.common.io.ByteStreams;
 import org.json.JSONObject;
 import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
@@ -29,7 +28,6 @@ import org.restlet.resource.Get;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Properties;
 import java.util.Scanner;
 
 public class JeeVersionServerResource extends BaseServerResource {

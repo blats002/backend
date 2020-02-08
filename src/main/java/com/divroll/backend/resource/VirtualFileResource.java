@@ -20,18 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package com.divroll.backend.resource;
-import com.wordnik.swagger.annotations.ApiOperation;
+
 import com.divroll.backend.model.File;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
 public interface VirtualFileResource {
     @Post
     File createVirtualFile(Representation entity);

@@ -19,19 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.resource;
+package com.divroll.backend.util;
 
-import com.divroll.backend.model.EntityTypes;
-import com.wordnik.swagger.annotations.ApiOperation;
-import org.restlet.resource.Get;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public interface EntityTypesResource {
-  @ApiOperation(value = "Get entity types", tags = "entity")
-  @Get
-  EntityTypes getEntityTypes();
+public class CachingOutputStream extends OutputStream {
+	private final OutputStream os;
+	private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+	public CachingOutputStream(OutputStream os) {
+		this.os = os;
+	}
+
+	public void write(int b) throws IOException {
+		try {
+			os.write(b);
+			baos.write(b);
+		} catch (Exception e) {
+
+		}
+	}
+
+	public byte[] getCache() {
+		return baos.toByteArray();
+	}
+
+	public void close() throws IOException {
+		os.close();
+	}
+
+	public void flush() throws IOException {
+		os.flush();
+	}
+
 }
+

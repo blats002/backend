@@ -148,6 +148,13 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected WebTokenService webTokenService;
 
   @Inject
+  protected CacheService cacheService;
+
+  @Inject
+  protected PrerenderService prerenderService;
+
+
+  @Inject
   protected UserRepository userRepository;
 
   @Inject
@@ -186,6 +193,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
   @Inject
   @Named("defaultPasswordResetBase")
   protected String defaultPasswordResetBase;
+
+  @Inject
+  @Named("app.domain.local")
+  protected String appDomainLocal;
+
+  @Inject
+  @Named("prerender.timeout")
+  protected String prerenderTimeout;
+
+  @Inject
+  @Named("prerender.windowTimeout")
+  protected String prerenderWindowTimeout;
+
 
   @Override
   protected void doInit() {
@@ -506,6 +526,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
     String defaultPasswordResetBaseEnvironment = System.getenv(Constants.DEFAULT_PASSWORD_RESET_BASE_URL);
     if(defaultPasswordResetBaseEnvironment != null && !defaultPasswordResetBaseEnvironment.isEmpty()) {
       defaultPasswordResetBase = defaultPasswordResetBaseEnvironment;
+    }
+
+    String prerenderTimeoutEnv = System.getenv("PRERENDER_TIMEOUT");
+    String prerenderWindowTimeoutEnv = System.getenv("PRERENDER_WINDOW_TIMEOUT");
+    String masterTokenEnv = System.getenv("DIVROLL_MASTER_TOKEN");
+
+    if(prerenderTimeoutEnv != null && !prerenderTimeoutEnv.isEmpty()) {
+      prerenderTimeout = prerenderTimeoutEnv;
+    }
+
+    if(prerenderWindowTimeoutEnv != null && !prerenderWindowTimeoutEnv.isEmpty()) {
+      prerenderWindowTimeout = prerenderWindowTimeoutEnv;
+    }
+
+    if(masterTokenEnv != null && !masterTokenEnv.isEmpty()) {
+      masterToken = masterTokenEnv;
     }
 
 
@@ -847,6 +883,14 @@ public class BaseServerResource extends SelfInjectingServerResource {
       return false;
     }
     return environment.equals("development");
+  }
+
+  protected Application getAppByName(String appName) {
+    return applicationService.readByName(appName);
+  }
+
+  protected Application getAppByDomain(String domainName) {
+    return applicationService.readByDomainName(domainName);
   }
 
 }

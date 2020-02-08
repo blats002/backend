@@ -2,6 +2,7 @@ package com.divroll.backend.service.jee;
 
 import com.divroll.backend.service.SubdomainService;
 
+@Deprecated
 public class JeeSubdomainService implements SubdomainService {
     @Override
     public boolean isValidSubdomain(String subdomain) {

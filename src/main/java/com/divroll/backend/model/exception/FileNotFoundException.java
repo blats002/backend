@@ -19,26 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.resource;
+package com.divroll.backend.model.exception;
 
-import com.divroll.backend.model.PasswordReset;
-import com.wordnik.swagger.annotations.ApiOperation;
-import org.restlet.resource.Get;
-import org.restlet.resource.Post;
+import org.restlet.resource.Status;
+import java.io.IOException;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public interface PasswordResetResource {
-
-  @ApiOperation(value = "Validate reset password token", tags = "user")
-  @Get("json")
-  void validateResetPassword(PasswordReset entity);
-
-  @ApiOperation(value = "Generate reset password link", tags = "user")
-  @Post("json")
-  void resetPassword(PasswordReset entity);
-
+@Status(value = 404, serialize = false)
+public class FileNotFoundException extends IOException {
+    public FileNotFoundException() {}
+    public FileNotFoundException(String message) {
+        super(message);
+    }
+    public FileNotFoundException(String message, Exception e) {
+        super(message, e);
+    }
 }

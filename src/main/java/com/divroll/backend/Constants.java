@@ -46,8 +46,8 @@ public final class Constants {
   public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
   public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
   public static final String HEADER_NAMESPACE = "X-Divroll-Namespace";
-  public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
   public static final String HEADER_API_ARG = "X-Divroll-Api-Arg";
+
   public static final String SUPERUSER = "superuser";
   public static final String MASTER_KEY = "masterKey";
   public static final String API_KEY = "apiKey";
@@ -77,6 +77,7 @@ public final class Constants {
 
   public static final String ENTITYSTORE_DOMAIN = "Domain";
   public static final String ENTITYSTORE_APPLICATION = "Application";
+  public static final String ENTITYSTORE_FUNCTION = "Function"; // TODO: Remove
   public static final String ENTITYSTORE_CUSTOMCODE = "CustomCode";
   public static final String CUSTOMCODE_NAME = "customCodeName";
 

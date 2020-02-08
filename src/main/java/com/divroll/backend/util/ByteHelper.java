@@ -19,19 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.resource;
+package com.divroll.backend.util;
 
-import com.divroll.backend.model.EntityTypes;
-import com.wordnik.swagger.annotations.ApiOperation;
-import org.restlet.resource.Get;
-
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public interface EntityTypesResource {
-  @ApiOperation(value = "Get entity types", tags = "entity")
-  @Get
-  EntityTypes getEntityTypes();
+public class ByteHelper {
+	private static final long  MEGABYTE = 1024L * 1024L;
+	public static long bytesToMeg(long bytes) {
+		return bytes / MEGABYTE ;
+	}
 }

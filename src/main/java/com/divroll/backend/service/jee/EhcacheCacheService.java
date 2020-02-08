@@ -26,26 +26,30 @@ import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.expiry.Duration;
-import org.ehcache.expiry.Expirations;
+import org.ehcache.config.units.MemoryUnit;
+import org.ehcache.expiry.ExpiryPolicy;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-@Deprecated
-public class JeeEhcacheCacheService implements CacheService {
+public class EhcacheCacheService implements CacheService {
 
     CacheManager cacheManager;
-    Cache<String, String> cache;
+    Cache<String, byte[]> cache;
 
     @Override
     public String getString(String key) {
         if(cache == null) {
             cache = buildCache();
         }
-        return cache.get(key);
+        byte[] bytes = cache.get(key);
+        if(bytes != null) {
+            return new String(bytes);
+        }
+        return null;
     }
 
     @Override
@@ -53,7 +57,11 @@ public class JeeEhcacheCacheService implements CacheService {
         if(cache == null) {
             cache = buildCache();
         }
-        cache.put(key, value);
+        try {
+            cache.put(key, value.getBytes("UTF-8"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -61,7 +69,11 @@ public class JeeEhcacheCacheService implements CacheService {
         if(cache == null) {
             cache = buildCache();
         }
-        cache.put(key, value);
+        try {
+            cache.put(key, value.getBytes("UTF-8"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -69,7 +81,8 @@ public class JeeEhcacheCacheService implements CacheService {
         if(cache == null) {
             cache = buildCache();
         }
-        return cache.get(key) != null ? cache.get(key).getBytes(StandardCharsets.UTF_8) : null;
+        //return cache.get(key) != null ? cache.get(key).getBytes(StandardCharsets.UTF_8) : null;
+        return cache.get(key);
     }
 
     @Override
@@ -77,7 +90,7 @@ public class JeeEhcacheCacheService implements CacheService {
         if(cache == null) {
             cache = buildCache();
         }
-        cache.put(key, new String(value, StandardCharsets.UTF_8));
+        cache.put(key, value);
     }
 
     @Override
@@ -85,7 +98,7 @@ public class JeeEhcacheCacheService implements CacheService {
         if(cache == null) {
             cache = buildCache();
         }
-        cache.put(key, new String(value, StandardCharsets.UTF_8));
+        cache.put(key, value);
     }
 
     @Override
@@ -109,20 +122,20 @@ public class JeeEhcacheCacheService implements CacheService {
         return cache.containsKey(key);
     }
 
-    private Cache<String, String> buildCache() {
+    private Cache<String, byte[]> buildCache() {
         if(cacheManager == null) {
             cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
                     .withCache("preConfigured",
-                            CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
-                                    ResourcePoolsBuilder.heap(100))
-                                     .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS)))
+                            CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, byte[].class,
+                                    ResourcePoolsBuilder.heap(100).offheap(100, MemoryUnit.MB))
+                                    .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(60)))
                                     .build())
                     .build(true);
         }
         cache = cacheManager.createCache("defaultCache",
-                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
-                        ResourcePoolsBuilder.heap(100))
-                        .withExpiry(Expirations.timeToIdleExpiration(Duration.of(24, TimeUnit.HOURS)))
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, byte[].class,
+                        ResourcePoolsBuilder.heap(100).offheap(100, MemoryUnit.MB))
+                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(60)))
                         .build());
         return cache;
     }
