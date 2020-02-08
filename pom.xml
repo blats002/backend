@@ -61,6 +61,8 @@
         <godaddy.logging.version>1.2.5</godaddy.logging.version>
         <customcode.version>0-SNAPSHOT</customcode.version>
         <swagger-maven-plugin-version>3.1.7</swagger-maven-plugin-version>
+        <customcode.version>ZERO-SNAPSHOT</customcode.version>
+
     </properties>
 
     <build>
