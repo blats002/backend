@@ -11,7 +11,7 @@
         <servlet-class>org.restlet.ext.servlet.ServerServlet</servlet-class>
         <init-param>
             <param-name>org.restlet.application</param-name>
-            <param-value>com..bucket.RestApplication</param-value>
+            <param-value>com.divroll.bucket.RestApplication</param-value>
         </init-param>
         <init-param>
             <param-name>org.restlet.clients</param-name>
@@ -28,6 +28,17 @@
     <!--<welcome-file-list>-->
         <!--<welcome-file>index.html</welcome-file>-->
     <!--</welcome-file-list>-->
+
+    <Configure class="org.eclipse.jetty.webapp.WebAppContext">
+        <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+        <!-- Max Form Size                                                   -->
+        <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+        <Set name="maxFormContentSize">50000000</Set>
+    </Configure>
+
+    <listener>
+        <listener-class>com..bucket.resource.jee.KeyValueStore</listener-class>
+    </listener>
 
 </web-app>
 

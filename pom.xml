@@ -10,10 +10,10 @@ xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLS
     <version>14</version>
 </parent>
 
-<groupId>com.</groupId>
+<groupId>com.divroll</groupId>
 <artifactId>parent</artifactId>
 <version>0-SNAPSHOT</version>
-<name>Txtstreet::Parent</name>
+<name>Divroll::Parent</name>
 <packaging>pom</packaging>
 
   <prerequisites>
@@ -83,25 +83,25 @@ xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLS
     </pluginRepositories>
   <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.google.gwt</groupId>
-            <artifactId>gwt</artifactId>
-            <version>${gwt.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.errai.bom</groupId>
-            <artifactId>errai-bom</artifactId>
-            <version>${errai.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava-gwt</artifactId>
-            <version>20.0</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.gwt</groupId>-->
+<!--            <artifactId>gwt</artifactId>-->
+<!--            <version>${gwt.version}</version>-->
+<!--            <type>pom</type>-->
+<!--            <scope>import</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.jboss.errai.bom</groupId>-->
+<!--            <artifactId>errai-bom</artifactId>-->
+<!--            <version>${errai.version}</version>-->
+<!--            <type>pom</type>-->
+<!--            <scope>import</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.google.guava</groupId>-->
+<!--            <artifactId>guava-gwt</artifactId>-->
+<!--            <version>20.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -202,6 +202,8 @@ xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLS
   </build>
 <modules>
     <module>rest</module>
+<!--    <module>customcode-registrations</module>-->
+<!--    <module>customcode-sdk-java-example</module>-->
 </modules>
 
 </project>

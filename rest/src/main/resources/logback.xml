@@ -1,18 +1,9 @@
 <configuration debug="true">
     <appender name="loggly" class="ch.qos.logback.ext.loggly.LogglyAppender">
-        <endpointUrl>http://logs-01.loggly.com/inputs/56e33d44-5043-4043-9ce1-9353c7282f16/tag/logback</endpointUrl>
+        <endpointUrl>http://logs-01.loggly.com/inputs/07cf895e-1d7b-42c0-a018-473a8545eabb/tag/logback</endpointUrl>
         <pattern>%d{"ISO8601", UTC}  %p %t %c{0}.%M - %m%n</pattern>
-    </appender>
-    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
-        <target>System.out</target>
-        <encoder>
-            <pattern>%d{"ISO8601", UTC}  %p %t %c{0}.%M - %m%n</pattern>
-        </encoder>
     </appender>
     <root level="info">
         <appender-ref ref="loggly" />
-    </root>
-    <root level="info">
-        <appender-ref ref="stdout" />
     </root>
 </configuration>
