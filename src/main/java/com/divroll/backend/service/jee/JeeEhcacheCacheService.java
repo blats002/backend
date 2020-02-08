@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Deprecated
 public class JeeEhcacheCacheService implements CacheService {
 
     CacheManager cacheManager;

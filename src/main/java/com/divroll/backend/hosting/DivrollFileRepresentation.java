@@ -71,7 +71,7 @@ public class DivrollFileRepresentation extends OutputRepresentation {
                 LOG.info("TOTAL FETCHED CACHE: " + (finished.getTime() - start.getTime()));
                 if(cached != null && cached.length > 0) {
                     start = new Date();
-                    flow(ByteSource.wrap(cached).openStream(), outputStream, buff);
+                    outputStream.write(cached);
                     finished = new Date();
                     LOG.info("CACHED FLOW DONE at " + (finished.getTime() - start.getTime()) );
                 } else {

@@ -90,7 +90,7 @@ public class GuiceConfigModule extends AbstractModule {
     bind(PubSubService.class).to(JeePubSubService.class).in(Scopes.SINGLETON);
     bind(PrerenderService.class).to(ChromeDriverPrerenderService.class).in(Scopes.SINGLETON);
     bind(SubdomainService.class).to(JeeSubdomainService.class).in(Scopes.SINGLETON);
-    bind(CacheService.class).to(JeeEhcacheCacheService.class).in(Scopes.SINGLETON);
+    bind(CacheService.class).to(EhcacheCacheService.class).in(Scopes.SINGLETON);
     bind(CustomCodeService.class).to(JeeCustomCodeService.class).in(Scopes.SINGLETON);
     bind(DomainService.class).to(JeeDomainService.class).in(Scopes.SINGLETON);
 
