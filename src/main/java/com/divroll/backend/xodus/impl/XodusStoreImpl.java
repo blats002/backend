@@ -181,6 +181,72 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
   }
 
   @Override
+  public EntityId putIfNotExists(String dir,
+                                 String namespace,
+                                 String kind,
+                                 Map<String, Comparable> properties,
+                                 Map<String, String> links,
+                                 Map<String, List<String>> multiLinks,
+                                 String uniqueProperty) {
+    if (dir == null || kind == null) {
+      return null;
+    }
+    final EntityId[] entityId = {null};
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    try {
+      entityStore.executeInTransaction(
+              new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                  Comparable uniqueValue = properties.get(uniqueProperty);
+                  EntityIterable result;
+
+                  if (namespace != null && !namespace.isEmpty()) {
+                    result =
+                            txn.findWithProp(kind, namespaceProperty)
+                                    .intersect(txn.find(kind, namespaceProperty, namespace));
+                    result = result.intersect(txn.find(kind, uniqueProperty, uniqueValue));
+                  } else {
+                    result = txn.getAll(kind).minus(txn.findWithProp(kind, namespaceProperty));
+                    result = result.intersect(txn.find(kind, uniqueProperty, uniqueValue));
+                  }
+
+                  if (result.isEmpty()) {
+                    final Entity entity = txn.newEntity(kind);
+                    Iterator<String> it = properties.keySet().iterator();
+                    while (it.hasNext()) {
+                      String key = it.next();
+                      Comparable comparable = properties.get(key);
+                      entity.setProperty(key, comparable);
+                    }
+                    entityId[0] = entity.getId();
+
+                    if(links != null && !links.isEmpty()) {
+                      links.forEach((key,value) -> {
+                        Entity superuserEntity = txn.getEntity(txn.toEntityId(value));
+                        entity.setLink(key, superuserEntity);
+                      });
+                    }
+
+                    if(multiLinks != null && !multiLinks.isEmpty()) {
+                      multiLinks.forEach((key,value) -> {
+                        value.forEach(valueKey -> {
+                          Entity superuserEntity = txn.getEntity(txn.toEntityId(valueKey));
+                          entity.addLink(key, superuserEntity);
+                        });
+                      });
+                    }
+                  }
+
+                }
+              });
+    } finally {
+      // entityStore.close();
+    }
+    return entityId[0];
+  }
+
+  @Override
   public EntityId put(
       String dir, String namespace, final String kind, final Map<String, Comparable> properties) {
     if (dir == null || kind == null) {
@@ -322,6 +388,12 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               for (String prop : props) {
                 result[0].put(prop, entity.getProperty(prop));
               }
+              entity.getLinkNames().forEach(linkName -> {
+                if(linkName.equals("superuser")) {
+                  Entity superuser = entity.getLink(linkName);
+                  result[0].put("superuser", superuser.getId().toString());
+                }
+              });
             }
           });
     } finally {
@@ -345,6 +417,12 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
               for (String prop : props) {
                 result[0].put(prop, entity.getProperty(prop));
               }
+              entity.getLinkNames().forEach(linkName -> {
+                if(linkName.equals("superuser")) {
+                  Entity superuser = entity.getLink(linkName);
+                  result[0].put("superuser", superuser.getId().toString());
+                }
+              });
             }
           });
     } finally {
@@ -359,43 +437,54 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
   }
 
   @Override
-  public void delete(String dir, String namespace, final String id) {
+  public boolean delete(String dir, String namespace, final String id) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    final boolean[] deleted = {false};
     try {
       entityStore.executeInTransaction(
           new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
-              // TODO
+              EntityId entityId = txn.toEntityId(id);
+              Entity result = txn.getEntity(entityId);
+              result.delete();
+              deleted[0] = true;
             }
           });
     } finally {
       // entityStore.close();
     }
+    return deleted[0];
   }
 
   @Override
-  public void delete(String dir, String namespace, final String... ids) {
+  public boolean delete(String dir, String namespace, final String... ids) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    final boolean[] deleted = {false};
     try {
       entityStore.executeInTransaction(
           new StoreTransactionalExecutable() {
             @Override
             public void execute(@NotNull final StoreTransaction txn) {
               for (String p : ids) {
-                // TODO
+                EntityId entityId = txn.toEntityId(p);
+                Entity result = txn.getEntity(entityId);
+                result.delete();
               }
+              deleted[0] = true;
             }
           });
     } finally {
       // entityStore.close();
     }
+    return deleted[0];
   }
 
   @Override
-  public void delete(
+  public boolean delete(
       String dir, String namespace, String kind, String propertyName, Comparable propertyValue) {
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
+    final boolean[] deleted = {false};
     try {
       entityStore.executeInTransaction(
           new StoreTransactionalExecutable() {
@@ -406,11 +495,13 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                   entity -> {
                     entity.delete();
                   });
+              deleted[0] = true;
             }
           });
     } finally {
       // entityStore.close();
     }
+    return deleted[0];
   }
 
   @Override
@@ -450,7 +541,7 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
 
   @Override
   public List<Map<String, Comparable>> list(
-      String dir, String namespace, final String entityType, int skip, int limit) {
+      String dir, String namespace, final String entityType, int skip, int limit, Map<String,String> links, Map<String,List<String>> multiLinks) {
     List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
     try {
@@ -467,6 +558,16 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
               }
+              if(links != null) {
+                  Iterator<String> it = links.keySet().iterator();
+                  while(it.hasNext()) {
+                      String linkName = it.next();
+                      String targetLinkId = links.get(linkName);
+                      EntityId targetEntityId = txn.toEntityId(targetLinkId);
+                      Entity linked = txn.getEntity(targetEntityId);
+                      result = result.intersect(txn.findLinks(entityType, linked, linkName));
+                  }
+              }
               result = result.skip(skip).take(limit);
               for (Entity entity : result) {
                 Map<String, Comparable> map = new LinkedHashMap<>();
@@ -474,6 +575,14 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 for (String prop : props) {
                   map.put(prop, entity.getProperty(prop));
                 }
+
+                entity.getLinkNames().forEach(linkName -> {
+                  if(linkName.equals("superuser")) {
+                    Entity superuser = entity.getLink(linkName);
+                    map.put("superuser", superuser.getId().toString());
+                  }
+                });
+
                 list.add(map);
               }
             }
@@ -491,7 +600,8 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
       String entityType,
       List<TransactionFilter> filters,
       int skip,
-      int limit) {
+      int limit,
+      Map<String,String> links, Map<String,List<String>> multiLinks) {
     List<Map<String, Comparable>> list = new LinkedList<Map<String, Comparable>>();
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, dir);
     try {
@@ -508,6 +618,16 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 result =
                     txn.getAll(entityType).minus(txn.findWithProp(entityType, namespaceProperty));
               }
+              if(links != null) {
+                  Iterator<String> it = links.keySet().iterator();
+                  while(it.hasNext()) {
+                      String linkName = it.next();
+                      String targetLinkId = links.get(linkName);
+                      EntityId targetEntityId = txn.toEntityId(targetLinkId);
+                      Entity linked = txn.getEntity(targetEntityId);
+                      result = result.intersect(txn.findLinks(entityType, linked, linkName));
+                  }
+              }
               if (filters != null && !filters.isEmpty()) {
                 result = filter(entityType, result, filters, txn);
               }
@@ -518,6 +638,14 @@ public class XodusStoreImpl extends JeeBaseRespository implements XodusStore {
                 for (String prop : props) {
                   map.put(prop, entity.getProperty(prop));
                 }
+
+                entity.getLinkNames().forEach(linkName -> {
+                  if(linkName.equals("superuser")) {
+                    Entity superuser = entity.getLink(linkName);
+                    map.put("superuser", superuser.getId().toString());
+                  }
+                });
+
                 list.add(map);
               }
             }

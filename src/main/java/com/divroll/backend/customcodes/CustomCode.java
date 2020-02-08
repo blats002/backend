@@ -84,7 +84,6 @@ public class CustomCode {
 			Thread.currentThread().setContextClassLoader(loader);
 			JarEntryObject jarEntry = (JarEntryObject) c.newInstance();
         	List<CustomCodeMethod> methods = jarEntry.methods();
-
         	boolean isMethodExists = false;
         	for (CustomCodeMethod cc : methods){
         		String ccMethodName = cc.getMethodName();
@@ -100,12 +99,13 @@ public class CustomCode {
 						}
 					};
 					Future<CustomCodeResponse> futureResult = executor.submit(task);
-					CustomCodeResponse result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
+					//CustomCodeResponse result = futureResult.get(timeoutInSeconds, TimeUnit.SECONDS);
+					CustomCodeResponse result = futureResult.get();
 					if (result != null){
 						//listener.onSuccess(result); // TODO: remove this
 						future.complete(result);
 					}
-					LOGGER.info("Result: " + JSONValue.toJSONString(result));
+					//LOGGER.info("Result: " + JSONValue.toJSONString(result));
 				}
         	}
 
@@ -124,10 +124,10 @@ public class CustomCode {
 		} catch (IllegalAccessException e) {
 			future.completeExceptionally(e);
 			e.printStackTrace();
-		} catch (TimeoutException e){
+		} /*catch (TimeoutException e){
 			future.completeExceptionally(e);
 			e.printStackTrace();
-		} catch (Exception e){
+		}*/ catch (Exception e){
 			future.completeExceptionally(e);
 			e.printStackTrace();
 		}

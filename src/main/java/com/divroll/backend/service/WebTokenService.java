@@ -29,9 +29,18 @@ import java.util.Map;
  * @since 0-SNAPSHOT
  */
 public interface WebTokenService {
-  public String createToken(String secret, String userId);
 
-  public Map<String, Comparable> readToken(String secret);
+  String createToken(String secret, Long id);
 
-  public String readUserIdFromToken(String secret, String token);
+  String createToken(String secret, String userId);
+
+  String createToken(String secret, String userId, String expiration);
+
+  String createEmailToken(String secret, String email, String expiration);
+
+  String createPasswordResetToken(String secret, String email, String password, String expiration);
+
+  Map<String, Object> readToken(String secret, String token);
+
+  String readUserIdFromToken(String secret, String token);
 }

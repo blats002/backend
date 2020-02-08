@@ -25,6 +25,7 @@ import com.divroll.backend.model.File;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -32,21 +33,34 @@ import java.io.OutputStream;
  * @since 1.0
  */
 public interface FileStore {
-  File put(String appId, String namespace, String name, byte[] array);
+  File put(String appId, String name, byte[] array);
 
-  File put(String appId, String namespace, String name, InputStream is);
+  File put(String appId, String name, InputStream is);
 
-  File unmodifiedPut(String appId, String namespace, String name, InputStream is);
+  File unmodifiedPut(String appId, String name, InputStream is);
 
-  File unmodifiedPut(String appId, String namespace, String name, byte[] array);
+  File unmodifiedPut(String appId, String name, byte[] array);
 
-  void get(String appId, String namespace, String name, OutputStream os);
+  void get(String appId, String name, OutputStream os);
 
-  InputStream getStream(String appId, String namespace, String name);
+  InputStream getStream(String appId, String name);
 
-  byte[] get(String appId, String namespace, String name);
+  byte[] get(String appId, String name);
 
-  boolean delete(String appId, String namespace, String name);
+  boolean delete(String appId, String name);
 
-  boolean isExist(String appId, String namespace, String name);
+  boolean deleteAll(String appId);
+
+  boolean isExist(String appId, String name);
+
+  boolean move(String appId, String name, String targetName);
+
+  List<File> list(String appId);
+
+  void get(String appId, Long descriptor, OutputStream os);
+
+  InputStream getStream(String appId, Long descriptor);
+
+  byte[] get(String appId, Long descriptor);
+
 }

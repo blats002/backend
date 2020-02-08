@@ -76,8 +76,19 @@ public class DivrollBackendApplication extends Application {
     attachSwaggerSpecification2(router);
 
     router.attach(ROOT_URI + "version", JeeVersionServerResource.class);
-    router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class); // TODO: Rename to directories
-    router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class); // TODO: Rename to directories
+    router.attach(ROOT_URI + "superusers", JeeSuperusersServerResource.class);
+    router.attach(ROOT_URI + "superusers/login", JeeSuperuserServerResource.class);
+    router.attach(ROOT_URI + "superusers/activate", JeeSuperuserActivateServerResource.class);
+    router.attach(ROOT_URI + "superusers/resetPassword", JeeSuperuserPasswordResetServerResource.class);
+
+    router.attach(ROOT_URI + "sites", JeeSiteServerResource.class);
+    router.attach(ROOT_URI + "sites/ssls", JeeSiteServerResource.class);
+    router.attach(ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class);
+
+    router.attach(ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class);
+    router.attach(ROOT_URI + "applications/{appName}/domains/{domainName}", JeeDomainServerResource.class);
+    router.attach(ROOT_URI + "domains", JeeDomainServerResource.class);
+    router.attach(ROOT_URI + "applications", JeeApplicationsServerResource.class);
     router.attach(ROOT_URI + "entities", JeeEntityTypesServerResource.class);
     router.attach(ROOT_URI + "entities/types/{entityType}", JeeEntityTypeServerResource.class);
     router.attach(ROOT_URI + "entities/users", JeeUsersServerResource.class);
@@ -87,6 +98,8 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "entities/roles", JeeRolesServerReource.class);
     router.attach(ROOT_URI + "entities/roles/{roleId}", JeeRoleServerResource.class);
     router.attach(ROOT_URI + "entities/roles/{roleId}/users/{userId}", JeeRoleServerResource.class);
+    router.attach(ROOT_URI + "entities/files", JeeFileServerResource.class);
+    router.attach(ROOT_URI + "entities/files/{fileId}", JeeFileServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/properties/{propertyName}", JeePropertyServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
@@ -97,8 +110,7 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
     router.attach(ROOT_URI + "blobs/{blobHash}", JeeBlobHashServerResource.class);
     router.attach(ROOT_URI + "files", JeeFileServerResource.class);
-    router.attach(ROOT_URI + "files/{fileName}", JeeFileServerResource.class);
-    router.attach(ROOT_URI + "files/{appId}/{fileName}", JeeFileServerResource.class);
+    router.attach(ROOT_URI + "files/{fileId}", JeeFileServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodeServerResource.class);
@@ -111,6 +123,8 @@ public class DivrollBackendApplication extends Application {
     corsFilter.setSkippingResourceForCorsOptions(true);
     corsFilter.setAllowedHeaders(
         Sets.newHashSet(
+            Constants.HEADER_SUPER_AUTH,
+            Constants.HEADER_SUPER_AUTH.toLowerCase(),
             Constants.HEADER_MASTER_KEY,
             Constants.HEADER_MASTER_KEY.toLowerCase(),
             Constants.HEADER_API_KEY,

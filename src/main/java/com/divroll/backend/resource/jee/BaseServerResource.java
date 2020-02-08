@@ -25,19 +25,22 @@ import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
 import com.divroll.backend.guice.SelfInjectingServerResource;
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.ActionParser;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.model.filter.TransactionFilterParser;
 import com.divroll.backend.repository.EntityRepository;
-import com.divroll.backend.service.ApplicationService;
-import com.divroll.backend.service.EntityService;
-import com.divroll.backend.service.SchemaService;
+import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.SuperuserRepository;
+import com.divroll.backend.repository.UserRepository;
+import com.divroll.backend.service.*;
 import com.divroll.backend.util.Base64;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.json.JSONArray;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Header;
@@ -63,9 +66,10 @@ import java.util.*;
 public class BaseServerResource extends SelfInjectingServerResource {
 
   protected static final Integer DEFAULT_LIMIT = 100;
-  private static final Logger LOG = LoggerFactory.getLogger(BaseServerResource.class);
+  //private static final Logger LOG = LoggerFactory.getLogger(BaseServerResource.class);
   protected Map<String, Comparable> queryMap = new LinkedHashMap<>();
   protected Map<String, String> propsMap = new LinkedHashMap<>();
+  protected static Long ONE_DAY = 1000L * 60L * 60L * 24L;
 
   protected String appName;
   protected String entityId;
@@ -74,6 +78,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String blobName;
   protected String blobHash;
   protected String contentDisposition;
+  protected String domainName;
   protected String appId;
   protected String namespace;
   protected String apiKey;
@@ -110,25 +115,77 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   protected String masterToken;
 
+  protected String superAuthToken;
+
   protected String authTokenQuery;
 
   protected List<TransactionFilter> filters;
   protected List<Action> actions;
+  @Deprecated
   protected String fileName;
+
+  protected String fileId;
+  protected String destinationFile;
+  protected String sourceFile;
+  protected String apiArg;
+
+
   protected List<String> uniqueProperties;
-  @Inject ApplicationService applicationService;
 
-  @Inject EntityRepository entityRepository;
+  @Inject
+  protected DomainService domainService;
 
-  @Inject SchemaService schemaService;
+  @Inject
+  protected ApplicationService applicationService;
 
-  @Inject EntityService entityService;
-  private Application application;
+  @Inject
+  protected SchemaService schemaService;
+
+  @Inject
+  protected EntityService entityService;
+
+  @Inject
+  protected WebTokenService webTokenService;
+
+  @Inject
+  protected UserRepository userRepository;
+
+  @Inject
+  protected RoleRepository roleRepository;
+
+  @Inject
+  protected SuperuserRepository superuserRepository;
+
+  @Inject
+  protected EntityRepository entityRepository;
+
+  protected Application application;
 
   protected List<String> roles;
+
   protected List<String> includeLinks;
 
   protected String encoding;
+
+  @Inject
+  @Named("masterSecret")
+  protected String masterSecret;
+
+  @Inject
+  @Named("masterToken")
+  protected String theMasterToken;
+
+  @Inject
+  @Named("appDomain")
+  protected String appDomain;
+
+  @Inject
+  @Named("defaultActivationBase")
+  protected String defaultActivationBase;
+
+  @Inject
+  @Named("defaultPasswordResetBase")
+  protected String defaultPasswordResetBase;
 
   @Override
   protected void doInit() {
@@ -199,13 +256,19 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 
-    LOG.with(headers).info("Logging headers");
+    //LOG.with(headers).info("Logging headers");
 
+    domainName = headers.getFirstValue("X-Divroll-Domain-Name") != null
+            ? headers.getFirstValue("X-Divroll-Domain-Name")
+            : headers.getFirstValue("X-Divroll-Domain-Name".toLowerCase());
     namespace =
         headers.getFirstValue("X-Divroll-Namespace") != null
             ? headers.getFirstValue("X-Divroll-Namespace")
             : headers.getFirstValue("X-Divroll-Namespace".toLowerCase());
-
+    appName =
+            headers.getFirstValue(Constants.HEADER_APP_NAME) != null
+                    ? headers.getFirstValue(Constants.HEADER_APP_NAME)
+                    : headers.getFirstValue(Constants.HEADER_APP_NAME.toLowerCase());
     appId =
         headers.getFirstValue(Constants.HEADER_APP_ID) != null
             ? headers.getFirstValue(Constants.HEADER_APP_ID)
@@ -226,9 +289,17 @@ public class BaseServerResource extends SelfInjectingServerResource {
         headers.getFirstValue(Constants.HEADER_MASTER_TOKEN) != null
             ? headers.getFirstValue(Constants.HEADER_MASTER_TOKEN)
             : headers.getFirstValue(Constants.HEADER_MASTER_TOKEN.toLowerCase());
+    superAuthToken =
+            headers.getFirstValue(Constants.HEADER_SUPER_AUTH) != null
+                    ? headers.getFirstValue(Constants.HEADER_SUPER_AUTH)
+                    : headers.getFirstValue(Constants.HEADER_SUPER_AUTH.toLowerCase());
 
     if(masterToken == null) {
       masterToken = getQueryValue("masterToken");
+    }
+
+    if(domainName == null) {
+      domainName = getQueryValue(Constants.DOMAIN_NAME);
     }
 
     if (appId == null) {
@@ -264,17 +335,28 @@ public class BaseServerResource extends SelfInjectingServerResource {
             ? headers.getFirstValue(Constants.HEADER_CONTENT_TYPE)
             : headers.getFirstValue(Constants.HEADER_CONTENT_TYPE.toLowerCase());
 
-      LOG.info("Captured aclWrite - " + aclWrite);
-      LOG.info("Captured aclRead  - " + aclRead);
+      //LOG.info("Captured aclWrite - " + aclWrite);
+      //LOG.info("Captured aclRead  - " + aclRead);
     try {
       aclWrite = URLDecoder.decode(aclWrite, "UTF-8");
       aclRead = URLDecoder.decode(aclRead, "UTF-8");
     } catch (Exception e) {
     }
 
-    LOG.info("Decoded captured aclWrite - " + aclWrite);
-    LOG.info("Decoded captured aclRead  - " + aclRead);
-    appName = getAttribute("appName");
+    //LOG.info("Decoded captured aclWrite - " + aclWrite);
+    //LOG.info("Decoded captured aclRead  - " + aclRead);
+    if(appName == null) {
+      appName = getAttribute("appName");
+    }
+
+    if(appName == null) {
+        appName = getQueryValue("appName");
+    }
+
+    if(appName != null && appId == null) {
+      Application application = applicationService.readByName(appName);
+      appId = application != null ? application.getAppId() : null;
+    }
 
     try {
       skip = Integer.valueOf(getQueryValue(Constants.QUERY_SKIP));
@@ -325,6 +407,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
       application = applicationService.read(appId);
     }
 
+    if(appName != null) {
+      application = applicationService.readByName(appName);
+    }
+
     String queries = getQueryValue("queries");
     if (queries != null) {
       try {
@@ -338,13 +424,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
     if (actionsString != null) {
       try {
         actions = new ActionParser().parseAction(actionsString);
-        LOG.with(actions).info("Actions: " + actions.size());
+        //LOG.with(actions).info("Actions: " + actions.size());
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
 
     fileName = getAttribute("fileName");
+
+    apiArg =
+            headers.getFirstValue(Constants.HEADER_API_ARG) != null
+                    ? headers.getFirstValue(Constants.HEADER_API_ARG)
+                    : headers.getFirstValue(Constants.HEADER_API_ARG.toLowerCase());
+
+    fileId = getQueryValue(Constants.RESERVED_FILE_ID);
+    destinationFile = getQueryValue(Constants.RESERVED_DESTINATION_FILE);
+    sourceFile = getQueryValue(Constants.RESERVED_SOURCE_FILE);
 
     String uniquePropertiesString = getQueryValue("uniqueProperties");
     if (uniquePropertiesString != null) {
@@ -398,6 +493,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
     encoding = getQueryValue("contentEncoding");
     entityJson = getQueryValue("entity");
 
+    String appDomainEnvironment = System.getenv(Constants.APP_DOMAIN);
+    if(appDomainEnvironment != null && !appDomainEnvironment.isEmpty()) {
+      appDomain = appDomainEnvironment;
+    }
+
+    String defaultActivationBaseEnvironment = System.getenv(Constants.DEFAULT_ACTIVATION_BASE_URL);
+    if(defaultActivationBaseEnvironment != null && !defaultActivationBaseEnvironment.isEmpty()) {
+      defaultActivationBase = defaultActivationBaseEnvironment;
+    }
+
+    String defaultPasswordResetBaseEnvironment = System.getenv(Constants.DEFAULT_PASSWORD_RESET_BASE_URL);
+    if(defaultPasswordResetBaseEnvironment != null && !defaultPasswordResetBaseEnvironment.isEmpty()) {
+      defaultPasswordResetBase = defaultPasswordResetBaseEnvironment;
+    }
+
+
   }
 
   protected Map<String, String> appProperties() {
@@ -426,6 +537,20 @@ public class BaseServerResource extends SelfInjectingServerResource {
         ObjectInput in = new ObjectInputStream(bis)) {
       return in.readObject();
     }
+  }
+
+  protected boolean isSuperUser() {
+    if(superAuthToken == null || superAuthToken.isEmpty()) {
+      return false;
+    }
+    String superUserId = webTokenService.readUserIdFromToken(masterSecret,superAuthToken);
+    if(superUserId != null && application != null && application.getSuperuser() != null) {
+      String entityId = application.getSuperuser().getEntityId();
+      if(superUserId.equals(entityId)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected boolean isAuthorized() {
@@ -528,6 +653,18 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
   public boolean afterSave(Map<String, Comparable> entity, String appId, String entityType) {
     return entityService.afterSave(getApp(), namespace, entity, appId, entityType);
+  }
+
+  protected Representation notFound(String message) {
+    JSONObject jsonObject = new JSONObject();
+    JSONObject errorObject = new JSONObject();
+    errorObject.put("message", message);
+    errorObject.put("code", 404);
+    jsonObject.put("error", errorObject);
+    Representation representation = new JsonRepresentation(jsonObject.toString());
+
+    setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+    return representation;
   }
 
   protected Representation notFound() {
@@ -688,6 +825,28 @@ public class BaseServerResource extends SelfInjectingServerResource {
       sb.append("\n");
     }
     return sb.toString();
+  }
+
+  protected static JSONObject asJSONObject(Superuser userEntity) {
+    JSONObject jsonObject = new JSONObject();
+    JSONObject userObject = new JSONObject();
+    userObject.put("entityId", userEntity.getEntityId());
+    userObject.put("username", userEntity.getUsername());
+    userObject.put("authToken", userEntity.getAuthToken());
+    userObject.put("dateCreated", userEntity.getDateCreated());
+    userObject.put("dateUpdated", userEntity.getDateUpdated());
+    userObject.put("active", userEntity.getActive());
+    jsonObject.put("superuser", userObject);
+    return jsonObject;
+  }
+
+  protected boolean isDevmode() {
+    String environment = System.getenv("DIVROLL_ENVIRONMENT");
+    //System.out.println("Environment:  " + environment);
+    if(environment == null) {
+      return false;
+    }
+    return environment.equals("development");
   }
 
 }

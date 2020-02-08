@@ -24,8 +24,10 @@ package com.divroll.backend.resource.jee;
 import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Email;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.UserRoot;
 import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.ApplicationResource;
 import com.divroll.backend.xodus.XodusStore;
@@ -36,6 +38,7 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
+import org.restlet.representation.Representation;
 
 import java.util.UUID;
 
@@ -61,11 +64,11 @@ public class JeeApplicationServerResource extends BaseServerResource
   @Named("defaultUserStore")
   String defaultUserStore;
 
+  @Inject
+  @Named("masterToken")
+  String theMasterToken;
+
   @Inject XodusStore store;
-
-  @Inject UserRepository userRepository;
-
-  @Inject RoleRepository roleRepository;
 
   @Override
   public Application updateApp(Application entity) {
@@ -123,6 +126,17 @@ public class JeeApplicationServerResource extends BaseServerResource
   }
 
   @Override
+  public Representation retrieveApp() {
+    // TODO: Check if app exists
+    if(getApp() != null) {
+      setStatus(Status.SUCCESS_NO_CONTENT);
+    } else {
+      setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+    }
+    return null;
+  }
+
+  @Override
   public Application createApp(Application application) {
 
     if (appName == null) {
@@ -147,7 +161,32 @@ public class JeeApplicationServerResource extends BaseServerResource
       application.setAppName(appName);
     }
 
-    final EntityId id = applicationService.create(application);
+    Boolean isMaster = false;
+    if (theMasterToken != null
+            && masterToken != null
+            && BCrypt.checkpw(masterToken, theMasterToken)) {
+      isMaster = true;
+    }
+
+    if(!isMaster && superAuthToken == null) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
+    Superuser superuser = superuserRepository.getUserByAuthToken(superAuthToken);
+    if(!isMaster && superuser == null) {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      return null;
+    }
+
+
+    final EntityId id;
+    if(isMaster) {
+      id = applicationService.create(application, null);
+    } else {
+      id = applicationService.create(application, superuser);
+    }
+
     if (id != null) {
       if (rootDTO != null) {
         if (beforeSave(
@@ -229,7 +268,7 @@ public class JeeApplicationServerResource extends BaseServerResource
         return application;
       }
     } else {
-      setStatus(Status.SERVER_ERROR_INTERNAL);
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST, appName + " already exists");
     }
     return null;
   }

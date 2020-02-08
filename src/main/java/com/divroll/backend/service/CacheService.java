@@ -19,17 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package com.divroll.backend.service.jee;
+package com.divroll.backend.service;
 
-import com.divroll.backend.service.CloudCodeService;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
+import java.util.List;
 
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public class JeeCloudCodeService implements CloudCodeService {
-  private static final Logger LOG = LoggerFactory.getLogger(JeeCloudCodeService.class);
+public interface CacheService {
+    String getString(String key);
+    void putString(String key, int expiration, String value);
+    void putString(String key, String value);
+    byte[] get(String key);
+    void put(String key, int expiration, byte[] value);
+    void put(String key, byte[] value);
+    void delete(String key);
+    @Deprecated
+    void setAddress(List<String> address);
+    boolean isExists(String key);
 }

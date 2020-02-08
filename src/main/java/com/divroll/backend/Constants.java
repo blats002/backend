@@ -27,10 +27,17 @@ package com.divroll.backend;
  * @since 0-SNAPSHOT
  */
 public final class Constants {
+
+  public static final String APP_DOMAIN = "APP_DOMAIN";
+  public static final String DEFAULT_ACTIVATION_BASE_URL = "DEFAULT_ACTIVATION_BASE_URL";
+  public static final String DEFAULT_PASSWORD_RESET_BASE_URL = "DEFAULT_PASSWORD_RESET_BASE_URL";
+
   public static final String SERVER_NAME = "Divroll";
+  public static final String HEADER_SUPER_AUTH = "X-Divroll-Super-Auth-Token";
   public static final String HEADER_MASTER_KEY = "X-Divroll-Master-Key";
   public static final String HEADER_API_KEY = "X-Divroll-Api-Key";
   public static final String HEADER_APP_ID = "X-Divroll-App-Id";
+  public static final String HEADER_APP_NAME = "X-Divroll-App-Name";
   public static final String HEADER_AUTH_TOKEN = "X-Divroll-Auth-Token";
   public static final String HEADER_ACL_READ = "X-Divroll-ACL-Read";
   public static final String HEADER_ACL_WRITE = "X-Divroll-ACL-Write";
@@ -40,10 +47,14 @@ public final class Constants {
   public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
   public static final String HEADER_NAMESPACE = "X-Divroll-Namespace";
   public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
+  public static final String HEADER_API_ARG = "X-Divroll-Api-Arg";
+  public static final String SUPERUSER = "superuser";
   public static final String MASTER_KEY = "masterKey";
   public static final String API_KEY = "apiKey";
   public static final String APP_ID = "appId";
   public static final String APP_NAME = "appName";
+  public static final String DOMAIN_NAME = "domainName";
+  public static final String ENTITY = "entity";
   public static final String ENTITY_TYPE = "entityType";
   public static final String USER_ID = "userId";
   public static final String ROLE_ID = "roleId";
@@ -53,15 +64,21 @@ public final class Constants {
   public static final String WEBTOKEN = "authToken";
   public static final String QUERY_USERNAME = "username";
   public static final String QUERY_PASSWORD = "password";
+  public static final String QUERY_AUTH_TOKEN = "authToken";
   public static final String QUERY_SKIP = "skip";
   public static final String QUERY_LIMIT = "limit";
   public static final String QUERY_COUNT = "count";
+  public static final String JWT_ID_EMAIL = "email";
+  public static final String JWT_ID_PASSWORD = "password";
   public static final String JWT_ID_KEY = "id";
+  public static final String JWT_ID_EXPIRATION = "expiration";
   public static final String DEFAULT_CHARSET = "utf-8";
   public static final String ACL_ASTERISK = "*";
 
+  public static final String ENTITYSTORE_DOMAIN = "Domain";
   public static final String ENTITYSTORE_APPLICATION = "Application";
   public static final String ENTITYSTORE_CUSTOMCODE = "CustomCode";
+  public static final String CUSTOMCODE_NAME = "customCodeName";
 
   public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
   public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";
@@ -73,8 +90,16 @@ public final class Constants {
   public static final String RESERVED_FIELD_PUBLICREAD = "publicRead";
   public static final String RESERVED_FIELD_USERNAME = "username";
   public static final String RESERVED_FIELD_PASSWORD = "password";
+  public static final String RESERVED_FIELD_EMAIL = "email";
+  public static final String RESERVED_FIELD_ACTIVE = "active";
   public static final String RESERVED_FIELD_FUNCTION_NAME = "functionName";
   public static final String RESERVED_FIELD_METADATA = "metaData";
+  public static final String RESERVED_DESTINATION_FILE = "destinationFile";
+  public static final String RESERVED_SOURCE_FILE = "sourceFile";
+  public static final String RESERVED_FILE_ID = "fileId";
+  public static final String RESERVED_OPERATION = "op";
+  public static final String RESERVED_OPERATION_MOVE = "move";
+
 
   public static final String RESERVED_FIELD_DATE_CREATED = "dateCreated";
   public static final String RESERVED_FIELD_DATE_UPDATED = "dateUpdated";
@@ -83,6 +108,7 @@ public final class Constants {
   public static final String ERROR_INVALID_AUTH_TOKEN = "Invalid auth token";
   public static final String ERROR_INVALID_ACL = "Invalid ACL";
   public static final String ERROR_MISSING_USERNAME_PASSWORD = "Missing username/password pair";
+  public static final String ERROR_USER_NOT_EXISTS = "User does not exists";
   public static final String ERROR_USERNAME_EXISTS = "Username already exists";
   public static final String ERROR_MISSING_ROLE_ID = "Missing Role ID in request";
   public static final String ERROR_MISSING_USER_ID = "Missing User ID in path";

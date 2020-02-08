@@ -28,6 +28,7 @@ import com.divroll.backend.customcode.rest.CustomCodeResponse;
 import com.divroll.backend.customcodes.CustomCode;
 import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.resource.CustomCodeMethodResource;
+import com.divroll.backend.service.CacheService;
 import com.divroll.backend.util.StringUtil;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -35,6 +36,7 @@ import com.google.common.io.ByteStreams;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.json.JSONObject;
 import org.json.simple.JSONValue;
 import org.restlet.Message;
 import org.restlet.data.Form;
@@ -51,8 +53,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -67,10 +68,13 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
-  private static final int DEFAULT_TIMEOUT = 60;
+  private static final int DEFAULT_TIMEOUT = 1000;
 
   @Inject
   CustomCodeRepository customCodeRepository;
+
+  @Inject
+  CacheService cacheService;
 
   String customCodeName;
   String methodName;
@@ -85,6 +89,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if(CUSTOM_CODE_TIMEOUT != null && !CUSTOM_CODE_TIMEOUT.isEmpty()) {
       customCodeTimeout = Integer.valueOf(CUSTOM_CODE_TIMEOUT);
     }
+    customCodeTimeout = 1000;
   }
 
   private InputStream getJar(String appId, String customCodeName) {
@@ -164,14 +169,20 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCOde Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
+
     if (jarBytes == null) {
       return notFound();
     }
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+      is = entity != null ? entity.getStream() : null;
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -195,7 +206,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -209,7 +225,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -227,6 +242,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //    }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCode Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -234,24 +254,26 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-        if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+        if(entity != null) {
+          if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
             try {
-                DiskFileItemFactory factory = new DiskFileItemFactory();
-                factory.setSizeThreshold(1000240);
-                RestletFileUpload upload = new RestletFileUpload(factory);
-                FileItemIterator fileIterator = upload.getItemIterator(entity);
-                while (fileIterator.hasNext()) {
-                    FileItemStream fi = fileIterator.next();
-                    byte[] bytes = ByteStreams.toByteArray(fi.openStream());
-                    is = new ByteArrayInputStream(bytes);
-                }
+              DiskFileItemFactory factory = new DiskFileItemFactory();
+              factory.setSizeThreshold(1000240);
+              RestletFileUpload upload = new RestletFileUpload(factory);
+              FileItemIterator fileIterator = upload.getItemIterator(entity);
+              while (fileIterator.hasNext()) {
+                FileItemStream fi = fileIterator.next();
+                byte[] bytes = ByteStreams.toByteArray(fi.openStream());
+                is = new ByteArrayInputStream(bytes);
+              }
             } catch (Exception e) {
-                setStatus(Status.SERVER_ERROR_INTERNAL);
-                return null;
+              setStatus(Status.SERVER_ERROR_INTERNAL);
+              return null;
             }
-        } else {
-          is = entity.getStream();
-      }
+          } else {
+            is = entity.getStream();
+          }
+        }
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -276,7 +298,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
         CustomCodeResponse futureResult = future.get();
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -290,7 +317,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -308,6 +334,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCode Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -315,7 +346,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+      is = entity != null ? entity.getStream() : null;
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -340,7 +371,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -354,7 +390,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -372,6 +407,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     }
     LOG.info("CustomCode Name: " + customCodeName);
     LOG.info("CustomCode Method: " + methodName);
+
+    if(getCached()) {
+      return cachedRepresentation();
+    }
+
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -379,7 +419,7 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     byte[] content = null;
     InputStream is = null;
     try {
-      is = entity.getStream();
+      is = entity != null ? entity.getStream() : null;
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -403,7 +443,12 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
         LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
 
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
+          byte[] toStream = null;
+          if(futureResult.getResponseBody() != null) {
+            toStream = cacheResponse(futureResult.getResponseBody());
+          } else {
+            toStream = cacheResponse(StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap())));
+          }
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
           response.setHeader("Access-Control-Allow-Origin", "*");
@@ -417,7 +462,6 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           response.getOutputStream().flush();
           response.getOutputStream().close();
         }
-        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -448,6 +492,55 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
       if (prev != null) { headers = prev; }
     }
     return headers;
+  }
+
+  private String buildCacheKey() {
+    String cacheKey = customCodeName + ":" + methodName + ":";
+    List<String> queryKeys = new LinkedList<String>();
+    Form queries = getQuery();
+    if(queries != null) {
+      queries.forEach(query -> {
+        queryKeys.add(query.getName());
+      });
+    }
+    Collections.sort(queryKeys);
+    for(String queryKey : queryKeys) {
+      cacheKey = cacheKey + queryKey + "=" + getQueryValue(queryKey) + ":";
+    }
+    LOG.info("Cache Key: " + cacheKey);
+    return cacheKey;
+  }
+
+  private boolean getCached() {
+    if(apiArg != null) {
+      JSONObject jsonApiArg = new JSONObject(apiArg);
+      boolean getCached = jsonApiArg.getBoolean("cached");
+      return getCached && cacheService.isExists(buildCacheKey());
+    }
+    return false;
+  }
+
+  private Representation cachedRepresentation() {
+    try {
+      byte[] cachedBytes = cacheService.get(buildCacheKey());
+      HttpServletResponse response = ServletUtils.getResponse(getResponse());
+      response.setHeader("Content-Length", cachedBytes.length + "");
+      response.getOutputStream().write(cachedBytes);
+      response.getOutputStream().flush();
+      response.getOutputStream().close();
+    } catch (Exception e) {
+      return internalError(stackTraceToString(e));
+    }
+    return null;
+  }
+
+  private byte[] cacheResponse(byte[] response) {
+    Map<String,Comparable> customCodeMeta = customCodeRepository.getCustomCodeMeta(appId, namespace, customCodeName);
+    if(customCodeMeta.get("isCacheable") != null &&  ((Boolean)customCodeMeta.get("isCacheable"))) {
+      LOG.info("Caching " + buildCacheKey());
+      cacheService.put(buildCacheKey(), response);
+    }
+    return response;
   }
 
 }

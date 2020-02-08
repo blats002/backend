@@ -35,9 +35,13 @@ import java.io.PrintStream;
 @XStreamAlias("file")
 public class File {
 
+  private String entityId;
   private String url;
   private String name;
   private String etag;
+  private Long descriptor;
+  private Long created;
+  private Long modified;
 
   public File() {}
 
@@ -77,5 +81,37 @@ public class File {
 
   public void setEtag(String etag) {
     this.etag = etag;
+  }
+
+  public Long getDescriptor() {
+    return descriptor;
+  }
+
+  public void setDescriptor(Long descriptor) {
+    this.descriptor = descriptor;
+  }
+
+  public Long getCreated() {
+    return created;
+  }
+
+  public void setCreated(Long created) {
+    this.created = created;
+  }
+
+  public Long getModified() {
+    return modified;
+  }
+
+  public void setModified(Long modified) {
+    this.modified = modified;
+  }
+
+  public String getEntityId() {
+    return entityId;
+  }
+
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
   }
 }

@@ -29,10 +29,12 @@ import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.builder.*;
+import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.repository.jee.AppEntityRepository;
+import com.divroll.backend.service.CustomCodeService;
 import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.SchemaService;
@@ -43,6 +45,7 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mozilla.javascript.*;
@@ -78,15 +81,26 @@ public class JeeEntityService implements EntityService {
   @Named("defaultRoleStore")
   String defaultRoleStore;
 
-  @Inject EntityRepository entityRepository;
+  @Inject
+  EntityRepository entityRepository;
 
-  @Inject SchemaService schemaService;
+  @Inject
+  SchemaService schemaService;
 
-  @Inject UserRepository userRepository;
+  @Inject
+  UserRepository userRepository;
 
-  @Inject RoleRepository roleRepository;
+  @Inject
+  RoleRepository roleRepository;
 
-  @Inject PubSubService pubSubService;
+  @Inject
+  CustomCodeRepository customCodeRepository;
+
+  @Inject
+  CustomCodeService customCodeService;
+
+  @Inject
+  PubSubService pubSubService;
 
     @Override
     public EntityACL retrieveEntityACLWriteList(Application application,
@@ -115,6 +129,7 @@ public class JeeEntityService implements EntityService {
                         = (ComparableLinkedList<Comparable>) comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE);
                 aclWriteList.forEach(aclWrite -> {
                     EntityStub entityStub = (EntityStub) aclWrite;
+                    aclWriteListResult.add(entityStub.getEntityId());
                     aclWriteListResult.add(entityStub.getEntityId());
                 });
 
@@ -439,7 +454,7 @@ public class JeeEntityService implements EntityService {
       String appId,
       String entityType) {
       try{
-        String cloudCode = application.getCloudCode();
+        String cloudCode = application != null ? application.getCloudCode() : null;
         LOG.info("Cloud Code : " + cloudCode);
         List<JsFunction> jsFunctions = new LinkedList<>();
         if (cloudCode != null && !cloudCode.isEmpty()) {
@@ -483,6 +498,15 @@ public class JeeEntityService implements EntityService {
       Map<String, Comparable> entity,
       String appId,
       String entityType) {
+
+      // TOD0 Implement after save function
+      List<InputStream> jars = customCodeRepository.getAfterSavedLinkedCustomCodes(appId, namespace, entityType);
+      if(jars != null && !jars.isEmpty()) {
+        com.alibaba.fastjson.JSONObject jsonObject = new com.alibaba.fastjson.JSONObject();
+        jsonObject.put("entity", entity);
+        Map<String,String> params = new LinkedHashMap<>();
+        //customCodeService.customCodePost(jar, "", params, IOUtils.toInputStream(jsonObject.toJSONString()), "afterSave");
+      }
 
       try{
         String cloudCode = application.getCloudCode();

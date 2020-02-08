@@ -23,6 +23,9 @@ package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Application;
 import com.wordnik.swagger.annotations.*;
+import org.restlet.representation.Representation;
+import org.restlet.resource.Get;
+import org.restlet.resource.Options;
 import org.restlet.resource.Post;
 import org.restlet.resource.Put;
 
@@ -55,4 +58,7 @@ public interface ApplicationResource {
   })
   @Put
   Application updateApp(Application entity);
+
+  @Get
+  Representation retrieveApp();
 }

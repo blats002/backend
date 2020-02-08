@@ -19,11 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package com.divroll.backend.job;
 
-package com.divroll.backend.service;
-/**
- * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
- * @version 0-SNAPSHOT
- * @since 0-SNAPSHOT
- */
-public interface CloudCodeService {}
+import com.godaddy.logging.Logger;
+import com.godaddy.logging.LoggerFactory;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.StatefulJob;
+
+public class TransactionalEmailJob implements StatefulJob {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TransactionalEmailJob.class);
+
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        LOG.info("TransactionalEmailJob - execute " + jobExecutionContext);
+    }
+}

@@ -22,6 +22,7 @@
 package com.divroll.backend.service;
 
 import com.divroll.backend.model.Application;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.filter.TransactionFilter;
 import jetbrains.exodus.entitystore.EntityId;
 
@@ -33,15 +34,24 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public interface ApplicationService {
-  EntityId create(Application user);
+  EntityId create(Application application, Superuser superuser);
 
   Application read(String appId);
+
+  Application readByName(String appName);
+
+  Application readByDomainName(String domainName);
 
   void update(Application application, String masterKey);
 
   void delete(String id);
 
-  List<Application> list(List<TransactionFilter> filters, int skip, int limit);
+  List<Application> list(List<TransactionFilter> filters, int skip, int limit, Superuser owner);
 
   void forceUpdate(Application application);
+
+  EntityId attachDomain(String appName, String domainName, Superuser superuser);
+
+  boolean detachDomain(String appName, String domainName, Superuser superuser);
+
 }

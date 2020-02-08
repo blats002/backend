@@ -32,7 +32,9 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,6 +92,27 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
             String.class,
             "jar");
     return is;
+  }
+
+  @Override
+  public List<InputStream> getAfterSavedLinkedCustomCodes(String appId, String namespace, String entityType) {
+    //entityRepository.getLinkedEntities(appId, namespace, Constants.ENTITYSTORE_CUSTOMCODE, "id", "afterSave");
+    return null;
+  }
+
+  @Override
+  public List<InputStream> getBeforeSavedLinkedCustomCodes(String appId, String namespace, String entityType) {
+    return null;
+  }
+
+  @Override
+  public Map<String, Comparable> getCustomCodeMeta(String appId, String namespace, String customCodeName) {
+    List<Map<String,Comparable>> comparables
+            = entityRepository.getEntity(appId, namespace, Constants.ENTITYSTORE_CUSTOMCODE, Constants.CUSTOMCODE_NAME, customCodeName, new ArrayList<>());
+    for(Map<String,Comparable> comparable : comparables) {
+      return comparable;
+    }
+    return null;
   }
 
 }

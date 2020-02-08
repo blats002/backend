@@ -23,6 +23,7 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.JSON;
+import com.divroll.backend.model.File;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
@@ -30,6 +31,7 @@ import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.CreateOptionBuilder;
 import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
+import com.divroll.backend.repository.FileRepository;
 import com.divroll.backend.repository.RoleRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.EntitiesResource;
@@ -38,12 +40,25 @@ import com.divroll.backend.service.PubSubService;
 import com.divroll.backend.service.WebTokenService;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.restlet.Request;
+import org.restlet.data.MediaType;
+import org.restlet.data.Status;
+import org.restlet.ext.json.JsonpRepresentation;
+import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.Representation;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -80,11 +95,71 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
   @Named("defaultRoleStore")
   String defaultRoleStore;
 
-  @Inject EntityService entityService;
+  @Inject
+  @Named("defaultFileStore")
+  String defaultFileStore;
+
+  @Inject
+  EntityService entityService;
+
+  @Inject
+  FileRepository fileRepository;
 
   @Override
   public Representation createEntity(Representation entity) {
     try {
+
+      if(defaultFileStore.equals(entityType)) {
+        if (!isSuperUser()) {
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+          return null;
+        }
+        if (appId == null || appId.isEmpty()) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return null;
+        }
+        if (entity == null || entity.isEmpty()) {
+          return badRequest();
+        }
+        if (entity != null && MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+          Request restletRequest = getRequest();
+          HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
+          ServletFileUpload upload = new ServletFileUpload();
+          FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+          File file = null;
+          while (fileIterator.hasNext()) {
+            FileItemStream item = fileIterator.next();
+            if (item.isFormField()) {
+            } else {
+              //file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
+              byte[] bytes = ByteStreams.toByteArray(item.openStream());
+              LOG.info("UPLOAD FILE SIZE=" + bytes.length);
+              file = fileRepository.put(appId, destinationFile, bytes);
+              JSONObject entityObject = new JSONObject();
+              entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, file.getEntityId());
+              JSONObject response = new JSONObject();
+              response.put(Constants.ENTITY, entityObject);
+              return created(response);
+            }
+          }
+
+        } else if (entity != null
+                && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
+          InputStream inputStream = entity.getStream();
+          //File file = fileStore.put(appId, namespace, destinationFile, countingInputStream);
+          byte[] bytes = ByteStreams.toByteArray(inputStream);
+          LOG.info("UPLOAD FILE SIZE=" + bytes.length);
+          File file = fileRepository.put(appId, destinationFile, bytes);
+          JSONObject entityObject = new JSONObject();
+          entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, file.getEntityId());
+          JSONObject response = new JSONObject();
+          response.put(Constants.ENTITY, entityObject);
+          return created(response);
+        } else {
+          badRequest();
+        }
+      }
+
       if (!isAuthorized()) {
         return unauthorized();
       }
@@ -140,6 +215,22 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
 
         Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
         JSONObject response = null;
+
+        try {
+          JSONObject metaDataJSONObject = entityJSONObject.getJSONObject(Constants.RESERVED_FIELD_METADATA);
+          if(metaDataJSONObject != null) {
+            JSONArray uniquePropertyArray = metaDataJSONObject.getJSONArray("uniqueProperties");
+            for(int i=0;i<uniquePropertyArray.length();i++) {
+              String uniqueProperty = uniquePropertyArray.getString(i);
+              if(uniqueProperties == null) {
+                uniqueProperties = new LinkedList<>();
+              }
+              uniqueProperties.add(uniqueProperty);
+            }
+          }
+        } catch (JSONException e) {
+          // Do nothing
+        }
 
         if( (entityTypeQuery != null && !entityTypeQuery.isEmpty()) && (linkName != null && !linkName.isEmpty()) ) {
           Boolean setLinkType = false;

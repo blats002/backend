@@ -29,23 +29,13 @@ import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import jetbrains.exodus.entitystore.PersistentEntityStore;
 import jetbrains.exodus.entitystore.PersistentEntityStores;
-import jetbrains.exodus.entitystore.StoreTransaction;
-import jetbrains.exodus.entitystore.StoreTransactionalExecutable;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;
 import jetbrains.exodus.vfs.VirtualFileSystem;
-import org.jetbrains.annotations.NotNull;
 
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -60,17 +50,13 @@ public class XodusManagerImpl implements XodusManager {
   Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
   VirtualFileSystem virtualFileSystem = null;
 
-  static {
-    System.setProperty("aws.accessKeyId", "");
-    System.setProperty("aws.secretKey", "");
-  }
-
   @Override
   public Environment getEnvironment(String xodusRoot, String instance) {
     Environment environment = environmentMap.get(xodusRoot + instance);
     if (environment == null) {
       EnvironmentConfig config = new EnvironmentConfig();
       //config.setLogDataReaderWriterProvider("jetbrains.exodus.log.replication.S3DataReaderWriterProvider");
+      //config.setLogCacheShared(false);
       Environment env = Environments.newInstance(xodusRoot + instance, config);
       environmentMap.put(xodusRoot + instance, env);
     }
@@ -87,15 +73,12 @@ public class XodusManagerImpl implements XodusManager {
       store.getConfig().setDebugSearchForIncomingLinksOnDelete(true);
       //store.getConfig().setRefactoringHeavyLinks(true);
       store.executeInTransaction(
-          new StoreTransactionalExecutable() {
-            @Override
-            public void execute(@NotNull StoreTransaction txn) {
-              store.registerCustomPropertyType(
-                  txn, EmbeddedEntityIterable.class, EmbeddedEntityBinding.BINDING);
-              store.registerCustomPropertyType(
-                  txn, EmbeddedArrayIterable.class, EmbeddedEntityBinding.BINDING);
-            }
-          });
+              txn -> {
+                store.registerCustomPropertyType(
+                    txn, EmbeddedEntityIterable.class, EmbeddedEntityBinding.BINDING);
+                store.registerCustomPropertyType(
+                    txn, EmbeddedArrayIterable.class, EmbeddedEntityBinding.BINDING);
+              });
       entityStoreMap.put(xodusRoot + dir, store);
     }
     PersistentEntityStore p = entityStoreMap.get(xodusRoot + dir);

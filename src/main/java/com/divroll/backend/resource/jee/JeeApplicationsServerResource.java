@@ -21,11 +21,14 @@
  */
 package com.divroll.backend.resource.jee;
 
+import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Applications;
+import com.divroll.backend.model.Superuser;
 import com.divroll.backend.model.UserRoot;
 import com.divroll.backend.repository.RoleRepository;
+import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.ApplicationsResource;
 import com.divroll.backend.service.ApplicationService;
@@ -54,9 +57,14 @@ public class JeeApplicationsServerResource extends BaseServerResource
   @Named("xodusRoot")
   String xodusRoot;
 
-  @Inject UserRepository userRepository;
+  @Inject
+  UserRepository userRepository;
 
-  @Inject RoleRepository roleRepository;
+  @Inject
+  RoleRepository roleRepository;
+
+  @Inject
+  SuperuserRepository superuserRepository;
 
   @Inject
   @Named("defaultRoleStore")
@@ -75,11 +83,23 @@ public class JeeApplicationsServerResource extends BaseServerResource
   @Override
   public Applications list() {
     try {
-      // TODO: Add auth
       if (theMasterToken != null
           && masterToken != null
           && BCrypt.checkpw(masterToken, theMasterToken)) {
-        List<Application> results = applicationService.list(filters, skip, limit);
+        List<Application> results = applicationService.list(filters, skip, limit, null);
+        Applications applications = new Applications();
+        applications.setSkip(skip);
+        applications.setLimit(limit);
+        applications.setResults(results);
+        setStatus(Status.SUCCESS_OK);
+        return applications;
+      } else if(superAuthToken != null) {
+        Superuser superuser = superuserRepository.getUserByAuthToken(superAuthToken);
+        if(superuser == null) {
+          setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+          return null;
+        }
+        List<Application> results = applicationService.list(filters, skip, limit, superuser);
         Applications applications = new Applications();
         applications.setSkip(skip);
         applications.setLimit(limit);
@@ -106,6 +126,13 @@ public class JeeApplicationsServerResource extends BaseServerResource
   @Override
   public Application createApp(Application application) {
 
+    if(application == null) {
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      return null;
+    }
+
+    appName = application.getAppName();
+
     if (appName == null) {
       appName = getQueryValue("appName");
     }
@@ -122,6 +149,24 @@ public class JeeApplicationsServerResource extends BaseServerResource
       }
     }
 
+    Boolean isMaster = false;
+    if (theMasterToken != null
+            && masterToken != null
+            && BCrypt.checkpw(masterToken, theMasterToken)) {
+      isMaster = true;
+    }
+
+    if(!isMaster && superAuthToken == null) {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      return null;
+    }
+
+    Superuser superuser = superuserRepository.getUserByAuthToken(superAuthToken);
+    if(!isMaster && superuser == null) {
+      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+      return null;
+    }
+
     UserRoot rootDTO = application.getUser();
 
     String appId = UUID.randomUUID().toString().replace("-", "");
@@ -135,7 +180,14 @@ public class JeeApplicationsServerResource extends BaseServerResource
       application.setAppName(appName);
     }
 
-    final EntityId id = applicationService.create(application);
+    final EntityId id;
+
+    if(isMaster) {
+      id = applicationService.create(application, null);
+    } else {
+      id = applicationService.create(application, superuser);
+    }
+
     if (id != null) {
       // Application app =  applicationService.read(id.toString());
 
@@ -215,7 +267,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
         return application;
       }
     } else {
-      setStatus(Status.SERVER_ERROR_INTERNAL);
+      setStatus(Status.CLIENT_ERROR_BAD_REQUEST, appName + " already exists");
     }
     return null;
   }

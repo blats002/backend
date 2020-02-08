@@ -27,6 +27,7 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
+import org.restlet.resource.Put;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -46,5 +47,9 @@ public interface FileResource {
   @ApiOperation(value = "Get file", tags = "file")
   @Get
   Representation getFile(Representation entity);
+
+  @ApiOperation(value = "Update file", tags = "file")
+  @Put
+  Representation updateFile(Representation entity);
 
 }
