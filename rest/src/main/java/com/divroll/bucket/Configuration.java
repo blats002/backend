@@ -23,6 +23,11 @@ public class Configuration {
     public static final String DIVROLL_PARSE_APP_ID = "";
     public static final String DIVROLL_PARSE_REST_API_KEY = "***REMOVED***";
     public static final String DIVROLL_MASTER_KEY = "60d4e0c01ccf89f5ec9992fd519edd36";
+
+    public static final String TXTSTREET_PARSE_URL = "***REMOVED***";
+    public static final String TXTSTREET_PARSE_APP_ID = "";
+    public static final String TXTSTREET_PARSE_REST_API_KEY = "***REMOVED***";
+    public static final String TXTSTREET_MASTER_KEY = "";
     public static final String ME_URI = "/users/me";
     public static final String LOGIN_URI = "/login?";
     public static final String CONFIG_URI = "/config";
@@ -37,4 +42,9 @@ public class Configuration {
     public final static String JELASTIC_USER_PASSWORD = "***REMOVED***";
     public final static String JELASTIC_ENV_NAME = "roller";
     public final static Integer JELASTIC_NGINX_NODE_ID = 43282; // roller.hidora.com Nginx
+//    public final static Integer JELASTIC_NGINX_NODE_ID = 2041; // roller.divroll.space Nginx
+    public final static Integer JELASTIC_NGINX_NODE_ID = 2476; // roller-td.divrll.space Nginx
+
+    public final static String ASTRO_ADDRESS = "127.0.0.1";
+    public final static String ASTRO_PORT = "5000";
 }

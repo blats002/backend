@@ -36,5 +36,9 @@
         <Set name="maxFormContentSize">50000000</Set>
     </Configure>
 
+    <listener>
+        <listener-class>com..bucket.resource.jee.KeyValueStore</listener-class>
+    </listener>
+
 </web-app>
 

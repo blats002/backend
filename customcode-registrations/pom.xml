@@ -105,7 +105,17 @@
               </exclusion>
           </exclusions>
       </dependency>
-
+      <!-- ASTRO -->
+      <dependency>
+          <groupId>com.divroll.astro</groupId>
+          <artifactId>astro</artifactId>
+          <version>0-SNAPHOT</version>
+      </dependency>
+      <dependency>
+          <groupId>com.divroll.astro</groupId>
+          <artifactId>astro-client</artifactId>
+          <version>0-SNAPHOT</version>
+      </dependency>
   </dependencies>
     
   <build>
