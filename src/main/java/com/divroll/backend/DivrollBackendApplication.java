@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import com.divroll.backend.guice.SelfInjectingServerResourceModule;
 import com.divroll.backend.resource.jee.*;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
+import com.google.common.collect.Sets;
 import com.google.inject.Guice;
 import com.thoughtworks.xstream.annotations.XStreamConverter;
 import org.quartz.Scheduler;
@@ -38,9 +39,11 @@ import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
-import org.restlet.resource.Directory;
 import org.restlet.routing.Router;
+import org.restlet.engine.application.CorsFilter;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -87,50 +90,54 @@ public class DivrollBackendApplication extends Application {
     router.attach(ROOT_URI + "entities/{entityType}", JeeEntitiesServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/properties/{propertyName}", JeePropertyServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}", JeeEntityServerResource.class);
+    router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs", JeeBlobServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}/blobs/{blobName}", JeeBlobServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}/properties/{propertyName}", JeePropertyServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}/{targetEntityId}", JeeLinkServerResource.class);
     router.attach(ROOT_URI + "entities/{entityType}/{entityId}/links/{linkName}", JeeLinksServerResource.class);
-    router.attach(ROOT_URI + "blobs/{blobName}", JeeBlobServerResource.class);
+    router.attach(ROOT_URI + "blobs/{blobHash}", JeeBlobHashServerResource.class);
     router.attach(ROOT_URI + "files", JeeFileServerResource.class);
     router.attach(ROOT_URI + "files/{fileName}", JeeFileServerResource.class);
     router.attach(ROOT_URI + "files/{appId}/{fileName}", JeeFileServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}", JeeKeyValueServerResource.class);
     router.attach(ROOT_URI + "kv/{entityType}/{entityId}", JeeKeyValueServerResource.class);
-    router.attach(ROOT_URI + "functions/{functionName}/{methodName}", JeeFunctionMethodServerResource.class);
-    router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodesMethodServerResource.class);
+    router.attach(ROOT_URI + "customCodes/{customCodeName}", JeeCustomCodeServerResource.class);
     router.attach(ROOT_URI + "customCodes/{customCodeName}/{methodName}", JeeCustomCodeMethodServerResource.class);
     router.attach(ROOT_URI + "backups", JeeBackupServerResource.class);
     router.attach(ROOT_URI + "configurations", JeeConfigurationServerResource.class);
 
-//    CorsFilter corsFilter = new CorsFilter(getContext());
-//    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
-//    corsFilter.setSkippingResourceForCorsOptions(true);
-//    corsFilter.setAllowedHeaders(
-//        Sets.newHashSet(
-//            Constants.HEADER_MASTER_KEY,
-//            Constants.HEADER_MASTER_KEY.toLowerCase(),
-//            Constants.HEADER_API_KEY,
-//            Constants.HEADER_API_KEY.toLowerCase(),
-//            Constants.HEADER_APP_ID,
-//            Constants.HEADER_APP_ID.toLowerCase(),
-//            "X-Divroll-Namespace",
-//            "X-Divroll-Namespace".toLowerCase(),
-//            Constants.HEADER_AUTH_TOKEN,
-//            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
-//            Constants.HEADER_ACCEPT,
-//            Constants.HEADER_ACCEPT.toLowerCase(),
-//            Constants.HEADER_ACL_READ,
-//            Constants.HEADER_ACL_READ.toLowerCase(),
-//            Constants.HEADER_ACL_WRITE,
-//            Constants.HEADER_ACL_WRITE.toLowerCase(),
-//            Constants.HEADER_CONTENT_TYPE,
-//            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
-//    corsFilter.setAllowedCredentials(true);
-//
-//    corsFilter.setNext(router);
-//    return corsFilter;
-    return router;
+    CorsFilter corsFilter = new CorsFilter(getContext());
+    corsFilter.setAllowedOrigins(new HashSet(Arrays.asList("*")));
+    corsFilter.setSkippingResourceForCorsOptions(true);
+    corsFilter.setAllowedHeaders(
+        Sets.newHashSet(
+            Constants.HEADER_MASTER_KEY,
+            Constants.HEADER_MASTER_KEY.toLowerCase(),
+            Constants.HEADER_API_KEY,
+            Constants.HEADER_API_KEY.toLowerCase(),
+            Constants.HEADER_APP_ID,
+            Constants.HEADER_APP_ID.toLowerCase(),
+            Constants.HEADER_NAMESPACE,
+            Constants.HEADER_NAMESPACE.toLowerCase(),
+            Constants.HEADER_AUTH_TOKEN,
+            Constants.HEADER_AUTH_TOKEN.toLowerCase(),
+            Constants.HEADER_ACCEPT,
+            Constants.HEADER_ACCEPT.toLowerCase(),
+            Constants.HEADER_ACL_READ,
+            Constants.HEADER_ACL_READ.toLowerCase(),
+            Constants.HEADER_ACL_WRITE,
+            Constants.HEADER_ACL_WRITE.toLowerCase(),
+            Constants.HEADER_CONTENT_TYPE,
+            Constants.HEADER_CONTENT_TYPE.toLowerCase()));
+    corsFilter.setExposedHeaders(Sets.newHashSet(
+            Constants.HEADER_CONTENT_DISPOSITION,
+            Constants.HEADER_CONTENT_DISPOSITION.toLowerCase()
+    ));
+    corsFilter.setAllowedCredentials(true);
+
+    corsFilter.setNext(router);
+    return corsFilter;
+//    return router;
   }
 
   private void configureConverters() {

@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,10 +22,9 @@
 package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.wordnik.swagger.annotations.ApiModel;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
-
 import java.util.List;
-
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
  * @version 0-SNAPSHOT
@@ -34,6 +33,22 @@ import java.util.List;
 @XStreamAlias("entityType")
 public class EntityType {
   private String entityType;
+
+  private String entityId;
+
+  public EntityType() {}
+
+  public EntityType(String entityId) {
+    setEntityId(entityId);
+  }
+
+  public String getEntityId() {
+    return entityId;
+  }
+
+  public void setEntityId(String entityId) {
+    this.entityId = entityId;
+  }
 
   @XStreamImplicit(itemFieldName = "propertyTypes")
   private List<EntityPropertyType> propertyTypes;

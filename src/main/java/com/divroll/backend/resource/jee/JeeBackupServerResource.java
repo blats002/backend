@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,11 +23,16 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.model.Application;
 import com.divroll.backend.resource.BackupResource;
+import com.divroll.backend.xodus.XodusManager;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.CountingInputStream;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import jetbrains.exodus.entitystore.PersistentEntityStore;
+import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.util.CompressBackupUtil;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -40,6 +45,7 @@ import org.restlet.representation.Representation;
 import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.File;
+import java.io.InputStream;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -55,42 +61,58 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
   @Named("xodusRoot")
   String xodusRoot;
 
+  @Inject
+  XodusManager manager;
+
   @Override
   public void restore(Representation entity) {
-    if (isMaster()) {
-      if (entity == null) {
-        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-        return;
-      }
-      Application app = applicationService.read(appId);
-      if (app == null) {
-        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
-        return;
-      }
-      if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-        try {
-          DiskFileItemFactory factory = new DiskFileItemFactory();
-          factory.setSizeThreshold(1000240);
-          RestletFileUpload upload = new RestletFileUpload(factory);
-          FileItemIterator fileIterator = upload.getItemIterator(entity);
-          while (fileIterator.hasNext()) {
-            FileItemStream fi = fileIterator.next();
-            if (fi.getFieldName().equals(FILE_TO_UPLOAD)) {
-              byte[] byteArray = ByteStreams.toByteArray(fi.openStream());
-              // TODO unzip it to folder
+    try {
+      if (isMaster()) {
+        if (entity == null) {
+          setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          return;
+        }
+        Application app = applicationService.read(appId);
+        if (app == null) {
+          setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+          return;
+        }
+        if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+          try {
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            factory.setSizeThreshold(1000240);
+            RestletFileUpload upload = new RestletFileUpload(factory);
+            FileItemIterator fileIterator = upload.getItemIterator(entity);
+            while (fileIterator.hasNext()) {
+              FileItemStream fi = fileIterator.next();
+              if (fi.getFieldName().equals(FILE_TO_UPLOAD)) {
+                CountingInputStream countingInputStream = new CountingInputStream(fi.openStream());
+                LOG.info("Processing backup upload - octet stream - " + countingInputStream.getCount() + " bytes");
+                PersistentEntityStore store = manager.getPersistentEntityStore(xodusRoot, appId);
+                ZipUtil.unpack(countingInputStream, new File(store.getLocation()));
+              }
             }
+            setStatus(Status.SUCCESS_ACCEPTED);
+          } catch (Exception e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
           }
+        } else if(entity != null
+                && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
+          InputStream inputStream = entity.getStream();
+          CountingInputStream countingInputStream = new CountingInputStream(inputStream);
+          LOG.info("Processing backup upload - octet stream - " + countingInputStream.getCount() + " bytes");
+          PersistentEntityStore store = manager.getPersistentEntityStore(xodusRoot, appId);
+          ZipUtil.unpack(countingInputStream, new File(store.getLocation()));
           setStatus(Status.SUCCESS_ACCEPTED);
-        } catch (Exception e) {
-          setStatus(Status.SERVER_ERROR_INTERNAL);
+        } else {
+          setStatus(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
         }
       } else {
-        setStatus(Status.CLIENT_ERROR_UNSUPPORTED_MEDIA_TYPE);
+        setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
       }
-    } else {
-      setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+    } catch (Exception e) {
+      setStatus(Status.SERVER_ERROR_INTERNAL);
     }
-    return;
   }
 
   @Override
@@ -102,13 +124,13 @@ public class JeeBackupServerResource extends BaseServerResource implements Backu
         return null;
       }
       try {
-        String folderPath = xodusRoot + appId;
-        String zipPath = xodusRoot + appId + ".zip";
-        ZipUtil.pack(new File(folderPath), new File(zipPath));
-        File zipFile = new File(zipPath);
-        Representation representation = new FileRepresentation(zipFile, MediaType.APPLICATION_ZIP);
+
+        PersistentEntityStore store = manager.getPersistentEntityStore(xodusRoot, appId);
+        final File backupFile = CompressBackupUtil.backup(store, new File(store.getLocation(), "backups"), null, true);
+
+        Representation representation = new FileRepresentation(backupFile, MediaType.APPLICATION_ZIP);
         Disposition disposition = new Disposition(Disposition.TYPE_ATTACHMENT);
-        disposition.setFilename(appId); // TODO: Not working
+        disposition.setFilename(backupFile.getName());
         representation.setDisposition(disposition);
         setStatus(Status.SUCCESS_OK);
         return representation;

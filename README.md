@@ -1,167 +1,84 @@
-## Divroll Backend - run your own BaaS
+![Divroll Logo](https://avatars1.githubusercontent.com/u/30984522?s=200&v=4)
 
-Divroll Backend Server is
-built on top of [Jetbrains Xodus](https://github.com/JetBrains/xodus). 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-It is still in a very early stage but basic features are available. 
+## Welcome to backend
 
-The usage is very simple and requires no configuration. 
+backend is an Open Source, RESTful Backend as a Service for mobile apps, web apps and IoT devices.
+Self-contained and does not need any external database. It is built on top of [Jetbrains Xodus](https://github.com/JetBrains/xodus). 
 
-### Deploy 
+**Requirements:** JDK 8, Maven
 
-To run your own Divroll Backend Server, simply execute these commands:
+- [Features](#features)
+- [Installation](#installation)
+- [How to use](#how-to-use)
 
-```$xslt
+Features
+---
+
+- Multi-tenancy (same backend instance can be used for multiple apps)
+- User authentication (register, login, reset password)
+- Data persistence through 'Entities'
+- BeforeSave and AfterSave triggers
+- PubSub (created, updated, deleted, linked)
+- Custom Codes (server-side code extensions, Java and Javascript)
+- (Future) Database storage through Amazon S3 or S3-compatible storage
+
+Installation
+---
+To run your own backend server, simply execute this commands:
+
+```
 mvn jetty:run
 ```
 
+If you are deploying to a Jetty server or Tomcat server, please refer to their website on how to deploy.
+Alternatively, you can deploy to Heroku:
 
-If you are deploying to a Jetty server or Tomcat server, please refer to their website on how to deploy
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-### Usage
+How to use
+---
 
 #### Create a new Application
 
-In order to store key/values or entities to Divroll, create a application:
-
-```$xslt
-curl -X GET \
-  http://localhost:8080/thing/applications
 ```
+curl -X POST \
+  http://localhost:8080/divroll/applications/app-name
+```
+This will output access keys that can be used in the front-end.  
 
-Take note of the response as it cannot be retrieved again, response
-looks like this:
-
-```$xslt
+```
 {
     "application": {
-        "appId": "aec05bcb1cf245123fb6ca95a169e55b",
-        "apiKey": "897d706ca9d123cd879c563214284f67",
-        "masterKey": "cb95cc6105844b5e1237f3a8cd1f4caa"
+        apiKey: "a87ee2497fb643e88c60f1402538501c",
+        appId: "0d26c5084dc44b289b61eb152048dd1f",
+        appName: "app-name",
+        masterKey: "b94a2a04c1894282a0bb01ebb60a12b4"
     }
 }
 ```
 
-These keys will be required to "put" and "get" objects from the server.
-The `apiKey` and `masterKey` can be changed later but the `appId` cannot 
-be changed (by design for performance.)
+You should take note of the response as it cannot be retrieved again.
 
-
-#### Create an Entity
-
-```$xslt
-curl -X POST \
-  http://localhost:8080/thing/entities/messages/hello \
-  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -H 'X-Divroll-ACL-Read: ['\''*'\'']' \
-  -H 'X-Divroll-ACL-Write: ['\''*'\'']' \
-  -d world
-```
-
-#### Update an Entity
-
-```$xslt
-curl -X PUT \
-  http://localhost:8080/thing/entities/messages/hello \
-  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -H 'X-Divroll-ACL-Read: ['\''*'\'']' \
-  -H 'X-Divroll-ACL-Write: ['\''*'\'']' \
-  -d world again
-```
-
-#### Get an Entity
-```$xslt
-curl -X GET \
-  http://localhost:8080/thing/entities/messages/hello \
-  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b'
-```
-
-#### Changing the masterKey and apiKey
-
-```$xslt
-curl -X PUT \
-  https://localhost:8080/thing/applications \
-  -H 'Content-Type: application/json' \
-  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -H 'X-Divroll-Master-Key: cb95cc6105844b5e1237f3a8cd1f4caa' \
-  -d '{
-    "application": {
-        "apiKey": "NEW_API_KEY",
-        "masterKey": "NEW_MASTER_KEY"
-    }
-}'
-```
-
-### Users
-
-#### Create a User
-
-```$xslt
-curl -X POST \
-  http://localhost:8080/thing/entities/users \
-  -H 'Content-Type: application/json' \
-  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -d '{
-      	"user": {
-      		"username": "user",
-      		"password": "pass",
-      		"webToken": ""
-      	}
-      }'
-```
-
-Example response will be a token that can be used as `X-Divroll-Auth-Token` for future
-HTTP request:
+You can also create an application through the Backend Dashboard accessible via:
 
 ```
-{
-	"user": {
-		"webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
-	}
-}
+http://localhost:8080/app/
+``` 
 
-```
+Similarly, access keys cannot be retrieved again but are stored in the browser local storage. 
 
-#### Update a User
-```$xslt
-curl -X POST \
-  http://localhost:8080/thing/entities/users \
-  -H 'Content-Type: application/json' \
-  -H 'X-Divroll-Auth-Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9' \
-  -H 'X-Divroll-Api-Key: 897d706ca9d123cd879c563214284f67' \
-  -H 'X-Divroll-App-Id: aec05bcb1cf245123fb6ca95a169e55b' \
-  -d '{
-      	"user": {
-      		"username": "newuser",
-      		"password": "newpass",
-      		"webToken": ""
-      	}
-      }'
-```
+Checkout these examples for [Java](https://github.com/divroll/Backend-SDK-Java/tree/master/src/test/java/com/divroll/backend/sdk) and [GWT](https://github.com/divroll/Backend-SDK-GWT/tree/master/src/test/java/com/divroll/backend/sdk) 
 
-Example reponse will be like this:
+Client integrations
+---
 
-```
-{
-	"user": {
-		"webToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6ImRlbW8xMjMifQ.1WE2ZvCGnAcrMDuaIehDAeunpoM2oniRtgPAX_iZ_Rw"
-	}
-}
+- [GWT](https://github.com/divroll/Backend-SDK-GWT)
+- [Java](https://github.com/divroll/Backend-SDK-Java)
+- [Java/CustomCode]()
 
-```
-#### Delete a User
+License
+---
 
-##### TODO
-
-### Features
-
-Any type of entity can be stored to Divroll, texts, images or anything
-that can be saved. 
-
-Each entity stored contains a ACL (Access-Control-List) to control which 
-Users can access the entity. ACL's are set during POST and PUT method (Creation or update of entity).
-
+AGPL 3.0

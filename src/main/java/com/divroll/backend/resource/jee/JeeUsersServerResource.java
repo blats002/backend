@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -37,9 +37,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
-import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.xstream.XstreamRepresentation;
 import org.restlet.representation.Representation;
 import scala.actors.threadpool.Arrays;
 
@@ -105,15 +103,20 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             User user = userRepository.getUser(appId, namespace, defaultUserStore, queryUserId, includeLinks);
             Users users = new Users();
             users.setCount(1);
-            UserDTO userDTO = UserDTO.convert(user);
-            users.setResults(Arrays.asList(new UserDTO[]{userDTO}));
+            users.setResults(Arrays.asList(new User[]{user}));
             users.setSkip(0);
             users.setLimit(1);
             users.setCount(1);
-            Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-            String text = representation.getText();
-            System.out.println("--------------------->" + text);
-            return representation;
+
+            JSONObject responseBody = new JSONObject();
+            JSONObject usersJSONObj = new JSONObject();
+            usersJSONObj.put("results", Arrays.asList(new User[]{user}));
+            usersJSONObj.put("skip", 0);
+            usersJSONObj.put("limit", 1);
+            usersJSONObj.put("count", 1);
+
+            responseBody.put("users", usersJSONObj);
+            return success(responseBody);
         } else {
             List<User> processedResults = new LinkedList<>();
             List<User> results =
@@ -135,11 +138,16 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             if(lCount != null) {
                 users.setCount(lCount);
             }
-            setStatus(Status.SUCCESS_OK);
-            Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-            String text = representation.getText();
-            System.out.println("--------------------->" + text);
-            return representation;
+
+            JSONObject responseBody = new JSONObject();
+            JSONObject usersJSONObj = new JSONObject();
+            usersJSONObj.put("results", DTOHelper.convert(results));
+            usersJSONObj.put("skip", Long.valueOf(skipValue));
+            usersJSONObj.put("limit", Long.valueOf(limitValue));
+            responseBody.put("users", usersJSONObj);
+
+            return success(responseBody);
+
         }
       } else {
           if(authTokenQuery  != null) {
@@ -147,15 +155,21 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               User user = userRepository.getUser(appId, namespace, defaultUserStore, queryUserId, includeLinks);
               Users users = new Users();
               users.setCount(1);
-              UserDTO userDTO = UserDTO.convert(user);
-              users.setResults(Arrays.asList(new UserDTO[]{userDTO}));
+              users.setResults(Arrays.asList(new User[]{user}));
               users.setSkip(0);
               users.setLimit(1);
               users.setCount(1);
-              Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-              String text = representation.getText();
-              System.out.println("--------------------->" + text);
-              return representation;
+
+              JSONObject responseBody = new JSONObject();
+              JSONObject usersJSONObj = new JSONObject();
+              usersJSONObj.put("results", Arrays.asList(new User[]{user}));
+              usersJSONObj.put("skip", 0);
+              usersJSONObj.put("limit", 1);
+              usersJSONObj.put("count", 1);
+
+              responseBody.put("users", usersJSONObj);
+              return success(responseBody);
+
           } else {
               List<User> results =
                       userRepository.listUsers(
@@ -176,11 +190,15 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
               if(lCount != null) {
                   users.setCount(lCount);
               }
-              setStatus(Status.SUCCESS_OK);
-              Representation representation = new XstreamRepresentation<Users>(MediaType.APPLICATION_JSON, (Users) ObjectLogger.log(users));
-              String text = representation.getText();
-              System.out.println("--------------------->" + text);
-              return representation;
+
+              JSONObject responseBody = new JSONObject();
+              JSONObject usersJSONObj = new JSONObject();
+              usersJSONObj.put("results", DTOHelper.convert(results));
+              usersJSONObj.put("skip", Long.valueOf(skipValue));
+              usersJSONObj.put("limit", Long.valueOf(limitValue));
+              responseBody.put("users", usersJSONObj);
+
+              return success(responseBody);
           }
       }
     } catch (Exception e) {
@@ -191,7 +209,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
   }
 
   @Override
-  public UserDTO createUser(UserDTO entity) {
+  public User createUser(User entity) {
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -203,7 +221,6 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
       }
 
       LOG.with("NAMESPACE", namespace);
-      System.out.println("NAMESPACE="+namespace);
 
       String[] read = new String[] {};
       String[] write = new String[] {};
@@ -258,7 +275,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
       publicRead = entity.getPublicRead() != null ? entity.getPublicRead() : true;
       publicWrite = entity.getPublicWrite() != null ? entity.getPublicWrite() : true;
 
-      List<RoleDTO> roles = entity.getRoles();
+      List<Role> roles = entity.getRoles();
       String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
       User userEntity =
@@ -370,11 +387,11 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           }
           if (entityId != null) {
-            String webToken = webTokenService.createToken(app.getMasterKey(), entityId);
+            String authToken = webTokenService.createToken(app.getMasterKey(), entityId);
             User user = new User();
             user.setEntityId(entityId);
             user.setUsername(username);
-            user.setWebToken(webToken);
+            user.setAuthToken(authToken);
             user.setPublicRead(publicRead);
             user.setPublicWrite(publicWrite);
             user.setAclWrite(ACLHelper.convert(write));
@@ -392,7 +409,7 @@ public class JeeUsersServerResource extends BaseServerResource implements UsersR
 
             pubSubService.created(appId, namespace, defaultUserStore, entityId);
             setStatus(Status.SUCCESS_CREATED);
-            return UserDTO.convert((User) ObjectLogger.log(user));
+            return (User) ObjectLogger.log(user);
           } else {
             setStatus(Status.SERVER_ERROR_INTERNAL);
           }

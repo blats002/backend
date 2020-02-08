@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.resource;
 
-import com.divroll.backend.model.UserDTO;
+import com.divroll.backend.model.User;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
@@ -38,7 +38,7 @@ import org.restlet.resource.Put;
  */
 @Api(value = "User", description = "User resource")
 public interface UserResource {
-  @ApiOperation(value = "retrieve a webToken of user", tags = "user")
+  @ApiOperation(value = "retrieve a authToken of user", tags = "user")
   @ApiResponses({
     @ApiResponse(code = 200, message = "the updated application"),
     @ApiResponse(code = 404, message = "user not found"),
@@ -60,7 +60,7 @@ public interface UserResource {
             "unauthorized access, missing Application ID/API Key headers pair or missing Authentication Token")
   })
   @Put
-  Representation updateUser(UserDTO entity);
+  Representation updateUser(User entity);
 
   @ApiOperation(value = "delete existing user", tags = "user")
   @ApiResponses({
@@ -70,5 +70,5 @@ public interface UserResource {
         message = "unauthorized access, missing Application ID/API Key/Master Key headers")
   })
   @Delete
-  void deleteUser(UserDTO entity);
+  void deleteUser(User entity);
 }

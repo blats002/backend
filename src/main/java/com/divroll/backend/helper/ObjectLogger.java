@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,6 +21,11 @@
  */
 package com.divroll.backend.helper;
 
+import com.divroll.backend.email.EmailConfig;
+
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
+
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 
@@ -38,4 +43,5 @@ public class ObjectLogger {
     LOG.with(object).info("Logging object");
     return object;
   }
+
 }

@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,6 +33,7 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.service.ApplicationService;
 import com.divroll.backend.service.EntityService;
 import com.divroll.backend.service.SchemaService;
+import com.divroll.backend.util.Base64;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
@@ -51,6 +52,7 @@ import scala.actors.threadpool.Arrays;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -68,7 +70,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String appName;
   protected String entityId;
   protected String entityType;
+  protected String entityTypeQuery;
   protected String blobName;
+  protected String blobHash;
+  protected String contentDisposition;
   protected String appId;
   protected String namespace;
   protected String apiKey;
@@ -99,6 +104,9 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String linkType;
   protected String entityJson;
   protected String sourceEntityId;
+
+  protected String replaceAll;
+  protected String replaceWith;
 
   protected String masterToken;
 
@@ -139,12 +147,15 @@ public class BaseServerResource extends SelfInjectingServerResource {
     entityId = getAttribute(Constants.RESERVED_FIELD_ENTITY_ID);
     entityType = getAttribute(Constants.ENTITY_TYPE);
     blobName = getAttribute("blobName");
+    blobHash = getAttribute("blobHash");
     userId = getAttribute(Constants.USER_ID);
     roleId = getAttribute(Constants.ROLE_ID);
     propertyName = getAttribute("propertyName");
     linkName = getAttribute("linkName");
     targetEntityId = getAttribute("targetEntityId");
     sourceEntityId = getQueryValue("sourceEntityId");
+
+    entityTypeQuery = getQueryValue("entityType");
 
     if (linkName == null) {
       linkName = getQueryValue("linkName");
@@ -158,6 +169,33 @@ public class BaseServerResource extends SelfInjectingServerResource {
     username = getQueryValue(Constants.QUERY_USERNAME);
     sort = getQueryValue("sort");
 
+    if(blobName != null) {
+      try {
+        blobName = URLDecoder.decode(blobName, StandardCharsets.UTF_8.name());
+      } catch (UnsupportedEncodingException e) {
+        e.printStackTrace();
+      }
+    }
+
+
+    replaceAll = getQueryValue("replaceAll");
+    replaceWith = getQueryValue("replaceWith");
+
+    try {
+      if(replaceAll != null) {
+        replaceAll = URLDecoder.decode(replaceAll, "UTF-8");
+      }
+    } catch (UnsupportedEncodingException e) {
+
+    }
+
+    try {
+      if(replaceWith != null) {
+        replaceWith = URLDecoder.decode(replaceWith, "UTF-8");
+      }
+    } catch (UnsupportedEncodingException e) {
+
+    }
 
     Series headers = (Series) getRequestAttributes().get("org.restlet.http.headers");
 
@@ -265,6 +303,22 @@ public class BaseServerResource extends SelfInjectingServerResource {
       publicWrite = Boolean.valueOf(getQueryValue("publicWrite"));
     } catch (Exception e) {
 
+    }
+
+    if(blobHash != null && !blobHash.isEmpty()) {
+      try {
+        String jsonString = Base64.decode(blobHash);
+        org.json.JSONObject jsonObject = new org.json.JSONObject(jsonString);
+        appId = jsonObject.getString("appId");
+        apiKey = jsonObject.getString("apiKey");
+        entityType = jsonObject.getString("entityType");
+        entityId = jsonObject.getString("entityId");
+        blobName = jsonObject.getString("blobName");
+        //masterKey = jsonObject.getString("masterKey");
+        //contentDisposition = jsonObject.getString("contentDisposition");
+      } catch (Exception e) {
+
+      }
     }
 
     if (appId != null) {
@@ -375,7 +429,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
   }
 
   protected boolean isAuthorized() {
-    if ( (apiKey == null || apiKey.isEmpty()) && masterKey.isEmpty()) {
+    if ( (apiKey == null || apiKey.isEmpty()) && (masterKey == null || masterKey.isEmpty()) ) {
       return false;
     }
     if (application != null) {
@@ -515,6 +569,11 @@ public class BaseServerResource extends SelfInjectingServerResource {
     return null;
   }
 
+  protected Representation created() {
+    setStatus(Status.SUCCESS_CREATED);
+    return null;
+  }
+
   protected Representation created(org.json.JSONObject jsonObject) {
     setStatus(Status.SUCCESS_CREATED);
     if (jsonObject == null) {
@@ -621,5 +680,14 @@ public class BaseServerResource extends SelfInjectingServerResource {
   //        setStatus(Status.CLIENT_ERROR_NOT_FOUND);
   //        return response;
   //    }
+
+  protected String stackTraceToString(Throwable e) {
+    StringBuilder sb = new StringBuilder();
+    for (StackTraceElement element : e.getStackTrace()) {
+      sb.append(element.toString());
+      sb.append("\n");
+    }
+    return sb.toString();
+  }
 
 }

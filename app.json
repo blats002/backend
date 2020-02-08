@@ -1,0 +1,7 @@
+{
+  "name": "Divroll Backend Server",
+  "description": "backend is an Open Source, RESTful Backend as a Service for mobile apps, web apps and IoT devices.",
+  "repository": "https://github.com/divroll/backend-server",
+  "logo": "https://avatars1.githubusercontent.com/u/30984522?s=100&v=4",
+  "keywords": ["baas", "backend", "database", "java"]
+}

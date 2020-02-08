@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -148,7 +148,7 @@ public class JeeEntityService implements EntityService {
         return null;
     }
 
-    @Override
+  @Override
   public JSONObject createEntity(
       Application application,
       String namespace,
@@ -257,11 +257,6 @@ public class JeeEntityService implements EntityService {
           publicWrite = Boolean.valueOf((String) publicWriteComparable);
         }
       }
-
-      // System.out.println("READ: " + ((EmbeddedArrayIterable)
-      // comparableMap.get(Constants.RESERVED_FIELD_ACL_READ)).asJSONArray());
-      // System.out.println("WRITE: " + ((EmbeddedArrayIterable)
-      // comparableMap.get(Constants.RESERVED_FIELD_ACL_WRITE)).asJSONArray());
 
       if (comparableMap.get(Constants.RESERVED_FIELD_ACL_READ) != null) {
         EmbeddedArrayIterable iterable =
@@ -579,7 +574,7 @@ public class JeeEntityService implements EntityService {
       AstNode astNode = iter.next();
       if (astNode.getType() == Token.FUNCTION) {
         FunctionNode fNode = (FunctionNode) astNode;
-        System.out.println(
+        LOG.info(
             "*** function Name : "
                 + fNode.getName()
                 + ", paramCount : "
@@ -589,7 +584,6 @@ public class JeeEntityService implements EntityService {
         AstNode bNode = fNode.getBody();
         Block block = (Block) bNode;
         String source = block.toSource();
-        System.out.println("JS Source : " + source);
         functionBodyMap.put(fNode.getName(), source);
 
         JsFunction jsFunction = new JsFunction();
@@ -598,28 +592,6 @@ public class JeeEntityService implements EntityService {
         jsFunctions.add(jsFunction);
       }
     }
-
-    //        for(Iterator<AstNode> iter = statList.iterator(); iter.hasNext();) {
-    //            AstNode astNode = iter.next();
-    //            if(astNode.getType() == Token.EXPR_RESULT) {
-    //                ExpressionStatement expressionStatement = (ExpressionStatement) astNode;
-    //                FunctionCall fCallNode = (FunctionCall) expressionStatement.getExpression();
-    //                Name nameNode = (Name) fCallNode.getTarget();
-    //                AstNode arg = Iterables.getFirst(fCallNode.getArguments(), null);
-    //                System.out.println("*** function Name : " + nameNode.getIdentifier());
-    //                System.out.print("*** function Call : " + fCallNode.getArguments());
-    //                if(arg != null) {
-    //                    StringLiteral stringLiteral = (StringLiteral) arg;
-    //                    String entityType = stringLiteral.getValue();
-    //                    System.out.print("*** entity Type : " + entityType);
-    //                    JsFunction jsFunction = new JsFunction();
-    //                    jsFunction.setFunctionName(nameNode.getIdentifier());
-    //                    jsFunction.setArguments(Arrays.asList(new String[]{entityType}));
-    //                    jsFunction.setExpression(functionBodyMap.get(nameNode.getIdentifier()));
-    //                    jsFunctions.add(jsFunction);
-    //                }
-    //            }
-    //        }
 
     return jsFunctions;
   }

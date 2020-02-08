@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,6 +24,7 @@ package com.divroll.backend.repository.jee;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.model.*;
+import com.divroll.backend.model.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -218,10 +219,6 @@ public abstract class JeeBaseRespository {
                           txn.find(
                               entityType, filter.getPropertyName(), filter.getPropertyValue()));
                 }
-                //                        entityIterableResult[0].forEach(entity -> {
-                //                            System.out.println("entityId->" +
-                // entity.getId().toString());
-                //                        });
               } else {
                 entityIterableResult[0] =
                     entityIterableResult[0].union(

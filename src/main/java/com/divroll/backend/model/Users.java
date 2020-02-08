@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -36,17 +36,17 @@ import java.util.List;
 @ApiModel
 public class Users {
   @XStreamImplicit(itemFieldName = "results")
-  private List<UserDTO> results;
+  private List<User> results;
 
   private long skip;
   private long limit;
   private long count;
 
-  public List<UserDTO> getResults() {
+  public List<User> getResults() {
     return results;
   }
 
-  public void setResults(List<UserDTO> results) {
+  public void setResults(List<User> results) {
     this.results = results;
   }
 

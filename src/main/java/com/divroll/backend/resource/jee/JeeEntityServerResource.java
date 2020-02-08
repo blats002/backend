@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -196,7 +196,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
 
         if (aclRead != null) {
           try {
-            if (aclRead.isEmpty()) {
+            if (aclRead.isEmpty() || aclRead.equals("[]")) {
               read = new String[] {};
             } else {
               JSONArray jsonArray = JSONArray.parseArray(aclRead);
@@ -214,7 +214,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
 
         if (aclWrite != null) {
           try {
-            if (aclWrite.isEmpty()) {
+            if (aclWrite.isEmpty() || aclWrite.equals("[]")) {
               write = new String[] {};
             } else {
               JSONArray jsonArray = JSONArray.parseArray(aclWrite);
@@ -228,6 +228,18 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
           } catch (Exception e) {
             // do nothing
           }
+        }
+
+        try {
+          publicRead = (Boolean) comparableMap.get(Constants.RESERVED_FIELD_PUBLICREAD);
+        } catch (Exception e) {
+          // do nothing
+        }
+
+        try {
+          publicWrite = (Boolean) comparableMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+        } catch (Exception e) {
+          // do nothing
         }
 
         boolean isMaster = isMaster();
@@ -334,156 +346,154 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
           } else {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
           }
-        } else {
-          if (!isMaster) {
-            Map<String, Comparable> entityMap =
-                entityRepository.getEntity(appId, namespace, entityType, entityId, includeLinks);
-            String authUserId =
-                webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
-            if (entityMap == null) {
-              setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            } else {
-              Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
-              Boolean authUserIdWriteAllow = false;
+        } else { // !isMaster
+          Map<String, Comparable> entityMap =
+                  entityRepository.getEntity(appId, namespace, entityType, entityId, includeLinks);
+          String authUserId =
+                  webTokenService.readUserIdFromToken(getApp().getMasterKey(), authToken);
+          if (entityMap == null) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+          } else {
+            Boolean publicWrite = (Boolean) entityMap.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+            Boolean authUserIdWriteAllow = false;
 
-              List<EntityStub> aclWriteList = new LinkedList<EntityStub>();
-              if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
-                aclWriteList =
-                    (List<EntityStub>) (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE));
-              }
-              if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
-                  && ACLHelper.contains(authUserId, aclWriteList)) {
-                authUserIdWriteAllow = true;
-              }
-              if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
-                authUserIdWriteAllow = true;
-              } else if (authUserId != null) {
-                List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
-                for (Role role : roles) {
-                  if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
-                    authUserIdWriteAllow = true;
-                  }
+            List<EntityStub> aclWriteList = new LinkedList<EntityStub>();
+            if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null) {
+              aclWriteList =
+                      (List<EntityStub>) (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE));
+            }
+            if (entityMap.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                    && ACLHelper.contains(authUserId, aclWriteList)) {
+              authUserIdWriteAllow = true;
+            }
+            if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
+              authUserIdWriteAllow = true;
+            } else if (authUserId != null) {
+              List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
+              for (Role role : roles) {
+                if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
+                  authUserIdWriteAllow = true;
                 }
               }
+            }
 
-              if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
-                entityService.validateSchema(appId, namespace, entityType, comparableMap);
-                boolean success = false;
-                if (entityType.equalsIgnoreCase(defaultUserStore)) {
-                  if (beforeSave(comparableMap, appId, entityType)) {
-                    success =
-                        userRepository.updateUser(
-                            appId,
-                            namespace,
-                            entityId,
-                            entityId,
-                            comparableMap,
-                            read,
-                            write,
-                            publicRead,
-                            publicWrite);
-                    afterSave(comparableMap, appId, entityType);
-                  }
+            if ((publicWrite != null && publicWrite) || authUserIdWriteAllow) {
+              entityService.validateSchema(appId, namespace, entityType, comparableMap);
+              boolean success = false;
+              if (entityType.equalsIgnoreCase(defaultUserStore)) {
+                if (beforeSave(comparableMap, appId, entityType)) {
+                  success =
+                          userRepository.updateUser(
+                                  appId,
+                                  namespace,
+                                  entityId,
+                                  entityId,
+                                  comparableMap,
+                                  read,
+                                  write,
+                                  publicRead,
+                                  publicWrite);
                   afterSave(comparableMap, appId, entityType);
-                } else if (entityType.equalsIgnoreCase(defaultRoleStore)) {
-                  if (beforeSave(comparableMap, appId, entityType)) {
-                    success =
-                        roleRepository.updateRole(
-                            appId,
-                            namespace,
-                            entityType,
-                            entityId,
-                            comparableMap,
-                            read,
-                            write,
-                            publicRead,
-                            publicWrite);
-                    afterSave(comparableMap, appId, entityType);
-                  }
-                } else if (entityType.equalsIgnoreCase(defaultUserStore)) {
-                  comparableMap.forEach(
-                      (key, value) -> {
-                        if (key.equalsIgnoreCase("password")) {
-                          if (!(value instanceof String)) {
-                            throw new IllegalArgumentException(
-                                "Password should be a string literal");
+                }
+                afterSave(comparableMap, appId, entityType);
+              } else if (entityType.equalsIgnoreCase(defaultRoleStore)) {
+                if (beforeSave(comparableMap, appId, entityType)) {
+                  success =
+                          roleRepository.updateRole(
+                                  appId,
+                                  namespace,
+                                  entityType,
+                                  entityId,
+                                  comparableMap,
+                                  read,
+                                  write,
+                                  publicRead,
+                                  publicWrite);
+                  afterSave(comparableMap, appId, entityType);
+                }
+              } else if (entityType.equalsIgnoreCase(defaultUserStore)) {
+                comparableMap.forEach(
+                        (key, value) -> {
+                          if (key.equalsIgnoreCase("password")) {
+                            if (!(value instanceof String)) {
+                              throw new IllegalArgumentException(
+                                      "Password should be a string literal");
+                            }
+                            String hashPassword = BCrypt.hashpw((String) value, BCrypt.gensalt());
+                            comparableMap.put(key, hashPassword);
                           }
-                          String hashPassword = BCrypt.hashpw((String) value, BCrypt.gensalt());
-                          comparableMap.put(key, hashPassword);
-                        }
-                      });
-                  if (beforeSave(comparableMap, appId, entityType)) {
-                    success =
-                        userRepository.updateUser(
-                            appId,
-                            namespace,
-                            entityType,
-                            entityId,
-                            comparableMap,
-                            read,
-                            write,
-                            publicRead,
-                            publicWrite);
-                    if (success) {
-                      afterSave(comparableMap, appId, entityType);
-                    }
-                  } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                  }
-                } else if (entityType.equalsIgnoreCase(defaultFunctionStore)) {
-                  if (beforeSave(comparableMap, appId, entityType)) {
-                    success =
-                        entityRepository.updateEntity(
-                            appId,
-                            namespace,
-                            entityType,
-                            entityId,
-                            comparableMap,
-                            read,
-                            write,
-                            publicRead,
-                            publicWrite,
-                            new EntityMetadataBuilder()
-                                .uniqueProperties(
-                                    Arrays.asList(
-                                        new String[] {Constants.RESERVED_FIELD_FUNCTION_NAME}))
-                                .build());
-                    if (success) {
-                      afterSave(comparableMap, appId, entityType);
-                    }
-                  } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                        });
+                if (beforeSave(comparableMap, appId, entityType)) {
+                  success =
+                          userRepository.updateUser(
+                                  appId,
+                                  namespace,
+                                  entityType,
+                                  entityId,
+                                  comparableMap,
+                                  read,
+                                  write,
+                                  publicRead,
+                                  publicWrite);
+                  if (success) {
+                    afterSave(comparableMap, appId, entityType);
                   }
                 } else {
-                  if (beforeSave(comparableMap, appId, entityType)) {
-                    success =
-                        entityRepository.updateEntity(
-                            appId,
-                            namespace,
-                            entityType,
-                            entityId,
-                            comparableMap,
-                            read,
-                            write,
-                            publicRead,
-                            publicWrite,
-                            new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
-                    if (success) {
-                      afterSave(comparableMap, appId, entityType);
-                    }
-                  } else {
-                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-                  }
+                  setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }
-                if (success) {
-                  pubSubService.updated(appId, namespace, entityType, entityId);
-                  setStatus(Status.SUCCESS_OK);
+              } else if (entityType.equalsIgnoreCase(defaultFunctionStore)) {
+                if (beforeSave(comparableMap, appId, entityType)) {
+                  success =
+                          entityRepository.updateEntity(
+                                  appId,
+                                  namespace,
+                                  entityType,
+                                  entityId,
+                                  comparableMap,
+                                  read,
+                                  write,
+                                  publicRead,
+                                  publicWrite,
+                                  new EntityMetadataBuilder()
+                                          .uniqueProperties(
+                                                  Arrays.asList(
+                                                          new String[] {Constants.RESERVED_FIELD_FUNCTION_NAME}))
+                                          .build());
+                  if (success) {
+                    afterSave(comparableMap, appId, entityType);
+                  }
                 } else {
                   setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }
               } else {
-                setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
+                if (beforeSave(comparableMap, appId, entityType)) {
+                  success =
+                          entityRepository.updateEntity(
+                                  appId,
+                                  namespace,
+                                  entityType,
+                                  entityId,
+                                  comparableMap,
+                                  read,
+                                  write,
+                                  publicRead,
+                                  publicWrite,
+                                  new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+                  if (success) {
+                    afterSave(comparableMap, appId, entityType);
+                  }
+                } else {
+                  setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                }
               }
+              if (success) {
+                pubSubService.updated(appId, namespace, entityType, entityId);
+                setStatus(Status.SUCCESS_OK);
+              } else {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+              }
+            } else {
+              setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             }
           }
         }

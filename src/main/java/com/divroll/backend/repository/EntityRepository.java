@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -99,6 +99,8 @@ public interface EntityRepository {
 
   boolean deleteEntities(String instance, String namespace, String entityType);
 
+  boolean deleteEntities(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue);
+
   boolean deleteEntityType(String instance, String namespace, String entityType);
 
   boolean linkEntity(
@@ -154,6 +156,8 @@ public interface EntityRepository {
 
   InputStream getEntityBlob(
       String instance, String namespace, String entityType, String entityId, String blobKey);
+
+  Boolean replaceBlobName(String instance, String namespace, String entityType, String entityId, String pattern, String replacement);
 
   Long countEntityBlobSize(String instance, String namespace, String entityType, String entityId, String blobKey);
 

@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -105,7 +105,9 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -121,7 +123,9 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
               entityId[0] = entity.getId().toString();
 
               if (actions != null) {
@@ -206,7 +210,10 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                   }
                 }
               }
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -220,7 +227,11 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
                   }
                 }
               }
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
+
               entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
 
               success[0] = true;
@@ -349,7 +360,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               Entity roleEntity = txn.getEntity(roleEntityId);
               userEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               roleEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
-              success[0] = userEntity.addLink(Constants.ROLE_NAME, roleEntity);
+              success[0] = userEntity.addLink(Constants.ROLE_LINKNAME, roleEntity);
             }
           });
     } finally {
@@ -378,7 +389,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               Entity roleEntity = txn.getEntity(roleEntityId);
               userEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               roleEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
-              success[0] = userEntity.deleteLink(Constants.ROLE_NAME, roleEntity);
+              success[0] = userEntity.deleteLink(Constants.ROLE_LINKNAME, roleEntity);
             }
           });
     } finally {
@@ -405,7 +416,7 @@ public class JeeRoleRepository extends JeeBaseRespository implements RoleReposit
               EntityId roleEntityId = txn.toEntityId(roleID);
               Entity userEntity = txn.getEntity(userEntityId);
               Entity roleEntity = txn.getEntity(roleEntityId);
-              Entity linkedRole = userEntity.getLink(Constants.ROLE_NAME);
+              Entity linkedRole = userEntity.getLink(Constants.ROLE_LINKNAME);
               success[0] = linkedRole.getId().toString().equals(roleEntity.getId().toString());
             }
           });

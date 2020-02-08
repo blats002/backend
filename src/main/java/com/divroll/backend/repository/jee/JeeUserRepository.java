@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,6 +25,7 @@ import com.divroll.backend.Constants;
 import com.divroll.backend.model.*;
 import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.builder.EntityClass;
+import com.divroll.backend.model.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -35,7 +36,6 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.*;
 import org.jetbrains.annotations.NotNull;
 import scala.actors.threadpool.Arrays;
-import util.ComparableLinkedList;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -116,7 +116,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -130,7 +132,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
 
               for (Object roleId : Arrays.asList(roles)) {
                 String id = (String) roleId;
@@ -322,7 +326,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              if(publicRead != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+              }
 
               if (write != null) {
                 List<String> aclWrite = Arrays.asList(write);
@@ -337,7 +343,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 }
               }
 
-              entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              if(publicWrite != null) {
+                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+              }
 
               List<String> roleList = Arrays.asList(roles);
               if (!roleList.isEmpty()) {
@@ -439,7 +447,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                if(publicRead != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                }
               }
 
               if (write != null) {
@@ -453,7 +463,9 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                if(publicWrite != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                }
               }
 
               // Update missing role link
@@ -591,7 +603,7 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   }
                   user.setLinks(links);
                 }
-
+                user.setBlobNames(userEntity.getBlobNames());
                 entity[0] = user;
               }
             }
@@ -638,6 +650,8 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                     userEntity.getProperty("email") != null
                         ? (String) userEntity.getProperty("email")
                         : null);
+                user.setBlobNames(userEntity.getBlobNames());
+
                 List<Role> roles = new LinkedList<>();
                 for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                   Role role = new Role();
@@ -793,9 +807,6 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                                     .concat(txn.find(entityType, "publicRead", true));
                   }
 
-                  System.out.println("COUNT NOT MASTER 5=" + result.size());
-
-
                 } else {
                   result =
                           txn.findLinks(entityType, targetEntity, "aclRead")
@@ -810,9 +821,6 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                   for(String roleName : roleNames){
                     Entity roleEntity = txn.find(defaultRoleStore, "name", roleName).getFirst();
                     EntityIterable entitiesWithGivenRole = roleEntity.getLinks(Constants.USERS_LINKNAME);
-//                    System.out.println("roleName=" + roleName);
-//                    System.out.println("roleId=" + roleEntity.getId());
-//                    System.out.println("entitiesWithGivenRole=" + entitiesWithGivenRole.count());
                     result = result.intersect(entitiesWithGivenRole);
                   }
                 }
@@ -836,6 +844,8 @@ public class JeeUserRepository extends JeeBaseRespository implements UserReposit
                 user.setUsername(
                     (String) userEntity.getProperty(Constants.RESERVED_FIELD_USERNAME));
                 user.setEmail((String) userEntity.getProperty("email"));
+                user.setBlobNames(userEntity.getBlobNames());
+
                 for (Entity roleEntity : userEntity.getLinks(Constants.ROLE_LINKNAME)) {
                   Role role = new Role();
                   role.setEntityId(roleEntity.getId().toString());

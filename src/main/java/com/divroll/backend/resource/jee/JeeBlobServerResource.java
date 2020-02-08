@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,6 +23,7 @@ package com.divroll.backend.resource.jee;
 
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
+import com.divroll.backend.helper.Comparables;
 import com.divroll.backend.helper.JSON;
 import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.Application;
@@ -60,9 +61,12 @@ import org.restlet.ext.servlet.ServletUtils;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
+import util.ComparableLinkedList;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +89,27 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
   @Inject PubSubService pubSubService;
 
   @Override
+  protected void doInit() {
+    super.doInit();
+    if(blobName == null || blobName.isEmpty()) {
+      blobName = getQueryValue("blobName");
+    }
+    try {
+      if(blobName != null) {
+        blobName = URLDecoder.decode(blobName, "UTF-8");
+      }
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override
   public Representation setBlob(Representation entity) {
+
+    LOG.info("Method setBlob called");
+    LOG.info("Media type - " + entity.getMediaType());
+    LOG.info("Media size - " + entity.getSize());
+
     try {
 
       if (entity == null || entity.isEmpty()) {
@@ -154,6 +178,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
           }
 
           if (encoding != null && encoding.equals("base64")) {
+            LOG.info("Media type - " + "base64");
             String base64 = entity.getText();
             byte[] bytes = BaseEncoding.base64().decode(base64);
             InputStream inputStream = ByteSource.wrap(bytes).openStream();
@@ -183,7 +208,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
             }
           } else {
             if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-
+              LOG.info("Media type - " + entity.getMediaType());
               String writeOver = getQueryValue("writeOver");
               CreateOption.CREATE_OPTION createOption = null;
               if(writeOver != null) {
@@ -278,6 +303,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
             String base64 = entity.getText();
             byte[] bytes = BaseEncoding.base64().decode(base64);
             InputStream inputStream = ByteSource.wrap(bytes).openStream();
+            LOG.info("Creating entity blob - base64");
             if (entityRepository.createEntityBlob(
                 appId, namespace, entityType, entityId, blobName, inputStream)) {
               pubSubService.updated(appId, namespace, entityType, entityId);
@@ -292,14 +318,17 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
               HttpServletRequest servletRequest = ServletUtils.getRequest(restletRequest);
               ServletFileUpload upload = new ServletFileUpload();
               FileItemIterator fileIterator = upload.getItemIterator(servletRequest);
+              LOG.info("File Item iterator - " + fileIterator.hasNext());
               while (fileIterator.hasNext()) {
                 FileItemStream item = fileIterator.next();
                 String fieldName = item.getFieldName();
                 String name = item.getName();
+                LOG.info("Item isFormField - " + item.isFormField());
                 if (item.isFormField()) {
                 } else {
                   CountingInputStream countingInputStream =
                       new CountingInputStream(item.openStream());
+                  LOG.info("Creating entity blob - multipart form data - " + item.getContentType());
                   if (entityRepository.createEntityBlob(
                       appId, namespace, entityType, entityId, blobName, countingInputStream)) {
                     pubSubService.updated(appId, namespace, entityType, entityId);
@@ -313,6 +342,7 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
                 && MediaType.APPLICATION_OCTET_STREAM.equals(entity.getMediaType())) {
               InputStream inputStream = entity.getStream();
               CountingInputStream countingInputStream = new CountingInputStream(inputStream);
+              LOG.info("Creating entity blob - octet stream - " + countingInputStream.getCount() + " bytes");
               if (entityRepository.createEntityBlob(
                   appId, namespace, entityType, entityId, blobName, countingInputStream)) {
                 pubSubService.updated(appId, namespace, entityType, entityId);
@@ -320,9 +350,10 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
               } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
               }
+            } else {
+              badRequest();
             }
           }
-
         } else {
           setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
         }
@@ -338,7 +369,63 @@ public class JeeBlobServerResource extends BaseServerResource implements BlobRes
 
   @Override
   public Representation updateBlob(Representation entity) {
-    return setBlob(entity);
+    if(replaceAll != null) {
+      if(replaceWith == null) {
+        return badRequest();
+      }
+    } else {
+      return setBlob(entity);
+    }
+    Application app = applicationService.read(appId);
+    if (app == null) {
+      setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+      return null;
+    }
+
+    String authUserId = null;
+
+    boolean isWriteAccess = false;
+    boolean isMaster = false;
+    boolean isPublic = false;
+
+    try {
+      authUserId = webTokenService.readUserIdFromToken(app.getMasterKey(), authToken);
+    } catch (Exception e) {
+      // do nothing
+    }
+
+    Map<String, Comparable> map =
+            entityRepository.getEntity(appId, namespace, entityType, entityId, null);
+    List<EntityStub> aclWriteList =
+            map.get(Constants.RESERVED_FIELD_ACL_WRITE) != null
+                    ? (List<EntityStub>) map.get(Constants.RESERVED_FIELD_ACL_WRITE)
+                    : new LinkedList<>();
+
+    if (map.get(Constants.RESERVED_FIELD_PUBLICWRITE) != null) {
+      isPublic = (boolean) map.get(Constants.RESERVED_FIELD_PUBLICWRITE);
+    }
+
+    if (isMaster()) {
+      isMaster = true;
+    } else if (authUserId != null && ACLHelper.contains(authUserId, aclWriteList)) {
+      isWriteAccess = true;
+    } else if (authUserId != null) {
+      List<Role> roles = roleRepository.getRolesOfEntity(appId, namespace, authUserId);
+      for (Role role : roles) {
+        if (ACLHelper.contains(role.getEntityId(), aclWriteList)) {
+          isWriteAccess = true;
+        }
+      }
+    }
+
+    if (isMaster || isWriteAccess || isPublic) {
+      if(entityRepository.replaceBlobName(appId, namespace, entityType, entityId, replaceAll, replaceWith)) {
+        setStatus(Status.SUCCESS_OK);
+      } else {
+        setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+      }
+    }
+    return null;
   }
 
   @Override

@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,9 +22,7 @@
 package com.divroll.backend.helper;
 
 import com.divroll.backend.model.Role;
-import com.divroll.backend.model.RoleDTO;
 import com.divroll.backend.model.User;
-import com.divroll.backend.model.UserDTO;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,60 +33,29 @@ import java.util.List;
  * @since 0-SNAPSHOT
  */
 public class DTOHelper {
-  public static String[] roleIdsOnly(List<RoleDTO> roleDTOS) {
+  public static String[] roleIdsOnly(List<Role> roleDTOS) {
     if (roleDTOS == null) {
       return null;
     }
     String[] roleArray = new String[roleDTOS.size()];
     int idx = 0;
-    for (RoleDTO roleDTO : roleDTOS) {
+    for (Role roleDTO : roleDTOS) {
       roleArray[idx] = roleDTO.getEntityId();
       idx++;
     }
     return roleArray;
   }
 
-  public static List<UserDTO> convert(List<User> users) {
-    List<UserDTO> userDTOS = null;
+  public static List<User> convert(List<User> users) {
+    List<User> userDTOS = null;
     if (users == null) {
       return null;
     }
     for (User user : users) {
       if (userDTOS == null) {
-        userDTOS = new LinkedList<UserDTO>();
+        userDTOS = new LinkedList<User>();
       }
-//
-//      UserDTO userDTO = new UserDTO();
-//      userDTO.setEntityId(user.getEntityId());
-//      userDTO.setAclRead(user.getAclRead());
-//      userDTO.setAclWrite(user.getAclWrite());
-//
-//      userDTO.setPassword(user.getPassword());
-//      userDTO.setUsername(user.getUsername());
-//      userDTO.setEmail(user.getEmail());
-//      userDTO.setWebToken(user.getWebToken());
-//
-//      userDTO.setPublicRead(user.getPublicRead());
-//      userDTO.setPublicWrite(user.getPublicWrite());
-//
-//      userDTO.setDateCreated(user.getDateCreated());
-//      userDTO.setDateUpdated(user.getDateUpdated());
-//
-//      if (user.getRoles() != null) {
-//        List<RoleDTO> roles = null;
-//        for (Role role : user.getRoles()) {
-//          if (roles == null) {
-//            roles = new LinkedList<>();
-//          }
-//          roles.add(new RoleDTO(role.getEntityId()));
-//        }
-//        userDTO.setRoles(roles);
-//        userDTOS.add(userDTO);
-//      }
-
-      UserDTO userDTO = UserDTO.convert(user);
-      userDTOS.add(userDTO);
-
+      userDTOS.add(user);
     }
     return userDTOS;
   }

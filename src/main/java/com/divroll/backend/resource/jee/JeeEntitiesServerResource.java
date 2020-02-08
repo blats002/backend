@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import com.divroll.backend.helper.JSON;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.action.ImmutableBacklinkAction;
 import com.divroll.backend.model.action.ImmutableLinkAction;
+import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.CreateOptionBuilder;
 import com.divroll.backend.model.builder.EntityMetadataBuilder;
 import com.divroll.backend.repository.EntityRepository;
@@ -135,24 +136,55 @@ public class JeeEntitiesServerResource extends BaseServerResource implements Ent
               ImmutableLinkAction.builder().linkName(linkName).entityId(linkFrom).build());
         }
 
+
+
         Map<String, Comparable> comparableMap = JSON.jsonToMap(entityJSONObject);
-        JSONObject response =
-            entityService.createEntity(
-                getApp(),
-                namespace,
-                entityType,
-                comparableMap,
-                aclRead,
-                aclWrite,
-                publicRead,
-                publicWrite,
-                actions,
-                entityActions,
-                new CreateOptionBuilder()
-                        .createOption(null)
-                        .referencePropertyName(null)
-                        .build(),
-                new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+        JSONObject response = null;
+
+        if( (entityTypeQuery != null && !entityTypeQuery.isEmpty()) && (linkName != null && !linkName.isEmpty()) ) {
+          Boolean setLinkType = false;
+          if(linkType != null && linkType.equals("set")) {
+            setLinkType = true;
+          }
+          response =
+                  entityService.createEntity(
+                          getApp(),
+                          namespace,
+                          entityType,
+                          comparableMap,
+                          aclRead,
+                          aclWrite,
+                          publicRead,
+                          publicWrite,
+                          actions,
+                          entityActions,
+                          new CreateOptionBuilder()
+                                  .createOption(CreateOption.CREATE_OPTION.CREATE_ENTITY_THEN_LINK)
+                                  .linkedEntityType(entityTypeQuery)
+                                  .linkedEntityLinkName(linkName)
+                                  .linkedEntityLinkType(setLinkType)
+                                  .build(),
+                          new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+        } else {
+          response =
+                  entityService.createEntity(
+                          getApp(),
+                          namespace,
+                          entityType,
+                          comparableMap,
+                          aclRead,
+                          aclWrite,
+                          publicRead,
+                          publicWrite,
+                          actions,
+                          entityActions,
+                          new CreateOptionBuilder()
+                                  .createOption(null)
+                                  .referencePropertyName(null)
+                                  .build(),
+                          new EntityMetadataBuilder().uniqueProperties(uniqueProperties).build());
+        }
+
         if (entityType.equals(defaultUserStore)) {
           response.remove(Constants.RESERVED_FIELD_PASSWORD);
         }

@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -59,7 +59,7 @@ public class EmailUtil {
       String subject,
       String body)
       throws MessagingException, UnsupportedEncodingException {
-    System.out.println("*** Sending email via SMTP ***");
+    LOG.info("*** Sending email via SMTP ***");
 
     MimeMessage msg = new MimeMessage(session);
     // set message headers
@@ -77,10 +77,10 @@ public class EmailUtil {
 
     Transport.send(msg);
     LOG.info("EMail Sent Successfully");
-    //        System.out.println("*** Sending email via Postmark ***");
+    //        LOG.info("*** Sending email via Postmark ***");
     //        ApiClient client = Postmark.getApiClient("");
-    //        Message message = new Message("developers@***REMOVED***",
-    // "developers@***REMOVED***", "Hello from Postmark!", "Hello message body");
+    //        Message message = new Message("",
+    // "", "Hello from Postmark!", "Hello message body");
     //        try {
     //            MessageResponse response = client.deliverMessage(message);
     //        } catch (PostmarkException e) {

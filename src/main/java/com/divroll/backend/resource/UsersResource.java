@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,7 +21,7 @@
  */
 package com.divroll.backend.resource;
 
-import com.divroll.backend.model.UserDTO;
+import com.divroll.backend.model.User;
 import com.divroll.backend.model.Users;
 import com.wordnik.swagger.annotations.*;
 import org.restlet.representation.Representation;
@@ -44,7 +44,7 @@ public interface UsersResource {
         message = "unauthorized access, missing Application ID/API Key headers pair")
   })
   @Post
-  UserDTO createUser(UserDTO entity);
+  User createUser(User entity);
 
   @ApiOperation(value = "list users", tags = "user")
   @ApiResponses({

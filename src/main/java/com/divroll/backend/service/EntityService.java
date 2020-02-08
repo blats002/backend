@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,6 +26,7 @@ import com.divroll.backend.model.action.Action;
 import com.divroll.backend.model.action.EntityAction;
 import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityACL;
+import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityMetadata;
 import org.json.JSONObject;
 
@@ -45,6 +46,11 @@ public interface EntityService {
                                        String entityType,
                                        String propertyName,
                                        Comparable propertyValue);
+
+//  JSONObject createEntities(
+//          Application application,
+//          String namespace,
+//          List<EntityClass> entities);
 
   JSONObject createEntity(
       Application application,

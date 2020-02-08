@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,6 +23,7 @@ package com.divroll.backend.model;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
@@ -40,21 +41,28 @@ public class Role {
   private String entityId;
   private String name;
 
+  //@XStreamOmitField
   @XStreamImplicit(itemFieldName = "aclRead")
   @ApiModelProperty(required = false, value = "")
   private List<EntityStub> aclRead;
 
+  //@XStreamOmitField
   @XStreamImplicit(itemFieldName = "aclWrite")
   @ApiModelProperty(required = false, value = "")
   private List<EntityStub> aclWrite;
 
+  //@XStreamOmitField
   @ApiModelProperty(required = false, value = "")
   private Boolean publicRead;
 
+  //@XStreamOmitField
   @ApiModelProperty(required = false, value = "")
   private Boolean publicWrite;
 
+  //@XStreamOmitField
   private String dateCreated;
+
+  //@XStreamOmitField
   private String dateUpdated;
 
   public Role() {}

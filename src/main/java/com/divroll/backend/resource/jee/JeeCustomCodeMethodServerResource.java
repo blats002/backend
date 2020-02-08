@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,8 +24,9 @@ package com.divroll.backend.resource.jee;
 import com.alibaba.fastjson.JSON;
 import com.divroll.backend.customcode.MethodVerb;
 import com.divroll.backend.customcode.rest.CustomCodeRequest;
-import com.divroll.backend.functions.CustomCode;
-import com.divroll.backend.repository.FunctionRepository;
+import com.divroll.backend.customcode.rest.CustomCodeResponse;
+import com.divroll.backend.customcodes.CustomCode;
+import com.divroll.backend.repository.CustomCodeRepository;
 import com.divroll.backend.resource.CustomCodeMethodResource;
 import com.divroll.backend.util.StringUtil;
 import com.godaddy.logging.Logger;
@@ -54,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -65,21 +67,28 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 
   private static final Logger LOG = LoggerFactory.getLogger(JeeApplicationServerResource.class);
   private static final String HEADERS_KEY = "org.restlet.http.headers";
+  private static final int DEFAULT_TIMEOUT = 60;
 
-  @Inject FunctionRepository functionRepository;
+  @Inject
+  CustomCodeRepository customCodeRepository;
 
   String customCodeName;
   String methodName;
+  int customCodeTimeout = DEFAULT_TIMEOUT;
 
   @Override
   protected void doInit() {
     super.doInit();
     customCodeName = getAttribute("customCodeName");
     methodName = getAttribute("methodName");
+    String CUSTOM_CODE_TIMEOUT = System.getenv("CUSTOM_CODE_TIMEOUT");
+    if(CUSTOM_CODE_TIMEOUT != null && !CUSTOM_CODE_TIMEOUT.isEmpty()) {
+      customCodeTimeout = Integer.valueOf(CUSTOM_CODE_TIMEOUT);
+    }
   }
 
-  private InputStream getJar(String appId, String functionName) {
-    InputStream jarBytes = functionRepository.retrieveFunctionEntity(appId, namespace, functionName);
+  private InputStream getJar(String appId, String customCodeName) {
+    InputStream jarBytes = customCodeRepository.getCustomCode(appId, namespace, customCodeName);
     return jarBytes;
   }
 
@@ -90,11 +99,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
       InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.GET, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodePost(
@@ -104,11 +113,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.POST, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodePut(
@@ -118,11 +127,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.PUT, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   private void customCodeDelete(
@@ -132,11 +141,11 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
           InputStream body,
       String methodName,
       int counter,
-      CompletableFuture<Map<String, ?>> future) throws IOException {
+      CompletableFuture<CustomCodeResponse> future) throws IOException {
     CustomCodeRequest request =
         new CustomCodeRequest(MethodVerb.DELETE, path, params, body, methodName, counter);
     CustomCode customCode = new CustomCode(ByteStreams.toByteArray(jarBytes), future);
-    customCode.executeMainClass(request);
+    customCode.executeMainClass(request, customCodeTimeout);
   }
 
   protected String stackTraceToString(Throwable e) {
@@ -153,8 +162,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if (!isAuthorized()) {
       return unauthorized();
     }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCOde Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -176,18 +185,31 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        long startTime = System.nanoTime();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
+        CustomCodeResponse futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
         customCodeGet(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -203,8 +225,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
 //    if (!isAuthorized()) {
 //      return unauthorized();
 //    }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCode Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -243,18 +265,32 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+
+        long startTime = System.nanoTime();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodePost(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
+        CustomCodeResponse futureResult = future.get();
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -270,8 +306,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if (!isAuthorized()) {
       return unauthorized();
     }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCode Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -293,18 +329,32 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+
+        long startTime = System.nanoTime();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodePut(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
+
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }
@@ -320,8 +370,8 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
     if (!isAuthorized()) {
       return unauthorized();
     }
-    LOG.info("Function Name: " + customCodeName);
-    LOG.info("Function Method: " + methodName);
+    LOG.info("CustomCode Name: " + customCodeName);
+    LOG.info("CustomCode Method: " + methodName);
     InputStream jarBytes = getJar(appId, customCodeName);
     if (jarBytes == null) {
       return notFound();
@@ -343,18 +393,31 @@ public class JeeCustomCodeMethodServerResource extends BaseServerResource
             params.put(query.getName(), query.getValue());
           });
         }
-        CompletableFuture<Map<String, ?>> future = new CompletableFuture<Map<String, ?>>();
+        long startTime = System.nanoTime();
+        CompletableFuture<CustomCodeResponse> future = new CompletableFuture<CustomCodeResponse>();
         customCodeDelete(jarBytes, path, params, is, methodName, 0, future);
-        Map<String, ?> futureResult = future.get();
+        CustomCodeResponse futureResult = future.get();
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+        long totalTimeMs = TimeUnit.MILLISECONDS.convert(totalTime, TimeUnit.NANOSECONDS);
+        LOG.info("CustomCode execution time: " + totalTimeMs + " ms");
+
         if (futureResult != null) {
-          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult));
+          byte[] toStream = StringUtil.toByteArray(JSONValue.toJSONString(futureResult.getResponseMap()));
           HttpServletResponse response = ServletUtils.getResponse(getResponse());
           response.setHeader("Content-Length", toStream.length + "");
+          response.setHeader("Access-Control-Allow-Origin", "*");
+          response.setHeader("Access-Control-Allow-Methods", "*");
+          response.setStatus(futureResult.getResponseStatus());
           response.getOutputStream().write(toStream);
           response.getOutputStream().flush();
           response.getOutputStream().close();
+        } else {
+          HttpServletResponse response = ServletUtils.getResponse(getResponse());
+          response.getOutputStream().flush();
+          response.getOutputStream().close();
         }
-        LOG.info("Custom Code Response: " + JSON.toJSONString(futureResult));
+        LOG.info("CustomCode Response: " + JSON.toJSONString(futureResult));
       } else {
         return notFound();
       }

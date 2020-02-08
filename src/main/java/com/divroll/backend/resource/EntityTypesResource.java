@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -31,7 +31,9 @@ import org.restlet.resource.Get;
  * @since 0-SNAPSHOT
  */
 public interface EntityTypesResource {
+
   @ApiOperation(value = "Get entity types", tags = "entity")
   @Get
   EntityTypes getEntityTypes();
+
 }

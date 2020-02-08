@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,6 +21,7 @@
  */
 package com.divroll.backend.resource;
 
+import com.wordnik.swagger.annotations.Api;
 import org.restlet.representation.Representation;
 import org.restlet.resource.*;
 
@@ -29,6 +30,7 @@ import org.restlet.resource.*;
  * @version 0-SNAPSHOT
  * @since 0-SNAPSHOT
  */
+@Api(value = "CustomCodeMethod", description = "CustomCodeMethod resource")
 public interface CustomCodeMethodResource {
 
   @Get

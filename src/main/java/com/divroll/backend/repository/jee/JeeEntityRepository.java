@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,6 +32,7 @@ import com.divroll.backend.model.builder.CreateOption;
 import com.divroll.backend.model.builder.EntityClass;
 import com.divroll.backend.model.builder.EntityClassBuilder;
 import com.divroll.backend.model.builder.EntityMetadata;
+import com.divroll.backend.model.EntityDTO;
 import com.divroll.backend.model.filter.TransactionFilter;
 import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.xodus.XodusManager;
@@ -280,6 +281,35 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               EntityClass created =
                   new EntityClassBuilder().from(entityClass).comparableMap(eMap).build();
 
+              if(createOption != null) {
+                CreateOption.CREATE_OPTION createOp = createOption.createOption();
+                if(createOp != null && createOp.equals(CreateOption.CREATE_OPTION.CREATE_ENTITY_THEN_LINK)) {
+                  String linkedEntityType = createOption.linkedEntityType();
+                  String linkedEntityLinkName = createOption.linkedEntityLinkName();
+                  Entity newLinkedEntity = txn.newEntity(linkedEntityType);
+
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_DATE_CREATED, getISODate());
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
+
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, finalEntity.getProperty(Constants.RESERVED_FIELD_PUBLICWRITE));
+                  newLinkedEntity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, finalEntity.getProperty(Constants.RESERVED_FIELD_PUBLICREAD));
+
+                  finalEntity.getLinks(Constants.RESERVED_FIELD_ACL_READ).forEach(entity1 -> {
+                    newLinkedEntity.addLink(Constants.RESERVED_FIELD_ACL_READ, entity1);
+                  });
+
+                  finalEntity.getLinks(Constants.RESERVED_FIELD_ACL_WRITE).forEach(entity1 -> {
+                    newLinkedEntity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, entity1);
+                  });
+
+                  if(createOption.linkedEntityLinkType()) {
+                    finalEntity.setLink(linkedEntityLinkName, newLinkedEntity);
+                  } else {
+                    finalEntity.addLink(linkedEntityLinkName, newLinkedEntity);
+                  }
+                }
+              }
+
               if (actions != null) {
                 actions.forEach(
                     action -> {
@@ -459,7 +489,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     entity.addLink(Constants.RESERVED_FIELD_ACL_READ, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                if(publicRead != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICREAD, publicRead);
+                }
               }
 
               if (write != null) {
@@ -473,7 +505,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                     entity.addLink(Constants.RESERVED_FIELD_ACL_WRITE, userOrRoleEntity);
                   }
                 }
-                entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                if(publicWrite != null) {
+                  entity.setProperty(Constants.RESERVED_FIELD_PUBLICWRITE, publicWrite);
+                }
               }
               entity.setProperty(Constants.RESERVED_FIELD_DATE_UPDATED, getISODate());
               success[0] = true;
@@ -590,7 +624,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
       Comparable<T> propertyVal,
       Class<T> clazz,
       String blobKey) {
-    System.out.println("appId = " + appId);
     final InputStream[] inputStream = new InputStream[1];
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appId);
     try {
@@ -791,9 +824,9 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                     comparableMap.put(Constants.RESERVED_FIELD_DATE_UPDATED, dateUpdated);
 
                                   if(includes != null && !includes.isEmpty()) {
-                                      ComparableLinkedList<LinkDTO> linkDTOS = new ComparableLinkedList<LinkDTO>();
+                                      ComparableLinkedList<Link> linkDTOS = new ComparableLinkedList<Link>();
                                       for(String include : includes) {
-                                      LinkDTO linkDTO = new LinkDTO();
+                                      Link linkDTO = new Link();
                                       linkDTO.setLinkName(include);
                                       if(include.equals(Constants.RESERVED_FIELD_ACL_WRITE)
                                               || include.equals(Constants.RESERVED_FIELD_ACL_READ)
@@ -804,7 +837,7 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                                       EntityIterable linkedEntities = entity.getLinks(include);
                                       for(Entity linkEntity : linkedEntities) {
                                         EntityDTO entityDTO = entityToEntityDTO(linkEntity.getType(), linkEntity, defaultUserStore);
-                                        linkDTO.getEntities().add(entityDTO);
+                                        linkDTO.getEntities().add(new EntityStub(entityDTO));
                                       }
                                       linkDTOS.add(linkDTO);
                                     }
@@ -965,6 +998,32 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   }
 
   @Override
+  public Boolean replaceBlobName(String instance, String namespace, String entityType, String entityId, String pattern, String replacement) {
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+    final Boolean[] success = {false};
+    try {
+      entityStore.executeInTransaction(
+              new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                  EntityId idOfEntity = txn.toEntityId(entityId);
+                  final Entity entity = txn.getEntity(idOfEntity);
+                  entity.getBlobNames().forEach(blobName -> {
+                    InputStream blobStream = entity.getBlob(blobName);
+                    entity.deleteBlob(blobName);
+                    blobName = blobName.replaceAll(pattern, replacement);
+                    entity.setBlob(blobName, blobStream);
+                    success[0] = true;
+                  });
+                }
+              });
+    } finally {
+      //// entityStore.close();
+    }
+    return success[0];
+  }
+
+  @Override
   public Long countEntityBlobSize(String instance, String namespace, String entityType, String entityId, String blobKey) {
     final Long[] count = new Long[1];
     final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
@@ -1121,8 +1180,20 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 throw new IllegalArgumentException(
                     metadataProperty + " property cannot be removed");
               }
+              EntityIterable entities = null;
+              if (namespace != null && !namespace.isEmpty()) {
+                entities =
+                        txn.findWithProp(entityType, namespaceProperty)
+                                .intersect(txn.find(entityType, namespaceProperty, namespace));
+                entities = entities.intersect(txn.findWithProp(entityType, propertyName));
+              } else {
+                entities =
+                        txn.getAll(entityType)
+                                .minus(txn.findWithProp(entityType, namespaceProperty));
+                entities = entities.intersect(txn.findWithProp(entityType, propertyName));
+              }
 
-              EntityIterable entities = txn.findWithProp(entityType, propertyName);
+
               final boolean[] hasError = {false};
               entities.forEach(
                   entity -> {
@@ -1217,7 +1288,6 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               }
               if (firstEntity != null) {
                 LOG.with("propertyNames", firstEntity.getPropertyNames());
-                System.out.println(firstEntity.getPropertyNames());
                 ComparableLinkedList<Comparable> uniqueProperties =
                     Comparables.cast(metadata.uniqueProperties());
                 ComparableLinkedList<Comparable> finalUniqueProperties =
@@ -1469,11 +1539,20 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
             public void execute(@NotNull final StoreTransaction txn) {
               EntityId idOfEntity = txn.toEntityId(entityId);
               Entity entity = txn.getEntity(idOfEntity);
-
               entity.getLinkNames().forEach(linkName -> {
                 Entity linked = entity.getLink(linkName);
                 entity.deleteLink(linkName, linked);
               });
+
+              // TODO: This is a performance issue
+              final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) entityStore.getCurrentTransaction());
+              for (final String entityType : txn.getEntityTypes()) {
+                for (final String linkName : allLinkNames) {
+                  for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                    referrer.deleteLink(linkName, entity);
+                  }
+                }
+              }
 
               success[0] = entity.delete();
             }
@@ -1510,6 +1589,21 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   entity.deleteLink(linkName, linked);
                 });
 
+
+                // TODO: This is a performance issue
+                final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) entityStore.getCurrentTransaction());
+                for (final String entityType : txn.getEntityTypes()) {
+                  for (final String linkName : allLinkNames) {
+                    for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                      referrer.deleteLink(linkName, entity);
+                    }
+                  }
+                }
+
+                entity.getBlobNames().forEach(blobName -> {
+                  entity.deleteBlob(blobName);
+                });
+
                 if (!entity.delete()) {
                   hasError[0] = true;
                 }
@@ -1517,6 +1611,64 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
               success[0] = !hasError[0];
             }
           });
+    } finally {
+      //// entityStore.close();
+    }
+
+    return success[0];
+  }
+
+  @Override
+  public boolean deleteEntities(String instance, String namespace, String entityType, String propertyName, Comparable propertyValue) {
+    final boolean[] success = {false};
+    final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, instance);
+    try {
+      entityStore.executeInTransaction(
+              new StoreTransactionalExecutable() {
+                @Override
+                public void execute(@NotNull final StoreTransaction txn) {
+                  EntityIterable result = null;
+                  if (namespace != null && !namespace.isEmpty()) {
+                    result =
+                            txn.findWithProp(entityType, namespaceProperty)
+                                    .intersect(txn.find(entityType, namespaceProperty, namespace))
+                                    .intersect(txn.find(entityType, propertyName, propertyValue));
+                  } else {
+                    result =
+                            txn.getAll(entityType)
+                                    .intersect(txn.find(entityType, propertyName, propertyValue))
+                                    .minus(txn.findWithProp(entityType, namespaceProperty));
+                  }
+                  final boolean[] hasError = {false};
+                  for (Entity entity : result) {
+
+                    entity.getLinkNames().forEach(linkName -> {
+                      Entity linked = entity.getLink(linkName);
+                      entity.deleteLink(linkName, linked);
+                    });
+
+
+                    // TODO: This is a performance issue
+                    final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) entityStore.getCurrentTransaction());
+                    for (final String entityType : txn.getEntityTypes()) {
+                      for (final String linkName : allLinkNames) {
+                        for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                          referrer.deleteLink(linkName, entity);
+                        }
+                      }
+                    }
+
+                    entity.getBlobNames().forEach(blobName -> {
+                      entity.deleteBlob(blobName);
+                    });
+
+                    if (!entity.delete()) {
+                      hasError[0] = true;
+                    }
+                  }
+                  success[0] = !hasError[0];
+                }
+              });
     } finally {
       //// entityStore.close();
     }
@@ -1540,6 +1692,18 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                 Entity linked = entity.getLink(linkName);
                 entity.deleteLink(linkName, linked);
               });
+
+
+              // TODO: This is a performance issue
+              final List<String> allLinkNames = ((PersistentEntityStoreImpl) entityStore).getAllLinkNames((PersistentStoreTransaction) storeImp.getCurrentTransaction());
+              for (final String entityType : txn.getEntityTypes()) {
+                  for (final String linkName : allLinkNames) {
+                      for (final Entity referrer : txn.findLinks(entityType, entity, linkName)) {
+                          referrer.deleteLink(linkName, entity);
+                      }
+                  }
+              }
+
               if(entityType.equals(defaultUserStore)) {
                 // Delete Role links
                 EntityIterable roles = entity.getLinks(Constants.ROLE_LINKNAME);
@@ -1938,10 +2102,12 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
                   if (value != null) {
                     if (value != null) {
                       if (value instanceof EmbeddedEntityIterable) {
-                        comparableMap.put(property, ((EmbeddedEntityIterable) value).asObject());
+                        Comparable comparable = asObject((EmbeddedEntityIterable) value);
+                        comparableMap.put(property, comparable);
                       } else if (value instanceof EmbeddedArrayIterable) {
-                        comparableMap.put(
-                            property, Comparables.cast((((EmbeddedArrayIterable) value).asObject())));
+                        // TODO - Replace with recursive object mapping
+                        List<Comparable> comparables = ((EmbeddedArrayIterable) value).asObject();
+                        comparableMap.put(property, Comparables.cast(comparables));
                       } else {
                         comparableMap.put(property, value);
                       }
@@ -2037,5 +2203,22 @@ public class JeeEntityRepository extends JeeBaseRespository implements EntityRep
   protected String getDefaultRoleStore() {
     return defaultRoleStore;
   }
+
+  private Comparable asObject(EmbeddedEntityIterable entityIterable) {
+    Comparable comparable = entityIterable.asObject();
+    if(comparable instanceof ComparableHashMap) {
+      ComparableHashMap comparableHashMap = (ComparableHashMap) comparable;
+      ComparableHashMap replacements = new ComparableHashMap();
+      comparableHashMap.forEach((key, value) -> {
+        if(value instanceof EmbeddedEntityIterable) {
+          replacements.put(key, asObject((EmbeddedEntityIterable)value));
+        }
+      });
+      comparableHashMap.putAll(replacements);
+      return comparableHashMap;
+    }
+    return comparable;
+  }
+
 
 }

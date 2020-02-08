@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -44,6 +44,11 @@ public class EntityStub implements Comparable {
   public EntityStub(String entityId, String entityType) {
     setEntityId(entityId);
     setEntityType(entityType);
+  }
+
+  public EntityStub(EntityDTO entity) {
+    setEntityId(entity.getEntityId());
+    setEntityType(entity.getEntityType());
   }
 
   public String getEntityId() {

@@ -1,0 +1,90 @@
+/*
+ * Divroll, Platform for Hosting Static Sites
+<<<<<<< HEAD
+ * Copyright 2019-present, Divroll, and individual contributors
+=======
+ * Copyright 2018, Divroll, and individual contributors
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3.0 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package com.divroll.backend.resource;
+
+<<<<<<< HEAD
+<<<<<<< HEAD:src/main/java/com/divroll/backend/resource/EntityResource.java
+=======
+import com.divroll.backend.model.File;
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c:src/main/java/com/divroll/backend/resource/FileResource.java
+=======
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c
+import com.wordnik.swagger.annotations.ApiOperation;
+import org.restlet.representation.Representation;
+import org.restlet.resource.Delete;
+import org.restlet.resource.Get;
+<<<<<<< HEAD
+<<<<<<< HEAD:src/main/java/com/divroll/backend/resource/EntityResource.java
+import org.restlet.resource.Put;
+=======
+import org.restlet.resource.Post;
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c:src/main/java/com/divroll/backend/resource/FileResource.java
+=======
+import org.restlet.resource.Put;
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c
+
+/**
+ * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
+ * @version 0-SNAPSHOT
+ * @since 0-SNAPSHOT
+ */
+<<<<<<< HEAD
+<<<<<<< HEAD:src/main/java/com/divroll/backend/resource/EntityResource.java
+=======
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c
+public interface EntityResource {
+
+  @ApiOperation(value = "Get entity", tags = "entity")
+  @Get
+  Representation getEntity();
+
+  @ApiOperation(value = "Update entity", tags = "entity")
+  @Put
+  Representation updateEntity(Representation entity);
+
+  @ApiOperation(value = "Delete entity", tags = "entity")
+  @Delete
+  void deleteEntity(Representation entity);
+<<<<<<< HEAD
+=======
+public interface FileResource {
+
+  @ApiOperation(value = "Create file", tags = "file")
+  @Post
+  File createFile(Representation entity);
+
+  @ApiOperation(value = "Delete file", tags = "file")
+  @Delete
+  void deleteFile(Representation entity);
+
+  @ApiOperation(value = "Get file", tags = "file")
+  @Get
+  Representation getFile(Representation entity);
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c:src/main/java/com/divroll/backend/resource/FileResource.java
+=======
+>>>>>>> 4fbc4e009f273f99e86b914b3320b052c7a9d13c
+
+}

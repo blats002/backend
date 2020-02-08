@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -52,7 +52,6 @@ public class AppEmailService {
   }
 
   public void send(String subject, String to, String htmlBody) {
-    System.out.println("*** Sending email ***");
     if (emailConfig != null) {
       try {
         JobDetail job =

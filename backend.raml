@@ -1,0 +1,834 @@
+#%RAML 1.0
+---
+title: Divroll Backend API
+baseUri: http://localhost:8080/divroll
+version: v1
+
+/sessions:
+  description: Sessions
+  get:
+    description: Login
+    queryParameters:
+      username:
+        displayName: Username
+        type: string
+        description: The email of the user
+        example: john@doe.com
+        required: true
+      password:
+        displayName: Password
+        type: string
+        description: The MD5 hash of the password
+        example: 6a6c19fea4a3676970167ce51f39e6ee
+        required: true
+    responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                    "superuser": {
+                        "dateCreated": "2019-11-06T19:03Z",
+                        "authToken": "eyJ0eXAiOiJKV1QiLCJhbGc",
+                        "entityId": "0-1",
+                        "username": "john@doe.com",
+                        "dateUpdated": "2019-11-06T19:03Z",
+                        "active" : true
+                    }
+                }
+        400:
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 400,
+                      "title" : "Invalid username/password",
+                      "detail" : "The supplied username and password pair is invalid"
+                    },
+                    {
+                      "status" : 400,
+                      "title" : "User not activated",
+                      "detail" : "The user is not activate, please check email"
+                    }
+                  ]
+                }
+
+/superusers:
+  description: Superuser
+  post:
+    description: Create a new super user
+    body:
+      application/json:
+        example: |
+          {
+              "superuser" : {
+                  "username" : "developers@divroll.com",
+                  "password" : "mypassword"
+              }
+          }
+    responses:
+      202:
+        body:
+          application/json:
+            example: |
+              {
+                  "superuser": {
+                      "entityId": "0-1",
+                      "username": "developers@divroll.com",
+                      "active": false
+                  }
+              }
+      400:
+        body:
+          application/json:
+            example: |
+              {
+                  "errors": [
+                    {
+                      "status" : 400,
+                      "title" : "Username field cannot be empty",
+                      "detail" : "The username field is invalid"
+                    },
+                    {
+                      "status" : 400,
+                      "title" : "Username developers@divroll.com already exists",
+                      "detail" : "The username field should be unique"
+                    },
+                    {
+                      "status" : 400,
+                      "title" : "Invalid password",
+                      "detail" : "Password should be at least 8 characters"
+                    },
+                    {
+                      "status" : 400,
+                      "title" : "Invalid password",
+                      "detail" : "Password should contains alpha numeric characters"
+                    }
+
+                  ]
+              }
+      401:
+        body:
+          application/json:
+            example: |
+              {
+                  "errors": [
+                    {
+                      "status" : 401,
+                      "title" : "Not authorized",
+                      "detail" : "Request requires valid authentication token"
+                    }
+                  ]
+              }
+  put:
+    description: Update super user
+    body:
+      application/json:
+        example: |
+          {
+              "superuser" : {
+                  "entityId" : '0-0",
+                  "username" : "developers@divroll.com",
+              }
+          }
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                "superuser" : {
+                    "entityId" : '0-1",
+                    "username" : "john@doe.com"
+                }
+              }
+  /{userId}:
+        patch:
+          description: Set property or status of super user
+          responses:
+            204:
+              description: Updated property
+            401:
+              description: Not authorized
+        delete:
+          description: Delete super user
+          responses:
+            204:
+              description: Deleted super user
+            401:
+              description: Not authorized
+            404:
+              description: Not found
+  /{userId}/activations:
+    description: Super user activation
+    get:
+      description: Activate super user
+      queryParameters:
+        activationToken:
+          displayName: Activation Token
+          type: string
+          description: The activation token from email
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJ
+          required: true
+        email:
+          displayName: Email
+          type: string
+          description: The email associated with the activation token
+          example: john@doe.com
+          required: true
+      responses:
+        204:
+          body:
+              application/json:
+                example: |
+                  {
+                      "superuser": {
+                          "dateCreated": "2019-11-06T19:03Z",
+                          "authToken": "eyJ0eXAiOiJKV1QiLCJhbGc",
+                          "entityId": "0-1",
+                          "username": "john@doe.com",
+                          "dateUpdated": "2019-11-06T19:03Z"
+                      }
+                  }
+        400:
+          description: Invalid token
+          body:
+            application/json:
+              example: |
+                {
+                    "errors": [
+                      {
+                        "status" : 400,
+                        "title" : "Invalid token",
+                        "detail" : "The supplied activation token is invalid or expired"
+                      }
+                    ]
+                }
+  /{userId}/password:
+    description: Super user password
+    put:
+      description: Password reset request
+      queryParameters:
+        newPassword:
+          displayName: New password
+          type: string
+          description: The new password to set
+          example: pa$$w0rd
+          required: true
+    get:
+      description: Confirm password reset
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                    "superuser": {
+                        "dateCreated": "2019-11-06T19:03Z",
+                        "authToken": "eyJ0eXAiOiJKV1QiLCJhbGc",
+                        "entityId": "0-1",
+                        "username": "john@doe.com",
+                        "dateUpdated": "2019-11-06T19:03Z"
+                    }
+                }
+        400:
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 400,
+                      "title" : "Invalid token",
+                      "detail" : "The supplied password reset token is invalid or expired"
+                    }
+                  ]
+                }
+
+/applications:
+  description: Applications
+  get:
+    description: List applications
+    headers:
+      X-Divroll-Super-Auth-Token:
+        displayName: Authorization Token
+        description: Super user authorization token
+        type: string
+        required: true
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                  "applications": {
+                      "results": [
+                          {
+                              "appId": "a13100f2a8ca40af81d7848c936587ef",
+                              "apiKey": "$2a$10$5LGXFBSbandKQnO/HKYbe.xwdB3dD/IE1TW1w6UPGGYNG6OhCF87y",
+                              "masterKey": "$2a$10$sfMSywFOmgk8T/nH4wlOquVSKiWQ5AZRzIOXPP/6yx/G7wJiIxW1W",
+                              "appName": "beta",
+                              "superuser": {
+                                  "entityId": "0-1"
+                              }
+                          },
+                          {
+                              "appId": "7717c67001b14302bce840aba37cab8d",
+                              "apiKey": "$2a$10$l661tJkBqtbzZAzHieVEQODiLB03cOtw.jvjLf78ASmK8Hl7PVLP.",
+                              "masterKey": "$2a$10$y0/rAcVrYoZ7ZU4BdSwmret6pUzeOWIJvEAxnzvZymubR78pW4y3C",
+                              "appName": "beta1",
+                              "superuser": {
+                                  "entityId": "0-1"
+                              }
+                          },
+                          {
+                              "appId": "ed1e6d4f93074cf396f6a31800637323",
+                              "apiKey": "$2a$10$biYHH0gghBPcsODSW.4LTOO0ZYGUWfU5FdVvfX.e1YEnr5NJagcT6",
+                              "masterKey": "$2a$10$rZzFyZctkD.J.UxPgjo7V.HmedJi.KHZcvBd1AFSbikHVkuvMX1O.",
+                              "appName": "beta2",
+                              "superuser": {
+                                  "entityId": "0-1"
+                              }
+                          },
+                          {
+                              "appId": "4379bdcb15a34adfbc68f86c5a9b3c46",
+                              "apiKey": "$2a$10$iVHrBQl/9uuWaxRRTJyXKe23d.eZolYQofCPDfbKD9WKXuhHaASoG",
+                              "masterKey": "$2a$10$aqdWbWd0vpz0Yz5Sa2diO.Cbcma445pKMzAbHn6HfJEiM9QWPAzcm",
+                              "appName": "beta3",
+                              "superuser": {
+                                  "entityId": "0-1"
+                              }
+                          }
+                      ],
+                      "skip": 0,
+                      "limit": 100
+                  }
+              }
+      401:
+        body:
+          application/json:
+            example: |
+              {
+                "errors" : [
+                  {
+                    "status" : 401,
+                    "title" : "Unauthorized",
+                    "detail" : "The supplied authorization token is invalid or has expired"
+                  }
+                ]
+              }
+  /{appName}:
+    post:
+      description: Create application
+      headers:
+        X-Divroll-Super-Auth-Token:
+          displayName: Authorization Token
+          description: Super user authorization token
+          type: string
+          required: true
+      body:
+        application/json:
+          example: |
+            {
+              "application" : {
+                "appName" : "beta3",
+                "user" : {
+                  "username" : "admin",
+                  "password" : "admin",
+                  "role" : "admin"
+                }
+              }
+            }
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                    "application": {
+                          "appId": "a13100f2a8ca40af81d7848c936587ef",
+                          "apiKey": "$2a$10$5LGXFBSbandKQnO/HKYbey",
+                          "masterKey": "$2a$10$sfMSywFOmgk8T/nH4wl",
+                          "appName": "beta",
+                          "superuser": {
+                              "entityId": "0-1"
+                          }
+                    }
+                }
+        400:
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 400,
+                      "title" : "Application already exists",
+                      "detail" : "The application name should be unique"
+                    }
+                  ]
+                }
+
+        401:
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 401,
+                      "title" : "Unauthorized",
+                      "detail" : "The authorization token is invalid or has expired"
+                    }
+                  ]
+                }
+
+    get:
+      description: Retrieve application
+      headers:
+        X-Divroll-Master-Token:
+          displayName: Master Token
+          description: The master token
+          type: string
+          required: false
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                    "application": {
+                          "appId": "a13100f2a8ca40af81d7848c936587ef",
+                          "apiKey": "$2a$10$5LGXFBSbandKQnO/HKYbey",
+                          "masterKey": "$2a$10$sfMSywFOmgk8T/nH4wl",
+                          "appName": "beta",
+                          "superuser": {
+                              "entityId": "0-1"
+                          }
+                    }
+                }
+        401:
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 401,
+                      "title" : "Invalid authorization token",
+                      "detail" : "The supplied authorization token is invalid or expired"
+                    },
+                    {
+                      "status" : 401,
+                      "title" : "Invalid master token",
+                      "detail" : "The supplied master token is invalid or expired"
+                    }
+                  ]
+                }
+        404:
+          body:
+            application/json:
+                example: |
+                  {
+                    "errors" : [
+                      {
+                        "status" : 404,
+                        "title" : "Application not found",
+                        "detail" : "The application does not exists"
+                      }
+                    ]
+                  }
+    put:
+      description: Update application
+      headers:
+        X-Divroll-Super-Auth-Token:
+          displayName: Authorization Token
+          description: Super user authorization token
+          type: string
+          required: true
+        X-Divroll-Master-Token:
+          displayName: Master Token
+          description: The master token
+          type: string
+          required: false
+    delete:
+      description: Delete application
+      headers:
+        X-Divroll-Super-Auth-Token:
+          displayName: Authorization Token
+          description: Super user authorization token
+          type: string
+          required: true
+        X-Divroll-Master-Token:
+          displayName: Master Token
+          description: The master token
+          type: string
+          required: false
+/entities:
+  description: Entities
+  get:
+    description: List entity types
+    headers:
+      X-Divroll-Application-Id:
+        displayName: Application Id
+        description: Unique id of the application
+        type: string
+        required: true
+      X-Divroll-Api-Key:
+        displayName: API key
+        description: Application API key
+        type: string
+        required: false
+      X-Divroll-Master-Key:
+        displayName: Master key
+        description: Master key for the application
+        type: string
+        required: true
+    queryParameters:
+      skip:
+        displayName: Skip
+        type: number
+        description: The number of skip
+        example: 1
+        required: false
+      limit:
+        displayName: Limit
+        type: number
+        description: The rows to return
+        example: 10
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              {
+                "entityTypes": {
+                    "results": {
+                        "entityType": "Test",
+                        "propertyTypes": [
+                            {
+                                "propertyName": "metaData",
+                                "propertyType": "OBJECT"
+                            },
+                            {
+                                "propertyName": "title",
+                                "propertyType": "STRING"
+                            },
+                            {
+                                "propertyName": "code",
+                                "propertyType": "STRING"
+                            },
+                            {
+                                "propertyName": "dateCreated",
+                                "propertyType": "STRING"
+                            },
+                            {
+                                "propertyName": "dateUpdated",
+                                "propertyType": "STRING"
+                            },
+                            {
+                                "propertyName": "publicRead",
+                                "propertyType": "BOOLEAN"
+                            },
+                            {
+                                "propertyName": "publicWrite",
+                                "propertyType": "BOOLEAN"
+                            }
+                        ]
+                    },
+                    "skip": 0,
+                    "limit": 0
+                }
+              }
+
+  /types/{entityType}:
+    delete:
+      description: Delete entity type
+      headers:
+        X-Divroll-Application-Id:
+          displayName: Application Id
+          description: Unique id of the application
+          type: string
+          required: true
+        X-Divroll-Master-Key:
+          displayName: Master key
+          description: Master key for the application
+          type: string
+          required: true
+      responses:
+        204:
+          description: Entity type deleted
+        401:
+          description: Unauthorized
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 401,
+                      "title" : "Unauthorized",
+                      "detail" : "The supplied master token is invalid"
+                    }
+                  ]
+                }
+  /sessions:
+    description: Sessions
+    get:
+      description: Login
+      queryParameters:
+        username:
+          displayName: Username
+          type: string
+          description: The username
+          example: johndoe
+          required: true
+        password:
+          displayName: Password
+          type: string
+          description: The MD5 hash of the password
+          example: 6a6c19fea4a3676970167ce51f39e6ee
+          required: true
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                    "superuser": {
+                        "dateCreated": "2019-11-06T19:03Z",
+                        "authToken": "eyJ0eXAiOiJKV1QiLCJhbGc",
+                        "entityId": "0-1",
+                        "username": "john@doe.com",
+                        "dateUpdated": "2019-11-06T19:03Z",
+                        "active" : true
+                    }
+                }
+        400:
+          body:
+            application/json:
+              example: |
+               {
+                  "errors" : [
+                   {
+                    "status" : 400,
+                    "title" : "Invalid username/password",
+                    "detail" : "The supplied username and password pair is invalid"
+                    },
+                    {
+                        "status" : 400,
+                        "title" : "User not activated",
+                        "detail" : "The user is not activate, please check email"
+                    }
+                  ]
+               }
+  /users:
+    /{userId}:
+  /roles:
+    /{roleId}:
+        /users/{userId}:
+  /{entityType}:
+    post:
+      description: Create Entity
+      headers:
+        X-Divroll-Application-Id:
+          displayName: Application Id
+          description: Application Id header
+          type: string
+          required: true
+        X-Divroll-Api-Key:
+          displayName: API key
+          description: API key header
+          type: string
+          required: false
+      body:
+        application/json:
+          example: |
+            {
+              "entity" : {
+                "title" : "Everything is awesome",
+                "score" : "100"
+              }
+            }
+      responses:
+        201:
+          body:
+            application/json:
+              example: |
+                {
+                    "entity": {
+                        "entityId": "0-0"
+                    }
+                }
+    /properties/{propertyName}:
+    /{entityId}:
+      /blobs:
+        /{blobName}:
+      /properties/{propertyName}:
+      /links/{linkName}:
+        /{targetEntityId}:
+/blobs/{blobHash}:
+/files:
+  description: Files endpoint
+  get:
+    queryParameters:
+      sourceFile:
+        displayName: File Path
+        type: string
+        description: Complete File Path
+        example: /www/index.html
+        required: false
+    headers:
+      X-Divroll-Super-Auth-Token:
+        displayName: Authorization Token
+        description: User authorization token
+        type: string
+        required: true
+    responses:
+      202:
+        body:
+          application/json:
+            example: |
+              {
+                "file" : {
+                  "filePath" : "/www/index.html"
+                }
+              }
+  put:
+    queryParameters:
+      sourceFile:
+        displayName: File Path
+        type: string
+        description: Complete File Path
+        example: /www/index.html
+        required: false
+    headers:
+      X-Divroll-Super-Auth-Token:
+        displayName: Authorization Token
+        description: User authorization token
+        type: string
+        required: true
+  post:
+    queryParameters:
+      destinationFile:
+        displayName: File Path
+        type: string
+        description: Complete File Path
+        example: /www/index.html
+        required: true
+    headers:
+      X-Divroll-Super-Auth-Token:
+        displayName: Authorization Token
+        description: User authorization token
+        type: string
+        required: true
+      X-Divroll-Api-Arg:
+        displayName: API Arguments
+        description: Arguments for the API
+        type: string
+        required: true
+        example: |
+          {
+            "destinationFile" : "/www/index.html"
+          }
+  delete:
+      queryParameters:
+        destinationFile:
+          displayName: File Path
+          type: string
+          description: Complete File Path
+          example: /www/index.html
+          required: true
+      headers:
+        X-Divroll-Super-Auth-Token:
+          displayName: Authorization Token
+          description: Super user authorization token
+          type: string
+          required: true
+/customCodes/{customCodeName}:
+ post:
+   description: Create Custom Code
+ put:
+   description: Update Custom Code
+ delete:
+   description: Remove Custom Code
+ get:
+   description: Retrieve Custom Code
+/customCodes/{customCodeName}/{methodName}:
+   post:
+    description: Execute custom code method with HTTP POST
+   put:
+    description: Execute custom code method with HTTP PUT
+   delete:
+    description: Execute custom code method with HTTP DELETE
+   get:
+    description: Execute custom code method with HTTP GET
+
+/sites:
+  get:
+    description: Retrieve site file
+    headers:
+      Accept-Encoding:
+        displayName: Accept Encoding
+        description: Advertises which encoding the client understand
+        type: string
+        required: true
+    queryParameters:
+      _escaped_fragment_:
+        description: Escape fragment
+    responses:
+      200:
+      400:
+      404:
+      500:
+
+  /{siteId}/certificates:
+    get:
+      description: Retrieve (or generate) certificate
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "certificate" : {
+                      "privateKey" : "PRIVATE_KEY",
+                      "publicKey" : "PUBlIC_KEY"
+                    }
+                }
+        500:
+          body:
+            application/json:
+              example: |
+                {
+                  "errors" : [
+                    {
+                      "status" : 500,
+                      "title" : "Internal Server Error",
+                      "detail" : "Internal error occurred while generate certificate"
+                    }
+                  ]
+                }
+    post:
+      description: Upload custom certificate
+      body:
+        application/json:
+          example: |
+            {
+              "certificate" : {
+                  "privateKey" : "PRIVATE_KEY",
+                  "publicKey" : "PUBlIC_KEY"
+                }
+            }
+      responses:
+        200:
+        400:
+    delete:
+      description: Remove certificate
+  /{siteId}:
+
+/backups:
+/configurations:

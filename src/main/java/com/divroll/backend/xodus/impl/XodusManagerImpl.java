@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -32,12 +32,20 @@ import jetbrains.exodus.entitystore.PersistentEntityStores;
 import jetbrains.exodus.entitystore.StoreTransaction;
 import jetbrains.exodus.entitystore.StoreTransactionalExecutable;
 import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.EnvironmentConfig;
 import jetbrains.exodus.env.Environments;
 import jetbrains.exodus.vfs.VirtualFileSystem;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -52,11 +60,18 @@ public class XodusManagerImpl implements XodusManager {
   Map<String, PersistentEntityStore> entityStoreMap = new LinkedHashMap<>();
   VirtualFileSystem virtualFileSystem = null;
 
+  static {
+    System.setProperty("aws.accessKeyId", "");
+    System.setProperty("aws.secretKey", "");
+  }
+
   @Override
   public Environment getEnvironment(String xodusRoot, String instance) {
     Environment environment = environmentMap.get(xodusRoot + instance);
     if (environment == null) {
-      Environment env = Environments.newInstance(xodusRoot + instance);
+      EnvironmentConfig config = new EnvironmentConfig();
+      //config.setLogDataReaderWriterProvider("jetbrains.exodus.log.replication.S3DataReaderWriterProvider");
+      Environment env = Environments.newInstance(xodusRoot + instance, config);
       environmentMap.put(xodusRoot + instance, env);
     }
     Environment e = environmentMap.get(xodusRoot + instance);
@@ -67,7 +82,9 @@ public class XodusManagerImpl implements XodusManager {
   public PersistentEntityStore getPersistentEntityStore(String xodusRoot, String dir) {
     PersistentEntityStore entityStore = entityStoreMap.get(xodusRoot + dir);
     if (entityStore == null) {
-      final PersistentEntityStore store = PersistentEntityStores.newInstance(xodusRoot + dir);
+      Environment environment = getEnvironment(xodusRoot, dir);
+      final PersistentEntityStore store = PersistentEntityStores.newInstance(environment);
+      store.getConfig().setDebugSearchForIncomingLinksOnDelete(true);
       //store.getConfig().setRefactoringHeavyLinks(true);
       store.executeInTransaction(
           new StoreTransactionalExecutable() {

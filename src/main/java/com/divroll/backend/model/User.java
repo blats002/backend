@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -50,7 +50,7 @@ public class User {
   private String email;
 
   @ApiModelProperty(required = false, value = "Generated Authentication Token")
-  private String webToken;
+  private String authToken;
 
   @ApiModelProperty(required = false)
   @XStreamImplicit(itemFieldName = "roles")
@@ -63,6 +63,10 @@ public class User {
   @XStreamImplicit(itemFieldName = "aclWrite")
   @ApiModelProperty(required = false, value = "")
   private List<EntityStub> aclWrite;
+
+  @XStreamImplicit(itemFieldName = "blobNames")
+  @ApiModelProperty(required = false, value = "")
+  private List<String> blobNames;
 
   @ApiModelProperty(required = false, value = "")
   private Boolean publicRead;
@@ -92,12 +96,12 @@ public class User {
     this.password = password;
   }
 
-  public String getWebToken() {
-    return webToken;
+  public String getAuthToken() {
+    return authToken;
   }
 
-  public void setWebToken(String webToken) {
-    this.webToken = webToken;
+  public void setAuthToken(String authToken) {
+    this.authToken = authToken;
   }
 
   public String getEntityId() {
@@ -181,5 +185,13 @@ public class User {
 
   public void setLinks(List<Link> links) {
     this.links = links;
+  }
+
+  public List<String> getBlobNames() {
+    return blobNames;
+  }
+
+  public void setBlobNames(List<String> blobNames) {
+    this.blobNames = blobNames;
   }
 }

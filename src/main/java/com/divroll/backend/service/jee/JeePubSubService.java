@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -70,7 +70,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                System.out.println("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();
@@ -100,7 +100,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                System.out.println("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();
@@ -127,7 +127,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                System.out.println("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();
@@ -157,10 +157,6 @@ public class JeePubSubService implements PubSubService {
   }
 
   private void entityUpdated(String appId, String entityType, String entityId) {
-    appId = "TEST";
-    //        System.out.println("appId->" + appId);
-    //        System.out.println("entityType->" + entityType);
-    //        System.out.println("entityId->" + entityId);
     JSONObject jsonObject = new JSONObject();
     jsonObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
     CloseableHttpAsyncClient httpClient;
@@ -177,7 +173,7 @@ public class JeePubSubService implements PubSubService {
           .flatMap(response -> response.getContent().map(bytes -> new String(bytes)))
           .subscribe(
               resp -> {
-                System.out.println("ASYNC RESPONSE->" + resp);
+                LOG.info("PubSub response: " + resp);
               });
     } catch (Exception e) {
       e.printStackTrace();

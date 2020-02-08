@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -53,7 +53,7 @@ public class Application {
   private String dateCreated;
   private String dateUpdated;
 
-  private UserRootDTO user;
+  private UserRoot user;
 
   public String getId() {
     return appId;
@@ -103,11 +103,11 @@ public class Application {
     this.emailConfig = emailConfig;
   }
 
-  public UserRootDTO getUser() {
+  public UserRoot getUser() {
     return user;
   }
 
-  public void setUser(UserRootDTO user) {
+  public void setUser(UserRoot user) {
     this.user = user;
   }
 

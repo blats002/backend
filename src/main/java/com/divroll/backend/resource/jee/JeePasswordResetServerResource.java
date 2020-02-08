@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,7 +26,7 @@ import com.divroll.backend.job.EmailJob;
 import com.divroll.backend.job.RetryJobWrapper;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Email;
-import com.divroll.backend.model.PasswordResetDTO;
+import com.divroll.backend.model.PasswordReset;
 import com.divroll.backend.model.User;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.PasswordResetResource;
@@ -72,7 +72,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
   @Inject ApplicationService applicationService;
 
   @Override
-  public void validateResetPassword(PasswordResetDTO entity) {
+  public void validateResetPassword(PasswordReset entity) {
     try {
       String token = getQueryValue("token");
       if (token == null) {
@@ -144,7 +144,7 @@ public class JeePasswordResetServerResource extends BaseServerResource
   }
 
   @Override
-  public void resetPassword(PasswordResetDTO entity) {
+  public void resetPassword(PasswordReset entity) {
     try {
       if (entity == null) {
         setStatus(Status.CLIENT_ERROR_BAD_REQUEST);

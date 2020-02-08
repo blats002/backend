@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,11 +22,11 @@
 package com.divroll.backend.resource.jee;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ACLHelper;
 import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.helper.DTOHelper;
-import com.divroll.backend.helper.ObjectLogger;
 import com.divroll.backend.model.*;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.UserResource;
@@ -38,9 +38,8 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityRemovedInDatabaseException;
 import org.mindrot.jbcrypt.BCrypt;
-import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.ext.xstream.XstreamRepresentation;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 
 import java.util.Arrays;
@@ -78,7 +77,6 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
       Application app = applicationService.read(appId);
 
       LOG.with("NAMESPACE", namespace);
-      System.out.println("NAMESPACE="+namespace);
 
       if (app == null) {
         return null;
@@ -93,11 +91,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           }
           userEntity.setPassword(null);
           setStatus(Status.SUCCESS_OK);
-
-          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
-          String text = representation.getText();
-          System.out.println("--------------------->" + text);
-          return representation;
+          return new JsonRepresentation(asJSONObject(userEntity));
         } else {
           String authUserId = null;
           if (authToken != null) {
@@ -123,10 +117,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           }
           if (userEntity != null) {
             setStatus(Status.SUCCESS_OK);
-            Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(userEntity)));
-            String text = representation.getText();
-            System.out.println("--------------------->" + text);
-            return representation;
+            return new JsonRepresentation(asJSONObject(userEntity));
           } else {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
           }
@@ -151,23 +142,9 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
           }
-          User user = new User();
-          user.setEntityId(userEntity.getEntityId());
-          user.setUsername(userEntity.getUsername());
-          user.setPassword(null);
-          user.setAclRead(userEntity.getAclRead());
-          user.setAclWrite(userEntity.getAclWrite());
-          user.setPublicRead(userEntity.getPublicRead());
-          user.setPublicWrite(userEntity.getPublicWrite());
-          user.setRoles(userEntity.getRoles());
-          user.setLinks(userEntity.getLinks());
+          userEntity.setPassword(null);
           setStatus(Status.SUCCESS_OK);
-
-          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON,
-                  UserDTO.convert((User) ObjectLogger.log(user)));
-          String text = representation.getText();
-          System.out.println("--------------------->" + text);
-          return representation;
+          return new JsonRepresentation(asJSONObject(userEntity));
         } else {
           userEntity =
               userRepository.getUserByUsername(appId, namespace, defaultUserStore, username, includeLinks);
@@ -178,18 +155,12 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           String userId = userEntity.getEntityId();
           String existingPassword = userEntity.getPassword();
           if (BCrypt.checkpw(password, existingPassword)) {
-            String webToken = webTokenService.createToken(app.getMasterKey(), userId);
-            User user = new User();
-            user.setEntityId(userId);
-            user.setWebToken(webToken);
-            user.setPassword(null);
-            user.setLinks(userEntity.getLinks());
+            String authToken = webTokenService.createToken(app.getMasterKey(), userId);
+            userEntity.setAuthToken(authToken);
+            userEntity.setPassword(null);
             setStatus(Status.SUCCESS_OK);
+            return new JsonRepresentation(asJSONObject(userEntity));
 
-            Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(user)));
-            String text = representation.getText();
-            System.out.println("--------------------->" + text);
-            return representation;
           } else {
             setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
             return null;
@@ -211,7 +182,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
   }
 
   @Override
-  public Representation updateUser(UserDTO entity) {
+  public Representation updateUser(User entity) {
     try {
       if (!isAuthorized()) {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
@@ -297,7 +268,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
         return null;
       }
 
-      List<RoleDTO> roles = entity.getRoles();
+      List<Role> roles = entity.getRoles();
       String[] roleArray = DTOHelper.roleIdsOnly(roles);
 
       Boolean isMaster = isMaster();
@@ -354,10 +325,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
           pubSubService.updated(appId, namespace, defaultUserStore, userId);
           setStatus(Status.SUCCESS_OK);
 
-          Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
-          String text = representation.getText();
-          System.out.println("--------------------->" + text);
-          return representation;
+          return new JsonRepresentation(asJSONObject(resultUser));
         } else {
           setStatus(Status.SERVER_ERROR_INTERNAL);
         }
@@ -433,10 +401,8 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
               pubSubService.updated(appId, namespace, defaultUserStore, userId);
               setStatus(Status.SUCCESS_OK);
 
-              Representation representation = new XstreamRepresentation<UserDTO>(MediaType.APPLICATION_JSON, UserDTO.convert((User) ObjectLogger.log(resultUser)));
-              String text = representation.getText();
-              System.out.println("--------------------->" + text);
-              return representation;
+              return new JsonRepresentation(asJSONObject(resultUser));
+
             } else {
               setStatus(Status.SERVER_ERROR_INTERNAL);
             }
@@ -458,7 +424,7 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
   }
 
   @Override
-  public void deleteUser(UserDTO entity) {
+  public void deleteUser(User entity) {
     try {
 
       Application app = applicationService.read(appId);
@@ -531,4 +497,26 @@ public class JeeUserServerResource extends BaseServerResource implements UserRes
     }
     return;
   }
+
+  public static JSONObject asJSONObject(User userEntity) {
+    JSONObject jsonObject = new JSONObject();
+
+    JSONObject userObject = new JSONObject();
+    userObject.put("entityId", userEntity.getEntityId());
+    userObject.put("username", userEntity.getUsername());
+    userObject.put("authToken", userEntity.getAuthToken());
+    userObject.put("roles", userEntity.getRoles());
+    userObject.put("blobNames", userEntity.getBlobNames());
+    userObject.put("links", userEntity.getLinks());
+    userObject.put("aclWrite", userEntity.getAclWrite());
+    userObject.put("aclRead", userEntity.getAclRead());
+    userObject.put("publicWrite", userEntity.getPublicWrite());
+    userObject.put("publicRead", userEntity.getPublicRead());
+    userObject.put("dateCreated", userEntity.getDateCreated());
+    userObject.put("dateUpdated", userEntity.getDateUpdated());
+
+    jsonObject.put("user", userObject);
+    return jsonObject;
+  }
+
 }

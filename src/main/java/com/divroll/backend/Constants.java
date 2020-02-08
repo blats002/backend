@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -36,6 +36,9 @@ public final class Constants {
   public static final String HEADER_ACL_WRITE = "X-Divroll-ACL-Write";
   public static final String HEADER_ACCEPT = "Accept";
   public static final String HEADER_CONTENT_TYPE = "Content-Type";
+  public static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+  public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
+  public static final String HEADER_NAMESPACE = "X-Divroll-Namespace";
   public static final String HEADER_MASTER_TOKEN = "X-Divroll-Master-Token";
   public static final String MASTER_KEY = "masterKey";
   public static final String API_KEY = "apiKey";
@@ -47,7 +50,7 @@ public final class Constants {
   public static final String ROLE_NAME = "name";
   public static final String ROLE_LINKNAME = "role"; // TODO add to app.properties file instead
   public static final String USERS_LINKNAME = "users";
-  public static final String WEBTOKEN = "webToken";
+  public static final String WEBTOKEN = "authToken";
   public static final String QUERY_USERNAME = "username";
   public static final String QUERY_PASSWORD = "password";
   public static final String QUERY_SKIP = "skip";
@@ -58,7 +61,7 @@ public final class Constants {
   public static final String ACL_ASTERISK = "*";
 
   public static final String ENTITYSTORE_APPLICATION = "Application";
-  public static final String ENTITYSTORE_FUNCTION = "Function";
+  public static final String ENTITYSTORE_CUSTOMCODE = "CustomCode";
 
   public static final String RESERVED_FIELD_ENTITY_ID = "entityId";
   public static final String RESERVED_FIELD_BLOBNAMES = "blobNames";
