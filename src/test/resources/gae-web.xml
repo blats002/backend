@@ -9,7 +9,7 @@
 
     <servlet>
         <servlet-name>TestServlet</servlet-name>
-        <servlet-class>com.divroll.core.rest.TestServlet</servlet-class>
+        <servlet-class>com.divroll.backend.TestServlet</servlet-class>
     </servlet>
 
     <!-- Catch all requests -->

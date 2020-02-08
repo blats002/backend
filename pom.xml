@@ -25,9 +25,11 @@
         <xodus.version>1.3.124</xodus.version>
 <!--        <xodus.version>0-SNAPSHOT</xodus.version>-->
         <restletVersion>3.0-M1</restletVersion>
+        <guava.version>22.0</guava.version>
+        <xtend.version>2.9.1</xtend.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>        
-	<customcode.version>0-SNAPSHOT</customcode.version>
+	    <customcode.version>0-SNAPSHOT</customcode.version>
         <skipTests>true</skipTests>
     </properties>
 
@@ -311,6 +313,16 @@
                       </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.6</version>
@@ -359,6 +371,21 @@
             <groupId>org.dynjs</groupId>
             <artifactId>dynjs</artifactId>
             <version>0.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.shredzone.acme4j</groupId>
+            <artifactId>acme4j-client</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.shredzone.acme4j</groupId>
+            <artifactId>acme4j-utils</artifactId>
+            <version>2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-exec</artifactId>
+            <version>1.3</version>
         </dependency>
         <!--        <dependency>-->
 <!--            <groupId>com.googlecode.json-simple</groupId>-->
@@ -451,12 +478,12 @@
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>3.8.1</version>
+            <version>3.14.0</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-chrome-driver</artifactId>
-            <version>3.8.1</version>
+            <version>3.14.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
