@@ -34,6 +34,7 @@ import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 import org.restlet.Application;
 import org.restlet.Restlet;
+import org.restlet.data.Protocol;
 import org.restlet.engine.Engine;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.apispark.internal.firewall.FirewallFilter;
@@ -48,6 +49,9 @@ import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
 import org.restlet.routing.Router;
 import org.restlet.engine.application.CorsFilter;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSession;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -96,12 +100,13 @@ public class DivrollBackendApplication extends Application {
     router.attach(DIVROLL_ROOT_URI + "superusers/activate", JeeSuperuserActivateServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "superusers/resetPassword", JeeSuperuserPasswordResetServerResource.class);
 
-    router.attach(DIVROLL_ROOT_URI + "sites", JeeSiteServerResource.class);
-    router.attach(DIVROLL_ROOT_URI + "sites/ssls", JeeSiteServerResource.class);
-    router.attach(DIVROLL_ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "sites", JeeSiteServerResource.class); // TODO: Remove
+    router.attach(DIVROLL_ROOT_URI + "sites/ssls", JeeSiteServerResource.class); // TODO: Remove
+    router.attach(DIVROLL_ROOT_URI + "sites/{siteId}", JeeSiteManagerServerResource.class); // TODO: Remove
 
     router.attach(DIVROLL_ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "applications/{appName}/domains/{domainName}", JeeDomainServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "applications/{appName}/domains/{domainName}/certificates", JeeSSLServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "domains", JeeDomainServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "applications", JeeApplicationsServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "entities", JeeEntityTypesServerResource.class);
@@ -170,6 +175,17 @@ public class DivrollBackendApplication extends Application {
     ((PeriodicFirewallCounterRule)rule).addHandler(new RateLimitationHandler(new UniqueLimitPolicy(rateLimit)));
     FirewallFilter firewallFiler = new FirewallFilter(getContext(), Arrays.asList(rule));
     firewallFiler.setNext(corsFilter);
+
+    getConnectorService().getClientProtocols().add(Protocol.HTTPS);
+    getConnectorService().getClientProtocols().add(Protocol.HTTP);
+
+    // Create all-trusting host name verifier
+    HostnameVerifier allHostsValid = new HostnameVerifier() {
+      public boolean verify(String hostname, SSLSession session) {
+        return true;
+      }
+    };
+    HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
 
     return firewallFiler;
   }

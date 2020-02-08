@@ -93,6 +93,7 @@ public class GuiceConfigModule extends AbstractModule {
     bind(CacheService.class).to(EhcacheCacheService.class).in(Scopes.SINGLETON);
     bind(CustomCodeService.class).to(JeeCustomCodeService.class).in(Scopes.SINGLETON);
     bind(DomainService.class).to(JeeDomainService.class).in(Scopes.SINGLETON);
+    bind(ShellService.class).to(JeeShellService.class).in(Scopes.SINGLETON);
 
     Names.bindProperties(binder(), readProperties());
   }
