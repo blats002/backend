@@ -36,8 +36,6 @@ import com.divroll.backend.repository.SuperuserRepository;
 import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.service.*;
 import com.divroll.backend.util.Base64;
-import com.godaddy.logging.Logger;
-import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
@@ -320,6 +318,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
 
     if(domainName == null) {
       domainName = getQueryValue(Constants.DOMAIN_NAME);
+    }
+
+    if(domainName == null) {
+      domainName = getAttribute(Constants.DOMAIN_NAME);
     }
 
     if (appId == null) {

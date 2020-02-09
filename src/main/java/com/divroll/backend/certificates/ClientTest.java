@@ -1,5 +1,7 @@
 package com.divroll.backend.certificates;
 
+import com.divroll.backend.model.File;
+import com.divroll.backend.repository.FileRepository;
 import com.divroll.backend.service.ShellService;
 import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -48,16 +50,18 @@ public class ClientTest {
 
     private String domainKey;
 
-    private String subdomain;
+    private String appId;
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
 
     private ShellService shellService;
 
+    private FileRepository fileRepository;
 
-    public ClientTest(String subdomain, ShellService shellService) {
+    public ClientTest(String appId, FileRepository fileRepository, ShellService shellService) {
         this.shellService = shellService;
-        this.subdomain = subdomain;
+        this.appId = appId;
+        this.fileRepository = fileRepository;
     }
 
     public String getCertificateChain() {
@@ -305,7 +309,8 @@ public class ClientTest {
                 String token = http01Challenge.getToken();
                 String authorization = http01Challenge.getAuthorization();
                 String filePath = ".well-known/acme-challenge/" + token;
-                writeFileToWasabiCloud(authorization.getBytes(StandardCharsets.UTF_8), filePath, subdomain);
+                File file = writeFile(authorization.getBytes(StandardCharsets.UTF_8), filePath, appId);
+                assert file != null;
             }
         } catch (IOException ex) {
             LOG.error("error ", ex);
@@ -498,20 +503,10 @@ public class ClientTest {
 //        }
     }
 
-    private int writeFileToWasabiCloud(byte[] fileBytes, String path, String subdomain)
+    private File writeFile(byte[] fileBytes, String path, String appId)
             throws IOException {
         int status = 500;
-//        LOG.info("PATH=" + path);
-//        LOG.info("SUBDOMAIN=" + subdomain);
-//        BasicAWSCredentials credentials = new BasicAWSCredentials(WasabiCredential.ACCESS_KEY, WasabiCredential.SECRET_KEY);
-//        final AmazonS3 s3 = AmazonS3ClientBuilder
-//                .standard()
-//                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-//                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("s3.wasabisys.com", "us-east-1"))
-//                .build();
-//        ObjectMetadata metadata = new ObjectMetadata();
-//        s3.putObject("divroll", subdomain + "/" + path, ByteSource.wrap(fileBytes).openStream(), metadata);
-        return status;
+        return fileRepository.put(appId, path, fileBytes);
     }
 
 }

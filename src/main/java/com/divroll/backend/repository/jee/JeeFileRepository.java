@@ -37,9 +37,7 @@ import jetbrains.exodus.entitystore.EntityId;
 import jetbrains.exodus.entitystore.EntityIterable;
 import jetbrains.exodus.entitystore.PersistentEntityStore;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,8 +55,8 @@ public class JeeFileRepository extends JeeBaseRespository
     XodusManager manager;
 
     @Override
-    public File put(String appName, String filePath, byte[] array) {
-        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appName);
+    public File put(String appId, String filePath, byte[] array) {
+        final PersistentEntityStore entityStore = manager.getPersistentEntityStore(xodusRoot, appId);
         final File[] file = {null};
         entityStore.executeInTransaction(txn -> {
             if(array.length == 0) {

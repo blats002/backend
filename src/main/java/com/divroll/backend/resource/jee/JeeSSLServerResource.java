@@ -4,8 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.divroll.backend.certificates.*;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Superuser;
+import com.divroll.backend.repository.FileRepository;
+import com.divroll.backend.repository.UserRepository;
 import com.divroll.backend.resource.SSLResource;
-import com.divroll.backend.sdk.DivrollUser;
 import com.divroll.backend.service.ShellService;
 import com.google.inject.Inject;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -38,6 +39,12 @@ public class JeeSSLServerResource extends BaseServerResource
 
     @Inject
     ShellService shellService;
+
+    @Inject
+    UserRepository userRepository;
+
+    @Inject
+    FileRepository fileRepository;
 
     @Override
     protected void doInit() throws ResourceException {
@@ -131,11 +138,7 @@ public class JeeSSLServerResource extends BaseServerResource
 
                 Security.addProvider(new BouncyCastleProvider());
 
-                DivrollUser divrollUser = new DivrollUser();
-                divrollUser.setEntityId(userId);
-                divrollUser.setAuthToken(authToken);
-                divrollUser.retrieve();
-                String mailTo = divrollUser.getUsername();
+                String mailTo = superuser.getUsername();
                 if (mailTo == null || mailTo.isEmpty() || !EmailValidator.validate(mailTo)) {
                     return badRequest("Must have valid email");
                 }
@@ -166,11 +169,16 @@ public class JeeSSLServerResource extends BaseServerResource
                 LOG.info(privateKeyString);
                 */
 
+                if(domains[0] == null) {
+                    setStatus(Status.CLIENT_ERROR_BAD_REQUEST, "Must provide domain name");
+                    return null;
+                }
+
                 String fullchain = "";
                 String privateKeyString = "";
 
                 LOG.info("Starting Let's Encrypt process...");
-                ClientTest ct = new ClientTest(appName, shellService);
+                ClientTest ct = new ClientTest(application.getAppId(), fileRepository, shellService);
                 Cert cert = ct.fetchCertificate(Arrays.asList(domains));
                 fullchain = cert.getCertificateChain();
                 privateKeyString = cert.getDomainKey();
@@ -208,6 +216,7 @@ public class JeeSSLServerResource extends BaseServerResource
             }
         } catch (Exception e) {
             setStatus(Status.SERVER_ERROR_INTERNAL);
+            e.printStackTrace();
         }
         return null;
     }
