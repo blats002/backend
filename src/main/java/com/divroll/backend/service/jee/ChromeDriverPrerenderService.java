@@ -48,15 +48,15 @@ public class ChromeDriverPrerenderService implements PrerenderService {
     String windowTimeout = null;
 
     @Inject
-    @Named("prerender.timeout")
+    @Named("prerenderTimeout")
     protected String prerenderTimeout;
 
     @Inject
-    @Named("prerender.windowTimeout")
+    @Named("prerenderWindowTimeout")
     protected String prerenderWindowTimeout;
 
     @Inject
-    @Named("prerender.chromeDriverPath")
+    @Named("prerenderChromeDriverPath")
     protected String prerenderChromeDriverPath;
 
     @Override

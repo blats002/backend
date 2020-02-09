@@ -193,15 +193,15 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String defaultPasswordResetBase;
 
   @Inject
-  @Named("app.domain.local")
+  @Named("appDomainLocal")
   protected String appDomainLocal;
 
   @Inject
-  @Named("prerender.timeout")
+  @Named("prerenderTimeout")
   protected String prerenderTimeout;
 
   @Inject
-  @Named("prerender.windowTimeout")
+  @Named("prerenderWindowTimeout")
   protected String prerenderWindowTimeout;
 
 
