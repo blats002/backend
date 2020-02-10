@@ -24,6 +24,8 @@ package com.divroll.backend.model;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamImplicit;
 import com.wordnik.swagger.annotations.ApiModel;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -68,4 +70,19 @@ public class Applications {
   public void setLimit(long limit) {
     this.limit = limit;
   }
+
+  public JSONObject asJSONObject() {
+    JSONObject jsonObject = new JSONObject();
+    JSONObject applications = new JSONObject();
+    jsonObject.put("skip", getSkip());
+    jsonObject.put("limit", getLimit());
+    JSONArray array = new JSONArray();
+    results.forEach(application -> {
+      array.put(application.asJSONObject());
+    });
+    applications.put("results", results);
+    jsonObject.put("applications", applications);
+    return jsonObject;
+  }
+
 }

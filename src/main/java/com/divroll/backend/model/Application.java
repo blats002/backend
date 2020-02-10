@@ -24,6 +24,7 @@ package com.divroll.backend.model;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
+import org.json.JSONObject;
 
 /**
  * @author <a href="mailto:kerby@divroll.com">Kerby Martino</a>
@@ -145,5 +146,16 @@ public class Application {
 
   public void setSuperuser(Superuser superuser) {
     this.superuser = superuser;
+  }
+
+  public JSONObject asJSONObject() {
+    JSONObject jsonObject = new JSONObject();
+    jsonObject.put("appId", getAppId());
+    jsonObject.put("apiKey", getApiKey());
+    jsonObject.put("appName", getAppName());
+    jsonObject.put("cloudCode", getCloudCode());
+    jsonObject.put("dateCreated", getDateCreated());
+    jsonObject.put("dateUpdated", getDateUpdated());
+    return jsonObject;
   }
 }

@@ -21,7 +21,6 @@
  */
 package com.divroll.backend.resource.jee;
 
-import com.divroll.backend.Constants;
 import com.divroll.backend.helper.ComparableMapBuilder;
 import com.divroll.backend.model.Application;
 import com.divroll.backend.model.Applications;
@@ -39,6 +38,8 @@ import com.google.inject.name.Named;
 import jetbrains.exodus.entitystore.EntityId;
 import org.mindrot.jbcrypt.BCrypt;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
+import org.restlet.representation.Representation;
 
 import java.util.List;
 import java.util.UUID;
@@ -81,7 +82,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
   @Inject ApplicationService applicationService;
 
   @Override
-  public Applications list() {
+  public Representation list() {
     try {
       if (theMasterToken != null
           && masterToken != null
@@ -92,7 +93,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
         applications.setLimit(limit);
         applications.setResults(results);
         setStatus(Status.SUCCESS_OK);
-        return applications;
+        return new JsonRepresentation(applications.asJSONObject());
       } else if(superAuthToken != null) {
         Superuser superuser = superuserRepository.getUserByAuthToken(superAuthToken);
         if(superuser == null) {
@@ -105,7 +106,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
         applications.setLimit(limit);
         applications.setResults(results);
         setStatus(Status.SUCCESS_OK);
-        return applications;
+        return new JsonRepresentation(applications.asJSONObject());
       } else if (isMaster()) {
         Applications applications = new Applications();
         Application application = applicationService.read(appId);
@@ -113,7 +114,7 @@ public class JeeApplicationsServerResource extends BaseServerResource
         applications.setSkip(skip);
         applications.setLimit(1L);
         setStatus(Status.SUCCESS_OK);
-        return applications;
+        return new JsonRepresentation(applications.asJSONObject());
       } else {
         setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
       }

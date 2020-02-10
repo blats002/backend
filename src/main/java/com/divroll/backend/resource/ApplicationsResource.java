@@ -22,8 +22,8 @@
 package com.divroll.backend.resource;
 
 import com.divroll.backend.model.Application;
-import com.divroll.backend.model.Applications;
 import com.wordnik.swagger.annotations.*;
+import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
@@ -51,5 +51,5 @@ public interface ApplicationsResource {
           @ApiImplicitParam(name = "limit", value = "Limit", required = false, dataType = "integer", paramType = "query"),
   })
   @Get
-  public Applications list();
+  public Representation list();
 }
