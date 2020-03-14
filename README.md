@@ -115,4 +115,4 @@ netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.2 conne
 License
 ---
 
-LGPL 3.0
+AGPL 3.0
