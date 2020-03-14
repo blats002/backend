@@ -25,11 +25,12 @@
         <xodus.version>1.3.124</xodus.version>
 <!--        <xodus.version>0-SNAPSHOT</xodus.version>-->
         <restletVersion>3.0-M1</restletVersion>
-        <guava.version>22.0</guava.version>
+        <guava.version>28.2-jre</guava.version>
         <xtend.version>2.9.1</xtend.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>        
 	    <customcode.version>0-SNAPSHOT</customcode.version>
+        <payaramicro.maven.plugin.version>1.0.5</payaramicro.maven.plugin.version>
         <skipTests>true</skipTests>
     </properties>
 
@@ -120,6 +121,54 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>fish.payara.maven.plugins</groupId>
+                <artifactId>payara-micro-maven-plugin</artifactId>
+                <version>${payaramicro.maven.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <useUberJar>true</useUberJar>
+                    <commandLineOptions>
+                        <option>
+                            <key>--deploy</key>
+                            <value>target/${artifactId}-${version}-microbundle.jar</value>
+                        </option>
+<!--                        <option>-->
+<!--                            <key>&#45;&#45;autobindhttp</key>-->
+<!--                            <value>true</value>-->
+<!--                        </option>-->
+                    </commandLineOptions>
+                </configuration>
+<!--                <configuration>-->
+<!--                    <startClass>my.custom.start.class.Main</startClass>-->
+<!--                    <deployArtifacts>-->
+<!--                        <artifactItem>-->
+<!--                            <groupId>org.mycompany</groupId>-->
+<!--                            <artifactId>my-project</artifactId>-->
+<!--                            <version>1.0</version>-->
+<!--                            <type>ear</type>-->
+<!--                        </artifactItem>-->
+<!--                    </deployArtifacts>-->
+<!--                    <customJars>-->
+<!--                        <artifactItem>-->
+<!--                            <groupId>org.primefaces</groupId>-->
+<!--                            <artifactId>primefaces</artifactId>-->
+<!--                            <version>6.0</version>-->
+<!--                        </artifactItem>-->
+<!--                    </customJars>-->
+<!--                </configuration>-->
+            </plugin>
+            <plugin>
+                <groupId>com.github.ferstl</groupId>
+                <artifactId>depgraph-maven-plugin</artifactId>
+                <version>3.3.0</version>
             </plugin>
         </plugins>
     </build>
@@ -375,12 +424,12 @@
         <dependency>
             <groupId>org.shredzone.acme4j</groupId>
             <artifactId>acme4j-client</artifactId>
-            <version>2.7</version>
+            <version>2.8</version>
         </dependency>
         <dependency>
             <groupId>org.shredzone.acme4j</groupId>
             <artifactId>acme4j-utils</artifactId>
-            <version>2.7</version>
+            <version>2.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -469,6 +518,12 @@
                     <artifactId>customcode-sdk</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>8.0</version>
+            <scope>provided</scope>
         </dependency>
 	<dependency>
             <groupId>org.jsoup</groupId>
