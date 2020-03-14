@@ -1,6 +1,9 @@
 ![Divroll Logo](https://avatars1.githubusercontent.com/u/30984522?s=200&v=4)
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![gitter](https://img.shields.io/badge/gitter.im-Join%20Chat-green.svg)](https://gitter.im/divroll/Backend/)
+
+
 ## Welcome to backend
 
 backend is an Open Source, RESTful Backend as a Service for mobile apps, web apps and IoT devices.
@@ -112,4 +115,4 @@ netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.2 conne
 License
 ---
 
-AGPL 3.0
+LGPL 3.0
