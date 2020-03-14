@@ -1,3 +1,34 @@
+/*
+ * Divroll, Platform for Hosting Static Sites
+ * Copyright 2019-present, Divroll, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3.0 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
+ */
+
 package com.divroll.backend.certificates;
 
 import com.divroll.backend.model.File;
@@ -12,6 +43,8 @@ import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx.Observable;
+import rx.exceptions.Exceptions;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -19,28 +52,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
-//import javax.swing.JOptionPane;
+public class CertificateGenerator {
 
-/**
- * A simple client test tool.
- * <p>
- * Pass the names of the domains as parameters.
- */
-public class ClientTest {
-    // File name of the User Key Pair
-//    private static final File USER_KEY_FILE = new File("user.key");
-
-    // File name of the Domain Key Pair
-//    private static final File DOMAIN_KEY_FILE = new File("domain.key");
-
-    // File name of the CSR
-//    private static final File DOMAIN_CSR_FILE = new File("domain.csr");
-
-    // File name of the signed certificate
-//    private static final File DOMAIN_CHAIN_FILE = new File("domain-chain.crt");
-
-    //Challenge type to be used
     private static final ChallengeType CHALLENGE_TYPE = ChallengeType.HTTP;
 
     // RSA key size of generated key pairs
@@ -52,13 +67,15 @@ public class ClientTest {
 
     private String appId;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CertificateGenerator.class);
 
     private ShellService shellService;
 
     private FileRepository fileRepository;
 
-    public ClientTest(String appId, FileRepository fileRepository, ShellService shellService) {
+    String challengeAttempt = System.getenv("LETS_ENCRYPT_CHALLENGE_ATTEMPT");
+
+    public CertificateGenerator(String appId, FileRepository fileRepository, ShellService shellService) {
         this.shellService = shellService;
         this.appId = appId;
         this.fileRepository = fileRepository;
@@ -82,13 +99,6 @@ public class ClientTest {
 
     private enum ChallengeType { HTTP, DNS }
 
-    /**
-     * Generates a certificate for the given domains. Also takes care for the registration
-     * process.
-     *
-     * @param domains
-     *            Domains to get a common certificate for
-     */
     public Cert fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
         // Load the user key file. If there is no key file, create a new one.
         KeyPair userKeyPair = loadOrCreateUserKeyPair();
@@ -132,78 +142,51 @@ public class ClientTest {
 
         // Wait for the order to complete
         LOG.info("Order...");
-        try {
-            int attempts = 10;
-            while (order.getStatus() != Status.VALID && attempts-- > 0) {
-                // Did the order fail?
-                if (order.getStatus() == Status.INVALID) {
-                    throw new AcmeException("Order failed... Giving up.");
-                }
+        int attempts = 10;
+        if(challengeAttempt != null) {
+            attempts = Integer.valueOf(challengeAttempt);
+        }
 
-                // Wait for a few seconds
-                Thread.sleep(3000L);
+        Certificate certificate = Observable.range(1, attempts)
+                .delay(3, TimeUnit.SECONDS)
+                .filter(integer -> {
+                    try {
+                        LOG.info("AUTHORIZE ATTEMPTS: " + integer);
+                        order.update();
+                    } catch (AcmeException e) {
+                        Exceptions.propagate(e);
+                    }
+                    return order.getStatus() == Status.VALID;
+                }).map(integer -> {
+                    Certificate cert = order.getCertificate();
+                    return cert;
+                }).toBlocking().first();
 
-                // Then update the status
-                order.update();
+        if(certificate != null) {
+            LOG.info("Success! The certificate for domains {} has been generated!", domains);
+            LOG.info("Certificate URL: {}", certificate.getLocation());
+
+            // Write a combined file containing the certificate and chain.
+            try (StringWriter sw = new StringWriter()) {
+                certificate.writeCertificate(sw);
+                certificateChain = sw.toString();
             }
-        } catch (InterruptedException ex) {
-            LOG.error("interrupted", ex);
-            Thread.currentThread().interrupt();
+
+            Cert cert = new Cert();
+            cert.setDomainKey(domainKey);
+            cert.setCertificateChain(certificateChain);
+
+            LOG.info("DOMAIN_KEY:" + domainKey);
+            LOG.info("CERTIFICATE_CHAIN:" + certificateChain);
+
+            return cert;
+        } else {
+            throw new AcmeException("Order failed... Giving up.");
         }
-
-        // Get the certificate
-        Certificate certificate = order.getCertificate();
-
-        LOG.info("Success! The certificate for domains {} has been generated!", domains);
-        LOG.info("Certificate URL: {}", certificate.getLocation());
-
-        // Write a combined file containing the certificate and chain.
-//        try (FileWriter fw = new FileWriter(DOMAIN_CHAIN_FILE)) {
-//            certificate.writeCertificate(fw);
-//        }
-        try (StringWriter sw = new StringWriter()) {
-            certificate.writeCertificate(sw);
-            certificateChain = sw.toString();
-        }
-
-        // That's all! Configure your web server to use the DOMAIN_KEY_FILE and
-        // DOMAIN_CHAIN_FILE for the requested domains.
-
-        Cert cert = new Cert();
-        cert.setDomainKey(domainKey);
-        cert.setCertificateChain(certificateChain);
-
-        LOG.info("DOMAIN_KEY:" + domainKey);
-        LOG.info("CERTIFICATE_CHAIN:" + certificateChain);
-
-        return cert;
 
     }
 
-    /**
-     * Loads a user key pair from {@value #USER_KEY_FILE}. If the file does not exist,
-     * a new key pair is generated and saved.
-     * <p>
-     * Keep this key pair in a safe place! In a production environment, you will not be
-     * able to access your account again if you should lose the key pair.
-     *
-     * @return User's {@link KeyPair}.
-     */
     private KeyPair loadOrCreateUserKeyPair() throws IOException {
-//        if (USER_KEY_FILE.exists()) {
-//            // If there is a key file, read it
-//            try (FileReader fr = new FileReader(USER_KEY_FILE)) {
-//                return KeyPairUtils.readKeyPair(fr);
-//            }
-//
-//        } else {
-//            // If there is none, create a new key pair and save it
-//            KeyPair userKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
-//            try (FileWriter fw = new FileWriter(USER_KEY_FILE)) {
-//                KeyPairUtils.writeKeyPair(userKeyPair, fw);
-//            }
-//            return userKeyPair;
-//        }
         KeyPair userKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
         try(StringWriter sw = new StringWriter()) {
             KeyPairUtils.writeKeyPair(userKeyPair, sw);
@@ -211,24 +194,7 @@ public class ClientTest {
         return userKeyPair;
     }
 
-    /**
-     * Loads a domain key pair from {@value #DOMAIN_KEY_FILE}. If the file does not exist,
-     * a new key pair is generated and saved.
-     *
-     * @return Domain {@link KeyPair}.
-     */
     private KeyPair loadOrCreateDomainKeyPair() throws IOException {
-//        if (DOMAIN_KEY_FILE.exists()) {
-//            try (FileReader fr = new FileReader(DOMAIN_KEY_FILE)) {
-//                return KeyPairUtils.readKeyPair(fr);
-//            }
-//        } else {
-//            KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
-//            try (FileWriter fw = new FileWriter(DOMAIN_KEY_FILE)) {
-//                KeyPairUtils.writeKeyPair(domainKeyPair, fw);
-//            }
-//            return domainKeyPair;
-//        }
         KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
         try (StringWriter sw = new StringWriter()) {
             KeyPairUtils.writeKeyPair(domainKeyPair, sw);
@@ -236,21 +202,6 @@ public class ClientTest {
         return domainKeyPair;
     }
 
-    /**
-     * Finds your {@link Account} at the ACME server. It will be found by your user's
-     * public key. If your key is not known to the server yet, a new account will be
-     * created.
-     * <p>
-     * This is a simple way of finding your {@link Account}. A better way is to get the
-     * URL and KeyIdentifier of your new account with {@link Account#getLocation()}
-     * {@link Session#getKeyIdentifier()} and store it somewhere. If you need to get
-     * access to your account later, reconnect to it via
-     * {@link Account#bind(Session, URI)} by using the stored location.
-     *
-     * @param session
-     *            {@link Session} to bind with
-     * @return {@link Login} that is connected to your account
-     */
     private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
         URI tos = session.getMetadata().getTermsOfService();
@@ -267,13 +218,6 @@ public class ClientTest {
         return account;
     }
 
-    /**
-     * Authorize a domain. It will be associated with your account, so you will be able to
-     * retrieve a signed certificate for the domain later.
-     *
-     * @param auth
-     *            {@link Authorization} to perform
-     */
     private void authorize(Authorization auth) throws AcmeException {
         LOG.info("Authorization for domain {}", auth.getIdentifier().getDomain());
 
@@ -308,6 +252,7 @@ public class ClientTest {
                 Http01Challenge http01Challenge = (Http01Challenge) challenge;
                 String token = http01Challenge.getToken();
                 String authorization = http01Challenge.getAuthorization();
+                LOG.info("ACME Authorization: " + authorization);
                 String filePath = ".well-known/acme-challenge/" + token;
                 File file = writeFile(authorization.getBytes(StandardCharsets.UTF_8), filePath, appId);
                 assert file != null;
@@ -320,28 +265,24 @@ public class ClientTest {
         challenge.trigger();
 
         // Poll for the challenge to complete.
-        try {
-            int attempts = 10;
-            while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
-                LOG.info("CHALLENGE ATTEMPTS: " + attempts);
-                // Did the authorization fail?
-                if (challenge.getStatus() == Status.INVALID) {
-                    throw new AcmeException("Challenge failed... Giving up.");
-                }
+        int attempts = 20;
 
-                // Wait for a few seconds
-                Thread.sleep(3000L);
+        Challenge finalChallenge = challenge;
+        Boolean givenUp = Observable.range(1, attempts)
+                .debounce(3, TimeUnit.SECONDS)
+                .filter(integer -> {
+                    try {
+                        LOG.info("CHALLENGE ATTEMPTS: " + integer);
+                        finalChallenge.update();
+                    } catch (AcmeException e) {
+                        Exceptions.propagate(e);
+                    }
+                    return finalChallenge.getStatus() == Status.VALID;
+                }).map(integer -> {
+                    return false;
+                }).toBlocking().firstOrDefault(true);
 
-                // Then update the status
-                challenge.update();
-            }
-        } catch (InterruptedException ex) {
-            LOG.error("interrupted", ex);
-            Thread.currentThread().interrupt();
-        }
-
-        // All reattempts are used up and there is still no valid authorization?
-        if (challenge.getStatus() != Status.VALID) {
+        if(givenUp == true) {
             throw new AcmeException("Failed to pass the challenge for domain "
                     + auth.getIdentifier().getDomain() + ", ... Giving up.");
         }
@@ -350,20 +291,6 @@ public class ClientTest {
         completeChallenge("Challenge has been completed.\nYou can remove the resource again now.");
     }
 
-    /**
-     * Prepares a HTTP challenge.
-     * <p>
-     * The verification of this challenge expects a file with a certain content to be
-     * reachable at a given path under the domain to be tested.
-     * <p>
-     * This example outputs instructions that need to be executed manually. In a
-     * production environment, you would rather generate this file automatically, or maybe
-     * use a servlet that returns {@link Http01Challenge#getAuthorization()}.
-     *
-     * @param auth
-     *            {@link Authorization} to find the challenge in
-     * @return {@link Challenge} to verify
-     */
     public Challenge httpChallenge(Authorization auth) throws AcmeException {
         // Find a single http-01 challenge
         Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
@@ -394,18 +321,6 @@ public class ClientTest {
         return challenge;
     }
 
-    /**
-     * Prepares a DNS challenge.
-     * <p>
-     * The verification of this challenge expects a TXT record with a certain content.
-     * <p>
-     * This example outputs instructions that need to be executed manually. In a
-     * production environment, you would rather configure your DNS automatically.
-     *
-     * @param auth
-     *            {@link Authorization} to find the challenge in
-     * @return {@link Challenge} to verify
-     */
     public Challenge dnsChallenge(Authorization auth) throws AcmeException {
         // Find a single dns-01 challenge
         Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
@@ -430,82 +345,17 @@ public class ClientTest {
         return challenge;
     }
 
-    /**
-     * Presents the instructions for preparing the challenge validation, and waits for
-     * dismissal. If the user cancelled the dialog, an exception is thrown.
-     *
-     * @param message
-     *            Instructions to be shown in the dialog
-     */
     public void acceptChallenge(String message) throws AcmeException {
-//        int option = JOptionPane.showConfirmDialog(null,
-//                message,
-//                "Prepare Challenge",
-//                JOptionPane.OK_CANCEL_OPTION);
-//        if (option == JOptionPane.CANCEL_OPTION) {
-//            throw new AcmeException("User cancelled the challenge");
-//        }
     }
 
-    /**
-     * Presents the instructions for removing the challenge validation, and waits for
-     * dismissal.
-     *
-     * @param message
-     *            Instructions to be shown in the dialog
-     */
     public void completeChallenge(String message) throws AcmeException {
-//        JOptionPane.showMessageDialog(null,
-//                message,
-//                "Complete Challenge",
-//                JOptionPane.INFORMATION_MESSAGE);
         LOG.info("Complete Challenge");
     }
 
-    /**
-     * Presents the user a link to the Terms of Service, and asks for confirmation. If the
-     * user denies confirmation, an exception is thrown.
-     *
-     * @param agreement
-     *            {@link URI} of the Terms of Service
-     */
     public void acceptAgreement(URI agreement) throws AcmeException {
-//        int option = JOptionPane.showConfirmDialog(null,
-//                "Do you accept the Terms of Service?\n\n" + agreement,
-//                "Accept ToS",
-//                JOptionPane.YES_NO_OPTION);
-//        if (option == JOptionPane.NO_OPTION) {
-//            throw new AcmeException("User did not accept Terms of Service");
-//        }
     }
-
-    /**
-     * Invokes this example.
-     *
-     * @param args
-     *            Domains to get a certificate for
-     */
-    public static void main(String... args) {
-//        if (args.length == 0) {
-//            System.err.println("Usage: ClientTest <domain>...");
-//            System.exit(1);
-//        }
-//
-//        LOG.info("Starting up...");
-//
-//        Security.addProvider(new BouncyCastleProvider());
-//        Collection<String> domains = Arrays.asList(args);
-//        try {
-//            ClientTest ct = new ClientTest();
-//            ct.fetchCertificate(domains);
-//        } catch (Exception ex) {
-//            LOG.error("Failed to get a certificate for domains " + domains, ex);
-//        }
-    }
-
     private File writeFile(byte[] fileBytes, String path, String appId)
             throws IOException {
-        int status = 500;
         return fileRepository.put(appId, path, fileBytes);
     }
 

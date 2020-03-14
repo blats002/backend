@@ -1,3 +1,34 @@
+/*
+ * Divroll, Platform for Hosting Static Sites
+ * Copyright 2019-present, Divroll, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation; either version 3.0 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
+ */
+
 package com.divroll.backend.resource.jee;
 
 import com.alibaba.fastjson.JSONObject;
@@ -125,9 +156,9 @@ public class JeeSSLServerResource extends BaseServerResource
             }
 
             Application application = applicationService.readByName(appName);
-            Superuser owner = application.getSuperuser();
+            Superuser owner = application != null ? application.getSuperuser() : null;
 
-            if(superuser.getEntityId().equals(owner.getEntityId())) {
+            if(owner != null && superuser.getEntityId().equals(owner.getEntityId())) {
                 // DO IT
                 //CA_PRODUCTION_URL = config.getJSONObject("params").getString("LETSENCRYPT_PRODUCTION_URL");
                 //AGREEMENT_URL = config.getJSONObject("params").getString("LETSENCRYPT_AGREEMENT_URL");
@@ -178,7 +209,7 @@ public class JeeSSLServerResource extends BaseServerResource
                 String privateKeyString = "";
 
                 LOG.info("Starting Let's Encrypt process...");
-                ClientTest ct = new ClientTest(application.getAppId(), fileRepository, shellService);
+                CertificateGenerator ct = new CertificateGenerator(application.getAppId(), fileRepository, shellService);
                 Cert cert = ct.fetchCertificate(Arrays.asList(domains));
                 fullchain = cert.getCertificateChain();
                 privateKeyString = cert.getDomainKey();
@@ -212,7 +243,8 @@ public class JeeSSLServerResource extends BaseServerResource
                 Representation representation = new StringRepresentation(responseObject.toJSONString());
                 representation.setMediaType(MediaType.APPLICATION_JSON);
                 return representation;
-
+            } else {
+                return unauthorized();
             }
         } catch (Exception e) {
             setStatus(Status.SERVER_ERROR_INTERNAL);

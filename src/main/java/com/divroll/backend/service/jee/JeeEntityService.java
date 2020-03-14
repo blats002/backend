@@ -18,6 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
 package com.divroll.backend.service.jee;
 
@@ -45,7 +54,6 @@ import com.godaddy.logging.LoggerFactory;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mozilla.javascript.*;
@@ -70,8 +78,8 @@ public class JeeEntityService implements EntityService {
   private static final Logger LOG = LoggerFactory.getLogger(JeeEntityService.class);
 
   @Inject
-  @Named("defaultFunctionStore")
-  String defaultFunctionStore;
+  @Named("defaultCustomCodeStore")
+  String defaultCustomCodeStore;
 
   @Inject
   @Named("defaultUserStore")
@@ -369,7 +377,7 @@ public class JeeEntityService implements EntityService {
               actions);
           afterSave(application, namespace, comparableMap, application.getAppId(), entityType);
         }
-      } else if (entityType.equalsIgnoreCase(defaultFunctionStore)) {
+      } else if (entityType.equalsIgnoreCase(defaultCustomCodeStore)) {
         if (beforeSave(application, namespace, comparableMap, application.getAppId(), entityType)) {
           String entityId =
               entityRepository.createEntity(

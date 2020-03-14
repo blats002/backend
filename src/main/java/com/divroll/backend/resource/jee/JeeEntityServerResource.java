@@ -18,6 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
 package com.divroll.backend.resource.jee;
 
@@ -80,8 +89,8 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
   String defaultRoleStore;
 
   @Inject
-  @Named("defaultFunctionStore")
-  String defaultFunctionStore;
+  @Named("defaultCustomCodeStore")
+  String defaultCustomCodeStore;
 
   @Override
   public Representation getEntity() {
@@ -292,7 +301,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
               } else {
                 setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
               }
-            } else if (entityType.equalsIgnoreCase(defaultFunctionStore)) {
+            } else if (entityType.equalsIgnoreCase(defaultCustomCodeStore)) {
               if (beforeSave(comparableMap, appId, entityType)) {
                 success =
                     entityRepository.updateEntity(
@@ -441,7 +450,7 @@ public class JeeEntityServerResource extends BaseServerResource implements Entit
                 } else {
                   setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
                 }
-              } else if (entityType.equalsIgnoreCase(defaultFunctionStore)) {
+              } else if (entityType.equalsIgnoreCase(defaultCustomCodeStore)) {
                 if (beforeSave(comparableMap, appId, entityType)) {
                   success =
                           entityRepository.updateEntity(

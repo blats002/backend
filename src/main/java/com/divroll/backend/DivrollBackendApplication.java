@@ -18,11 +18,22 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
+
 package com.divroll.backend;
 
 import com.divroll.backend.guice.GuiceConfigModule;
 import com.divroll.backend.guice.SelfInjectingServerResourceModule;
+import com.divroll.backend.resource.filter.AcmeFilter;
 import com.divroll.backend.resource.jee.*;
 import com.godaddy.logging.Logger;
 import com.godaddy.logging.LoggerFactory;
@@ -36,6 +47,7 @@ import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.data.Protocol;
 import org.restlet.engine.Engine;
+import org.restlet.engine.application.CorsFilter;
 import org.restlet.engine.converter.ConverterHelper;
 import org.restlet.ext.apispark.internal.firewall.FirewallFilter;
 import org.restlet.ext.apispark.internal.firewall.handler.RateLimitationHandler;
@@ -47,7 +59,6 @@ import org.restlet.ext.jackson.JacksonConverter;
 import org.restlet.ext.swagger.Swagger2SpecificationRestlet;
 import org.restlet.ext.swagger.SwaggerSpecificationRestlet;
 import org.restlet.routing.Router;
-import org.restlet.engine.application.CorsFilter;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -107,6 +118,8 @@ public class DivrollBackendApplication extends Application {
     router.attach(DIVROLL_ROOT_URI + "applications/{appName}", JeeApplicationServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "applications/{appName}/domains/{domainName}", JeeDomainServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "applications/{appName}/domains/{domainName}/certificates", JeeSSLServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "applications/{appName}/customCodes", JeeCustomCodesServerResource.class);
+    router.attach(DIVROLL_ROOT_URI + "applications/{appName}/customCodes/{customCodeName}", JeeCustomCodesServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "domains", JeeDomainServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "applications", JeeApplicationsServerResource.class);
     router.attach(DIVROLL_ROOT_URI + "entities", JeeEntityTypesServerResource.class);
@@ -169,7 +182,10 @@ public class DivrollBackendApplication extends Application {
     ));
     corsFilter.setAllowedCredentials(true);
 
-    corsFilter.setNext(router);
+    AcmeFilter acmeFilter = new AcmeFilter(getContext());
+    acmeFilter.setNext(router);
+
+    corsFilter.setNext(acmeFilter);
 
     FirewallRule rule = new PeriodicFirewallCounterRule(60, TimeUnit.SECONDS, new IpAddressCountingPolicy());
     ((PeriodicFirewallCounterRule)rule).addHandler(new RateLimitationHandler(new UniqueLimitPolicy(rateLimit)));

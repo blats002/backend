@@ -18,6 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
 package com.divroll.backend.resource.jee;
 
@@ -97,7 +106,11 @@ public class JeeCustomCodeServerResource extends BaseServerResource
             } else {
                 is = entity.getStream();
             }
-            String entityId = customCodeRepository.createCustomCode(appId, namespace, customCodeName, is);
+            String entityId = customCodeRepository.createCustomCode(appId, namespace,
+                    customCodeName,
+                    "",
+                    1000L,
+                    is);
             JSONObject entityObject = new JSONObject();
             entityObject.put(Constants.RESERVED_FIELD_ENTITY_ID, entityId);
             JSONObject result = new JSONObject();

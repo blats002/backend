@@ -18,6 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
 package com.divroll.backend.resource.jee;
 
@@ -126,6 +135,8 @@ public class BaseServerResource extends SelfInjectingServerResource {
   protected String destinationFile;
   protected String sourceFile;
   protected String apiArg;
+
+  protected String customCodeName;
 
 
   protected List<String> uniqueProperties;
@@ -311,6 +322,10 @@ public class BaseServerResource extends SelfInjectingServerResource {
             headers.getFirstValue(Constants.HEADER_SUPER_AUTH) != null
                     ? headers.getFirstValue(Constants.HEADER_SUPER_AUTH)
                     : headers.getFirstValue(Constants.HEADER_SUPER_AUTH.toLowerCase());
+
+    if(superAuthToken == null) {
+      superAuthToken = authToken;
+    }
 
     if(masterToken == null) {
       masterToken = getQueryValue("masterToken");
@@ -546,6 +561,7 @@ public class BaseServerResource extends SelfInjectingServerResource {
       masterToken = masterTokenEnv;
     }
 
+    customCodeName = getQueryValue(Constants.CUSTOMCODE_NAME);
 
   }
 

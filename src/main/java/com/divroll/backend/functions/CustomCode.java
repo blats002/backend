@@ -1,6 +1,6 @@
 /*
  * Divroll, Platform for Hosting Static Sites
- * Copyright 2018, Divroll, and individual contributors
+ * Copyright 2019-present, Divroll, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -18,8 +18,22 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
 package com.divroll.backend.functions;
+
+import com.divroll.backend.customcode.jar.JarEntryObject;
+import com.divroll.backend.customcode.method.CustomCodeMethod;
+import com.divroll.backend.customcode.rest.CustomCodeRequest;
+import org.json.simple.JSONValue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,11 +46,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
-import com.divroll.backend.customcode.method.CustomCodeMethod;
-import com.divroll.backend.customcode.jar.JarEntryObject;
-import com.divroll.backend.customcode.rest.CustomCodeRequest;
-import org.json.simple.JSONValue;
-
 /**
  * Class that executes a {@code CustomCodeMethod}
  *
@@ -44,6 +53,7 @@ import org.json.simple.JSONValue;
  * @version 1.0
  * @since 1.0
  */
+@Deprecated
 public class CustomCode {
 	
 	private static Logger LOGGER = Logger.getLogger(CustomCode.class.getName());

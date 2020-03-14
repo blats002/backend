@@ -18,6 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * GPL 3.0 and offer limited warranties, support, maintenance, and commercial
+ * deployments.
+ *
+ * For more information, please email: support@divroll.com
+ *
  */
 package com.divroll.backend.repository.jee;
 
@@ -29,7 +38,6 @@ import com.divroll.backend.repository.EntityRepository;
 import com.divroll.backend.xodus.XodusStore;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import jetbrains.exodus.entitystore.EntityId;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -57,9 +65,11 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
   @Inject EntityRepository entityRepository;
 
   @Override
-  public String createCustomCode(String appId, String namespace, String customCodeName, InputStream jar) {
+  public String createCustomCode(String appId, String namespace, String customCodeName, String description, Long timeout, InputStream jar) {
     Map<String, Comparable> comparableMap = new LinkedHashMap<String, Comparable>();
     comparableMap.put("customCodeName", customCodeName);
+    comparableMap.put("description", description);
+    comparableMap.put("timeout", timeout);
     String entityId = entityRepository.createEntity(
             appId,
             namespace,
@@ -74,6 +84,7 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
             new EntityMetadataBuilder().addUniqueProperties("customCodeName").build());
     return entityId;
   }
+
 
   @Override
   public boolean deleteCustomCode(String appId, String namespace, String customCodeName) {
@@ -113,6 +124,13 @@ public class JeeCustomCodeRepository implements CustomCodeRepository {
       return comparable;
     }
     return null;
+  }
+
+  @Override
+  public List<Map<String, Comparable>> listCustomCodes(String appId, String namespace, String userId) {
+    List<Map<String, Comparable>> entityObjs = entityRepository.listEntities(appId, namespace, Constants.ENTITYSTORE_CUSTOMCODE,
+            userId, 0, 100, "customCodename", null, null, false, null);
+    return entityObjs;
   }
 
 }
