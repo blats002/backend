@@ -21,6 +21,7 @@ Features
 - BeforeSave and AfterSave triggers
 - PubSub (created, updated, deleted, linked)
 - Custom Codes (server-side code extensions, Java and Javascript)
+- Static site hosting
 - (Future) Database storage through Amazon S3 or S3-compatible storage
 
 Installation
@@ -30,6 +31,16 @@ To run your own backend server, simply execute this commands:
 ```
 mvn jetty:run
 ```
+
+or
+
+```$xslt
+$ mvn package
+$ java -jar target/dependency/webapp-runner.jar target/*.war
+```
+
+See: https://devcenter.heroku.com/articles/java-webapp-runner
+
 
 If you are deploying to a Jetty server or Tomcat server, please refer to their website on how to deploy.
 Alternatively, you can deploy to Heroku:
@@ -77,37 +88,28 @@ Client integrations
 - [Java](https://github.com/divroll/Backend-SDK-Java)
 - [Java/CustomCode]()
 
+Static site hosting configuration
+---
+
+In order to make Static site hosting work in local or test environment the following setup or configuration must be made: 
+
+#### Linux-based machine setup
+```$xslt
+# set in /etc/hosts
+127.0.0.2	demo.localhost.com
+# add additional subdomain if necessary, then
+iptables -t nat -A OUTPUT -d 127.0.0.2 -p tcp --dport 80 -j REDIRECT --to-port 8080
+```
+#### Windows-based machin setup
+
+```$xslt
+# set in \WINDOWS\system32\drivers\etc
+127.0.0.2	demo.localhost.com
+# add additional subdomain if necessary, then
+netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.2 connectport=8080 connectaddress=127.0.0.1
+```
+
 License
 ---
 
 AGPL 3.0
-
-# Hosting Setup
-
-# Ubuntu setup (testing host parsing)
-
-# set in /etc/hosts
-# 127.0.0.2	demo.localhost.com
-# add additional subdomain if necessary
-# then
-
-iptables -t nat -A OUTPUT -d 127.0.0.2 -p tcp --dport 80 -j REDIRECT --to-port 8080
-
-or
-
-# Windows setup
-
-# set in \WINDOWS\system32\drivers\etc
-# 127.0.0.2	demo.localhost.com
-# add additional subdomain if necessary
-# then
-
-netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.2 connectport=8080 connectaddress=127.0.0.1
-
-
-# To Run
-
-$ mvn package
-$ java -jar target/dependency/webapp-runner.jar target/*.war
-
-See: https://devcenter.heroku.com/articles/java-webapp-runner
