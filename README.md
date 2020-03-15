@@ -116,9 +116,12 @@ Live Demo Server
 ---
 
 DEMO SERVER URL:    https://divroll-backend.herokuapp.com/
+
 DEMO DASHBOARD URL: https://divroll-backend-dashboard.herokuapp.com/
 
-From the dashboard, set the Endpoint URL to `https://divroll-backend.herokuapp.com/divroll` and the Master Token to `****TOKEN****`
+From the dashboard, set the Endpoint URL to `https://divroll-backend.herokuapp.com/divroll`<br/> 
+and the Master Token to `****TOKEN****`
+
 Note that this demo is deployed in Heroku using ephemeral storage so changes in the demo server are not guaranteed to persist for a long period of time.
 
 
