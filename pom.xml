@@ -14,7 +14,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <junit.version>4.12</junit.version>
-<!--        <jackson.version>2.6.0</jackson.version>-->
         <jackson.version>2.9.9</jackson.version>
         <version.restlet>2.3.12</version.restlet>
         <atmosphere-version>2.4.30</atmosphere-version>
@@ -23,7 +22,6 @@
         <jetty.version>9.4.12.RC2</jetty.version>
         <godaddy.logging.version>1.2.5</godaddy.logging.version>
         <xodus.version>1.3.124</xodus.version>
-<!--        <xodus.version>0-SNAPSHOT</xodus.version>-->
         <restletVersion>3.0-M1</restletVersion>
         <guava.version>28.2-jre</guava.version>
         <xtend.version>2.9.1</xtend.version>
@@ -121,49 +119,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>fish.payara.maven.plugins</groupId>
-                <artifactId>payara-micro-maven-plugin</artifactId>
-                <version>${payaramicro.maven.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>bundle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <useUberJar>true</useUberJar>
-                    <commandLineOptions>
-                        <option>
-                            <key>--deploy</key>
-                            <value>target/${artifactId}-${version}-microbundle.jar</value>
-                        </option>
-<!--                        <option>-->
-<!--                            <key>&#45;&#45;autobindhttp</key>-->
-<!--                            <value>true</value>-->
-<!--                        </option>-->
-                    </commandLineOptions>
-                </configuration>
-<!--                <configuration>-->
-<!--                    <startClass>my.custom.start.class.Main</startClass>-->
-<!--                    <deployArtifacts>-->
-<!--                        <artifactItem>-->
-<!--                            <groupId>org.mycompany</groupId>-->
-<!--                            <artifactId>my-project</artifactId>-->
-<!--                            <version>1.0</version>-->
-<!--                            <type>ear</type>-->
-<!--                        </artifactItem>-->
-<!--                    </deployArtifacts>-->
-<!--                    <customJars>-->
-<!--                        <artifactItem>-->
-<!--                            <groupId>org.primefaces</groupId>-->
-<!--                            <artifactId>primefaces</artifactId>-->
-<!--                            <version>6.0</version>-->
-<!--                        </artifactItem>-->
-<!--                    </customJars>-->
-<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>com.github.ferstl</groupId>
@@ -591,5 +546,37 @@
             </plugin>
         </plugins>
     </reporting>
+
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>fish.payara.maven.plugins</groupId>
+                        <artifactId>payara-micro-maven-plugin</artifactId>
+                        <version>${payaramicro.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>bundle</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <useUberJar>true</useUberJar>
+                            <commandLineOptions>
+                                <option>
+                                    <key>--deploy</key>
+                                    <value>target/${artifactId}-${version}-microbundle.jar</value>
+                                </option>
+                            </commandLineOptions>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
