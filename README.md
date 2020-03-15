@@ -112,6 +112,16 @@ iptables -t nat -A OUTPUT -d 127.0.0.2 -p tcp --dport 80 -j REDIRECT --to-port 8
 netsh interface portproxy add v4tov4 listenport=80 listenaddress=127.0.0.2 connectport=8080 connectaddress=127.0.0.1
 ```
 
+Live Demo Server
+---
+
+DEMO SERVER URL:    https://divroll-backend.herokuapp.com/
+DEMO DASHBOARD URL: https://divroll-backend-dashboard.herokuapp.com/
+
+From the dashboard, set the Endpoint URL to `https://divroll-backend.herokuapp.com/divroll` and the Master Token to `****TOKEN****`
+Note that this demo is deployed in Heroku using ephemeral storage so changes in the demo server are not guaranteed to persist for a long period of time.
+
+
 License
 ---
 
